@@ -45,8 +45,8 @@ namespace MyEngine
             // We will not upload mipmaps, so disable mipmapping (otherwise the texture will not appear).
             // We can use GL.GenerateMipmaps() or GL.Ext.GenerateMipmaps() to create
             // mipmaps automatically. In that case, use TextureMinFilter.LinearMipmapLinear to enable them.
-            GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureMinFilter, (int)GetTextureMinFilter(useMimMaps));
-            GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureMagFilter, (int)GetTextureMagFilter(useMimMaps));
+            GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureMinFilter, (int)GetTextureMinFilter());
+            GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureMagFilter, (int)GetTextureMagFilter());
             GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureWrapS, (int)GetTextureWrapMode());
             GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureWrapT, (int)GetTextureWrapMode());
             GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureWrapR, (int)GetTextureWrapMode());

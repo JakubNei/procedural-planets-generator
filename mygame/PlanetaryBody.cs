@@ -11,7 +11,7 @@ using MyEngine.Components;
 
 namespace MyGame
 {
-    public class PlanetaryBody : MonoBehaviour
+    public class PlanetaryBody : ComponentWithShortcuts, ITest1
     {
         public int chunkNumberOfVerticesOnEdge = 10;
         public float radius;
@@ -32,6 +32,8 @@ namespace MyGame
         {
             perlin = new Perlin(5646);
             worley = new Worley(894984, Worley.DistanceFunction.Euclidian);
+
+            entity.EventSystem.Register((MyEngine.Events.GraphicsUpdate evt) => OnGraphicsUpdate(evt.DeltaTime));
         }
 
 
@@ -129,8 +131,8 @@ namespace MyGame
 
         void SetMaterialProperties(Material mat)
         {
-            mat.SetUniform("planetRadius", this.radius);
-            mat.SetUniform("planetCenter", Transform.Position);
+            mat.Uniforms.Set("planetRadius", this.radius);
+            mat.Uniforms.Set("planetCenter", Transform.Position);
         }
 
 
@@ -217,11 +219,90 @@ namespace MyGame
         }
 
 
+
+        HashSet<PlanetaryBodyChunk> toUpdateVisibility = new HashSet<PlanetaryBodyChunk>();
+
+        public float GetVisibility(PlanetaryBodyChunk chunk)
+        {
+            //return chunk.renderer.RenderingMode == RenderingMode.DontRender ? 0 : 1;
+
+            return chunk.visibility;
+        }
+
+        public void HideIn(PlanetaryBodyChunk chunk, float seconds)
+        {
+            //chunk.renderer.RenderingMode = RenderingMode.RenderGeometryAndCastShadows; return;
+
+            chunk.hideIn = seconds;
+            chunk.showIn = -1;
+            //chunk.visibility = 1;
+            lock (toUpdateVisibility)
+            {
+                toUpdateVisibility.Add(chunk);
+            }
+        }
+
+        public void ShowIn(PlanetaryBodyChunk chunk, float seconds)
+        {
+            //chunk.renderer.RenderingMode = RenderingMode.RenderGeometryAndCastShadows; return;
+
+            chunk.hideIn = -1;
+            chunk.showIn = seconds;
+            //chunk.visibility = 0;
+            lock (toUpdateVisibility)
+            {
+                toUpdateVisibility.Add(chunk);
+            }
+        }
+
+        void OnGraphicsUpdate(double deltaTime)
+        {
+            lock(toUpdateVisibility)
+            {
+                foreach (var chunk in toUpdateVisibility.ToArray())
+                {
+                    if (chunk.showIn != -1)
+                    {
+                        if (chunk.visibility < 1)
+                        {
+                            chunk.renderer.RenderingMode = RenderingMode.RenderGeometryAndCastShadows;
+                            chunk.visibility += (float)deltaTime / chunk.showIn;
+                        }
+                        else
+                        {
+                            chunk.renderer.RenderingMode = RenderingMode.RenderGeometryAndCastShadows;
+                            chunk.showIn = -1;
+                            chunk.visibility = 1;
+                            toUpdateVisibility.Remove(chunk);
+                        }
+                    }
+                    else if (chunk.hideIn != -1)
+                    {
+                        if (chunk.visibility > 0)
+                        {
+                            chunk.renderer.RenderingMode = RenderingMode.RenderGeometryAndCastShadows;
+                            chunk.visibility -= (float)deltaTime / chunk.hideIn;
+                        }
+                        else
+                        {
+                            chunk.renderer.RenderingMode = RenderingMode.DontRender;
+                            chunk.hideIn = -1;
+                            chunk.visibility = 0;
+                            toUpdateVisibility.Remove(chunk);
+                        }
+                    }
+                    chunk.renderer.material.Uniforms.Set("param_visibility", chunk.visibility);
+                }
+            }
+
+        }
+
+
         void HideChildsIn(PlanetaryBodyChunk chunk, float seconds)
         {
             foreach (var child in chunk.childs)
             {
-                if (child.IsMeshReady()) child.renderer.HideIn(seconds);
+                if (child.IsMeshReady()) HideIn(child, seconds);
                 child.StopMeshGeneration();
                 HideChildsIn(child, seconds);
             }
@@ -243,7 +324,7 @@ namespace MyGame
                 }
 
                 // hide only if all our childs are visible
-                if (areChildrenFullyVisible) if (chunk.IsMeshReady()) chunk.renderer.HideIn(hideTime);
+                if (areChildrenFullyVisible) if (chunk.IsMeshReady()) HideIn(chunk, hideTime);
 
                 return areChildrenFullyVisible;
             }
@@ -252,11 +333,11 @@ namespace MyGame
                 if (chunk.IsMeshReady() == false) chunk.RequestMeshGeneration();
                 if (chunk.IsMeshReady())
                 {
-                    if (chunk.renderer.GetVisibility() != 1)
+                    if (GetVisibility(chunk) != 1)
                     {
                         // is not visible
                         // show it
-                        chunk.renderer.ShowIn(showTime);
+                        ShowIn(chunk, showTime);
                     }
                     else {
                         // is visible
@@ -266,7 +347,7 @@ namespace MyGame
                         HideChildsIn(chunk, hideTime);
                     }
                 }
-                return chunk.IsMeshReady() && chunk.renderer.GetVisibility() == 1;
+                return chunk.IsMeshReady() && GetVisibility(chunk) == 1;
             }
 
         }

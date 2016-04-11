@@ -10,7 +10,7 @@ using MyEngine;
 
 namespace MyEngine.Components
 {
-    public class Component
+    public class Component : IComponent
     {
         public Component(Entity entity)
         {
@@ -29,7 +29,6 @@ namespace MyEngine.Components
             }
         }
         private Entity m_entity;
-
         
     }
 }

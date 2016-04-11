@@ -11,10 +11,10 @@ namespace MyEngine.Events
         Dictionary<Type, Delegate> typeToCallbacks = new Dictionary<Type, Delegate>();
         HashSet<Delegate> allDelegates = new HashSet<Delegate>();
 
-        public event Action<EventBase> OnAnyEventCalled;
+        public event Action<IEvent> OnAnyEventCalled;
 
 
-        public void Raise(EventBase evt)
+        public void Raise(IEvent evt)
         {
             Delegate delegat;
             var type = evt.GetType();
@@ -25,27 +25,26 @@ namespace MyEngine.Events
             if (OnAnyEventCalled != null) OnAnyEventCalled(evt);
         }
 
-        public void Register<T>(Action<T> callback) where T : EventBase
+        public void Register<T>(Action<T> callback) where T : IEvent
         {
             lock(allDelegates)
             {
                 if (allDelegates.Contains(callback)) return;
                 allDelegates.Add(callback);
 
-                Delegate callbackToCombineTo;
+                Delegate callbackToCombine;
                 var type = typeof(T);
-                if (typeToCallbacks.TryGetValue(type, out callbackToCombineTo) == false)
+                if (typeToCallbacks.TryGetValue(type, out callbackToCombine) == false)
                 {
-                    callbackToCombineTo = callback;
-                    typeToCallbacks[type] = callbackToCombineTo;
+                    typeToCallbacks[type] = callback;
                 }
                 else {
-                    System.Delegate.Combine(callbackToCombineTo, callback);
+                    typeToCallbacks[type] = System.Delegate.Combine(callbackToCombine, callback);
                 }
             }
         }
 
-        public void Unregister<T>(Action<T> callback) where T : EventBase
+        public void Unregister<T>(Action<T> callback) where T : IEvent
         {
             lock(allDelegates)
             {

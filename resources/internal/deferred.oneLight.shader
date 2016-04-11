@@ -149,7 +149,7 @@ float GetShadowValue(vec3 position) {
 
 
 vec3 GetAmbientLight(vec3 normal) {
-	return vec3(0.2);
+	return engine.ambientColor;
 }
 
 
@@ -163,24 +163,26 @@ void main()
 
 	GBufferPerPixel gBuffer = GetGBufferPerPixel(screenCoord);
 
-	vec3 color;
 
 	// skybox, just pass thru color
 	if (gBuffer.normal==vec3(0,0,0)) {
-		if(light.lightIndex == 0) out_color = vec4(gBuffer.color, 1);
+		if(light.lightIndex == 0) {
+			out_color = vec4(gBuffer.color, 1);
+		}
 		else out_color = vec4(0, 0, 0, 1);
 		//out_color = vec4(gBuffer.color, 1);
 		return;
 	}
 
-	//if(light.lightIndex == 0) color = GetAmbientLight(gBuffer.normal);
+
+	vec3 lightColor = GetAmbientLight(gBuffer.normal);
 
 	//float shadowValue = GetShadowValue(gBuffer.position);
 	float shadowValue = GetShadowValue2(screenCoord);
-	//if(shadowValue>0) color += shadowValue * CookTorence(gBuffer.position, gBuffer.normal, gBuffer.metallic, gBuffer.smoothness);
-	if(shadowValue>0) color += gBuffer.color * shadowValue * PhongShader(gBuffer.position, gBuffer.normal, gBuffer.metallic, gBuffer.smoothness);
+	//if(shadowValue>0) lightColor += shadowValue * CookTorence(gBuffer.position, gBuffer.normal, gBuffer.metallic, gBuffer.smoothness);
+	if(shadowValue>0) lightColor += shadowValue * PhongShader(gBuffer.position, gBuffer.normal, gBuffer.metallic, gBuffer.smoothness);
 
-	out_color = vec4( color, 1);
+	out_color = vec4( gBuffer.color * lightColor, 1);
 	//out_color = vec4( gBuffer.color, 1);
 	//out_color = vec4(vec3(shadowValue), 1);
 

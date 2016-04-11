@@ -87,7 +87,7 @@ namespace MyEngine.Components
 
 namespace MyEngine.Events
 {
-    public abstract class CollisionBase : EventBase
+    public abstract class CollisionBase : IEvent
     {
         public class ContactPoint
         {

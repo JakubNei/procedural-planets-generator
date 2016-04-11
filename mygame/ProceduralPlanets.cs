@@ -23,20 +23,26 @@ namespace MyGame
         {
             this.scene = scene;
             Start();
+            scene.EventSystem.Register((MyEngine.Events.GraphicsUpdate e) => OnGraphicsUpdate());
         }
 
         void Start()
         {
 
+            Material planetMaterial = null;
 
-            /*
-            planetShader = Shader::Get("shaders/planet.shader");
-            var planetMaterial = new Material(planetShader);
-            planetMaterial.SetTexture("grass", Texture2D::Get("textures/grass.jpg"));
-            planetMaterial.SetTexture("rock", Texture2D::Get("textures/rock.jpg"));
-            planetMaterial.SetTexture("snow", Texture2D::Get("textures/snow.jpg"));
-            planetMaterial.SetTexture("perlinNoise", Texture2D::Get("textures/perlin_noise.png"));
-            */
+
+            var planetShader = Factory.GetShader("shaders/planet.shader");
+            planetMaterial = new Material();
+            planetMaterial.GBufferShader = planetShader;
+            planetMaterial.Uniforms.Set("param_grass", Factory.GetTexture2D("textures/grass.jpg"));
+            planetMaterial.Uniforms.Set("param_rock", Factory.GetTexture2D("textures/rock.jpg"));
+            planetMaterial.Uniforms.Set("param_snow", Factory.GetTexture2D("textures/snow.jpg"));
+            planetMaterial.Uniforms.Set("param_perlinNoise", Factory.GetTexture2D("textures/perlin_noise.png"));
+            
+
+
+
 
 
             PlanetaryBody planet;
@@ -46,17 +52,16 @@ namespace MyGame
             planet.radius = 150;
             planet.radiusVariation = 7;
             planet.Transform.Position = new Vector3(-2500, 200, 0);
-            //planet.planetMaterial = planetMaterial;
+            planet.planetMaterial = planetMaterial;
             planet.Start();
             planets.Add(planet);
-            //terrainMaterial.SetTexture("heightMap",Texture2D::Get("textures/perlin_noise.png"));
 
             planet = scene.AddEntity().AddComponent<PlanetaryBody>();
             planet.radius = 100;
             planet.radiusVariation = 5;
             planet.Transform.Position = new Vector3(-2000, 50, 0);
             planet.Start();
-            //planet.planetMaterial = planetMaterial;
+            planet.planetMaterial = planetMaterial;
             planets.Add(planet);
 
             planet = scene.AddEntity().AddComponent<PlanetaryBody>();
@@ -67,12 +72,11 @@ namespace MyGame
             planet.subdivisionSphereRadiusModifier = 0.5f;
             planet.Transform.Position = new Vector3(1000, -100, 1000);
             planet.Start();
-            //planet.planetMaterial = planetMaterial;
+            planet.planetMaterial = planetMaterial;
             planets.Add(planet);
 
             cam.Transform.Position = new Vector3(-planet.radius, 0, 0) + planet.Transform.Position;
 
-            scene.EventSystem.Register((MyEngine.Events.GraphicsUpdate e) => OnGraphicsUpdate());
         }
 
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.ComponentModel;
 
 using MyEngine;
 using MyEngine.Components;
@@ -12,22 +13,40 @@ namespace MyEngine
 {
     public class SceneSystem : GameSystemBase
     {
-        public IReadOnlyCollection<Entity> Entities
+        public SparseList<Entity> Entities
         {
             get
             {
-                return entities.AsReadOnly();
+                return entities;
             }
         }
 
-        public IReadOnlyCollection<Light> Lights
+        public SparseList<Light> Lights
         {
             get
             {
-                return lights.AsReadOnly();
+                return lights;
+            }
+        }
+        public SparseList<Renderer> Renderers
+        {
+            get
+            {
+                return geometryRenderers;
+            }
+        }
+        public SparseList<Renderer> ShadowCasters
+        {
+            get
+            {
+                return shadowCasters;
             }
         }
 
+
+
+        public ISynchronizeInvoke SynchronizeInvoke { get; private set; }
+        DeferredSynchronizeInvoke.Owner deferredSynchronizeInvokeOwner;
 
         public EventSystem EventSystem { get; private set; }
         public EngineMain Engine { get; private set; }
@@ -43,20 +62,29 @@ namespace MyEngine
 
 
 
-        List<Entity> entities = new List<Entity>();
-        List<Light> lights = new List<Light>();
+        SparseList<Entity> entities = new SparseList<Entity>();
+        SparseList<Light> lights = new SparseList<Light>();
+        SparseList<Renderer> geometryRenderers = new SparseList<Renderer>();
+        SparseList<Renderer> shadowCasters = new SparseList<Renderer>();
 
         public SceneSystem(EngineMain engine)
         {
             this.Engine = engine;
             this.EventSystem = new EventSystem();
-            this.EventSystem.OnAnyEventCalled += (EventBase evt) =>
+            this.EventSystem.OnAnyEventCalled += (IEvent evt) =>
             {
                 foreach(var e in entities)
                 {
                     e.EventSystem.Raise(evt);
                 }
             };
+
+            deferredSynchronizeInvokeOwner = new DeferredSynchronizeInvoke.Owner();
+            SynchronizeInvoke = new DeferredSynchronizeInvoke(deferredSynchronizeInvokeOwner);
+            EventSystem.Register((Events.GraphicsUpdate evt) =>
+            {
+                deferredSynchronizeInvokeOwner.ProcessQueue();
+            });
         }
 
         public Entity AddEntity(string name = "unnamed entity")
@@ -94,7 +122,43 @@ namespace MyEngine
                 lights.Remove(light);
             }
         }
-        public void Render()
+        public void AddGeometry(Renderer renderer)
+        {
+            lock(geometryRenderers)
+            {
+                geometryRenderers.Add(renderer);
+            }
+        }
+        public void RemoveGeometry(Renderer renderer)
+        {
+            lock(geometryRenderers)
+            {
+                geometryRenderers.Remove(renderer);
+            }
+        }
+        public void AddShadowCaster(Renderer renderer)
+        {
+            lock (shadowCasters)
+            {
+                shadowCasters.Add(renderer);
+            }
+        }
+        public void RemoveShadowCaster(Renderer renderer)
+        {
+            lock (shadowCasters)
+            {
+                shadowCasters.Remove(renderer);
+            }
+        }
+
+
+        public class RenderSettings
+        {
+
+        }
+
+
+        public void Render(RenderSettings settings)
         {
 
         }

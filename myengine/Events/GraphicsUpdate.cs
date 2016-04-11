@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace MyEngine.Events
 {
-    public class GraphicsUpdate : EventBase
+    public class GraphicsUpdate : IEvent
     {
         public double DeltaTime
         {

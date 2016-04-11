@@ -14,66 +14,22 @@ namespace MyGame
 {
     public class PlanetaryBodyChunk
     {
-        /*
-        PlanetaryBodyChunk(PlanetaryBody* planetInfo, PlanetaryBodyChunk* parent);
-        ~PlanetaryBodyChunk();
-        int subdivisionDepth;
-        vector<PlanetaryBodyChunk*> childs;
-        Triangle range;
-        Triangle visibilityCollisionRange;
-        PlanetaryBody* planetInfo;
-        PlanetaryBodyChunk* parentChunk;
-        bool childsCreates;
-        Renderer* renderer;
-
-        Vector3 GetCenterPos();
-
-        void SubDivide();
-        bool IsMeshReady();
-        void RequestMeshGeneration();
-        void StopMeshGeneration();
-
-        private:
-
-	    void CreateRendererAndGenerateMesh();
-
-        class MeshGenerationService : public Scheduled
-	    {
-	    public:
-
-		    ~MeshGenerationService();
-
-            int generationThreadMiliSecondsSleep;
-
-            mutable shared_timed_mutex chunkIsBeingGenerated_mutex;
-		    unordered_set<PlanetaryBodyChunk*> chunkIsBeingGenerated;
-
-            mutable shared_timed_mutex chunkToPriority_mutex;
-		    unordered_map<PlanetaryBodyChunk*, float> chunkToPriority;
-
-            vector<thread*> threads;
-
-            bool doRun;
-            void Start();
-            void ThreadMain(uint threadIndex);
-            void RequestGenerationOfMesh(PlanetaryBodyChunk*, float priorityAdd = 1);
-            void DoesNotNeedMeshGeneration(PlanetaryBodyChunk*);
-        };
-        static MeshGenerationService* meshGenerationService;
-    */
         public Triangle range;
         public Triangle visibilityCollisionRange;
         public List<PlanetaryBodyChunk> childs = new List<PlanetaryBodyChunk>();
         public MeshRenderer renderer;
 
+        public float hideIn;
+        public float showIn;
+        public float visibility;
+
         int subdivisionDepth;
-        PlanetaryBody planetInfo;
-        PlanetaryBodyChunk parentChunk;
-        bool childsCreates;
+        PlanetaryBody planetaryBody;
+        PlanetaryBodyChunk parentChunk;      
 
         public PlanetaryBodyChunk(PlanetaryBody planetInfo, PlanetaryBodyChunk parentChunk)
         {
-            this.planetInfo = planetInfo;
+            this.planetaryBody = planetInfo;
             this.parentChunk = parentChunk;
             childs.Clear();
         }
@@ -96,15 +52,15 @@ namespace MyGame
 
         void MAKE_CHILD(Vector3 A, Vector3 B, Vector3 C) {
 
-            var child = new PlanetaryBodyChunk(planetInfo, this);
+            var child = new PlanetaryBodyChunk(planetaryBody, this);
             childs.Add(child);
             child.subdivisionDepth = subdivisionDepth + 1;
             child.range.a = A;
             child.range.b = B;
             child.range.c = C;
-            child.visibilityCollisionRange.a = planetInfo.GetFinalPos(child.range.a);
-            child.visibilityCollisionRange.b = planetInfo.GetFinalPos(child.range.b);
-            child.visibilityCollisionRange.c = planetInfo.GetFinalPos(child.range.c);
+            child.visibilityCollisionRange.a = planetaryBody.GetFinalPos(child.range.a);
+            child.visibilityCollisionRange.b = planetaryBody.GetFinalPos(child.range.b);
+            child.visibilityCollisionRange.c = planetaryBody.GetFinalPos(child.range.c);
         }
 
         public void SubDivide()
@@ -114,9 +70,9 @@ namespace MyGame
                 var a = range.a;
                 var b = range.b;
                 var c = range.c;
-                var ab = (a + b).Divide(2.0f).Normalized().Multiply(planetInfo.radius);
-                var ac = (a + c).Divide(2.0f).Normalized().Multiply(planetInfo.radius);
-                var bc = (b + c).Divide(2.0f).Normalized().Multiply(planetInfo.radius);
+                var ab = (a + b).Divide(2.0f).Normalized().Multiply(planetaryBody.radius);
+                var ac = (a + c).Divide(2.0f).Normalized().Multiply(planetaryBody.radius);
+                var bc = (b + c).Divide(2.0f).Normalized().Multiply(planetaryBody.radius);
 
                 MAKE_CHILD(a, ab, ac);
                 MAKE_CHILD(ab, b, bc);
@@ -130,7 +86,7 @@ namespace MyGame
         int numbetOfChunksGenerated = 0;
         void CreateRendererAndGenerateMesh()
         {
-            int numberOfVerticesOnEdge = planetInfo.chunkNumberOfVerticesOnEdge;
+            int numberOfVerticesOnEdge = planetaryBody.chunkNumberOfVerticesOnEdge;
 
             var mesh = new Mesh();// "PlanetaryBodyChunk depth:" + subdivisionDepth + " #" + numbetOfChunksGenerated);
             numbetOfChunksGenerated++;
@@ -230,12 +186,12 @@ namespace MyGame
             // add procedural heights
             for (int i = 0; i < vertices.Count; i++)
             {
-                mesh.vertices[i] = planetInfo.GetFinalPos(mesh.vertices[i]);
+                mesh.vertices[i] = planetaryBody.GetFinalPos(mesh.vertices[i]);
             }
             mesh.RecalculateNormals();
 
             // the deeper chunk it the less the multiplier should be
-            var skirtMultiplier = 0.95f + 0.05f * subdivisionDepth / (planetInfo.subdivisionRecurisonDepth + 2);
+            var skirtMultiplier = 0.95f + 0.05f * subdivisionDepth / (planetaryBody.subdivisionRecurisonDepth + 2);
             skirtMultiplier = MyMath.Clamp(skirtMultiplier, 0.95f, 1.0f);
 
 
@@ -282,10 +238,11 @@ namespace MyGame
 
             mesh.RecalculateBounds();
 
-            renderer = planetInfo.Entity.AddComponent<MeshRenderer>();
+            renderer = planetaryBody.Entity.AddComponent<MeshRenderer>();
             renderer.Mesh = mesh;
-            //renderer.material = planetInfo.planetMaterial;
-            renderer.HideIn(0);
+
+            if(planetaryBody.planetMaterial != null) renderer.material = planetaryBody.planetMaterial.MakeCopy();
+            //planetaryBody.HideIn(this, 0);
 
         }
 
@@ -297,13 +254,13 @@ namespace MyGame
 
         public void RequestMeshGeneration()
         {
-            var cam = planetInfo.Entity.Scene.mainCamera;
+            var cam = planetaryBody.Entity.Scene.mainCamera;
 
 
             // help from http://stackoverflow.com/questions/3717226/radius-of-projected-sphere
             var sphere = visibilityCollisionRange.ToBoundingSphere();
             var radiusWorldSpace = sphere.radius;
-            var sphereDistanceToCameraWorldSpace = cam.Transform.Position.Distance(planetInfo.Transform.TransformPoint(sphere.center));
+            var sphereDistanceToCameraWorldSpace = cam.Transform.Position.Distance(planetaryBody.Transform.TransformPoint(sphere.center));
             var fov = cam.fieldOfView;
             var radiusCameraSpace = radiusWorldSpace * MyMath.Cot(fov / 2) / sphereDistanceToCameraWorldSpace;
             var priority = sphereDistanceToCameraWorldSpace;
@@ -335,7 +292,7 @@ namespace MyGame
 
             void Start()
             {
-                generationThreadMiliSecondsSleep = 50;
+                generationThreadMiliSecondsSleep = 1;
                 chunkToPriority.Clear();
                 doRun = true;
                 int numThreads = Environment.ProcessorCount;

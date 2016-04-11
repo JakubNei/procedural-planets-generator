@@ -14,14 +14,14 @@ using MyEngine.Components;
 
 namespace MyGame
 {
-    public class SSAO : MonoBehaviour
+    public class SSAO : ComponentWithShortcuts
     {
         public SSAO(Entity entity) : base(entity)
         {
 
             //var shader = Factory.GetShader("postProcessEffects/SSAO.shader");
 
-            //shader.SetUniform("testColor", new Vector3(0, 1, 0));
+            //shader.Uniform.Set("testColor", new Vector3(0, 1, 0));
 
             //Camera.main.AddPostProcessEffect(shader);
             Entity.EventSystem.Register<GraphicsUpdate>(e => Update(e.DeltaTime));

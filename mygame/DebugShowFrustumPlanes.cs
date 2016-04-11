@@ -12,7 +12,7 @@ using MyEngine.Components;
 
 namespace MyGame
 {
-    public class DebugShowFrustumPlanes : MonoBehaviour
+    public class DebugShowFrustumPlanes : ComponentWithShortcuts
     {
         List<Entity> gos = new List<Entity>();
 

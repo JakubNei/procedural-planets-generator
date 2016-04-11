@@ -31,6 +31,7 @@ namespace MyEngine
             public vec2 screenSize;
             public float nearClipPlane;
             public float farClipPlane;
+            public vec3 ambientColor;
         }
         public EngineUniformStruct engine;
         public UniformBufferObject<EngineUniformStruct> engineUBO;
@@ -77,9 +78,9 @@ namespace MyEngine
 
         public void SetUniformBuffers(Shader shader)
         {
-            shader.SetUniformBuffer("engine_block", engineUBO.GetBufferIndex());
-            shader.SetUniformBuffer("model_block", modelUBO.GetBufferIndex());
-            shader.SetUniformBuffer("light_block", lightUBO.GetBufferIndex());
+            shader.SetUniformBlockBufferIndex("engine_block", engineUBO.GetBufferIndex());
+            shader.SetUniformBlockBufferIndex("model_block", modelUBO.GetBufferIndex());
+            shader.SetUniformBlockBufferIndex("light_block", lightUBO.GetBufferIndex());
         }
 
 
@@ -109,7 +110,8 @@ namespace MyEngine
                 T d = getData();
                 GL.BindBuffer(BufferTarget.UniformBuffer, bufferUBO);
                 GL.BufferSubData(BufferTarget.UniformBuffer, (IntPtr)0, (IntPtr)(size), ref d);
-                GL.BindBuffer(BufferTarget.UniformBuffer, 0);
+
+                GL.BindBuffer(BufferTarget.UniformBuffer, 0); //unbind
             }
 
  

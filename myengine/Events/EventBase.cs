@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace MyEngine.Events
 {
-    public class EventBase
+    public interface IEvent
     {
     }
 }

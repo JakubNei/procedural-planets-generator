@@ -9,24 +9,51 @@ using OpenTK.Graphics.OpenGL;
 
 namespace MyEngine.Components
 {
+
+    [Flags]
+    public enum RenderingMode
+    {
+        DontRender = 0,
+        RenderGeometry = (1 << 1),
+        CastShadows = (1 << 2),
+        RenderGeometryAndCastShadows = (1 << 1) | (1 << 2),
+    }
+
     public class MeshRenderer : Renderer
     {
-        public override bool ShouldRenderGeometry { get { return base.ShouldRenderGeometry && Material.gBufferShader != null; } }
-        public override bool ShouldCastShadows { get { return base.ShouldCastShadows && Material.depthGrabShader != null; } }
+        public override bool ShouldRenderGeometry
+        {
+            get
+            {
+                return base.ShouldRenderGeometry && Mesh != null && Mesh.IsRenderable && Material.GBufferShader != null;
+            }
+        }
 
+        public override bool ShouldCastShadows
+        {
+            get
+            {
+                return base.ShouldCastShadows && Mesh != null && Mesh.IsRenderable && Material.DepthGrabShader != null;
+            }
+        }
+
+
+        
 
         Mesh m_mesh;
         public Mesh Mesh
         {
             set
             {
-                m_mesh = value;
-                m_mesh.OnChanged += OnMeshHasChanges;
-                Entity.RaiseOnChanged(ChangedFlags.VisualRepresentation);
+                if (m_mesh != value)
+                {
+                    if (m_mesh != null) m_mesh.OnChanged -= OnMeshHasChanged;
+                    m_mesh = value;
+                    if (m_mesh != null) m_mesh.OnChanged += OnMeshHasChanged;
+                }
             }
             get
             {
-                m_mesh.OnChanged -= OnMeshHasChanges;
                 return m_mesh;
             }
         }
@@ -37,7 +64,7 @@ namespace MyEngine.Components
             {
                 base.material = value;
                 m_material = value;
-                Entity.RaiseOnChanged(ChangedFlags.VisualRepresentation);
+                ShouldRenderGeometryOrShouldCastShadowsHasChanged();
             }
 
             get
@@ -60,11 +87,7 @@ namespace MyEngine.Components
 
         public MeshRenderer(Entity entity) : base(entity)
         {
-            Material = new MaterialPBR()
-            {
-                gBufferShader = Factory.GetShader("internal/deferred.gBuffer.standart.shader"),
-                depthGrabShader = Factory.GetShader("internal/depthGrab.standart.shader"),
-            };
+            Material = new MaterialPBR();
         }
 
         /// <summary>
@@ -108,11 +131,10 @@ namespace MyEngine.Components
             Mesh.Draw();
         }
 
-        void OnMeshHasChanges(ChangedFlags flags)
+        void OnMeshHasChanged(Mesh.ChangedFlags flags)
         {
-            Entity.RaiseOnChanged(flags);
+            ShouldRenderGeometryOrShouldCastShadowsHasChanged();
         }
-
 
     }
 }

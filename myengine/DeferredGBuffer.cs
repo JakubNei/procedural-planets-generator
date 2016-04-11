@@ -105,12 +105,12 @@ namespace MyEngine
             if(readFirstFinalTexture) GL.DrawBuffer(DrawBufferMode.ColorAttachment5);
             else GL.DrawBuffer(DrawBufferMode.ColorAttachment4);
 
-            shader.SetUniform("gBufferUniform.depthBuffer", depthTexture);
-            shader.SetUniform("gBufferUniform.final", finalTextureToRead);            
+            shader.Uniforms.Set("gBufferUniform.depthBuffer", depthTexture);
+            shader.Uniforms.Set("gBufferUniform.final", finalTextureToRead);            
 
             for (int i = 0; i < textures.Length - 2; i++)
             {
-                shader.SetUniform("gBufferUniform." + ((GBufferTextures)i).ToString().ToLower(), textures[i]);
+                shader.Uniforms.Set("gBufferUniform." + ((GBufferTextures)i).ToString().ToLower(), textures[i]);
 
                 /* // !!!!! WASTED AROUND 10 HOURS, BEFOURE I FOUND THE BUG IS HERE OMFG !!!!!! old wrong code below, when used i could not make diffuse lighting in deferred lighting pass
                 if (shader.SetParam("G" + enums[i].ToLower(), texturingUnit))

@@ -13,6 +13,7 @@ layout(std140) uniform engine_block {
 	vec2 screenSize;
 	float nearClipPlane;
 	float farClipPlane;
+	vec3 ambientColor;
 } engine;
 
 

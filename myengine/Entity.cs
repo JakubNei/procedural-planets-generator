@@ -20,7 +20,7 @@ namespace MyEngine
         public SceneSystem Scene { get; private set; }
         public InputSystem Input { get; private set; }
 
-        public IReadOnlyList<Component> Components
+        public IReadOnlyList<IComponent> Components
         {
             get
             {
@@ -29,7 +29,7 @@ namespace MyEngine
         }
 
 
-        List<Component> components = new List<Component>();
+        List<IComponent> components = new List<IComponent>();
 
 
         public Entity(SceneSystem scene, string name = "")
@@ -40,9 +40,9 @@ namespace MyEngine
             EventSystem = new EventSystem();
         }
 
-        public T GetComponent<T>() where T : Component
+        public T GetComponent<T>() where T : class
         {
-            lock(components)
+            lock (components)
             {
                 foreach (var c in components)
                 {
@@ -55,10 +55,10 @@ namespace MyEngine
             return null;
         }
 
-        public T[] GetComponents<T>() where T : Component
+        public List<T> GetComponents<T>() where T : class, IComponent
         {
             List<T> ret = new List<T>();
-            lock(components)
+            lock (components)
             {
                 foreach (var c in components)
                 {
@@ -68,19 +68,22 @@ namespace MyEngine
                     }
                 }
             }
-            return ret.ToArray();
+            return ret;
         }
+
 
         public T AddComponent<T>() where T : Component
         {
-            if (typeof(T) == typeof(Transform))
-            {
+            var componentSettingAttribute = typeof(T).GetCustomAttribute<ComponentSettingAttribute>(true);
+            if(componentSettingAttribute != null && componentSettingAttribute.allowMultiple == false)
+            {                
                 if (GetComponent<T>() != null)
                 {
-                    Debug.Warning("Attempting to add " + typeof(Transform) + " component, but one is already on this " + typeof(Entity));
+                    Debug.Warning("Attempting to add " + typeof(T) + " component, but " + typeof(ComponentSettingAttribute) + " allows only one component of this type per " + typeof(Entity) + ".");
                     return null;
                 }
             }
+
             T c = System.Activator.CreateInstance(typeof(T), this) as T;
             lock (components)
             {
@@ -89,14 +92,15 @@ namespace MyEngine
             return c;
         }
 
-        public void DestroyComponent(Component component)
+        public void DestroyComponent(IComponent component)
         {
-            lock(components)
+            lock (components)
             {
                 if (components.Contains(component))
                 {
                     components.Remove(component);
-                } else
+                }
+                else
                 {
                     return;
                 }
@@ -108,17 +112,9 @@ namespace MyEngine
         }
 
 
-
-        public Action<ChangedFlags> OnChanged;
-
-        internal void RaiseOnChanged(ChangedFlags flags)
-        {
-            if (OnChanged != null) OnChanged(flags);
-        }
-
         public void Dispose()
         {
-            foreach(var c in components)
+            foreach (var c in components)
             {
                 DestroyComponent(c);
             }
@@ -128,7 +124,7 @@ namespace MyEngine
 
     public enum ChangedFlags
     {
-        Position = 1<<0,
+        Position = 1 << 0,
         Rotation = 1 << 1,
         Scale = 1 << 2,
         Bounds = 1 << 3,
@@ -137,4 +133,5 @@ namespace MyEngine
         PhysicalShape = 1 << 6,
         All = 0xffff
     }
+
 }

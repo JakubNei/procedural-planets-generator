@@ -13,7 +13,7 @@ using MyEngine.Components;
 
 namespace MyGame
 {
-    class MoveWithArrowKeys : MonoBehaviour
+    class MoveWithArrowKeys : ComponentWithShortcuts
     {
 
         public float velocityChangeSpeed = 10.0f;

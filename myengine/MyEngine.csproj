@@ -53,11 +53,31 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Components\ComponentSettingAttribute.cs" />
+    <Compile Include="Components\IComponent.cs" />
     <Compile Include="DataAccessibleList.cs" />
+    <Compile Include="DeferredSynchronizeInvoke.cs" />
     <Compile Include="enums.cs" />
     <Compile Include="Events\EventBase.cs" />
     <Compile Include="Events\EventSystem.cs" />
     <Compile Include="Events\GraphicsUpdate.cs" />
+    <Compile Include="Extensions\ActionExtensions.cs" />
+    <Compile Include="Extensions\ArrayExtensions.cs" />
+    <Compile Include="Extensions\AssemblyExtensions.cs" />
+    <Compile Include="Extensions\BoolExtensions.cs" />
+    <Compile Include="Extensions\ByteExtensions.cs" />
+    <Compile Include="Extensions\DoubleExtensions.cs" />
+    <Compile Include="Extensions\EnumerableExtensions.cs" />
+    <Compile Include="Extensions\EnumExtensions.cs" />
+    <Compile Include="Extensions\FloatExtensions.cs" />
+    <Compile Include="Extensions\ICollectionExtensions.cs" />
+    <Compile Include="Extensions\IDictionaryExtensions.cs" />
+    <Compile Include="Extensions\IListExtensions.cs" />
+    <Compile Include="Extensions\IntExtensions.cs" />
+    <Compile Include="Extensions\JaggedArrayExtensions.cs" />
+    <Compile Include="Extensions\StringExtensions.cs" />
+    <Compile Include="Extensions\TypeExtensions.cs" />
+    <Compile Include="FileChangedWatcher.cs" />
+    <Compile Include="ITest1.cs" />
     <Compile Include="MyMath.cs" />
     <Compile Include="Perlin.cs" />
     <Compile Include="QuaternionUtility.cs" />
@@ -82,7 +102,7 @@
     <Compile Include="Material.cs" />
     <Compile Include="MaterialPBR.cs" />
     <Compile Include="Mesh.cs" />
-    <Compile Include="Components\MonoBehaviour.cs" />
+    <Compile Include="Components\ComponentWithShortcuts.cs" />
     <Compile Include="ObjLoader.cs" />
     <Compile Include="EngineMain.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -98,6 +118,8 @@
     <Compile Include="Shader.cs" />
     <Compile Include="ShadowMap.cs" />
     <Compile Include="Components\_SpringJoint.cs" />
+    <Compile Include="SparseList.cs" />
+    <Compile Include="SparseValueList.cs" />
     <Compile Include="Sphere.cs" />
     <Compile Include="Panels\TimeGraph.cs">
       <SubType>Form</SubType>
@@ -112,14 +134,22 @@
     <Compile Include="GameSystems\SceneSystem.cs" />
     <Compile Include="Triangle.cs" />
     <Compile Include="UniformBlock.cs" />
+    <Compile Include="UniformsManager.cs" />
     <Compile Include="UnloadFactory.cs" />
-    <Compile Include="ExtensionMethods.cs" />
+    <Compile Include="Extensions\OpenTK\Vector3Extensions.cs" />
+    <Compile Include="Utils\ArrayUtil.cs" />
+    <Compile Include="Utils\DiagnosticsUtil.cs" />
+    <Compile Include="Utils\FormatUtils.cs" />
+    <Compile Include="Utils\MemberName.cs" />
+    <Compile Include="Utils\Require.cs" />
+    <Compile Include="Utils\TraceUtil.cs" />
     <Compile Include="Worley.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
     <Compile Include="ObjLoader.MaterialLibrary.cs" />
     <None Include="packages.config" />
+    <Compile Include="Shader.Builder.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\BEPUik\BEPUik.csproj">

@@ -10,7 +10,7 @@ using OpenTK;
 
 namespace MyGame
 {
-    class LightMovement : MonoBehaviour
+    class LightMovement : ComponentWithShortcuts
     {
 
         public Vector3 offset = new Vector3(0, 10, 0);

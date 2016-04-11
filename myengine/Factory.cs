@@ -16,7 +16,6 @@ namespace MyEngine
             if (!allShaders.TryGetValue(resource, out s))
             {
                 s = new Shader(resource);
-                s.Load(resource);
                 allShaders[resource] = s;
                 UnloadFactory.Add(s);                
             }

@@ -9,7 +9,7 @@ using MyEngine.Components;
 
 namespace MyGame
 {
-    public class DrawBounds : MonoBehaviour
+    public class DrawBounds : ComponentWithShortcuts
     {
         public Transform drawForThisTransform;
 

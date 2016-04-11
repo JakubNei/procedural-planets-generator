@@ -10,7 +10,7 @@ using OpenTK;
 
 namespace MyGame
 {
-    public class VisualizePosition : MonoBehaviour
+    public class VisualizePosition : ComponentWithShortcuts
     {
 
 

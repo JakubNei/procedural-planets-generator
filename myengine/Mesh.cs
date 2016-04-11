@@ -46,6 +46,11 @@ namespace MyEngine
 
     public class Mesh : IUnloadable
     {
+        public enum ChangedFlags
+        {
+            Bounds,
+            VisualRepresentation
+        }
 
         public Vector3[] vertices { set { isOnGPU = false; recalculateBounds = true; m_vertices = value; } get { return m_vertices; } }
         public Vector3[] normals { set { isOnGPU = false; m_normals = value; } get { return m_normals; } }
@@ -54,8 +59,8 @@ namespace MyEngine
         public int[] triangleIndicies { set { isOnGPU = false; m_triangleIndicies = value; } get { return m_triangleIndicies; } }
 
 
-        internal Action<ChangedFlags> OnChanged;
-        internal void RaiseOnChanged(ChangedFlags flags)
+        public event Action<ChangedFlags> OnChanged;
+        void RaiseOnChanged(ChangedFlags flags)
         {
             if (OnChanged != null) OnChanged(flags);
         }
@@ -85,24 +90,28 @@ namespace MyEngine
                         {
                             _bounds.Encapsulate(point);
                         }
+                        RaiseOnChanged(ChangedFlags.Bounds);
                     }
                     else
                     {
                         _bounds = new Bounds(Vector3.Zero, Vector3.Zero);
+                        RaiseOnChanged(ChangedFlags.Bounds);
                     }
                 }
 
                 return _bounds;
             }
-            set
-            {
-                RaiseOnChanged(ChangedFlags.Bounds);
-                _bounds = value;
-            }
-
         }
         Bounds _bounds;
+        
 
+        public bool IsRenderable
+        {
+            get
+            {
+                return true;
+            }
+        }
 
         bool isOnGPU = false;
         internal ResourcePath resource;

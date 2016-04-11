@@ -92,8 +92,9 @@ namespace MyEngine.Components
             var s = size * Entity.Transform.Scale;
             collisionEntity = new BEPUphysics.Entities.Prefabs.Box(Entity.Transform.Position + center.RotateBy(Entity.Transform.Rotation), s.X, s.Y, s.Z);
 
-            Entity.OnChanged += OnChanged;
-            Entity.RaiseOnChanged(ChangedFlags.All);
+            // TODO
+            // Entity.OnChanged += OnChanged;
+            // Entity.RaiseOnChanged(ChangedFlags.All);
 
         }
 

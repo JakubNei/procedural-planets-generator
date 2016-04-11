@@ -33,7 +33,7 @@ namespace MyEngine
 
             VSync = VSyncMode.Off;
 
-            Texture2D.InitTexture2D();
+            //Texture2D.InitTexture2D();
             UnloadFactory.Set(ref ubo, new UniformBlock());
             new PhysicsUsage.PhysicsManager();
             Input = new InputSystem(this);
@@ -77,6 +77,8 @@ namespace MyEngine
             // Other state
             GL.Enable(EnableCap.Texture2D);
             GL.Hint(HintTarget.PerspectiveCorrectionHint, HintMode.Nicest);
+            GL.Enable(EnableCap.Multisample);
+            
 
             //GL.ClearColor(System.Drawing.Color.MidnightBlue);
             GL.ClearColor(System.Drawing.Color.Black);
@@ -133,11 +135,11 @@ namespace MyEngine
             var shader = Factory.GetShader("internal/debugDrawTexture.shader");
             shader.Bind();
 
-            shader.SetUniform("debugDrawTexture", texture);
-            shader.SetUniform("debugDrawTexturePositionScale", positionScale);
-            shader.SetUniform("debugDrawTexturePositionOffset", positionOffset);
-            shader.SetUniform("debugDrawTextureScale", valueScale);
-            shader.SetUniform("debugDrawTextureOffset", valueOffset);
+            shader.Uniforms.Set("debugDrawTexture", texture);
+            shader.Uniforms.Set("debugDrawTexturePositionScale", positionScale);
+            shader.Uniforms.Set("debugDrawTexturePositionOffset", positionOffset);
+            shader.Uniforms.Set("debugDrawTextureScale", valueScale);
+            shader.Uniforms.Set("debugDrawTextureOffset", valueOffset);
 
             quadMesh.Draw();
         }
@@ -154,13 +156,25 @@ namespace MyEngine
         bool debugBounds = true;
         bool shadowsEnabled = true;
 
+        Queue<DateTime> frameTimes10sec = new Queue<DateTime>();
+        Queue<DateTime> frameTimes1sec = new Queue<DateTime>();
+
         protected override void OnRenderFrame(FrameEventArgs e)
         {
 
             this.Title = string.Join("\t  ", Debug.stringValues.OrderBy(kvp => kvp.Key).Select(kvp => kvp.Key + ":" + kvp.Value).ToArray());
-            
+            {
+                var now = DateTime.Now;
 
-            Debug.AddValue("FPS", (1 / e.Time).ToString("0."));
+                frameTimes10sec.Enqueue(now);
+                while ((now - frameTimes10sec.Peek()).TotalSeconds > 10) frameTimes10sec.Dequeue();
+
+                frameTimes1sec.Enqueue(now);
+                while ((now - frameTimes1sec.Peek()).TotalSeconds > 1) frameTimes1sec.Dequeue();
+
+                Debug.AddValue("FPS(10 sec)", (frameTimes10sec.Count / 10.0f).ToString("0."));
+                Debug.AddValue("FPS(1 sec)", (frameTimes1sec.Count).ToString("0."));
+            }
 
             //GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
@@ -169,7 +183,6 @@ namespace MyEngine
 
             var scene = scenes[0];
 
-            var allLights = scene.Lights;
             var camera = scene.mainCamera;
             var allEntitys = scene.Entities;
 
@@ -192,154 +205,159 @@ namespace MyEngine
 
             var frustrumPlanes = camera.GetFrustumPlanes();
 
-            var allRenderers = new List<Renderer>();
-            foreach (var go in allEntitys)
+            var allRenderers = scene.Renderers;
+            lock (allRenderers)
             {
-                allRenderers.AddRange(go.GetComponents<Renderer>());
-            }
 
+                camera.UploadDataToUBO(ubo); // bind camera view params
+                                             //GL.BeginQuery(QueryTarget.)
 
-            camera.UploadDataToUBO(ubo); // bind camera view params
-            //GL.BeginQuery(QueryTarget.)
-
-            // G BUFFER GRAB PASS
-            {
-                gBuffer.BindAllFrameBuffersForDrawing();
-
-
-                GL.Enable(EnableCap.DepthTest);
-                GL.DepthMask(true);
-                GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit);
-
-                // SKYBOX PASS
+                // G BUFFER GRAB PASS
                 {
-                    GL.DepthRange(0.999, 1);
-                    GL.DepthMask(false);
+                    gBuffer.BindAllFrameBuffersForDrawing();
 
-                    var shader = Factory.GetShader("internal/deferred.skybox.shader");
-                    shader.SetUniform("skyboxCubeMap", skyboxCubeMap);
-                    shader.Bind();
-
-                    skyboxMesh.Draw();
-                    GL.DepthRange(0, 1);
-                }
-
-
-
-                if (drawLines) GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
-                else GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
-
-                // RENDER ALL OBJECTS
-                {
-                    GL.DepthMask(true);
-
-                    GL.Enable(EnableCap.CullFace);
-                    GL.Disable(EnableCap.Blend);
-                    GL.CullFace(CullFaceMode.Back);
-
-                    foreach (var renderer in allRenderers)
-                    {
-                        if (renderer.ShouldRenderGeometry)
-                        {
-                            if(renderer.CanBeFrustumCulled == false || GeometryUtility.TestPlanesAABB(frustrumPlanes, renderer.bounds)) {
-                                renderer.material.BindUniforms();
-                                renderer.material.gBufferShader.Bind();
-                                renderer.UploadUBOandDraw(camera, ubo);
-                                countMeshesRendered++;
-                            }
-                        }
-                    }
-
-                }
-
-                GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
-
-            }
-
-         
-            #region Lights rendering
-
-            int lightIndex = 0;
-
-
-            foreach (var light in allLights)
-            {
-                
-                var shadowMap = light.shadowMap;
-
-                // SHADOW MAAPING
-                if (shadowsEnabled && light.hasShadows)
-                {
-
-                    //GL.Enable(EnableCap.CullFace);
-                    //GL.CullFace(CullFaceMode.Back);
-
-                    shadowMap.FrameBufferForWriting();
 
                     GL.Enable(EnableCap.DepthTest);
                     GL.DepthMask(true);
+                    GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit);
 
-                    shadowMap.Clear();
-
-
-
-                    shadowMap.shadowViewCamera.UploadDataToUBO(ubo);
-
-
-                    foreach (var renderer in allRenderers)
+                    // SKYBOX PASS
                     {
-                        if (renderer.ShouldCastShadows)
+                        GL.DepthRange(0.999, 1);
+                        GL.DepthMask(false);
+
+                        var shader = Factory.GetShader("internal/deferred.skybox.shader");
+                        shader.Uniforms.Set("skyboxCubeMap", skyboxCubeMap);
+                        shader.Bind();
+
+                        skyboxMesh.Draw();
+                        GL.DepthRange(0, 1);
+                    }
+
+
+
+                    if (drawLines) GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
+                    else GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
+
+                    // RENDER ALL OBJECTS
+                    {
+                        GL.DepthMask(true);
+
+                        GL.Enable(EnableCap.CullFace);
+                        GL.Disable(EnableCap.Blend);
+                        GL.CullFace(CullFaceMode.Back);
+
+                        for(int i = 0; i<allRenderers.Count; i++)
                         {
-                            //if (renderer.CanBeFrustumCulled == false || GeometryUtility.TestPlanesAABB(frustrumPlanes, renderer.bounds)) 
+                            var renderer = allRenderers[i];
+                            if (renderer == null) continue;
+
+                            if (renderer.ShouldRenderGeometry)
                             {
-                                renderer.material.BindUniforms();
-                                renderer.material.depthGrabShader.Bind();
-                                renderer.UploadUBOandDraw(shadowMap.shadowViewCamera, ubo);
+                                if (renderer.AllowsFrustumCulling == false || GeometryUtility.TestPlanesAABB(frustrumPlanes, renderer.bounds))
+                                {
+                                    renderer.material.Uniforms.SendAllUniformsTo(renderer.material.GBufferShader.Uniforms);
+                                    renderer.material.GBufferShader.Bind();
+                                    renderer.UploadUBOandDraw(camera, ubo);
+                                    countMeshesRendered++;
+                                }
                             }
                         }
+
                     }
+
+                    GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
 
                 }
 
 
-                camera.UploadDataToUBO(ubo); // bind camera view params
-
-                // G BUFFER LIGHT PASS
-
+                #region Lights rendering
+                
+                var allLights = scene.Lights;
+                lock (allLights)
                 {
-                    GL.Disable(EnableCap.CullFace);
-                    //GL.CullFace(CullFaceMode.Back);
-
-                    GL.Disable(EnableCap.DepthTest);
-                    GL.DepthMask(false);
-
-
-                    light.UploadUBOdata(ubo, lightIndex);
-
-                    var shader = Factory.GetShader("internal/deferred.oneLight.shader");
-                    gBuffer.BindGBufferTexturesTo(shader);
-                    if (shadowsEnabled && light.hasShadows)
+                    for (int lightIndex = 0; lightIndex < allLights.Count; lightIndex++)
                     {
-                        shadowMap.BindUniforms(shader);
+                        var light = allLights[lightIndex];
+                        if (light == null) continue;
+
+                        var shadowMap = light.shadowMap;
+
+                        // SHADOW MAAPING
+                        if (shadowsEnabled && light.hasShadows)
+                        {
+
+                            //GL.Enable(EnableCap.CullFace);
+                            //GL.CullFace(CullFaceMode.Back);
+
+                            shadowMap.FrameBufferForWriting();
+
+                            GL.Enable(EnableCap.DepthTest);
+                            GL.DepthMask(true);
+
+                            shadowMap.Clear();
+
+
+
+                            shadowMap.shadowViewCamera.UploadDataToUBO(ubo);
+
+
+                            for (int i = 0; i < allRenderers.Count; i++)
+                            {
+                                var renderer = allRenderers[i];
+                                if (renderer == null) continue;
+
+                                //if (renderer.CanBeFrustumCulled == false || GeometryUtility.TestPlanesAABB(frustrumPlanes, renderer.bounds)) 
+                                {
+                                    renderer.material.Uniforms.SendAllUniformsTo(renderer.material.DepthGrabShader.Uniforms);
+                                    renderer.material.DepthGrabShader.Bind();
+                                    renderer.UploadUBOandDraw(shadowMap.shadowViewCamera, ubo);
+                                }
+                            }
+
+                        }
+
+
+                        camera.UploadDataToUBO(ubo); // bind camera view params
+
+                        // G BUFFER LIGHT PASS
+
+                        {
+                            GL.Disable(EnableCap.CullFace);
+                            //GL.CullFace(CullFaceMode.Back);
+
+                            GL.Disable(EnableCap.DepthTest);
+                            GL.DepthMask(false);
+
+
+                            light.UploadUBOdata(ubo, lightIndex);
+
+                            var shader = Factory.GetShader("internal/deferred.oneLight.shader");
+                            gBuffer.BindGBufferTexturesTo(shader);
+                            if (shadowsEnabled && light.hasShadows)
+                            {
+                                shadowMap.BindUniforms(shader);
+                            }
+
+                            shader.Bind();
+
+                            GL.Enable(EnableCap.Blend);
+                            //GL.BlendEquationSeparate(BlendEquationMode.FuncAdd, BlendEquationMode.FuncAdd);
+                            //GL.BlendFunc(BlendingFactorSrc.SrcColor, BlendingFactorDest.SrcColor);                    
+                            GL.BlendEquation(BlendEquationMode.FuncAdd);
+                            GL.BlendFunc(BlendingFactorSrc.One, BlendingFactorDest.One);
+                            quadMesh.Draw();
+                            GL.Disable(EnableCap.Blend);
+
+                        }
+
                     }
-
-                    shader.Bind();
-
-                    GL.Enable(EnableCap.Blend);
-                    //GL.BlendEquationSeparate(BlendEquationMode.FuncAdd, BlendEquationMode.FuncAdd);
-                    //GL.BlendFunc(BlendingFactorSrc.SrcColor, BlendingFactorDest.SrcColor);                    
-                    GL.BlendEquation(BlendEquationMode.FuncAdd);
-                    GL.BlendFunc(BlendingFactorSrc.One, BlendingFactorDest.One);
-                    quadMesh.Draw();
-                    GL.Disable(EnableCap.Blend);
 
                 }
 
-                lightIndex++;
-            }
+                #endregion
 
-            #endregion
-            
+            }
             
             // POST PROCESS EFFECTs
             /*{
@@ -421,7 +439,7 @@ namespace MyEngine
 
             SwapBuffers();
 
-            Debug.AddValue("countMeshesRendered", countMeshesRendered.ToString());
+            Debug.AddValue("countMeshesRendered", countMeshesRendered + "/" + allRenderers.NonNullCount);
 
         }
 

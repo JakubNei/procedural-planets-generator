@@ -10,88 +10,52 @@ namespace MyEngine
 {
     public class Material
     {
-
-        public Shader gBufferShader;
-        public Shader depthGrabShader;
-
-        internal Material()
+        Shader gBufferShader;
+        public Shader GBufferShader
         {
-
-        }
-
-        internal virtual void BindUniforms(Shader shader=null)
-        {
-            if (shader == null) shader = this.gBufferShader;
-            foreach(var name in uniformsChanged)
+            get
             {
-                shader.SetUniform(name, uniformsData[name]);
+                return gBufferShader;
             }
-            uniformsChanged.Clear();
-        }
-
-
-        internal virtual void BindChangedUniforms_Internal()
-        {
-            //if (shader == null) shader = this.shader;
-            foreach (var name in uniformsChanged)
+            set
             {
-                gBufferShader.SetUniform_Internal(name, uniformsData[name]);
+                if (value == null) throw new NullReferenceException("can not set " + MemberName.For(() => GBufferShader) + " to null");
+                gBufferShader = value;
             }
-            uniformsChanged.Clear();
-
-
-            gBufferShader.ResetTexturingUnitsCounter();
-            foreach (var kvp in texturesData)
+        }
+        Shader depthGrabShader;
+        public Shader DepthGrabShader
+        {
+            get
             {
-                gBufferShader.TrySetTextureType(kvp.Key, kvp.Value);
+                return depthGrabShader;
+            }
+            set
+            {
+                if (value == null) throw new NullReferenceException("can not set " + MemberName.For(() => DepthGrabShader) + " to null");
+                depthGrabShader = value;
             }
         }
 
+        public UniformsManager Uniforms { get; private set; }
 
-
-        Dictionary<string, Texture> texturesData = new Dictionary<string, Texture>();
-        Dictionary<string, object> uniformsData = new Dictionary<string, object>();
-
-        List<string> uniformsChanged = new List<string>();
-
-
-        public void AllUniformsChanged()
+        public Material()
         {
-            uniformsChanged.Clear();
-            foreach(var kvp in uniformsData)
-            {
-                uniformsChanged.Add(kvp.Key);
-            }
+            if (gBufferShader == null) gBufferShader = Shader.DefaultGBufferShader;
+            if (depthGrabShader == null) depthGrabShader = Shader.DefaultDepthGrabShader;
+            this.Uniforms = new UniformsManager();
         }
 
-
-
-        public void SetUniform(string name, object o)
+        public Material MakeCopy()
         {
-            if (o is Texture)
+            var m = new Material()
             {
-                texturesData[name] = o as Texture;
-                return;
-            }
-
-            object oldObj = null;
-            if(!uniformsData.TryGetValue(name, out oldObj) || !oldObj.Equals(o))
-            {
-                uniformsData[name] = o;
-                if(!uniformsChanged.Contains(name)) uniformsChanged.Add(name);
-            }                      
+                gBufferShader = gBufferShader,
+                depthGrabShader = depthGrabShader,
+            };
+            Uniforms.SendAllUniformsTo(m.Uniforms);
+            return m;
         }
-
-
-      
-
-
-
-
-
-
-
-
-
+        
     }
 }

@@ -4,7 +4,7 @@ using System.Text;
 
 namespace MyEngine.Components
 {
-    public abstract class MonoBehaviour : Component
+    public abstract class ComponentWithShortcuts : Component
     {
         public InputSystem Input
         {
@@ -27,7 +27,7 @@ namespace MyEngine.Components
                 return Entity.Scene;
             }
         }
-        public MonoBehaviour(Entity entity) : base(entity)
+        public ComponentWithShortcuts(Entity entity) : base(entity)
         {
 
         }

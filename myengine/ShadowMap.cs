@@ -87,8 +87,8 @@ namespace MyEngine
             shadowMatrix *= Matrix4.CreateScale(new Vector3(0.5f, 0.5f, 0.5f)); 
             shadowMatrix *= Matrix4.CreateTranslation(new Vector3(0.5f, 0.5f, 0.5f));
 
-            shader.SetUniform("shadowMap.level0", depthMap);
-            shader.SetUniform("shadowMap.viewProjectionMatrix", shadowMatrix);
+            shader.Uniforms.Set("shadowMap.level0", depthMap);
+            shader.Uniforms.Set("shadowMap.viewProjectionMatrix", shadowMatrix);
         }
 
         // doesnt work, depth buffer is copied into target depth buffer, so it doesnt show

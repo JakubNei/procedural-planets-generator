@@ -24,16 +24,20 @@ namespace MyEngine
     public class Texture
     {
         public int anisoLevel;
-        public FilterMode filterMode = FilterMode.Bilinear;
+        public bool UsingMipMaps { get; protected set; }
+        public FilterMode filterMode = FilterMode.Trilinear;
         public float mipMapBias;
         public TextureWrapMode wrapMode = TextureWrapMode.Repeat;
 
-        public virtual int GetNativeTextureID() { return 0;  }
-
-
-        internal TextureMinFilter GetTextureMinFilter(bool withMipMaps = false)
+        public virtual int GetNativeTextureID()
         {
-            if (withMipMaps)
+            return 0;
+        }
+
+
+        protected TextureMinFilter GetTextureMinFilter()
+        {
+            if (UsingMipMaps)
             {
                 if (filterMode == FilterMode.Point) return TextureMinFilter.NearestMipmapNearest;
                 else return TextureMinFilter.LinearMipmapLinear;
@@ -44,15 +48,14 @@ namespace MyEngine
                 else return TextureMinFilter.Linear;
             }
         }
-        internal TextureMagFilter GetTextureMagFilter(bool withMipMaps = false)
+        protected TextureMagFilter GetTextureMagFilter()
         {
             if (filterMode == FilterMode.Point) return TextureMagFilter.Nearest;
             else return TextureMagFilter.Linear;
         }
-        internal TextureWrapMode GetTextureWrapMode()
+        protected TextureWrapMode GetTextureWrapMode()
         {
-            if (wrapMode == TextureWrapMode.Repeat) return TextureWrapMode.Repeat;
-            else return TextureWrapMode.Clamp;
+            return wrapMode;
         }
     }
 

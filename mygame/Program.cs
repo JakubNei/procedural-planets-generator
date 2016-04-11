@@ -41,65 +41,24 @@ namespace MyGame
                     entity.Transform.LookAt(new Vector3(0, 0, 100));
 
                     //engine.camera.entity.AddComponent<SSAO>();
+
+                    /*
+                    var light = entity.AddComponent<Light>();
+                    light.type = LightType.Spot;
+                    light.spotCutOff = 100;
+                    light.spotExponent = 100;
+                    light.color = Vector3.One * 0.7f;
+                    */
                 }
 
 
-                new ProceduralPlanets(scene);
+                var proceduralPlanets = new ProceduralPlanets(scene);
                 
 
 
-                {
-                    var entity = scene.AddEntity();
-                    //go.AddComponent<Rigidbody>();
-                    var renderer = entity.AddComponent<MeshRenderer>();
-                    renderer.Mesh = Factory.GetMesh("internal/cube_bigUVs.obj");
-
-                    renderer.Material.albedoTexture = Factory.GetTexture2D("textures/grass_d.jpg");
-                    renderer.Material.normalMap = Factory.GetTexture2D("textures/grass_n.jpg");
-                    renderer.Material.depthMap = Factory.GetTexture2D("textures/grass_d.jpg");
-
-                    //renderer.material.albedoTexture = Factory.GetTexture2D("textures/cobblestonesDiffuse.bmp");
-                    //renderer.material.normalMap = Factory.GetTexture2D("textures/cobblestonesNormal.bmp");
-                    //renderer.material.depthMap = Factory.GetTexture2D("textures/cobblestonesDepth.bmp");
-
-                    //renderer.material.albedoTexture = Factory.GetTexture2D("textures/stonewallDiffuse.bmp");
-                    //renderer.material.normalMap = Factory.GetTexture2D("textures/stonewallNormal.bmp");
-                    //renderer.material.depthMap = Factory.GetTexture2D("textures/stonewallDepth.bmp");
-
-
-                    entity.Transform.Translate(new Vector3(0, -10, 0));
-                    entity.Transform.Scale = new Vector3(1000, 1, 1000);
-                    entity.AddComponent<BoxCollider>();
-
-                }
+         
+ 
                 
-
-
-                /*{
-                    var go = new Entity();
-                    //go.AddComponent<Rigidbody>();
-                    var renderer = go.AddComponent<MeshRenderer>();
-                    renderer.mesh = Factory.GetMesh("internal/cube.obj");
-                    go.transform.Translate(new Vector3(0, 0, 2));
-                    go.AddComponent<BoxCollider>();
-                    renderer.material.albedoTexture = Factory.GetTexture2D("textures/cobblestonesDiffuse.bmp");
-                    renderer.material.albedo = Vector4.One;
-                    renderer.material.normalMap = Factory.GetTexture2D("textures/cobblestonesNormal.bmp");
-                    renderer.material.depthMap = Factory.GetTexture2D("textures/cobblestonesDepth.bmp");
-                }*/
-
-                {
-                    var entity = scene.AddEntity();
-                    var renderer = entity.AddComponent<MeshRenderer>();
-                    renderer.Mesh = Factory.GetMesh("dragon.obj");
-                    entity.Transform.Position += new Vector3(-30,0,0);
-                    entity.GetComponent<MeshRenderer>().Material.smoothness = 0.8f;
-                    entity.AddComponent<Rigidbody>();
-                    entity.AddComponent<BoxCollider>();
-
-                }
-
-
                 {
                     var entity = scene.AddEntity();
                     entity.Transform.Position = new Vector3(-10, 10, -10);
@@ -107,17 +66,19 @@ namespace MyGame
                     var light = entity.AddComponent<Light>();
                     light.type = LightType.Directional;
                     light.color = Vector3.One * 0.7f;
-                    light.shadows = LightShadows.Soft;
+                    light.shadows = LightShadows.None;
 
+                    /*
                     var renderer = entity.AddComponent<MeshRenderer>();
                     renderer.Mesh = Factory.GetMesh("internal/cube.obj");
                     entity.AddComponent<BoxCollider>();
                     entity.AddComponent<MoveWithArrowKeys>();
-                    entity.AddComponent<VisualizeDir>();
+                    entity.AddComponent<VisualizeDir>();*/
                     //go.AddComponent<LightMovement>();
 
                 }
 
+                /*
                 {
                     var entity = scene.AddEntity();
                     entity.Transform.Position = new Vector3(10, 10, 10);
@@ -149,6 +110,7 @@ namespace MyGame
 
                     scene.Add(entity);
                 }
+                */
 
                 engine.Run();
 

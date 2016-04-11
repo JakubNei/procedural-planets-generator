@@ -26,7 +26,8 @@ namespace MyEngine.Components
             {
                 m_position = value;
                 shouldRecalculateMatrixes = true;
-                Entity.RaiseOnChanged(ChangedFlags.Position);
+                // TODO
+                // Entity.RaiseOnChanged(ChangedFlags.Position);
             }
             get
             {
@@ -39,7 +40,8 @@ namespace MyEngine.Components
             {
                 m_scale = value;
                 shouldRecalculateMatrixes = true;
-                Entity.RaiseOnChanged(ChangedFlags.Scale);
+                // TODO
+                // Entity.RaiseOnChanged(ChangedFlags.Scale);
             }
             get
             {
@@ -52,7 +54,8 @@ namespace MyEngine.Components
             {
                 m_rotation = value;
                 shouldRecalculateMatrixes = true;
-                Entity.RaiseOnChanged(ChangedFlags.Rotation);
+                // TODO
+                // Entity.RaiseOnChanged(ChangedFlags.Rotation);
             }
             get
             {

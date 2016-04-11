@@ -10,14 +10,14 @@ using MyEngine;
 
 namespace MyEngine.Components
 {
-    public class Camera : MonoBehaviour
+    public class Camera : ComponentWithShortcuts
     {
 
         public static Camera main { get; internal set; }
 
         public float aspect = 0.8f;
         public float fieldOfView = 45.0f;
-        public float nearClipPlane = 0.1f;
+        public float nearClipPlane = 1f;
         public float farClipPlane = 5000;
         public bool orthographic = false;
         public float orthographicSize = 5;
@@ -25,7 +25,9 @@ namespace MyEngine.Components
         public int pixelHeight;
         Vector2 screenSize = Vector2.Zero;
 
-        internal List<Shader> postProcessEffects = new List<Shader>();
+        public Vector3 ambientColor = new Vector3(0.2f,0.2f,0.2f);
+
+        public List<Shader> postProcessEffects = new List<Shader>();
 
         public Camera(Entity entity) : base(entity)
         {
@@ -52,7 +54,7 @@ namespace MyEngine.Components
                 Matrix4.CreateFromQuaternion(Quaternion.Invert(Transform.Rotation));
         }
 
-        internal void UploadDataToUBO(UniformBlock ubo)
+        public void UploadDataToUBO(UniformBlock ubo)
         {
             ubo.engine.viewMatrix = GetViewMat();
             ubo.engine.projectionMatrix = GetProjectionMat();
@@ -61,6 +63,7 @@ namespace MyEngine.Components
             ubo.engine.screenSize = this.screenSize;
             ubo.engine.nearClipPlane = this.nearClipPlane;
             ubo.engine.farClipPlane = this.farClipPlane;
+            ubo.engine.ambientColor = this.ambientColor;
             GL.Viewport(0, 0, pixelWidth, pixelHeight);
             ubo.engineUBO.UploadData();
         }

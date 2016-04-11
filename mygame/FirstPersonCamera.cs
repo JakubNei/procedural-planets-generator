@@ -13,7 +13,7 @@ using MyEngine.Components;
 
 namespace MyGame
 {
-    public class FirstPersonCamera : MonoBehaviour
+    public class FirstPersonCamera : ComponentWithShortcuts
     {
 
         public float velocityChangeSpeed = 10.0f;

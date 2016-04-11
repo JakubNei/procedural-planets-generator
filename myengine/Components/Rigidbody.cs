@@ -70,7 +70,8 @@ namespace MyEngine.Components
             set
             {
                 m_isKinematic = value;
-                Entity.RaiseOnChanged(ChangedFlags.PhysicsSettings);
+                // TODO
+                // Entity.RaiseOnChanged(ChangedFlags.PhysicsSettings);
             }
             get
             {
