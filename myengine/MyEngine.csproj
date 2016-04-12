@@ -77,6 +77,9 @@
     <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="Extensions\TypeExtensions.cs" />
     <Compile Include="FileChangedWatcher.cs" />
+    <Compile Include="GameSystems\Asset.cs" />
+    <Compile Include="GameSystems\AssetFolder.cs" />
+    <Compile Include="GameSystems\AssetSystem.cs" />
     <Compile Include="ITest1.cs" />
     <Compile Include="MyMath.cs" />
     <Compile Include="Perlin.cs" />

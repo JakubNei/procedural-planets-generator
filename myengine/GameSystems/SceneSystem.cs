@@ -45,8 +45,8 @@ namespace MyEngine
 
 
 
-        public ISynchronizeInvoke SynchronizeInvoke { get; private set; }
-        DeferredSynchronizeInvoke.Owner deferredSynchronizeInvokeOwner;
+        //public ISynchronizeInvoke SynchronizeInvoke { get; private set; }
+        //DeferredSynchronizeInvoke.Owner deferredSynchronizeInvokeOwner;
 
         public EventSystem EventSystem { get; private set; }
         public EngineMain Engine { get; private set; }
@@ -79,12 +79,14 @@ namespace MyEngine
                 }
             };
 
-            deferredSynchronizeInvokeOwner = new DeferredSynchronizeInvoke.Owner();
+            //deferredSynchronizeInvokeOwner = new DeferredSynchronizeInvoke.Owner();
+            /*
             SynchronizeInvoke = new DeferredSynchronizeInvoke(deferredSynchronizeInvokeOwner);
             EventSystem.Register((Events.GraphicsUpdate evt) =>
             {
                 deferredSynchronizeInvokeOwner.ProcessQueue();
             });
+            */
         }
 
         public Entity AddEntity(string name = "unnamed entity")

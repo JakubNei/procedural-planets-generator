@@ -1,3 +1,5 @@
+[include internal/prependAll.shader]
+
 uniform sampler2D param_rock;
 uniform float param_visibility;
 
@@ -108,6 +110,10 @@ vec3 triPlanar(sampler2D tex, vec3 position, vec3 normal, float scale) {
 
 
 
+
+
+
+
 float myLog(float base, float num) {
 	return log2(num)/log2(base);
 }
@@ -118,22 +124,22 @@ float rand(vec2 co){
 }
 
 
-
-vec3 getRock(float dist) {
+vec3 getColor(float distance) {
 
 	float base = 4;
 
-	dist = clamp(dist, 10, 1000);
-	float exp = myLog(base, dist);
+	distance = clamp(distance, 10, 1000);
+	float exp = myLog(base, distance);
 	exp = floor(exp);
 
 	float lowerScaleDistance = pow(base, exp);
 	float upperScaleDistance = pow(base, exp+1);
-	
+
 	float scaleModifier = 4;
 	float scaleBase = 0.2;
 	float lowerScale = scaleModifier * pow(scaleBase, exp);
 	float upperScale = scaleModifier * pow(scaleBase, exp+1);
+
 
 	//DEBUG
 	//return vec3(upperScale*100);
@@ -141,21 +147,30 @@ vec3 getRock(float dist) {
 	//return vec3(upperScale, 0, 0) / 10;		
 	//return triPlanar(rock,i.worldPos,i.normal,1000);
 
+	// zde byl problém, lowerScale a upperScale se na hranici najednou otočilo
+	/*
 	return mix(
-		triPlanar(param_rock,i.worldPos,i.normal,lowerScale),
-		triPlanar(param_rock,i.worldPos,i.normal,upperScale),
-		smoothstep(lowerScaleDistance,upperScaleDistance,dist)
+		triPlanar(param_rock, i.worldPos, i.normal, lowerScale),
+		triPlanar(param_rock, i.worldPos, i.normal, upperScale),
+		smoothstep(lowerScaleDistance, upperScaleDistance, distance)
 	);
+	*/
+
+	if(int(exp) % 2 == 0) {
+		return mix(
+			triPlanar(param_rock, i.worldPos, i.normal, lowerScale),
+			triPlanar(param_rock, i.worldPos, i.normal, upperScale),
+			smoothstep(lowerScaleDistance, upperScaleDistance, distance)
+		);
+	} else {
+		return mix(
+			triPlanar(param_rock, i.worldPos, i.normal, upperScale),
+			triPlanar(param_rock, i.worldPos, i.normal, lowerScale),
+			smoothstep(upperScaleDistance, lowerScaleDistance, distance)
+		);
+	}
+  
 }
-
-
-vec3 getColor(float dist) {
-	vec3 rock=getRock(dist);
-	vec3 c = rock;
-
-	return c;
-}
-
 
 
 void main()
@@ -170,7 +185,6 @@ void main()
 	vec3 c = vec3(1,1,1);
 	c=getColor(dist);
 	out_color = vec4(c,1);
-
 
 	out_normal = i.normal;
 	out_position = i.worldPos;

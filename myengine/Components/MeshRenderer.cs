@@ -120,7 +120,7 @@ namespace MyEngine.Components
         }
 
 
-        override internal void UploadUBOandDraw(Camera camera, UniformBlock ubo)
+        public override void UploadUBOandDraw(Camera camera, UniformBlock ubo)
         {
             var modelMat = this.Entity.Transform.LocalToWorldMatrix;
             var modelViewMat = modelMat * camera.GetViewMat();

@@ -54,7 +54,7 @@ namespace MyEngine.Components
 
         }
 
-        virtual internal void UploadUBOandDraw(Camera camera, UniformBlock ubo)
+        public virtual void UploadUBOandDraw(Camera camera, UniformBlock ubo)
         {
         }
 

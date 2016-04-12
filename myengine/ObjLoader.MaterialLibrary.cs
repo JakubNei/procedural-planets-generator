@@ -21,9 +21,10 @@ namespace MyEngine
 				if (!float.TryParse(str, System.Globalization.NumberStyles.Any, System.Globalization.NumberFormatInfo.InvariantInfo, out t))
 					failedParse++;
 			}
-			public MaterialLibrary(ResourcePath resource)
+			public MaterialLibrary(Asset asset)
 			{
-				using (StreamReader textReader = new StreamReader(resource))
+                using(var s = asset.GetDataStream())
+				using (StreamReader textReader = new StreamReader(s))
 				{
 					MaterialPBR lastMat = new MaterialPBR();
 					string line;
@@ -71,7 +72,7 @@ namespace MyEngine
 								}
 								break;
 							case "map_Kd":
-								lastMat.albedoTexture = new Texture2D(ResourcePath.GetResourceInFolder(resource, parameters[1]));
+								lastMat.albedoTexture = new Texture2D(AssetSystem.Instance.FindAsset(parameters[1], asset.AssetFolder));
 								break;
 						}
 					}

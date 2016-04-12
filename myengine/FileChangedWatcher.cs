@@ -10,12 +10,10 @@ namespace MyEngine
     public class FileChangedWatcher
     {
         FileSystemWatcher watcher;
-        List<Thread> watcherThreads = new List<Thread>();
 
-
-        public void WatchFile(ISynchronizeInvoke synchronizeInvoke, string filePath, Action<string> callBack)
+        public void WatchFile(string filePath, Action<string> callBack, ISynchronizeInvoke synchronizeInvoke = null)
         {
-            FileSystemWatcher watcher = new FileSystemWatcher();
+            watcher = new FileSystemWatcher();
             watcher.Path = Path.GetDirectoryName(filePath);
             /* Watch for changes in LastAccess and LastWrite times, and  the renaming of files or directories. */
             watcher.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.DirectoryName;
@@ -32,18 +30,18 @@ namespace MyEngine
             {                
                 callBack.Raise(a.FullPath);
             });
-            watcher.SynchronizingObject = synchronizeInvoke;
+            if (synchronizeInvoke != null)
+            {
+                watcher.SynchronizingObject = synchronizeInvoke;
+            }
             watcher.EnableRaisingEvents = true;
         }
 
 
-        void StopAllWatchers()
+        public void StopAllWatchers()
         {
-            foreach (var w in watcherThreads)
-            {
-                w.Abort();
-            }
-            watcherThreads.Clear();
+            watcher.Dispose();
+            watcher = null;
         }
     }
 }

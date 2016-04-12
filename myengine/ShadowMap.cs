@@ -11,13 +11,13 @@ using MyEngine.Components;
 namespace MyEngine
 {
     // http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-16-shadow-mapping/
-    internal class ShadowMap : IUnloadable
+    public class ShadowMap : IUnloadable
     {
-        internal int frameBufferObjectHandle;
-        internal Texture2D depthMap;
+        public int frameBufferObjectHandle;
+        public Camera shadowViewCamera;
+        public Texture2D depthMap;
         int width;
         int height;
-        internal Camera shadowViewCamera;
         Light light;
         public ShadowMap(Light light, int width, int height)
         {
@@ -67,17 +67,17 @@ namespace MyEngine
             GL.DeleteFramebuffer(frameBufferObjectHandle);
             depthMap.Unload();
         }
-        internal void Clear()
+        public void Clear()
         {
             //GL.Clear(ClearBufferMask.DepthBufferBit);
             float clearDepth = 1.0f;
             GL.ClearBuffer(ClearBuffer.Depth, 0, ref clearDepth);
         }
-        internal void FrameBufferForWriting()
+        public void FrameBufferForWriting()
         {
             GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, frameBufferObjectHandle);            
         }
-        internal void BindUniforms(Shader shader)
+        public void BindUniforms(Shader shader)
         {
 
             var shadowMatrix = this.shadowViewCamera.GetViewMat() * this.shadowViewCamera.GetProjectionMat();

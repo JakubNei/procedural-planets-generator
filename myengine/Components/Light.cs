@@ -29,29 +29,29 @@ namespace MyEngine.Components
     public class Light : Component, IDisposable
     {
 
-        public LightType type = LightType.Point;
-        public LightShadows shadows
+        public LightType LighType = LightType.Point;
+        public LightShadows Shadows
         {
             get
             {
-                return _shadows;
+                return m_shadows;
             }
             set
             {
-                _shadows = value;
+                m_shadows = value;
                 const int shadowMapResolution = 1000;
-                if (hasShadows && shadowMap == null) shadowMap = new ShadowMap(this, shadowMapResolution, shadowMapResolution);
+                if (HasShadows && ShadowMap == null) ShadowMap = new ShadowMap(this, shadowMapResolution, shadowMapResolution);
             }
         }
-        LightShadows _shadows = LightShadows.None;
+        LightShadows m_shadows = LightShadows.None;
 
         public Vector3 color=Vector3.One;
         public float spotExponent;
         public float spotCutOff;
 
 
-        internal ShadowMap shadowMap;
-        internal bool hasShadows { get { return this.shadows != LightShadows.None && this.type==LightType.Directional; } }
+        public ShadowMap ShadowMap { get; private set; }
+        public bool HasShadows { get { return this.Shadows != LightShadows.None && this.LighType==LightType.Directional; } }
 
 
         public Light(Entity entity) : base(entity)
@@ -59,20 +59,20 @@ namespace MyEngine.Components
             entity.Scene.Add(this);
         }
 
-        internal void UploadUBOdata(UniformBlock ubo, int lightIndex) {
+        public void UploadUBOdata(UniformBlock ubo, int lightIndex) {
 
             ubo.light.color = this.color;
 
-            if (type == LightType.Directional) ubo.light.position = Vector3.Zero;
+            if (LighType == LightType.Directional) ubo.light.position = Vector3.Zero;
             else ubo.light.position = this.Entity.Transform.Position;
 
-            if (type == LightType.Point) ubo.light.direction = Vector3.Zero;
+            if (LighType == LightType.Point) ubo.light.direction = Vector3.Zero;
             else ubo.light.direction = this.Entity.Transform.Forward;
 
             ubo.light.spotExponent = this.spotExponent;
             ubo.light.spotCutOff = this.spotCutOff;
 
-            ubo.light.hasShadows = hasShadows ? 1 : 0;
+            ubo.light.hasShadows = HasShadows ? 1 : 0;
             ubo.light.lightIndex = lightIndex;
 
             ubo.lightUBO.UploadData();

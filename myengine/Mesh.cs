@@ -114,7 +114,7 @@ namespace MyEngine
         }
 
         bool isOnGPU = false;
-        internal ResourcePath resource;
+        internal Asset resource;
 
         public void RecalculateBounds()
         {

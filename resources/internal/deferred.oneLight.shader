@@ -1,4 +1,4 @@
-
+[include internal/prependAll.shader]
 
 [VertexShader] // pass thru vertex shader
 

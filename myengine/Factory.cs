@@ -10,13 +10,13 @@ namespace MyEngine
 
 
         static internal Dictionary<string, Shader> allShaders = new Dictionary<string, Shader>();
-        public static Shader GetShader(ResourcePath resource)
+        public static Shader GetShader(string asset)
         {
             Shader s;
-            if (!allShaders.TryGetValue(resource, out s))
+            if (!allShaders.TryGetValue(asset, out s))
             {
-                s = new Shader(resource);
-                allShaders[resource] = s;
+                s = new Shader(AssetSystem.Instance.FindAsset(asset));
+                allShaders[asset] = s;
                 UnloadFactory.Add(s);                
             }
             return s;
@@ -33,37 +33,17 @@ namespace MyEngine
 
 
 
-        //internal Dictionary<string, Mesh> allMeshes = new Dictionary<string, Mesh>();
-        public static void AppendMesh(ResourcePath resource, Entity appendTo)
-        {
-            if (!resource.originalPath.EndsWith(".obj")) throw new System.Exception("Resource path does not end with .obj");
-
-            ObjLoader.Load(resource, appendTo);
-
-            /*Mesh s;
-            if (!allMeshes.TryGetValue(resource, out s))
-            {
-                s = ObjLoader.Load(resource, appendTo);
-                allMeshes[resource] = s;
-                UnloadFactory.Add(s);
-            }
-            return s;*/
-        }
-
-
-
-
 
         internal static Dictionary<string, Mesh> allMeshes = new Dictionary<string, Mesh>();
-        public static Mesh GetMesh(ResourcePath resource, bool allowDuplicates=false)
+        public static Mesh GetMesh(string asset, bool allowDuplicates=false)
         {
-            if (!resource.originalPath.EndsWith(".obj")) throw new System.Exception("Resource path does not end with .obj");
+            //if (!resource.originalPath.EndsWith(".obj")) throw new System.Exception("Resource path does not end with .obj");
 
             Mesh s;
-            if (allowDuplicates || !allMeshes.TryGetValue(resource, out s))
+            if (allowDuplicates || !allMeshes.TryGetValue(asset, out s))
             {
-                s = ObjLoader.Load(resource);
-                allMeshes[resource] = s;
+                s = ObjLoader.Load(AssetSystem.Instance.FindAsset(asset));
+                allMeshes[asset] = s;
                 UnloadFactory.Add(s);
             }
             return s;
@@ -73,26 +53,26 @@ namespace MyEngine
 
         internal static Dictionary<string, Texture2D> allTexture2Ds = new Dictionary<string, Texture2D>();
 
-        public static Texture2D GetTexture2D(ResourcePath resource)
+        public static Texture2D GetTexture2D(string asset)
         {
             Texture2D s;
-            if (!allTexture2Ds.TryGetValue(resource, out s))
+            if (!allTexture2Ds.TryGetValue(asset, out s))
             {
-                s = new Texture2D(resource);
-                allTexture2Ds[resource] = s;
+                s = new Texture2D(AssetSystem.Instance.FindAsset(asset));
+                allTexture2Ds[asset] = s;
             }
             return s;
         }
 
         internal static Dictionary<string, Cubemap> allCubeMaps = new Dictionary<string, Cubemap>();
 
-        public static Cubemap GetCubeMap(ResourcePath[] resources)
+        public static Cubemap GetCubeMap(string[] assets)
         {
             Cubemap s;
-            var key = string.Join("###", resources.Select((x)=>x.ToString()));
+            var key = string.Join("###", assets.Select((x)=>x.ToString()));
             if (!allCubeMaps.TryGetValue(key, out s))
             {
-                s = new Cubemap(resources);
+                s = new Cubemap(AssetSystem.Instance.FindAssets(assets).ToArray());
                 allCubeMaps[key] = s;
             }
             return s;

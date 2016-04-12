@@ -10,7 +10,7 @@ namespace MyEngine
     public partial class ObjLoader
     {
 
-        public static Mesh Load(ResourcePath resource, Entity appendToEntity=null)
+        public static Mesh Load(Asset resource, Entity appendToEntity=null)
         {
             var mesh = new ObjLoader().Parse(resource, appendToEntity);
             mesh.resource = resource;
@@ -44,9 +44,9 @@ namespace MyEngine
             if (!float.TryParse(str, System.Globalization.NumberStyles.Any, System.Globalization.NumberFormatInfo.InvariantInfo, out t))
                 failedParse++;
         }
-        Mesh Parse(ResourcePath resource, Entity appendToEntity)
+        Mesh Parse(Asset asset, Entity appendToEntity)
         {
-            using (StreamReader textReader = new StreamReader(resource))
+            using (StreamReader textReader = new StreamReader(asset.GetDataStream()))
             {
 
                 int i1, i2, i3, i4;
@@ -116,9 +116,9 @@ namespace MyEngine
                             }
                             break;
                         case "mtllib":
-                            if (ResourcePath.ResourceInFolderExists(resource, parameters[1]))
+                            if (AssetSystem.Instance.AssetExists(parameters[1], asset.AssetFolder))
                             {
-                                materialLibrary = new MaterialLibrary(ResourcePath.GetResourceInFolder(resource, parameters[1]));
+                                materialLibrary = new MaterialLibrary(AssetSystem.Instance.FindAsset(parameters[1], asset.AssetFolder));
                             }
                             break;
                         case "usemtl":
@@ -133,7 +133,7 @@ namespace MyEngine
 
             if(appendToEntity!=null) return EndObjPart(appendToEntity);
 
-            Debug.Info("Loaded " + resource.originalPath + " vertices:" + verticesMesh.Count + " faces:" + triangleIndiciesMesh.Count / 3);
+            Debug.Info("Loaded " + asset + " vertices:" + verticesMesh.Count + " faces:" + triangleIndiciesMesh.Count / 3);
 
             return EndMesh();
     

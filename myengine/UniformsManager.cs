@@ -20,8 +20,14 @@ namespace MyEngine
 
         public void SendAllUniformsTo(UniformsManager uniformManager)
         {
-            foreach (var kvp in uniformsObjectData) uniformManager.Set(kvp.Key, kvp.Value);
-            foreach (var kvp in uniformsTexturesData) uniformManager.Set(kvp.Key, kvp.Value);
+            lock(this)
+            {
+                lock(uniformManager)
+                {
+                    foreach (var kvp in uniformsObjectData) uniformManager.Set(kvp.Key, kvp.Value);
+                    foreach (var kvp in uniformsTexturesData) uniformManager.Set(kvp.Key, kvp.Value);
+                }
+            }
         }
 
         /// <summary>
@@ -30,20 +36,23 @@ namespace MyEngine
         /// <param name="shader"></param>
         public void UploadChangedUniforms(Shader shader)
         {
-            //if (shader == null) shader = this.shader;
-            foreach (var name in uniformsChanged)
+            lock(this)
             {
-                TryUploadStructType(shader, name, uniformsObjectData[name]);
-            }
-            uniformsChanged.Clear();
-
-            int texturingUnit = 0;
-            foreach (var kvp in uniformsTexturesData)
-            {
-                if (TryUploadStructType(shader, kvp.Key, texturingUnit))
+                //if (shader == null) shader = this.shader;
+                foreach (var name in uniformsChanged)
                 {
-                    TryUploadTextureType(shader, kvp.Key, kvp.Value, texturingUnit);
-                    texturingUnit++;
+                    TryUploadStructType(shader, name, uniformsObjectData[name]);
+                }
+                uniformsChanged.Clear();
+
+                int texturingUnit = 0;
+                foreach (var kvp in uniformsTexturesData)
+                {
+                    if (TryUploadStructType(shader, kvp.Key, texturingUnit))
+                    {
+                        TryUploadTextureType(shader, kvp.Key, kvp.Value, texturingUnit);
+                        texturingUnit++;
+                    }
                 }
             }
         }
@@ -54,9 +63,12 @@ namespace MyEngine
 
         public void MarkAllUniformsAsChanged()
         {
-            foreach (var kvp in uniformsObjectData)
+            lock (this)
             {
-                uniformsChanged.Add(kvp.Key);
+                foreach (var kvp in uniformsObjectData)
+                {
+                    uniformsChanged.Add(kvp.Key);
+                }
             }
         }
 
@@ -64,54 +76,59 @@ namespace MyEngine
 
         public void Set(string name, object o)
         {
-            if (o is Texture)
+            lock (this)
             {
-                Texture oldTex;
-                if (uniformsTexturesData.TryGetValue(name, out oldTex) == false || oldTex.Equals(o) == false)
+                if (o is Texture)
                 {
-                    uniformsTexturesData[name] = o as Texture;
+                    Texture oldTex;
+                    if (uniformsTexturesData.TryGetValue(name, out oldTex) == false || oldTex.Equals(o) == false)
+                    {
+                        uniformsTexturesData[name] = o as Texture;
+                    }
                 }
-            }
-            else {
-                object oldObj = null;
-                if (uniformsObjectData.TryGetValue(name, out oldObj) == false || oldObj.Equals(o) == false)
-                {
-                    uniformsObjectData[name] = o;
-                    uniformsChanged.Add(name);
+                else {
+                    object oldObj = null;
+                    if (uniformsObjectData.TryGetValue(name, out oldObj) == false || oldObj.Equals(o) == false)
+                    {
+                        uniformsObjectData[name] = o;
+                        uniformsChanged.Add(name);
+                    }
                 }
             }
         }
 
         public T Get<T>(string name, T defaultValue = default(T))
         {
-
-            object obj = null;
-            if (uniformsObjectData.TryGetValue(name, out obj))
+            lock (this)
             {
-                try
+                object obj = null;
+                if (uniformsObjectData.TryGetValue(name, out obj))
                 {
-                    return (T)obj;
-                }
-                catch
-                {
+                    try
+                    {
+                        return (T)obj;
+                    }
+                    catch
+                    {
 
+                    }
                 }
+
+                Texture tex;
+                if (uniformsTexturesData.TryGetValue(name, out tex))
+                {
+                    try
+                    {
+                        return (T)((object)tex);
+                    }
+                    catch
+                    {
+
+                    }
+                }
+
+                return defaultValue;
             }
-
-            Texture tex;
-            if (uniformsTexturesData.TryGetValue(name, out tex))
-            {
-                try
-                {
-                    return (T)((object)tex);
-                }
-                catch
-                {
-
-                }
-            }
-
-            return defaultValue;
         }
 
 

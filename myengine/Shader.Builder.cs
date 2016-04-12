@@ -16,10 +16,17 @@ namespace MyEngine
         public class ShaderBuilder
         {
             string prependSource;
+            AssetSystem assetSystem;
 
-            void Prepend(ResourcePath name)
+            public ShaderBuilder(AssetSystem assetSystem)
             {
-                using (var fs = new System.IO.StreamReader(name))
+                Require.NotNull(() => assetSystem);
+                this.assetSystem = assetSystem;
+            }
+
+            void Prepend(Asset name)
+            {
+                using (var fs = new System.IO.StreamReader(name.GetDataStream()))
                     prependSource += fs.ReadToEnd();
             }
             string ReadAll(Stream stream, int numOfRetries = 5)
@@ -40,29 +47,27 @@ namespace MyEngine
                 }
                 return text;
             }
-            public void Load(ResourcePath resource)
+
+
+            public void Load(Asset asset)
             {
-                var filePath = (string)resource;
 
                 string source = "";
-                using (var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
-                    source = ReadAll(fs);
+                using (var r = asset.GetDataStream())
+                    source = ReadAll(r);
 
 
+                source = ReplaceIncludeDirectiveWithFileContents(source, assetSystem.GetAssetFolder(asset));
 
-                ResourcePath prependAllRes = "internal/prependAll.shader";
-                string prependAllFileContents = "";
 
-                using (var fs = new FileStream(prependAllRes, FileMode.Open, FileAccess.Read, FileShare.Read))
-                    prependAllFileContents = ReadAll(fs);
-
+                // the contents above first shader program [VertexShader] are shared amongs all parts (prepended to all parts)
                 string prependContents = "";
                 {
                     ShaderType shaderType = ShaderType.VertexShader;
                     int startOfTag = GetClosestShaderTypeTagPosition(source, 0, ref shaderType);
                     if (startOfTag == -1)
                     {
-                        Debug.Error("Shader part start not found " + filePath);
+                        Debug.Error("Shader part start not found " + asset.VirtualPath);
                         return;
                     }
                     prependContents += source.Substring(0, startOfTag - 1);
@@ -70,9 +75,7 @@ namespace MyEngine
                 }
 
                 int currentStartingLine = prependContents.Split('\n').Length;
-
-                prependContents = prependAllFileContents + prependContents;
-
+              
 
                 foreach (ShaderType type in System.Enum.GetValues(typeof(ShaderType)))
                 {
@@ -83,8 +86,9 @@ namespace MyEngine
                     if (startOfTag != -1)
                     {
                         var tagLength = shaderType.ToString().Length + 2;
-                        ShaderType _st = ShaderType.VertexShader;
-                        int endOfShaderPart = GetClosestShaderTypeTagPosition(source, startOfTag + tagLength, ref _st);
+
+                        ShaderType notUsed = ShaderType.VertexShader;
+                        int endOfShaderPart = GetClosestShaderTypeTagPosition(source, startOfTag + tagLength, ref notUsed);
                         if (endOfShaderPart == -1) endOfShaderPart = source.Length;
 
                         var startOfShaderPart = startOfTag + tagLength;
@@ -94,13 +98,55 @@ namespace MyEngine
                         );
 
 
-                        AttachShader(prependContents + "\n#line " + currentStartingLine + "\n" + shaderPart, shaderType, filePath);
+                        AttachShader(prependContents + "\n#line " + currentStartingLine + "\n" + shaderPart, shaderType, asset.VirtualPath);
 
                         currentStartingLine += shaderPart.Split('\n').Length;
 
                         source = source.Substring(endOfShaderPart);
                     }
                 }
+            }
+
+
+            HashSet<string> f = new HashSet<string>();
+
+            string GetIncludeFileContents(string virtualPath, AssetFolder folder)
+            {
+                var asset = assetSystem.FindAsset(virtualPath, folder);
+
+                string source = "";
+                using (var s = asset.GetDataStream())
+                    source = ReadAll(s);
+
+                source = ReplaceIncludeDirectiveWithFileContents(source, assetSystem.GetAssetFolder(asset));
+
+                return source;
+            }
+
+            string ReplaceIncludeDirectiveWithFileContents(string source, AssetFolder folder)
+            {
+                while (true)
+                {
+                    var start = source.IndexOf("[include");
+                    if (start != -1)
+                    {
+                        var fileNameStart = start + "[include".Length + 1;
+                        var end = source.IndexOf("]", fileNameStart);
+                        if (end != -1)
+                        {
+                            var fileName = source.Substring(fileNameStart, end - fileNameStart).Trim();
+                            source =
+                                source.Substring(0, start) +
+                                GetIncludeFileContents(fileName, folder) +
+                                source.Substring(end + 1);
+                        }
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                return source;
             }
 
             int GetClosestShaderTypeTagPosition(string source, int offset, ref ShaderType shaderType)

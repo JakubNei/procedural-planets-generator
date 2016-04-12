@@ -28,12 +28,13 @@ namespace MyEngine
         internal int shaderProgramHandle { get; private set; }
 
                 
-        Dictionary<string, int> cachedUniformLocation = new Dictionary<string, int>();
+        Dictionary<string, int> cache_uniformLocations = new Dictionary<string, int>();
 
-        ResourcePath resource;
+        Asset asset;
 
         List<int> shaderPartHandles = new List<int>();
 
+        FileChangedWatcher fileWatcher = new FileChangedWatcher();
 
         static Shader lastBindedShader;
 
@@ -43,9 +44,10 @@ namespace MyEngine
             DefaultDepthGrabShader = Factory.GetShader("internal/depthGrab.standart.shader");
         }
 
-        public Shader(ResourcePath resource)
+        public Shader(Asset asset)
         {
-            this.resource = resource;
+            Require.NotNull(() => asset);
+            this.asset = asset;
             this.Uniforms = new UniformsManager();
             Load();
         }
@@ -71,16 +73,25 @@ namespace MyEngine
             shaderProgramHandle = GL.CreateProgram();
 
 
-            var builder = new ShaderBuilder();
-            builder.Load(resource);
+            var builder = new ShaderBuilder(asset.AssetSystem);
+            builder.Load(asset);
             foreach(var r in builder.buildResults)
             {
                 AttachShader(r.shaderContents, r.shaderType, r.filePath);
             }
 
             FinalizeInit();
+            
+            Debug.Info(typeof(Shader) + " " + asset + " loaded successfully");
 
-            Debug.Info(typeof(Shader) + " " + resource + " loaded successfully");
+            fileWatcher.WatchFile(asset.RealPath, (string newFileName) => {
+                shouldReload = true;
+                fileWatcher.StopAllWatchers();
+            });
+
+
+            Uniforms.MarkAllUniformsAsChanged();
+            cache_uniformLocations.Clear();
         }
 
 
@@ -90,11 +101,10 @@ namespace MyEngine
         /// Reloads the shader if marked to reload, binds the shader, uploads all changed uniforms;
         /// </summary>
         public void Bind()
-        {
-            
+        {            
             if (shouldReload)
             {
-                Debug.Info("Reloading " + resource.originalPath);
+                Debug.Info("Reloading " + asset.VirtualPath);
                 Unload();
                 Load();
                 Uniforms.MarkAllUniformsAsChanged();
@@ -194,7 +204,7 @@ namespace MyEngine
             var location = GL.GetUniformBlockIndex(shaderProgramHandle, name);
             if (location == -1)
             {
-                Debug.Warning(resource.originalPath + ", uniform block index " + name + " not found ", false);
+                Debug.Warning(asset + ", uniform block index " + name + " not found ", false);
                 return false;
             }
             GL.UniformBlockBinding(shaderProgramHandle, location, uniformBufferIndex);
@@ -205,14 +215,14 @@ namespace MyEngine
         public int GetUniformLocation(string name)
         {
             int location = -1;
-            if (cachedUniformLocation.TryGetValue(name, out location) == false)
+            if (cache_uniformLocations.TryGetValue(name, out location) == false)
             {
                 location = GL.GetUniformLocation(shaderProgramHandle, name);
                 if (location == -1)
                 {
-                    Debug.Warning(this.resource.originalPath + ", uniform " + name + " not found ", false);
+                    Debug.Warning(asset + ", uniform " + name + " not found ", false);
                 }
-                cachedUniformLocation[name] = location;
+                cache_uniformLocations[name] = location;
             }
             return location;
         }

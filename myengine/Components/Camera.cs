@@ -17,7 +17,7 @@ namespace MyEngine.Components
 
         public float aspect = 0.8f;
         public float fieldOfView = 45.0f;
-        public float nearClipPlane = 1f;
+        public float nearClipPlane = 0.1f;
         public float farClipPlane = 5000;
         public bool orthographic = false;
         public float orthographicSize = 5;

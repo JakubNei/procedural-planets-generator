@@ -28,7 +28,7 @@ namespace MyGame
                     scene.mainCamera = entity.AddComponent<Camera>();
                     //var c=go.AddComponent<BoxCollider>(); c.size = Vector3.One*5;
                     string skyboxName = "skybox/purple_nebula/";
-                    engine.skyboxCubeMap = Factory.GetCubeMap(new ResourcePath[] {
+                    engine.skyboxCubeMap = Factory.GetCubeMap(new [] {
                         skyboxName +"left.png",
                         skyboxName + "right.png",
                         skyboxName + "top.png",
@@ -64,9 +64,9 @@ namespace MyGame
                     entity.Transform.Position = new Vector3(-10, 10, -10);
                     entity.Transform.LookAt(Vector3.Zero);
                     var light = entity.AddComponent<Light>();
-                    light.type = LightType.Directional;
+                    light.LighType = LightType.Directional;
                     light.color = Vector3.One * 0.7f;
-                    light.shadows = LightShadows.None;
+                    light.Shadows = LightShadows.None;
 
                     /*
                     var renderer = entity.AddComponent<MeshRenderer>();

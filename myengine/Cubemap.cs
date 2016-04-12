@@ -20,7 +20,7 @@ namespace MyEngine
         {
             this.textureHandle = textureHandle;
         }
-        internal Cubemap(ResourcePath[] resources)
+        internal Cubemap(Asset[] resources)
         {
             this.Load(resources);
         }
@@ -32,7 +32,7 @@ namespace MyEngine
             GL.DeleteTexture(textureHandle);
         }
 
-        void Load(ResourcePath[] resources)
+        void Load(Asset[] assets)
         {
             
             // better performance: 2d array, 2d texture buffer
@@ -69,7 +69,10 @@ namespace MyEngine
                 
                 var textureTarget = textureTargets[i];
 
-                Bitmap bmp = new Bitmap(resources[i]);
+                Bitmap bmp;
+                using (var s = assets[i].GetDataStream())
+                     bmp = new Bitmap(s);
+
                 BitmapData bmp_data = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
 
                 GL.TexImage2D(textureTarget, 0, PixelInternalFormat.Rgba, bmp_data.Width, bmp_data.Height, 0,

@@ -3,6 +3,7 @@ using System.Linq;
 using System.IO;
 using System.Drawing;
 using System.Collections.Generic;
+using System.Threading;
 
 using OpenTK;
 using OpenTK.Graphics;
@@ -19,6 +20,7 @@ namespace MyEngine
 
 
         public InputSystem Input { get; private set; }
+        public AssetSystem Asset { get; private set; }
         List<SceneSystem> scenes = new List<SceneSystem>();
 
         public EngineMain()
@@ -36,7 +38,10 @@ namespace MyEngine
             //Texture2D.InitTexture2D();
             UnloadFactory.Set(ref ubo, new UniformBlock());
             new PhysicsUsage.PhysicsManager();
+            Asset = new AssetSystem();
             Input = new InputSystem(this);
+
+            StartSec();
         }
 
        
@@ -72,7 +77,7 @@ namespace MyEngine
             //Debug.Info(StringName.Extensions.ToString() + ": " + GL.GetString(StringName.Extensions));
 
 
-            this.VSync = VSyncMode.Off;
+            this.VSync = VSyncMode.Adaptive;
             
             // Other state
             GL.Enable(EnableCap.Texture2D);
@@ -117,34 +122,6 @@ namespace MyEngine
             Debug.Info("Windows resized to: width:" + ClientSize.Width + " height:" + ClientSize.Height);
         }
 
-        void DebugDrawTexture(Texture2D texture, float valueScale = 1, float valueOffset = 0)
-        {
-            DebugDrawTexture(texture, Vector4.One, Vector4.Zero, valueScale, valueOffset);
-        }
-        void DebugDrawTexture(Texture2D texture, Vector4 positionScale, Vector4 positionOffset, float valueScale = 1, float valueOffset = 0)
-        {
-
-            GL.Disable(EnableCap.DepthTest);
-            GL.Disable(EnableCap.CullFace);
-            GL.Disable(EnableCap.Blend);
-
-            GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, 0);
-            GL.Viewport(0, 0, Width, Height);
-            //GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit);
-
-            var shader = Factory.GetShader("internal/debugDrawTexture.shader");
-            shader.Bind();
-
-            shader.Uniforms.Set("debugDrawTexture", texture);
-            shader.Uniforms.Set("debugDrawTexturePositionScale", positionScale);
-            shader.Uniforms.Set("debugDrawTexturePositionOffset", positionOffset);
-            shader.Uniforms.Set("debugDrawTextureScale", valueScale);
-            shader.Uniforms.Set("debugDrawTextureOffset", valueOffset);
-
-            quadMesh.Draw();
-        }
-
-
         public void AddScene(SceneSystem scene)
         {
             scenes.Add(scene);
@@ -156,30 +133,57 @@ namespace MyEngine
         bool debugBounds = true;
         bool shadowsEnabled = true;
 
-        Queue<DateTime> frameTimes10sec = new Queue<DateTime>();
-        Queue<DateTime> frameTimes1sec = new Queue<DateTime>();
-
-        protected override void OnRenderFrame(FrameEventArgs e)
+        public override void Exit()
         {
+            if (IsDisposed) return;
+                        if (IsExiting) return;
+            base.Exit();
+        }
+
+        void StartSec()
+        {
+            eventThreadTime.Restart();
+            /*
+            var t = new Thread(() =>
+            {
+                while (this.IsDisposed == false && this.IsExiting == false)
+                {
+                    EventThreadMain();
+                }
+            });
+
+            t.Priority = ThreadPriority.Highest;
+            t.IsBackground = true;
+            t.Start();
+            */
+        }
+
+        System.Diagnostics.Stopwatch eventThreadTime = new System.Diagnostics.Stopwatch();
+        ManualResetEvent onRenderGameWaitHandle = new ManualResetEvent(false);
+
+        void EventThreadMain()
+        {
+        
+            Debug.Tick("eventThread");
+            var deltaTime = eventThreadTime.ElapsedMilliseconds / 1000.0;
+            eventThreadTime.Restart();
 
             this.Title = string.Join("\t  ", Debug.stringValues.OrderBy(kvp => kvp.Key).Select(kvp => kvp.Key + ":" + kvp.Value).ToArray());
-            {
-                var now = DateTime.Now;
-
-                frameTimes10sec.Enqueue(now);
-                while ((now - frameTimes10sec.Peek()).TotalSeconds > 10) frameTimes10sec.Dequeue();
-
-                frameTimes1sec.Enqueue(now);
-                while ((now - frameTimes1sec.Peek()).TotalSeconds > 1) frameTimes1sec.Dequeue();
-
-                Debug.AddValue("FPS(10 sec)", (frameTimes10sec.Count / 10.0f).ToString("0."));
-                Debug.AddValue("FPS(1 sec)", (frameTimes1sec.Count).ToString("0."));
-            }
-
-            //GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
             if (this.Focused) Input.Update();
 
+            var scene = scenes[0];
+            scene.EventSystem.Raise(new MyEngine.Events.GraphicsUpdate(deltaTime));       
+              
+        }
+
+        protected override void OnRenderFrame(FrameEventArgs e)
+        {
+            Debug.Tick("renderThread");
+
+            EventThreadMain();
+
+            //GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
             var scene = scenes[0];
 
@@ -196,11 +200,6 @@ namespace MyEngine
             if (Input.GetKeyDown(OpenTK.Input.Key.F7)) debugBounds = !debugBounds;
             if (Input.GetKeyDown(OpenTK.Input.Key.F6)) shadowsEnabled = !shadowsEnabled;
             if (Input.GetKeyDown(OpenTK.Input.Key.F5)) Factory.ReloadAllShaders();
-
-            PhysicsUsage.PhysicsManager.instance.Update((float)e.Time);
-
-
-            scene.EventSystem.Raise(new MyEngine.Events.GraphicsUpdate(e.Time));
 
 
             var frustrumPlanes = camera.GetFrustumPlanes();
@@ -281,10 +280,10 @@ namespace MyEngine
                         var light = allLights[lightIndex];
                         if (light == null) continue;
 
-                        var shadowMap = light.shadowMap;
+                        var shadowMap = light.ShadowMap;
 
                         // SHADOW MAAPING
-                        if (shadowsEnabled && light.hasShadows)
+                        if (shadowsEnabled && light.HasShadows)
                         {
 
                             //GL.Enable(EnableCap.CullFace);
@@ -334,7 +333,7 @@ namespace MyEngine
 
                             var shader = Factory.GetShader("internal/deferred.oneLight.shader");
                             gBuffer.BindGBufferTexturesTo(shader);
-                            if (shadowsEnabled && light.hasShadows)
+                            if (shadowsEnabled && light.HasShadows)
                             {
                                 shadowMap.BindUniforms(shader);
                             }
@@ -360,7 +359,7 @@ namespace MyEngine
             }
             
             // POST PROCESS EFFECTs
-            /*{
+            {
                 GL.Disable(EnableCap.DepthTest);
                 GL.Disable(EnableCap.CullFace);
                 GL.Disable(EnableCap.Blend);
@@ -370,12 +369,13 @@ namespace MyEngine
 
                 foreach (var shader in camera.postProcessEffects)
                 {
-                    gBuffer.BindForLightingPass(shader);
+                    gBuffer.BindGBufferTexturesTo(shader);
                     shader.Bind();
-                    quad.Draw();
+                    quadMesh.Draw();
                     gBuffer.SwapFinalTextureTarget();
                 }
-            }*/
+            }
+
 
             // FINAL DRAW TO SCREEN
             {
@@ -443,6 +443,32 @@ namespace MyEngine
 
         }
 
+        void DebugDrawTexture(Texture2D texture, float valueScale = 1, float valueOffset = 0)
+        {
+            DebugDrawTexture(texture, Vector4.One, Vector4.Zero, valueScale, valueOffset);
+        }
+        void DebugDrawTexture(Texture2D texture, Vector4 positionScale, Vector4 positionOffset, float valueScale = 1, float valueOffset = 0)
+        {
+
+            GL.Disable(EnableCap.DepthTest);
+            GL.Disable(EnableCap.CullFace);
+            GL.Disable(EnableCap.Blend);
+
+            GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, 0);
+            GL.Viewport(0, 0, Width, Height);
+            //GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit);
+
+            var shader = Factory.GetShader("internal/debugDrawTexture.shader");
+            shader.Bind();
+
+            shader.Uniforms.Set("debugDrawTexture", texture);
+            shader.Uniforms.Set("debugDrawTexturePositionScale", positionScale);
+            shader.Uniforms.Set("debugDrawTexturePositionOffset", positionOffset);
+            shader.Uniforms.Set("debugDrawTextureScale", valueScale);
+            shader.Uniforms.Set("debugDrawTextureOffset", valueOffset);
+
+            quadMesh.Draw();
+        }
 
     }
 }

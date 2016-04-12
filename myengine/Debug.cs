@@ -16,6 +16,56 @@ namespace MyEngine
         {
             stringValues[key] = value;
         }
+
+        class TickStats
+        {
+            public string name;
+            public float FpsPer1Sec
+            {
+                get
+                {
+                    return frameTimes1sec.Count;
+                }
+            }
+
+            public float FpsPer10Sec
+            {
+                get
+                {
+                    return frameTimes10sec.Count / 10.0f;
+                }
+            }
+
+            Queue<DateTime> frameTimes1sec = new Queue<DateTime>();
+            Queue<DateTime> frameTimes10sec = new Queue<DateTime>();
+
+            public void Update()
+            {
+                var now = DateTime.Now;
+
+                frameTimes1sec.Enqueue(now);
+                frameTimes10sec.Enqueue(now);
+
+                while ((now - frameTimes1sec.Peek()).TotalSeconds > 1) frameTimes1sec.Dequeue();
+                while ((now - frameTimes10sec.Peek()).TotalSeconds > 10) frameTimes10sec.Dequeue();
+
+                Debug.AddValue(name, "(FPS 1s:" + FpsPer1Sec.ToString("0.") + " 10s:" + FpsPer10Sec.ToString("0.") + ")");
+            }
+        }
+
+        static Dictionary<string, TickStats> nameToTickStat = new Dictionary<string, TickStats>();
+
+        public static void Tick(string name)
+        {
+            TickStats t;
+            if(nameToTickStat.TryGetValue(name, out t) == false)
+            {
+                t = new TickStats();
+                t.name = name;
+                nameToTickStat[name] = t;
+            }
+            t.Update();
+        }
         
 
         static void Log(object obj, bool canRepeat)

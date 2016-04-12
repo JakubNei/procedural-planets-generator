@@ -1,3 +1,4 @@
+[include internal/prependAll.shader]
 
 
 [VertexShader]

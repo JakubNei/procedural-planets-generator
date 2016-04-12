@@ -106,6 +106,7 @@ namespace MyEngine
 
                 data.AsyncState = Invoke(data.method, data.args);
                 data.IsCompleted = true;
+                (data.AsyncWaitHandle as ManualResetEvent).Set();
             }
         }
         class AsyncResult : IAsyncResult

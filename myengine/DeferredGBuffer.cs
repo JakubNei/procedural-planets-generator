@@ -33,7 +33,7 @@ namespace MyEngine
         int width;
         int height;
 
-      
+
         public DeferredGBuffer(int width, int height)
         {
             this.width = width;
@@ -51,7 +51,7 @@ namespace MyEngine
             GL.GenTextures(textureHandles.Length, textureHandles);
 
             List<DrawBuffersEnum> bufs = new List<DrawBuffersEnum>();
-            for(int i=0; i<textureHandles.Length; i++)
+            for (int i = 0; i < textureHandles.Length; i++)
             {
                 var t = new Texture2D(textureHandles[i]);
                 textures[i] = t;
@@ -102,11 +102,11 @@ namespace MyEngine
             GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, frameBufferObjectHandle);
 
             // draw to the one we are not reading
-            if(readFirstFinalTexture) GL.DrawBuffer(DrawBufferMode.ColorAttachment5);
+            if (readFirstFinalTexture) GL.DrawBuffer(DrawBufferMode.ColorAttachment5);
             else GL.DrawBuffer(DrawBufferMode.ColorAttachment4);
 
             shader.Uniforms.Set("gBufferUniform.depthBuffer", depthTexture);
-            shader.Uniforms.Set("gBufferUniform.final", finalTextureToRead);            
+            shader.Uniforms.Set("gBufferUniform.final", finalTextureToRead);
 
             for (int i = 0; i < textures.Length - 2; i++)
             {
@@ -121,9 +121,9 @@ namespace MyEngine
                     texturingUnit++;
                 }*/
 
-        }
+            }
 
-    }
+        }
 
         internal void SwapFinalTextureTarget()
         {
@@ -135,7 +135,7 @@ namespace MyEngine
 
         }
 
-        internal void DebugDrawContents()
+        public void DebugDrawContents()
         {
             GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, frameBufferObjectHandle);
 
@@ -146,7 +146,7 @@ namespace MyEngine
             int y = 0;
 
             DrawBufferToScreen(ReadBufferMode.ColorAttachment0, qw * 0, qh * 0);
-            if(readFirstFinalTexture) DrawBufferToScreen(ReadBufferMode.ColorAttachment4, qw * 1, qh * 0);
+            if (readFirstFinalTexture) DrawBufferToScreen(ReadBufferMode.ColorAttachment4, qw * 1, qh * 0);
             else DrawBufferToScreen(ReadBufferMode.ColorAttachment5, qw * 1, qh * 0);
             if (readFirstFinalTexture) DrawBufferToScreen(ReadBufferMode.ColorAttachment5, qw * 2, qh * 0);
             else DrawBufferToScreen(ReadBufferMode.ColorAttachment4, qw * 2, qh * 0);
@@ -160,7 +160,7 @@ namespace MyEngine
             int qh = height / 4;
             int qw = width / 4;
             GL.ReadBuffer(buffer);
-            GL.BlitFramebuffer(0, 0, width, height, x, y, x+qw, y+qh, ClearBufferMask.ColorBufferBit, BlitFramebufferFilter.Linear);
+            GL.BlitFramebuffer(0, 0, width, height, x, y, x + qw, y + qh, ClearBufferMask.ColorBufferBit, BlitFramebufferFilter.Linear);
         }
 
     }
