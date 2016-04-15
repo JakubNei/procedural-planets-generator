@@ -1,7 +1,10 @@
+// http://www.mathematik.uni-marburg.de/~menzel/index.php?seite=tutorials&id=1
+
 [include internal/prependAll.shader]
 
-uniform sampler2D param_colorGradient;
+uniform sampler2D param_turbulenceColorGradient;
 uniform sampler2D param_turbulenceMap;
+uniform sampler2D param_surfaceDiffuse;
 
 [VertexShader]
 
@@ -57,13 +60,13 @@ void main()
 	
 
 
-	vec4 c;
+	vec4 c = texture2D(param_surfaceDiffuse, i.uv);
 	float g;
 
-	g = texture2D(param_turbulenceMap, i.uv + engine.totalElapsedSecondsSinceEngineStart*0.01).x;
-	c += texture2D(param_colorGradient, vec2( 0.01+g*0.98, 0));
-	g = texture2D(param_turbulenceMap, i.uv.yx + engine.totalElapsedSecondsSinceEngineStart*0.01).x;
-	c += texture2D(param_colorGradient, vec2( 0.01+g*0.98, 0));
+	g = texture2D(param_turbulenceMap, i.uv + engine.totalElapsedSecondsSinceEngineStart*0.005).x;
+	c += 0.5 * texture2D(param_turbulenceColorGradient, vec2( 0.01+g*0.98, 0));
+	g = texture2D(param_turbulenceMap, i.uv.yx + engine.totalElapsedSecondsSinceEngineStart*0.001).x;
+	c += 0.5 * texture2D(param_turbulenceColorGradient, vec2( 0.01+g*0.98, 0));
 
 	out_color = vec4(c.x,c.y,c.z,1);
 	out_normal = i.normal;

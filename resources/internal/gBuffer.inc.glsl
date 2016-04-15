@@ -20,11 +20,11 @@ struct GBufferPerPixel {
 };
 
 vec3 GBufferGetFinal(vec2 screenCoord) {
-	return texture(gBufferUniform.final, screenCoord).xyz;
+	return textureLod(gBufferUniform.final, screenCoord, 0).xyz;
 }
 
 float GBufferGetDepth(vec2 screenCoord) {
-	return texture(gBufferUniform.depthBuffer, screenCoord).x;
+	return textureLod(gBufferUniform.depthBuffer, screenCoord, 0).x;
 }
 
 void GBufferPackData_Emission(out vec4 data, float emission) {
@@ -37,16 +37,16 @@ GBufferPerPixel GetGBufferPerPixel(vec2 screenCoord) {
 	GBufferPerPixel g;
 	//vec2 screenCoord = gl_FragCoord.xy / engine.screenSize;
 	
-	g.color = texture(gBufferUniform.albedo, screenCoord).xyz;
-	g.position = texture(gBufferUniform.position, screenCoord).xyz;
-	g.normal = texture(gBufferUniform.normal, screenCoord).xyz;
-	vec4 data = texture(gBufferUniform.data, screenCoord);
+	g.color = textureLod(gBufferUniform.albedo, screenCoord, 0).xyz;
+	g.position = textureLod(gBufferUniform.position, screenCoord, 0).xyz;
+	g.normal = textureLod(gBufferUniform.normal, screenCoord, 0).xyz;
+	vec4 data = textureLod(gBufferUniform.data, screenCoord, 0);
 
 	g.emission = data.x;
 	g.metallic = data.y;
 	g.smoothness = data.z;
 
-	g.final = texture(gBufferUniform.final, screenCoord).xyz;
+	g.final = texture2D(gBufferUniform.final, screenCoord).xyz;
 	g.depth = GBufferGetDepth(screenCoord);
 
 	return g;

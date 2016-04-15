@@ -26,7 +26,8 @@ namespace MyGame
                     entity.AddComponent<FirstPersonCamera>();
 
                     var cam = scene.mainCamera = entity.AddComponent<Camera>();
-                    //cam.AddPostProcessEffect(Factory.GetShader("postProcessEffects/bloom.shader"));
+                    cam.AddPostProcessEffect(Factory.GetShader("postProcessEffects/bloom.glsl"));
+                    cam.AddPostProcessEffect(Factory.GetShader("postProcessEffects/godRays.glsl"));
 
                     string skyboxName = "skybox/generated/";
                     engine.skyboxCubeMap = Factory.GetCubeMap(new [] {
@@ -74,8 +75,10 @@ namespace MyGame
 
                     var mat = renderer.Material = new Material();
                     mat.GBufferShader = Factory.GetShader("shaders/sun.glsl");
-                    mat.Uniforms.Set("param_colorGradient", Factory.GetTexture2D("textures/fire_gradient.png"));
-                    mat.Uniforms.Set("param_turbulenceMap", Factory.GetTexture2D("textures/turbulence_map.png"));                    
+                    mat.Uniforms.Set("param_turbulenceColorGradient", Factory.GetTexture2D("textures/fire_gradient.png"));
+                    mat.Uniforms.Set("param_turbulenceMap", Factory.GetTexture2D("textures/turbulence_map.png"));
+                    mat.Uniforms.Set("param_surfaceDiffuse", Factory.GetTexture2D("textures/sun_surface_d.png"));
+                    
                 }
 
                 {

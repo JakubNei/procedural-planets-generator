@@ -166,7 +166,7 @@ namespace MyEngine
         void EventThreadMain()
         {
         
-            Debug.Tick("eventThread");
+            //Debug.Tick("eventThread");
             var deltaTime = eventThreadTime.ElapsedMilliseconds / 1000.0;
             eventThreadTime.Restart();
 
@@ -181,6 +181,7 @@ namespace MyEngine
 
         protected override void OnRenderFrame(FrameEventArgs e)
         {
+            Debug.AddValue("fps", (1 / e.Time).ToString());
             Debug.Tick("renderThread");
 
             EventThreadMain();
