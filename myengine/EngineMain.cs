@@ -26,14 +26,15 @@ namespace MyEngine
         public EngineMain()
             : base(1400, 900,
             new GraphicsMode(), "MyEngine", GameWindowFlags.Default,
-            DisplayDevice.Default, 3, 2,
-            GraphicsContextFlags.Default)
-            //GraphicsContextFlags.ForwardCompatible | GraphicsContextFlags.Debug)
+            DisplayDevice.Default, 4, 0,
+            //GraphicsContextFlags.Default)
+            GraphicsContextFlags.ForwardCompatible)
         {
 
             System.Diagnostics.Process.GetCurrentProcess().PriorityClass = System.Diagnostics.ProcessPriorityClass.High;
 
             VSync = VSyncMode.Off;
+            TargetRenderFrequency = 0;
 
             //Texture2D.InitTexture2D();
             UnloadFactory.Set(ref ubo, new UniformBlock());
