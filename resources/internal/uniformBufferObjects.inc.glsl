@@ -10,6 +10,7 @@ layout(std140) uniform engine_block {
 	float nearClipPlane;
 	float farClipPlane;
 	vec3 ambientColor;
+	float totalElapsedSecondsSinceEngineStart; // totalElapsedSecondsSinceEngineStart
 } engine;
 
 
@@ -39,55 +40,6 @@ struct MaterialData {
 uniform MaterialData material;
 
 uniform mat4 shadowMapMatrix;
-
-
-
-
-
-struct GBufferData {
-	sampler2D depthBuffer;
-	sampler2D albedo;
-	sampler2D position;
-	sampler2D normal;
-	sampler2D data;
-	sampler2D final;
-};
-uniform GBufferData gBufferUniform;
-
-struct GBufferPerPixel {
-	vec3 color;
-	vec3 position;
-	vec3 normal;
-	float metallic;
-	float smoothness;
-	vec3 final;
-	float depth;
-};
-
-float GBufferGetDepth(vec2 screenCoord) {
-	return texture(gBufferUniform.depthBuffer, screenCoord).x;
-}
-
-GBufferPerPixel GetGBufferPerPixel(vec2 screenCoord) {
-	GBufferPerPixel g;
-	//vec2 screenCoord = gl_FragCoord.xy / engine.screenSize;
-	
-	g.color = texture(gBufferUniform.albedo, screenCoord).xyz;
-	g.position = texture(gBufferUniform.position, screenCoord).xyz;
-	g.normal = texture(gBufferUniform.normal, screenCoord).xyz;
-	vec4 data = texture(gBufferUniform.data, screenCoord);
-
-	g.metallic = data.x;
-	g.smoothness = data.y;
-
-	g.final = texture(gBufferUniform.final, screenCoord).xyz;
-	g.depth = GBufferGetDepth(screenCoord);
-
-	return g;
-}
-
-
-
 
 
 

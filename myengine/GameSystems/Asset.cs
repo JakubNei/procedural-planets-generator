@@ -34,7 +34,19 @@ namespace MyEngine
 
         public Stream GetDataStream()
         {
-            return new FileStream(RealPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            int numTries = 5;
+            while (numTries-- > 0)
+            {
+                try
+                {
+                    return new FileStream(RealPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+                }
+                catch
+                {
+                    System.Threading.Thread.Sleep(10);
+                }
+            }
+            return null;
         }
 
         public override string ToString()

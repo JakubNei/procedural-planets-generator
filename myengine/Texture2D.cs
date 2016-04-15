@@ -17,17 +17,42 @@ namespace MyEngine
         static public Texture2D greyTexture { private set; get; }
         static public Texture2D blackTexture { private set; get; }
 
+        public bool IsOnGpu { get; private set; }
+        public bool WantsToBeUploadedToGpu { get; private set; }
 
-        int textureHandle;
+        public int Width { get { return bmp.Width; } }
+        public int Height { get { return bmp.Height; } }
 
+        public Color this[int x, int y]
+        {
+            get
+            {
+                return GetPixel(x, y);
+            }
+            set
+            {
+                SetPixel(x, y, value);
+            }
+        }
 
-        internal Texture2D(int textureHandle)
+        int textureHandle = -1;
+        Bitmap bmp;
+        Asset asset;
+
+        public Texture2D(int width, int height)
+        {
+            bmp = new Bitmap(width, height);
+        }
+        public Texture2D(int textureHandle)
         {
             this.textureHandle = textureHandle;
+            UpdateIsOnGpu();
         }
-        internal Texture2D(Asset resource)
+        public Texture2D(Asset asset)
         {
-            this.Load(resource);
+            this.asset = asset;
+            Load();
+            WantsToBeUploadedToGpu = true;
         }
 
         static Texture2D() {
@@ -37,22 +62,45 @@ namespace MyEngine
         }
 
 
-        public void Unload()
+        public void SetPixel(int x, int y, Color color)
         {
-            GL.DeleteTexture(textureHandle);
+            if (bmp == null) throw new NullReferenceException("texture was intialized only with gpu handle, no data");
+            if (x < 0 || x >= Width && y < 0 && y >= Height) throw new IndexOutOfRangeException("x or y is out of texture width or height");
+            bmp.SetPixel(x, y, color);
+            WantsToBeUploadedToGpu = true;
         }
 
-        void Load(Asset asset)
+        public Color GetPixel(int x, int y)
         {
+            if (bmp == null) throw new NullReferenceException("texture was intialized only with gpu handle, no data");
+            if (x < 0 || x >= Width && y < 0 && y >= Height) throw new IndexOutOfRangeException("x or y is out of texture width or height");
+            return bmp.GetPixel(x, y);
+        }
+        public Color GetPixelBilinear(float x, float y)
+        {
+            throw new NotImplementedException();
+        }
 
-            UsingMipMaps = true;
+        public void Unload()
+        {
+            if (IsOnGpu)
+            {
+                GL.DeleteTexture(textureHandle);
+                IsOnGpu = false;
+            }
+        }
 
-            textureHandle = GL.GenTexture();
-            GL.BindTexture(TextureTarget.Texture2D, textureHandle);
+        void Load()
+        {          
+            UsingMipMaps = true;          
 
-            Bitmap bmp;
             using(var s = asset.GetDataStream())
                 bmp = new Bitmap(s);
+        }
+        void UploadToGpu()
+        {
+            if (textureHandle == -1) textureHandle = GL.GenTexture();
+            GL.BindTexture(TextureTarget.Texture2D, textureHandle);
 
             BitmapData bmp_data = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
             GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, bmp_data.Width, bmp_data.Height, 0, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, bmp_data.Scan0);
@@ -61,7 +109,7 @@ namespace MyEngine
             // We will not upload mipmaps, so disable mipmapping (otherwise the texture will not appear).
             // We can use GL.GenerateMipmaps() or GL.Ext.GenerateMipmaps() to create
             // mipmaps automatically. In that case, use TextureMinFilter.LinearMipmapLinear to enable them.
-            if (UsingMipMaps) GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);                       
+            if (UsingMipMaps) GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
 
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)GetTextureMagFilter());
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)GetTextureMinFilter());
@@ -81,17 +129,26 @@ namespace MyEngine
                    TextureTarget.Texture2D,
                    (TextureParameterName)ExtTextureFilterAnisotropic.TextureMaxAnisotropyExt,
                    max_aniso);
-            }            
-
+            }
         }
-        public bool IsOnGpu()
+
+        void UpdateIsOnGpu()
         {
             var yes = new bool[1];
             GL.AreTexturesResident(1, new int[] { textureHandle }, yes);
-            return yes[0];
+            IsOnGpu = yes[0];
         }
+
         public override int GetNativeTextureID()
         {
+            if (WantsToBeUploadedToGpu)
+            {
+                Unload();
+                WantsToBeUploadedToGpu = false;
+                UploadToGpu();
+                UpdateIsOnGpu();
+                if (IsOnGpu == false && this != blackTexture) return blackTexture.GetNativeTextureID();
+            }
             return textureHandle;
         }
         

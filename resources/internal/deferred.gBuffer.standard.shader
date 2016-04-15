@@ -107,7 +107,7 @@ void main()
 
 
 	//out_normal = i.normal;
-	out_data = vec4(material.metallic, material.smoothness, 0, 0);
+	out_data = vec4(0);
 
 
 	//LightData light = lights[0];

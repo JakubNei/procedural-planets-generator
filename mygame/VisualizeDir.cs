@@ -28,7 +28,6 @@ namespace MyGame
             var go = Entity.Scene.AddEntity();
             var renderer = go.AddComponent<MeshRenderer>();
             renderer.Mesh = Factory.GetMesh("sphere.obj");
-            renderer.Material.albedo = new Vector4(0, 0, 1, 1);
             go.Transform.Scale *= 0.5f;
 
             dirVisualize = go;

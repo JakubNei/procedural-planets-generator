@@ -75,6 +75,7 @@
     <Compile Include="Extensions\IntExtensions.cs" />
     <Compile Include="Extensions\JaggedArrayExtensions.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
+    <Compile Include="Extensions\SystemDrawingExtensions.cs" />
     <Compile Include="Extensions\TypeExtensions.cs" />
     <Compile Include="FileChangedWatcher.cs" />
     <Compile Include="GameSystems\Asset.cs" />

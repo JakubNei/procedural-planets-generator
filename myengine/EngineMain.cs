@@ -41,11 +41,13 @@ namespace MyEngine
             Asset = new AssetSystem();
             Input = new InputSystem(this);
 
+            stopwatchSinceStart.Restart();
+
             StartSec();
         }
 
-       
 
+        System.Diagnostics.Stopwatch stopwatchSinceStart = new System.Diagnostics.Stopwatch();
 
         public Cubemap skyboxCubeMap;
 
@@ -77,7 +79,7 @@ namespace MyEngine
             //Debug.Info(StringName.Extensions.ToString() + ": " + GL.GetString(StringName.Extensions));
 
 
-            this.VSync = VSyncMode.Adaptive;
+            this.VSync = VSyncMode.Off;
             
             // Other state
             GL.Enable(EnableCap.Texture2D);
@@ -136,7 +138,7 @@ namespace MyEngine
         public override void Exit()
         {
             if (IsDisposed) return;
-                        if (IsExiting) return;
+            if (IsExiting) return;
             base.Exit();
         }
 
@@ -182,6 +184,8 @@ namespace MyEngine
             Debug.Tick("renderThread");
 
             EventThreadMain();
+
+            ubo.engine.totalElapsedSecondsSinceEngineStart = (float)stopwatchSinceStart.Elapsed.TotalSeconds;
 
             //GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
@@ -255,8 +259,8 @@ namespace MyEngine
                             {
                                 if (renderer.AllowsFrustumCulling == false || GeometryUtility.TestPlanesAABB(frustrumPlanes, renderer.bounds))
                                 {
-                                    renderer.material.Uniforms.SendAllUniformsTo(renderer.material.GBufferShader.Uniforms);
-                                    renderer.material.GBufferShader.Bind();
+                                    renderer.Material.Uniforms.SendAllUniformsTo(renderer.Material.GBufferShader.Uniforms);
+                                    renderer.Material.GBufferShader.Bind();
                                     renderer.UploadUBOandDraw(camera, ubo);
                                     countMeshesRendered++;
                                 }
@@ -308,8 +312,8 @@ namespace MyEngine
 
                                 //if (renderer.CanBeFrustumCulled == false || GeometryUtility.TestPlanesAABB(frustrumPlanes, renderer.bounds)) 
                                 {
-                                    renderer.material.Uniforms.SendAllUniformsTo(renderer.material.DepthGrabShader.Uniforms);
-                                    renderer.material.DepthGrabShader.Bind();
+                                    renderer.Material.Uniforms.SendAllUniformsTo(renderer.Material.DepthGrabShader.Uniforms);
+                                    renderer.Material.DepthGrabShader.Bind();
                                     renderer.UploadUBOandDraw(shadowMap.shadowViewCamera, ubo);
                                 }
                             }
@@ -332,7 +336,7 @@ namespace MyEngine
                             light.UploadUBOdata(ubo, lightIndex);
 
                             var shader = Factory.GetShader("internal/deferred.oneLight.shader");
-                            gBuffer.BindGBufferTexturesTo(shader);
+                            gBuffer.BindForLightPass(shader);
                             if (shadowsEnabled && light.HasShadows)
                             {
                                 shadowMap.BindUniforms(shader);
@@ -369,17 +373,16 @@ namespace MyEngine
 
                 foreach (var shader in camera.postProcessEffects)
                 {
-                    gBuffer.BindGBufferTexturesTo(shader);
+                    gBuffer.BindForPosProcessEffects(shader);
                     shader.Bind();
                     quadMesh.Draw();
-                    gBuffer.SwapFinalTextureTarget();
                 }
             }
 
 
             // FINAL DRAW TO SCREEN
             {
-                DebugDrawTexture(gBuffer.finalTextureToWriteTo);
+                DebugDrawTexture(gBuffer.finalTextureToRead);
             }
 
             /*if(debugBounds)

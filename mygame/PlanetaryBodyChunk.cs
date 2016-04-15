@@ -70,9 +70,13 @@ namespace MyGame
                 var a = range.a;
                 var b = range.b;
                 var c = range.c;
-                var ab = (a + b).Divide(2.0f).Normalized().Multiply(planetaryBody.radius);
-                var ac = (a + c).Divide(2.0f).Normalized().Multiply(planetaryBody.radius);
-                var bc = (b + c).Divide(2.0f).Normalized().Multiply(planetaryBody.radius);
+                var ab = (a + b).Divide(2.0f).Normalized();
+                var ac = (a + c).Divide(2.0f).Normalized();
+                var bc = (b + c).Divide(2.0f).Normalized();
+
+                ab *= planetaryBody.radius;
+                ac *= planetaryBody.radius;
+                bc *= planetaryBody.radius;
 
                 MAKE_CHILD(a, ab, ac);
                 MAKE_CHILD(ab, b, bc);
@@ -241,7 +245,7 @@ namespace MyGame
             renderer = planetaryBody.Entity.AddComponent<MeshRenderer>();
             renderer.Mesh = mesh;
 
-            if(planetaryBody.planetMaterial != null) renderer.material = planetaryBody.planetMaterial.MakeCopy();
+            if(planetaryBody.planetMaterial != null) renderer.Material = planetaryBody.planetMaterial.MakeCopy();
             //planetaryBody.HideIn(this, 0);
 
         }

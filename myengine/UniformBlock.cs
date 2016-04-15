@@ -18,6 +18,9 @@ namespace MyEngine
     {
 
         // std140 layout and uniform buffer objects http://www.opentk.com/node/2926
+        // block 4N (N = sizeof(float))
+        // if the next defined variable in a block cannot fit within the size of the remainder of the chunk 
+        // then the values are aligned with the next chunk.
 
         [Serializable]
         [StructLayout(LayoutKind.Sequential)]
@@ -32,6 +35,7 @@ namespace MyEngine
             public float nearClipPlane;
             public float farClipPlane;
             public vec3 ambientColor;
+            public float totalElapsedSecondsSinceEngineStart;
         }
         public EngineUniformStruct engine;
         public UniformBufferObject<EngineUniformStruct> engineUBO;

@@ -21,7 +21,7 @@ namespace MyEngine
         Trilinear,
         Point,
     }
-    public class Texture
+    public abstract class Texture
     {
         public int anisoLevel;
         public bool UsingMipMaps { get; protected set; }

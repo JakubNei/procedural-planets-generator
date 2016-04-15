@@ -25,7 +25,7 @@ namespace MyEngine.Components
         {
             get
             {
-                return base.ShouldRenderGeometry && Mesh != null && Mesh.IsRenderable && Material.GBufferShader != null;
+                return base.ShouldRenderGeometry && Mesh != null && Mesh.IsRenderable && Material != null && Material.GBufferShader != null;
             }
         }
 
@@ -33,12 +33,14 @@ namespace MyEngine.Components
         {
             get
             {
-                return base.ShouldCastShadows && Mesh != null && Mesh.IsRenderable && Material.DepthGrabShader != null;
+                return base.ShouldCastShadows && Mesh != null && Mesh.IsRenderable && Material != null && Material.DepthGrabShader != null;
             }
         }
 
 
-        
+
+    
+
 
         Mesh m_mesh;
         public Mesh Mesh
@@ -50,6 +52,7 @@ namespace MyEngine.Components
                     if (m_mesh != null) m_mesh.OnChanged -= OnMeshHasChanged;
                     m_mesh = value;
                     if (m_mesh != null) m_mesh.OnChanged += OnMeshHasChanged;
+                    ShouldRenderGeometryOrShouldCastShadowsHasChanged();
                 }
             }
             get
@@ -57,21 +60,7 @@ namespace MyEngine.Components
                 return m_mesh;
             }
         }
-        MaterialPBR m_material;
-        public new MaterialPBR Material
-        {
-            set
-            {
-                base.material = value;
-                m_material = value;
-                ShouldRenderGeometryOrShouldCastShadowsHasChanged();
-            }
 
-            get
-            {
-                return m_material;
-            }
-        }
 
 
         static readonly Vector3[] extentsTransformsToEdges = {

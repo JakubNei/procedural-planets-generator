@@ -291,7 +291,7 @@ namespace MyGame
                             toUpdateVisibility.Remove(chunk);
                         }
                     }
-                    chunk.renderer.material.Uniforms.Set("param_visibility", chunk.visibility);
+                    chunk.renderer.Material.Uniforms.Set("param_visibility", chunk.visibility);
                 }
             }
 

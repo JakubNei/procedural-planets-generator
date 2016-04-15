@@ -48,26 +48,23 @@ namespace MyEngine
             normalMap = null;
         }
 
-        /*
-        public override void BindThisMaterialUniforms(Shader shader = null)
+        
+        public void SetFieldsToUniforms()
         {
-            if (shader == null) shader = this.GBufferShader;
-            //shader.Uniform.Set("material.albedoTexture", albedoTexture);
+
             foreach (var p in fieldsToSend)
             {
                 object val = p.GetValue(this);
-                if(val!=null) shader.Uniform.Set("material." + p.Name, val);
+                if(val!=null) Uniforms.Set("material." + p.Name, val);
             }
-            shader.Uniform.Set("material.useNormalMapping", normalMap!=null);
-            shader.Uniform.Set("material.useParallaxMapping", depthMap != null);
-
-            base.BindThisMaterialUniforms(shader);
+            Uniforms.Set("material.useNormalMapping", normalMap!=null);
+            Uniforms.Set("material.useParallaxMapping", depthMap != null);
 
             //shader.Uniform.Set("material.albedo", albedo);
             //shader.Uniform.Set("material.metallic", metallic);
             //shader.Uniform.Set("material.smoothness", smoothness);
             //shader.Uniform.Set("material.emission", emission);
         }
-        */
+        
     }
 }

@@ -181,14 +181,15 @@ void main()
 	}	
 
 	// BASE COLOR
-	float dist = gl_FragCoord.z/gl_FragCoord.w;//distance(EyePosition, i.worldPos);
+	float dist = gl_FragCoord.z/gl_FragCoord.w; //distance(EyePosition, i.worldPos);
 	vec3 c = vec3(1,1,1);
 	c=getColor(dist);
 	out_color = vec4(c,1);
 
+	out_color = vec4(c,1);
 	out_normal = i.normal;
 	out_position = i.worldPos;
-	out_data = vec4(0);
+	out_data = vec4(1,1,1,1);
 	
 }
 

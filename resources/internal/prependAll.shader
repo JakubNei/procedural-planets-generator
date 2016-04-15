@@ -1,6 +1,8 @@
 ﻿#version 400 core
 
 
-[include uniformBufferObjects.shader]
+[include uniformBufferObjects.inc.glsl]
 
-[include lightingModels.shader]
+[include gBuffer.inc.glsl]
+
+[include lightingModels.inc.glsl]

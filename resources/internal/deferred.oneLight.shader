@@ -164,8 +164,8 @@ void main()
 	GBufferPerPixel gBuffer = GetGBufferPerPixel(screenCoord);
 
 
-	// skybox, just pass thru color
-	if (gBuffer.normal==vec3(0,0,0)) {
+	// skybox or fully light emissive object, just pass thru color
+	if (gBuffer.normal==vec3(0,0,0) || gBuffer.emission == 1) {
 		if(light.lightIndex == 0) {
 			out_color = vec4(gBuffer.color, 1);
 		}

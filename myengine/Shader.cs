@@ -40,8 +40,8 @@ namespace MyEngine
 
         static Shader()
         {
-            DefaultGBufferShader = Factory.GetShader("internal/deferred.gBuffer.standart.shader");
-            DefaultDepthGrabShader = Factory.GetShader("internal/depthGrab.standart.shader");
+            DefaultGBufferShader = Factory.GetShader("internal/deferred.gBuffer.standard.shader");
+            DefaultDepthGrabShader = Factory.GetShader("internal/depthGrab.standard.shader");
         }
 
         public Shader(Asset asset)
@@ -74,15 +74,16 @@ namespace MyEngine
 
 
             var builder = new ShaderBuilder(asset.AssetSystem);
+            var success = true;
             builder.Load(asset);
             foreach(var r in builder.buildResults)
             {
-                AttachShader(r.shaderContents, r.shaderType, r.filePath);
+                success &= AttachShader(r.shaderContents, r.shaderType, r.filePath);
             }
 
             FinalizeInit();
             
-            Debug.Info(typeof(Shader) + " " + asset + " loaded successfully");
+            if(success) Debug.Info(typeof(Shader) + " " + asset + " loaded successfully");
 
             fileWatcher.WatchFile(asset.RealPath, (string newFileName) => {
                 shouldReload = true;

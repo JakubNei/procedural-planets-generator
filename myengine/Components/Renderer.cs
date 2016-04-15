@@ -25,7 +25,7 @@ namespace MyEngine.Components
 
 
 
-        RenderingMode m_RenderingMode;
+        RenderingMode m_RenderingMode = RenderingMode.RenderGeometryAndCastShadows;
         public RenderingMode RenderingMode
         {
             get
@@ -42,7 +42,23 @@ namespace MyEngine.Components
             }
         }
 
-        public Material material;
+        Material m_material;
+        public virtual Material Material
+        {
+            set
+            {
+                if (m_material != value)
+                {
+                    m_material = value;
+                    ShouldRenderGeometryOrShouldCastShadowsHasChanged();
+                }
+            }
+            get
+            {
+                return m_material;
+            }
+        }
+
         public virtual Bounds bounds { set; get; }
         public bool AllowsFrustumCulling = true;
 
@@ -51,7 +67,7 @@ namespace MyEngine.Components
 
         public Renderer(Entity entity) : base(entity)
         {
-
+            ShouldRenderGeometryOrShouldCastShadowsHasChanged();
         }
 
         public virtual void UploadUBOandDraw(Camera camera, UniformBlock ubo)
