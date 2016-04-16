@@ -76,7 +76,7 @@ namespace MyEngine.Components
 
         public MeshRenderer(Entity entity) : base(entity)
         {
-            Material = new MaterialPBR();
+            Material = new Material();
         }
 
         /// <summary>

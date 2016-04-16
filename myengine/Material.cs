@@ -10,67 +10,61 @@ namespace MyEngine
 {
     public class Material
     {
-        Shader gBufferShader;
-        public Shader GBufferShader
+        Shader m_gBufferShader;
+        public virtual Shader GBufferShader
         {
             get
             {
-                lock(this)
-                {
-                    return gBufferShader;
-                }
+                return m_gBufferShader;
             }
             set
             {
-                lock(this)
-                {
-                    if (value == null) throw new NullReferenceException("can not set " + MemberName.For(() => GBufferShader) + " to null");
-                    gBufferShader = value;
-                }
+                //if (value == null) throw new NullReferenceException("can not set " + MemberName.For(() => GBufferShader) + " to null");
+                m_gBufferShader = value;
             }
         }
-        Shader depthGrabShader;
-        public Shader DepthGrabShader
+        Shader m_depthGrabShader;
+        public virtual Shader DepthGrabShader
         {
             get
             {
-                lock(this)
-                {
-                    return depthGrabShader;
-                }
+                return m_depthGrabShader;
             }
             set
             {
-                lock(this)
-                {
-                    if (value == null) throw new NullReferenceException("can not set " + MemberName.For(() => DepthGrabShader) + " to null");
-                    depthGrabShader = value;
-                }
+                if (value == null) throw new NullReferenceException("can not set " + MemberName.For(() => DepthGrabShader) + " to null");
+                m_depthGrabShader = value;
             }
         }
 
-        public UniformsManager Uniforms { get; private set; }
+        public virtual UniformsManager Uniforms { get; private set; }
 
         public Material()
         {
-            if (gBufferShader == null) gBufferShader = Shader.DefaultGBufferShader;
-            if (depthGrabShader == null) depthGrabShader = Shader.DefaultDepthGrabShader;
+            //if (GBufferShader == null) GBufferShader = Shader.DefaultGBufferShader; //BUG: if you uncoment this line planet chunks materials will suddenly delayed randomly be assigned the shader
+            if (DepthGrabShader == null) DepthGrabShader = Shader.DefaultDepthGrabShader;
             this.Uniforms = new UniformsManager();
         }
 
-        public Material MakeCopy()
+        public virtual void BeforeBindCallback()
         {
-            lock(this)
-            {
-                var m = new Material()
-                {
-                    gBufferShader = gBufferShader,
-                    depthGrabShader = depthGrabShader,
-                };
-                Uniforms.SendAllUniformsTo(m.Uniforms);
-                return m;
-            }
+
         }
-        
+
+        public virtual Material MakeCopy()
+        {
+            //var m = new Material()
+            //{
+            //    GBufferShader = GBufferShader,
+            //    DepthGrabShader = DepthGrabShader,
+            //};
+
+            var m = new Material();
+            m.GBufferShader = GBufferShader;
+            m.DepthGrabShader = DepthGrabShader;
+            Uniforms.SendAllUniformsTo(m.Uniforms);
+            return m;
+        }
+
     }
 }

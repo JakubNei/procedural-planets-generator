@@ -334,7 +334,7 @@ namespace MyGame
             else
             {
                 if (chunk.IsMeshReady() == false) chunk.RequestMeshGeneration();
-                if (chunk.IsMeshReady())
+                else
                 {
                     if (GetVisibility(chunk) != 1)
                     {

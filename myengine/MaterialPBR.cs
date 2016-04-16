@@ -49,7 +49,7 @@ namespace MyEngine
         }
 
         
-        public void SetFieldsToUniforms()
+        public override void BeforeBindCallback()
         {
 
             foreach (var p in fieldsToSend)

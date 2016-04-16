@@ -268,6 +268,7 @@ namespace MyEngine
                                 {
                                     if (renderer.AllowsFrustumCulling == false || GeometryUtility.TestPlanesAABB(frustrumPlanes, renderer.bounds))
                                     {
+                                        renderer.Material.BeforeBindCallback();
                                         renderer.Material.Uniforms.SendAllUniformsTo(renderer.Material.GBufferShader.Uniforms);
                                         renderer.Material.GBufferShader.Bind();
                                         renderer.UploadUBOandDraw(camera, ubo);
@@ -321,6 +322,7 @@ namespace MyEngine
 
                                 //if (renderer.CanBeFrustumCulled == false || GeometryUtility.TestPlanesAABB(frustrumPlanes, renderer.bounds)) 
                                 {
+                                    renderer.Material.BeforeBindCallback();
                                     renderer.Material.Uniforms.SendAllUniformsTo(renderer.Material.DepthGrabShader.Uniforms);
                                     renderer.Material.DepthGrabShader.Bind();
                                     renderer.UploadUBOandDraw(shadowMap.shadowViewCamera, ubo);
