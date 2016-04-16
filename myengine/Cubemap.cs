@@ -23,6 +23,7 @@ namespace MyEngine
 
         public bool IsOnGpu { get; private set; }
         public bool WantsToBeUploadedToGpu { get; private set; }
+        public bool KeepLocalCopyOfTexture { get; set; }
 
         public Color this[Face face, int x, int y]
         {
@@ -175,6 +176,11 @@ namespace MyEngine
                 GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
             }
 
+            if(KeepLocalCopyOfTexture == false)
+            {
+                foreach (var bmp in bmps) bmp.Dispose();
+                bmps = null;
+            }
         }
         void UpdateIsOnGpu()
         {

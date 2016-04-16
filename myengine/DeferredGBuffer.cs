@@ -6,6 +6,7 @@ using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 
+using MyEngine.Components;
 
 namespace MyEngine
 {
@@ -66,7 +67,11 @@ namespace MyEngine
             depthTexture = new Texture2D(GL.GenTexture());
             GL.BindTexture(TextureTarget.Texture2D, depthTexture.GetNativeTextureID());
             GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.DepthComponent32f, width, height, 0, PixelFormat.DepthComponent, PixelType.Float, new IntPtr(0));
-            GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Clamp);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Clamp);
+            //GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
 
             // create frame buffer object
             frameBufferObjectHandle = GL.GenFramebuffer();
@@ -111,7 +116,7 @@ namespace MyEngine
             GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, frameBufferObjectHandle);
 
             GL.DrawBuffer(DrawBufferMode.ColorAttachment4);
-            shader.Uniforms.Set("gBufferUniform.depthBuffer", depthTexture);
+            shader.Uniforms.Set("gBufferUniform.depth", depthTexture);
 
             for (int i = 0; i < textures.Length - 2; i++)
             {
@@ -119,15 +124,17 @@ namespace MyEngine
             }
         }
 
-        public void BindForPosProcessEffects(Shader shader, bool usesGeneratedMipMaps = true)
+        public void BindForPostProcessEffects(IPostProcessEffect postProcess)
         {
+            var shader = postProcess.Shader;
+            var generateMipMaps = postProcess.RequiresGBufferMipMaps;
 
             // generate mip maps for final texture, so it can be used in post processing effects, many post processing effects require blurred texture
-            if (usesGeneratedMipMaps)
+            if (generateMipMaps)
             {
-                GL.ActiveTexture(TextureUnit.Texture0);
+                /*GL.ActiveTexture(TextureUnit.Texture0);
                 GL.BindTexture(TextureTarget.Texture2D, finalTextureToWriteTo.GetNativeTextureID());
-                GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
+                GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);*/
 
                 GL.ActiveTexture(TextureUnit.Texture0);
                 GL.BindTexture(TextureTarget.Texture2D, finalTextureToRead.GetNativeTextureID());
@@ -146,7 +153,7 @@ namespace MyEngine
             else GL.DrawBuffer(DrawBufferMode.ColorAttachment5);
 
 
-            shader.Uniforms.Set("gBufferUniform.depthBuffer", depthTexture);
+            shader.Uniforms.Set("gBufferUniform.depth", depthTexture);
             shader.Uniforms.Set("gBufferUniform.final", finalTextureToRead);
 
             for (int i = 0; i < textures.Length - 2; i++)

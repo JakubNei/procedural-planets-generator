@@ -60,12 +60,12 @@ void main()
 	
 
 
-	vec4 c = texture2D(param_surfaceDiffuse, i.uv);
+	vec4 c = texture2D(param_surfaceDiffuse, i.uv + engine.totalElapsedSecondsSinceEngineStart*0.003);
 	float g;
 
 	g = texture2D(param_turbulenceMap, i.uv + engine.totalElapsedSecondsSinceEngineStart*0.005).x;
 	c += 0.5 * texture2D(param_turbulenceColorGradient, vec2( 0.01+g*0.98, 0));
-	g = texture2D(param_turbulenceMap, i.uv.yx + engine.totalElapsedSecondsSinceEngineStart*0.001).x;
+	g = texture2D(param_turbulenceMap, i.uv.yx + engine.totalElapsedSecondsSinceEngineStart*0.01).x;
 	c += 0.5 * texture2D(param_turbulenceColorGradient, vec2( 0.01+g*0.98, 0));
 
 	out_color = vec4(c.x,c.y,c.z,1);

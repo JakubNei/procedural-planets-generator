@@ -3,21 +3,28 @@
 [VertexShader] // pass thru vertex shader
 
 layout(location = 0) in vec3 in_position;
+layout(location = 1) in vec3 in_normal;
+layout(location = 2) in vec3 in_tangent;
+layout(location = 3) in vec2 in_uv;
+
+out data {
+	vec2 uv; 
+} o;
 
 void main()
 {
+	o.uv = in_uv;
 	gl_Position = vec4(in_position,1);
 }
 
 
-
-
-
-
-
-
-
 [FragmentShader]
+
+in data {
+	vec2 uv; 
+} i;
+
+
 
 int IsInShadow(vec2 screenCoord) {	
 
@@ -159,7 +166,7 @@ layout(location = 0) out vec4 out_color;
 void main()
 {
 
-	vec2 screenCoord = gl_FragCoord.xy / engine.screenSize;
+	vec2 screenCoord = i.uv;
 
 	GBufferPerPixel gBuffer = GetGBufferPerPixel(screenCoord);
 

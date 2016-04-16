@@ -20,9 +20,9 @@ namespace MyEngine
 
         public void SendAllUniformsTo(UniformsManager uniformManager)
         {
-            lock(this)
+            lock (this)
             {
-                lock(uniformManager)
+                lock (uniformManager)
                 {
                     foreach (var kvp in uniformsObjectData) uniformManager.Set(kvp.Key, kvp.Value);
                     foreach (var kvp in uniformsTexturesData) uniformManager.Set(kvp.Key, kvp.Value);
@@ -36,7 +36,7 @@ namespace MyEngine
         /// <param name="shader"></param>
         public void UploadChangedUniforms(Shader shader)
         {
-            lock(this)
+            lock (this)
             {
                 //if (shader == null) shader = this.shader;
                 foreach (var name in uniformsChanged)
@@ -86,7 +86,8 @@ namespace MyEngine
                         uniformsTexturesData[name] = o as Texture;
                     }
                 }
-                else {
+                else
+                {
                     object oldObj = null;
                     if (uniformsObjectData.TryGetValue(name, out oldObj) == false || oldObj.Equals(o) == false)
                     {

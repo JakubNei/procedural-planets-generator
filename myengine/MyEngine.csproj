@@ -52,8 +52,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Components\Bloom.cs" />
     <Compile Include="Components\ComponentSettingAttribute.cs" />
+    <Compile Include="Components\GodRays.cs" />
     <Compile Include="Components\IComponent.cs" />
+    <Compile Include="Components\PostProcessEffect.cs" />
+    <Compile Include="Components\SSAO.cs" />
     <Compile Include="DataAccessibleList.cs" />
     <Compile Include="DeferredSynchronizeInvoke.cs" />
     <Compile Include="enums.cs" />

@@ -5,22 +5,28 @@
 [VertexShader] // pass thru vertex shader
 
 layout(location = 0) in vec3 in_position;
+layout(location = 1) in vec3 in_normal;
+layout(location = 2) in vec3 in_tangent;
+layout(location = 3) in vec2 in_uv;
+
+out data {
+	vec2 uv; 
+} o;
 
 void main()
 {
+	o.uv = in_uv;
 	gl_Position = vec4(in_position,1);
 }
 
 
-
-
-
 [FragmentShader]
 
-uniform vec3 testColor;
+in data {
+	vec2 uv; 
+} i;
 
 layout(location = 0) out vec4 out_color;
-
 
 
 //http://www.walterzorn.de/en/grapher/grapher_e.htm
@@ -36,9 +42,9 @@ void main()
 {
 
 
-	vec2 screenCoord = gl_FragCoord.xy / engine.screenSize;
+	vec2 thisPixelScreenCoord = i.uv;
 
-	GBufferPerPixel gBuffer = GetGBufferPerPixel(screenCoord);
+	GBufferPerPixel gBuffer = GetGBufferPerPixel(thisPixelScreenCoord);
 
 
 	vec3 col = vec3(gBuffer.final);
@@ -58,11 +64,19 @@ void main()
 
 	vec3 final;
 	float intensity;
+	vec2 screenCoord;
+
 
 	#define ADD(X, Y, MULT) \
-		final = textureLod(gBufferUniform.final, screenCoord + vec2(xScale*X, yScale*Y), 2).xyz; \
-		if(any(greaterThan(final, vec3(1)))) { \
-			col += final * MULT; \
+		screenCoord = thisPixelScreenCoord + vec2(xScale*X, yScale*Y); \
+		if( \
+			any(greaterThan(screenCoord, vec2(1))) == false && \
+			any(lessThan(screenCoord, vec2(0))) == false \
+		) { \
+			final = textureLod(gBufferUniform.final, screenCoord, 2).xyz; \
+			if(any(greaterThan(final, vec3(1)))) { \
+				col += final * MULT; \
+			} \
 		} \
 
 

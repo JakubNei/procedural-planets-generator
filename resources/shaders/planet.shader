@@ -186,10 +186,11 @@ void main()
 	c=getColor(dist);
 	out_color = vec4(c,1);
 
-	out_color = vec4(c,1);
+	out_color = vec4(vec3(0,1,0),1);
+
 	out_normal = i.normal;
 	out_position = i.worldPos;
-	out_data = vec4(1,1,1,1);
+	out_data = vec4(0);
 	
 }
 

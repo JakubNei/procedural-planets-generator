@@ -19,6 +19,8 @@ namespace MyGame
             {
 
                 var scene = engine.AddScene();
+               
+                Entity sunEntity = null;
 
                 {
 
@@ -26,8 +28,18 @@ namespace MyGame
                     entity.AddComponent<FirstPersonCamera>();
 
                     var cam = scene.mainCamera = entity.AddComponent<Camera>();
-                    cam.AddPostProcessEffect(Factory.GetShader("postProcessEffects/bloom.glsl"));
-                    cam.AddPostProcessEffect(Factory.GetShader("postProcessEffects/godRays.glsl"));
+
+                    entity.AddComponent<Bloom>();
+                    var gr = entity.AddComponent<GodRays>();
+                    gr.lightWorldRadius = 1000;
+                    entity.EventSystem.Register((MyEngine.Events.GraphicsUpdate e) =>
+                    {
+                        var mp = cam.GetViewMat() * cam.GetProjectionMat();
+                        var p = Vector4.Transform(new Vector4(sunEntity.Transform.Position, 1), mp);                        
+                        gr.lightScreenPos = (p.Xyz / p.W) / 2 + Vector3.One / 2;
+                        gr.lightWorldPos = sunEntity.Transform.Position;
+                    });
+
 
                     string skyboxName = "skybox/generated/";
                     engine.skyboxCubeMap = Factory.GetCubeMap(new [] {
@@ -61,10 +73,6 @@ namespace MyGame
 
 
                 var proceduralPlanets = new ProceduralPlanets(scene);
-
-
-                Entity sunEntity;
-
                 {
                     var entity = sunEntity = scene.AddEntity();
                     entity.Transform.Scale *= 1000;

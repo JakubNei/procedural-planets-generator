@@ -12,9 +12,9 @@ using MyEngine;
 using MyEngine.Events;
 using MyEngine.Components;
 
-namespace MyGame
+namespace MyEngine.Components
 {
-    public class SSAO : ComponentWithShortcuts
+    public class SSAO : PostProcessEffect
     {
         public SSAO(Entity entity) : base(entity)
         {

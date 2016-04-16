@@ -27,7 +27,7 @@ namespace MyEngine.Components
 
         public Vector3 ambientColor = new Vector3(0.2f,0.2f,0.2f);
 
-        public List<Shader> postProcessEffects = new List<Shader>();
+        public List<IPostProcessEffect> postProcessEffects = new List<IPostProcessEffect>();
 
         public Camera(Entity entity) : base(entity)
         {
@@ -68,7 +68,7 @@ namespace MyEngine.Components
             ubo.engineUBO.UploadData();
         }
 
-        public void AddPostProcessEffect(Shader shader)
+        public void AddPostProcessEffect(IPostProcessEffect shader)
         {
             postProcessEffects.Add(shader);
         }

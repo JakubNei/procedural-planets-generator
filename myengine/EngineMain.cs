@@ -23,15 +23,20 @@ namespace MyEngine
         public AssetSystem Asset { get; private set; }
         List<SceneSystem> scenes = new List<SceneSystem>();
 
-        public EngineMain()
-            : base(1400, 900,
-            new GraphicsMode(), "MyEngine", GameWindowFlags.Default,
-            DisplayDevice.Default, 4, 0,
-            //GraphicsContextFlags.Default)
-            GraphicsContextFlags.ForwardCompatible)
+        public EngineMain() : base(
+            1400,
+            900,
+            new GraphicsMode(),
+            "MyEngine",
+            GameWindowFlags.Default,
+            DisplayDevice.Default,
+            4,
+            0,
+            GraphicsContextFlags.ForwardCompatible
+        )
         {
 
-            System.Diagnostics.Process.GetCurrentProcess().PriorityClass = System.Diagnostics.ProcessPriorityClass.High;
+            System.Diagnostics.Process.GetCurrentProcess().PriorityClass = System.Diagnostics.ProcessPriorityClass.RealTime;
 
             VSync = VSyncMode.Off;
             TargetRenderFrequency = 0;
@@ -182,7 +187,7 @@ namespace MyEngine
 
         protected override void OnRenderFrame(FrameEventArgs e)
         {
-            Debug.AddValue("fps", (1 / e.Time).ToString());
+            //Debug.AddValue("fps", (1 / e.Time).ToString());
             Debug.Tick("renderThread");
 
             EventThreadMain();
@@ -373,10 +378,12 @@ namespace MyEngine
                 GL.Disable(EnableCap.DepthTest);
                 GL.DepthMask(false);
 
-                foreach (var shader in camera.postProcessEffects)
+                foreach (var pe in camera.postProcessEffects)
                 {
-                    gBuffer.BindForPosProcessEffects(shader);
-                    shader.Bind();
+                    if (pe.IsEnabled == false) continue;
+                    pe.BeforeBindCallBack();
+                    gBuffer.BindForPostProcessEffects(pe);
+                    pe.Shader.Bind();
                     quadMesh.Draw();
                 }
             }

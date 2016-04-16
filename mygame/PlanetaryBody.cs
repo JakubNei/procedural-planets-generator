@@ -235,7 +235,7 @@ namespace MyGame
 
             chunk.hideIn = seconds;
             chunk.showIn = -1;
-            //chunk.visibility = 1;
+            chunk.visibility = 1;
             lock (toUpdateVisibility)
             {
                 toUpdateVisibility.Add(chunk);
@@ -248,7 +248,7 @@ namespace MyGame
 
             chunk.hideIn = -1;
             chunk.showIn = seconds;
-            //chunk.visibility = 0;
+            chunk.visibility = 0;
             lock (toUpdateVisibility)
             {
                 toUpdateVisibility.Add(chunk);

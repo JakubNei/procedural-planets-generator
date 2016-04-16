@@ -1,5 +1,5 @@
 struct GBufferData {
-	sampler2D depthBuffer;
+	sampler2D depth;
 	sampler2D albedo;
 	sampler2D position;
 	sampler2D normal;
@@ -24,7 +24,7 @@ vec3 GBufferGetFinal(vec2 screenCoord) {
 }
 
 float GBufferGetDepth(vec2 screenCoord) {
-	return textureLod(gBufferUniform.depthBuffer, screenCoord, 0).x;
+	return textureLod(gBufferUniform.depth, screenCoord, 0).x;
 }
 
 void GBufferPackData_Emission(out vec4 data, float emission) {
