@@ -41,8 +41,8 @@ namespace MyGame
         void Update(double deltaTime)
         {
 
-
-
+            Debug.AddValue("cameraSpeed", speedModifier.ToString());
+            Debug.AddValue("cameraPos", Transform.Position.ToString());
 
             var mouse = Mouse.GetState();
 
@@ -79,7 +79,7 @@ namespace MyGame
                 }
             }
 
-            if (Input.GetKeyDown(OpenTK.Input.Key.F))
+            if (Input.GetKeyDown(Key.F))
             {
                 if (Scene.Engine.WindowState != WindowState.Fullscreen)
                     Scene.Engine.WindowState = WindowState.Fullscreen;

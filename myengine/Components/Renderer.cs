@@ -26,7 +26,7 @@ namespace MyEngine.Components
 
 
         RenderingMode m_RenderingMode = RenderingMode.RenderGeometryAndCastShadows;
-        public RenderingMode RenderingMode
+        public virtual RenderingMode RenderingMode
         {
             get
             {
@@ -67,13 +67,14 @@ namespace MyEngine.Components
         }
 
         public virtual Bounds bounds { set; get; }
-        public bool AllowsFrustumCulling = true;
+        public virtual bool AllowsFrustumCulling { get; set; }
 
         bool last_ShouldRenderGeometry = false;
         bool last_ShouldCastShadows = false;
 
         public Renderer(Entity entity) : base(entity)
         {
+            AllowsFrustumCulling = true;
             ShouldRenderGeometryOrShouldCastShadowsHasChanged();
         }
 
@@ -82,7 +83,7 @@ namespace MyEngine.Components
         }
 
 
-        protected void ShouldRenderGeometryOrShouldCastShadowsHasChanged()
+        protected virtual void ShouldRenderGeometryOrShouldCastShadowsHasChanged()
         {
             if (last_ShouldRenderGeometry != ShouldRenderGeometry)
             {

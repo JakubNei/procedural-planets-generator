@@ -41,7 +41,10 @@ namespace MyEngine
 
         public Material()
         {
-            //if (GBufferShader == null) GBufferShader = Shader.DefaultGBufferShader; //BUG: if you uncoment this line planet chunks materials will suddenly delayed randomly be assigned the shader
+            //BUG: if you uncoment this line planet chunks materials will suddenly delayed randomly be assigned the shader
+            // it was bad multithreading, two threads did exactly the same thing, one created new Material and before it assigned GBufferShader
+            // other did touch the Material and thus has seen default GBufferShader there
+            if (GBufferShader == null) GBufferShader = Shader.DefaultGBufferShader;
             if (DepthGrabShader == null) DepthGrabShader = Shader.DefaultDepthGrabShader;
             this.Uniforms = new UniformsManager();
         }
@@ -53,15 +56,11 @@ namespace MyEngine
 
         public virtual Material MakeCopy()
         {
-            //var m = new Material()
-            //{
-            //    GBufferShader = GBufferShader,
-            //    DepthGrabShader = DepthGrabShader,
-            //};
-
-            var m = new Material();
-            m.GBufferShader = GBufferShader;
-            m.DepthGrabShader = DepthGrabShader;
+            var m = new Material()
+            {
+                GBufferShader = GBufferShader,
+                DepthGrabShader = DepthGrabShader,
+            };
             Uniforms.SendAllUniformsTo(m.Uniforms);
             return m;
         }

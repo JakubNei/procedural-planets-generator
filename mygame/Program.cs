@@ -19,7 +19,7 @@ namespace MyGame
             {
 
                 var scene = engine.AddScene();
-               
+
                 Entity sunEntity = null;
 
                 {
@@ -48,7 +48,7 @@ namespace MyGame
                     }
 
                     string skyboxName = "skybox/generated/";
-                    engine.skyboxCubeMap = Factory.GetCubeMap(new [] {
+                    engine.skyboxCubeMap = Factory.GetCubeMap(new[] {
                         skyboxName + "left.png",
                         skyboxName + "right.png",
                         skyboxName + "top.png",
@@ -57,12 +57,12 @@ namespace MyGame
                         skyboxName + "back.png"
                     });
 
-          
+
                     entity.Transform.Position = (new Vector3(1, 1, 1)) * 100;
                     entity.Transform.LookAt(new Vector3(0, 0, 100));
 
                     //engine.camera.entity.AddComponent<SSAO>();
-                    
+
                 }
 
 
@@ -79,6 +79,8 @@ namespace MyGame
 
 
                 var proceduralPlanets = new ProceduralPlanets(scene);
+
+
                 {
                     var entity = sunEntity = scene.AddEntity();
                     entity.Transform.Scale *= 1000;
@@ -92,13 +94,11 @@ namespace MyGame
                     mat.Uniforms.Set("param_turbulenceColorGradient", Factory.GetTexture2D("textures/fire_gradient.png"));
                     mat.Uniforms.Set("param_turbulenceMap", Factory.GetTexture2D("textures/turbulence_map.png"));
                     mat.Uniforms.Set("param_surfaceDiffuse", Factory.GetTexture2D("textures/sun_surface_d.png"));
-                    
+
                 }
 
                 {
                     var entity = scene.AddEntity();
-                    entity.Transform.Position = sunEntity.Transform.Position;
-
                     var light = entity.AddComponent<Light>();
                     light.LighType = LightType.Directional;
                     light.color = Vector3.One * 1f;
@@ -106,16 +106,14 @@ namespace MyGame
 
                     scene.EventSystem.Register((MyEngine.Events.GraphicsUpdate e) =>
                     {
+                        entity.Transform.Position = sunEntity.Transform.Position;
                         entity.Transform.LookAt(scene.mainCamera.Transform.Position);
                     });
                 }
-
-                    //var proceduralSkybox = new ProceduralSpaceSkybox();
-                    //engine.skyboxCubeMap = proceduralSkybox.cubemap;
-
-                    engine.Run();
+ 
+                engine.Run();
 
             }
         }
-    }   
+    }
 }

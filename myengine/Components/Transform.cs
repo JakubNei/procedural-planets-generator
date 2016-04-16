@@ -182,7 +182,7 @@ namespace MyEngine.Components
 
         public void LookAt(Vector3 worldPosition, Vector3 worldUp)
         {            
-            this.Rotation = Matrix4.LookAt(this.Position, -worldPosition, worldUp).ExtractRotation();
+            this.Rotation = Matrix4.LookAt(this.Position, worldPosition, worldUp).ExtractRotation();
         }
         public void LookAt(Vector3 worldPosition)
         {

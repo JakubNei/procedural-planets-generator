@@ -87,7 +87,6 @@ void main()
 		uv = newUV;
 	}
 	out_color = material.albedo * texture(material.albedoTexture, uv);
-	//out_color = vec4(0,1,0,1);
 
 
 
@@ -110,6 +109,8 @@ void main()
 	out_data = vec4(0);
 
 
+	//DEBUG
+	out_color = vec4(0,1,0,1);
 	//LightData light = lights[0];
 	//out_color = vec3( dot(out_normal, normalize(lights[0].position-out_position)) );
 	//out_color = vec3(   pow(max(dot(normalize(engine.cameraPosition-out_position), reflect( normalize(lights[0].position-out_position),out_normal)),0), 100) );

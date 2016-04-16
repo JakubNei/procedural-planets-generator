@@ -88,8 +88,15 @@ namespace MyGame
 
 
         int numbetOfChunksGenerated = 0;
+        bool isGenerated = false;
         void CreateRendererAndGenerateMesh()
         {
+            lock(this)
+            {
+                if (isGenerated) return;
+                isGenerated = true;
+            }
+
             int numberOfVerticesOnEdge = planetaryBody.chunkNumberOfVerticesOnEdge;
 
             var mesh = new Mesh();// "PlanetaryBodyChunk depth:" + subdivisionDepth + " #" + numbetOfChunksGenerated);
@@ -242,13 +249,13 @@ namespace MyGame
 
             mesh.RecalculateBounds();
 
+            if (renderer != null) throw new Exception("something went terribly wrong, renderer should be null");
             renderer = planetaryBody.Entity.AddComponent<MeshRenderer>();
             renderer.Mesh = mesh;
 
             if(planetaryBody.planetMaterial != null) renderer.Material = planetaryBody.planetMaterial.MakeCopy();
-            //planetaryBody.HideIn(this, 0);
-
             renderer.RenderingMode = RenderingMode.DontRender;
+            this.visibility = 0;
 
         }
 
@@ -260,8 +267,9 @@ namespace MyGame
 
         public void RequestMeshGeneration()
         {
-            var cam = planetaryBody.Entity.Scene.mainCamera;
+            if (renderer != null) return;
 
+            var cam = planetaryBody.Entity.Scene.mainCamera;
 
             // help from http://stackoverflow.com/questions/3717226/radius-of-projected-sphere
             var sphere = visibilityCollisionRange.ToBoundingSphere();
@@ -333,24 +341,28 @@ namespace MyGame
                                 chunk = kvp.Key;
                             }
                         }
+                        if(chunk != null)
+                        {
+                            lock (chunkIsBeingGenerated)
+                            {
+                                if (chunkIsBeingGenerated.Contains(chunk))
+                                {
+                                    chunk = null; // other thread found it faster than this one
+                                }
+                                else
+                                {
+                                    chunkIsBeingGenerated.Add(chunk);
+                                    chunkToPriority.Remove(chunk);
+                                }
+                            }
+                        }
                     }
 
-
-                    if (chunk != null)
-                    {
-                        lock (chunkIsBeingGenerated)
-                        {
-                            chunkIsBeingGenerated.Add(chunk);
-                        }
-                        lock(chunkToPriority)
-                        {
-                            chunkToPriority.Remove(chunk);
-                        }
-                    }
 
                     // this takes alot of time
                     if (chunk != null)
                     {
+
                         chunk.CreateRendererAndGenerateMesh();
 
                         lock (chunkIsBeingGenerated)
@@ -384,14 +396,18 @@ namespace MyGame
                     if (isChunkBeingGenerated) return;
                 }
 
-                lock(chunkToPriority)
+                if (chunk.renderer != null) return;
+
+                lock (chunkToPriority)
                 {
+                    /*
                     var found = chunkToPriority.ContainsKey(chunk);
                     if (found == false)
                     {
                         chunkToPriority[chunk] = 0;
                     }
-                    chunkToPriority[chunk] += priorityAdd;
+                    */
+                    chunkToPriority[chunk] = priorityAdd;
                 }
             }
 

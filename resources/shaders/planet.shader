@@ -177,7 +177,7 @@ void main()
 {
 
 	if(param_visibility != 1)	{
-		//if(clamp(rand(gl_FragCoord.xy),0,1) > param_visibility) discard;
+		if(clamp(rand(gl_FragCoord.xy),0,1) > param_visibility) discard;
 	}	
 
 	// BASE COLOR
