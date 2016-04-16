@@ -16,7 +16,7 @@ namespace MyGame
         public int chunkNumberOfVerticesOnEdge = 10;
         public float radius;
         public int subdivisionRecurisonDepth = 10;
-        public Material planetMaterial;
+        public volatile Material planetMaterial;
         public float radiusVariation = 20;
         public float subdivisionSphereRadiusModifier = 0.5f;
         public float startingRadiusSubdivisionModifier = 2;
@@ -129,13 +129,6 @@ namespace MyGame
         }
 
 
-        void SetMaterialProperties(Material mat)
-        {
-            mat.Uniforms.Set("planetRadius", this.radius);
-            mat.Uniforms.Set("planetCenter", Transform.Position);
-        }
-
-
         List<Vector3> vertices;
         void FACE(int A, int B, int C)
         {
@@ -235,7 +228,7 @@ namespace MyGame
 
             chunk.hideIn = seconds;
             chunk.showIn = -1;
-            chunk.visibility = 1;
+            //chunk.visibility = 1;
             lock (toUpdateVisibility)
             {
                 toUpdateVisibility.Add(chunk);
@@ -248,7 +241,7 @@ namespace MyGame
 
             chunk.hideIn = -1;
             chunk.showIn = seconds;
-            chunk.visibility = 0;
+            //chunk.visibility = 0;
             lock (toUpdateVisibility)
             {
                 toUpdateVisibility.Add(chunk);
@@ -257,42 +250,52 @@ namespace MyGame
 
         void OnGraphicsUpdate(double deltaTime)
         {
-            lock(toUpdateVisibility)
+            PlanetaryBodyChunk[] toUpdateVisibility_copy;
+            lock (toUpdateVisibility)
             {
-                foreach (var chunk in toUpdateVisibility.ToArray())
+                toUpdateVisibility_copy = toUpdateVisibility.ToArray();
+            }
+            foreach (var chunk in toUpdateVisibility_copy)
+            {
+                if (chunk.showIn != -1)
                 {
-                    if (chunk.showIn != -1)
+                    if (chunk.visibility < 1)
                     {
-                        if (chunk.visibility < 1)
+                        chunk.renderer.RenderingMode = RenderingMode.RenderGeometryAndCastShadows;
+                        chunk.visibility += (float)deltaTime / chunk.showIn;
+                    }
+                    else
+                    {
+                        chunk.renderer.RenderingMode = RenderingMode.RenderGeometryAndCastShadows;
+                        chunk.showIn = -1;
+                        chunk.hideIn = -1;
+                        chunk.visibility = 1;
+                        lock (toUpdateVisibility)
                         {
-                            chunk.renderer.RenderingMode = RenderingMode.RenderGeometryAndCastShadows;
-                            chunk.visibility += (float)deltaTime / chunk.showIn;
-                        }
-                        else
-                        {
-                            chunk.renderer.RenderingMode = RenderingMode.RenderGeometryAndCastShadows;
-                            chunk.showIn = -1;
-                            chunk.visibility = 1;
                             toUpdateVisibility.Remove(chunk);
                         }
                     }
-                    else if (chunk.hideIn != -1)
-                    {
-                        if (chunk.visibility > 0)
-                        {
-                            chunk.renderer.RenderingMode = RenderingMode.RenderGeometryAndCastShadows;
-                            chunk.visibility -= (float)deltaTime / chunk.hideIn;
-                        }
-                        else
-                        {
-                            chunk.renderer.RenderingMode = RenderingMode.DontRender;
-                            chunk.hideIn = -1;
-                            chunk.visibility = 0;
-                            toUpdateVisibility.Remove(chunk);
-                        }
-                    }
-                    chunk.renderer.Material.Uniforms.Set("param_visibility", chunk.visibility);
                 }
+                else if (chunk.hideIn != -1)
+                {
+                    if (chunk.visibility > 0)
+                    {
+                        chunk.renderer.RenderingMode = RenderingMode.RenderGeometryAndCastShadows;
+                        chunk.visibility -= (float)deltaTime / chunk.hideIn;
+                    }
+                    else
+                    {
+                        chunk.renderer.RenderingMode = RenderingMode.DontRender;
+                        chunk.hideIn = -1;
+                        chunk.hideIn = -1;
+                        chunk.visibility = 0;
+                        lock (toUpdateVisibility)
+                        {
+                            toUpdateVisibility.Remove(chunk);
+                        }
+                    }
+                }
+                chunk.renderer.Material.Uniforms.Set("param_visibility", chunk.visibility);
             }
 
         }

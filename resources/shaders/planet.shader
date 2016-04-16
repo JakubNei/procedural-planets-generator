@@ -177,7 +177,7 @@ void main()
 {
 
 	if(param_visibility != 1)	{
-		if(clamp(rand(gl_FragCoord.xy),0,1) > param_visibility) discard;
+		//if(clamp(rand(gl_FragCoord.xy),0,1) > param_visibility) discard;
 	}	
 
 	// BASE COLOR
@@ -186,11 +186,12 @@ void main()
 	c=getColor(dist);
 	out_color = vec4(c,1);
 
-	out_color = vec4(vec3(0,1,0),1);
-
 	out_normal = i.normal;
 	out_position = i.worldPos;
 	out_data = vec4(0);
+
+	//DEBUG
+	//out_color = vec4(vec3(0,1,0),1);
 	
 }
 

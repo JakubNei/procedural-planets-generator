@@ -14,7 +14,7 @@ using MyEngine.Components;
 namespace MyEngine
 {
 
-    
+
     public class EngineMain : GameWindow
     {
 
@@ -73,7 +73,7 @@ namespace MyEngine
 
         protected override void OnLoad(System.EventArgs e)
         {
-            
+
             quadMesh = Factory.GetMesh("internal/quad.obj");
             skyboxMesh = Factory.GetMesh("internal/skybox.obj");
 
@@ -86,12 +86,12 @@ namespace MyEngine
 
 
             this.VSync = VSyncMode.Off;
-            
+
             // Other state
             GL.Enable(EnableCap.Texture2D);
             GL.Hint(HintTarget.PerspectiveCorrectionHint, HintMode.Nicest);
             GL.Enable(EnableCap.Multisample);
-            
+
 
             //GL.ClearColor(System.Drawing.Color.MidnightBlue);
             GL.ClearColor(System.Drawing.Color.Black);
@@ -138,6 +138,7 @@ namespace MyEngine
         bool drawShadowMapContents = false;
         bool drawGBufferContents = false;
         bool drawLines = false;
+        bool enablePostProcessEffects = false;
         bool debugBounds = true;
         bool shadowsEnabled = true;
 
@@ -171,7 +172,7 @@ namespace MyEngine
 
         void EventThreadMain()
         {
-        
+
             //Debug.Tick("eventThread");
             var deltaTime = eventThreadTime.ElapsedMilliseconds / 1000.0;
             eventThreadTime.Restart();
@@ -181,8 +182,8 @@ namespace MyEngine
             if (this.Focused) Input.Update();
 
             var scene = scenes[0];
-            scene.EventSystem.Raise(new MyEngine.Events.GraphicsUpdate(deltaTime));       
-              
+            scene.EventSystem.Raise(new MyEngine.Events.GraphicsUpdate(deltaTime));
+
         }
 
         protected override void OnRenderFrame(FrameEventArgs e)
@@ -205,6 +206,7 @@ namespace MyEngine
             var countMeshesRendered = 0;
 
 
+            if (Input.GetKeyDown(OpenTK.Input.Key.F11)) enablePostProcessEffects = !enablePostProcessEffects;
             if (Input.GetKeyDown(OpenTK.Input.Key.F10)) drawLines = !drawLines;
             if (Input.GetKeyDown(OpenTK.Input.Key.F9)) drawGBufferContents = !drawGBufferContents;
             if (Input.GetKeyDown(OpenTK.Input.Key.F8)) drawShadowMapContents = !drawShadowMapContents;
@@ -216,9 +218,7 @@ namespace MyEngine
             var frustrumPlanes = camera.GetFrustumPlanes();
 
             var allRenderers = scene.Renderers;
-            lock (allRenderers)
             {
-
                 camera.UploadDataToUBO(ubo); // bind camera view params
                                              //GL.BeginQuery(QueryTarget.)
 
@@ -256,20 +256,23 @@ namespace MyEngine
                         GL.Enable(EnableCap.CullFace);
                         GL.Disable(EnableCap.Blend);
                         GL.CullFace(CullFaceMode.Back);
-
-                        for(int i = 0; i<allRenderers.Count; i++)
+                        lock (allRenderers)
                         {
-                            var renderer = allRenderers[i];
-                            if (renderer == null) continue;
 
-                            if (renderer.ShouldRenderGeometry)
+                            for (int i = 0; i < allRenderers.Count; i++)
                             {
-                                if (renderer.AllowsFrustumCulling == false || GeometryUtility.TestPlanesAABB(frustrumPlanes, renderer.bounds))
+                                var renderer = allRenderers[i];
+                                if (renderer == null) continue;
+
+                                if (renderer.ShouldRenderGeometry)
                                 {
-                                    renderer.Material.Uniforms.SendAllUniformsTo(renderer.Material.GBufferShader.Uniforms);
-                                    renderer.Material.GBufferShader.Bind();
-                                    renderer.UploadUBOandDraw(camera, ubo);
-                                    countMeshesRendered++;
+                                    if (renderer.AllowsFrustumCulling == false || GeometryUtility.TestPlanesAABB(frustrumPlanes, renderer.bounds))
+                                    {
+                                        renderer.Material.Uniforms.SendAllUniformsTo(renderer.Material.GBufferShader.Uniforms);
+                                        renderer.Material.GBufferShader.Bind();
+                                        renderer.UploadUBOandDraw(camera, ubo);
+                                        countMeshesRendered++;
+                                    }
                                 }
                             }
                         }
@@ -280,9 +283,8 @@ namespace MyEngine
 
                 }
 
-
                 #region Lights rendering
-                
+
                 var allLights = scene.Lights;
                 lock (allLights)
                 {
@@ -368,8 +370,9 @@ namespace MyEngine
                 #endregion
 
             }
-            
+
             // POST PROCESS EFFECTs
+            if (enablePostProcessEffects)
             {
                 GL.Disable(EnableCap.DepthTest);
                 GL.Disable(EnableCap.CullFace);

@@ -248,6 +248,8 @@ namespace MyGame
             if(planetaryBody.planetMaterial != null) renderer.Material = planetaryBody.planetMaterial.MakeCopy();
             //planetaryBody.HideIn(this, 0);
 
+            renderer.RenderingMode = RenderingMode.DontRender;
+
         }
 
         public void StopMeshGeneration()

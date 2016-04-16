@@ -60,7 +60,6 @@ namespace MyEngine
         {
             this.assets = assets;
             bmps = new Bitmap[6];
-            Load();
             WantsToBeUploadedToGpu = true;
         }
         public Cubemap(int width, int height)
@@ -78,6 +77,7 @@ namespace MyEngine
 
         public Color GetPixel(Face side, int x, int y)
         {
+            if (KeepLocalCopyOfTexture == false) throw new Exception("before you can acces texture data you have to set " + MemberName.For(() => KeepLocalCopyOfTexture) + " to true");
             if (bmps == null) throw new NullReferenceException("texture was intialized only with gpu handle, no data");
             var bmp = bmps[(int)side];
             lock (bmp)
@@ -89,6 +89,7 @@ namespace MyEngine
 
         public void SetPixel(Face side, int x, int y, Color color)
         {
+            if (KeepLocalCopyOfTexture == false) throw new Exception("before you can acces texture data you have to set " + MemberName.For(() => KeepLocalCopyOfTexture) + " to true");
             if (bmps == null) throw new NullReferenceException("texture was intialized only with gpu handle, no data");
             var bmp = bmps[(int)side];
             lock(bmp)
@@ -99,18 +100,6 @@ namespace MyEngine
             WantsToBeUploadedToGpu = true;
         }
 
-        /// <summary>
-        /// If x and y are out of bounds for current face, it moves them around to proper face.
-        /// </summary>
-        /// <param name="side"></param>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        public void SanitizeCoords(ref Face face, ref int x, ref int y)
-        {
-            var bmp = bmps[(int)face];
-            
-
-        }
 
         public void Unload()
         {
@@ -121,7 +110,15 @@ namespace MyEngine
             }
         }
 
-        void Load()
+        void UnloadLocalCopy()
+        {
+            if(bmps != null)
+            {
+                foreach (var bmp in bmps) bmp.Dispose();
+                bmps = null;
+            }
+        }
+        void LoadLocalCopy()
         {
             for (int i = 0; i < 6; i++)
             {
@@ -159,28 +156,35 @@ namespace MyEngine
                 var textureTarget = textureTargets[i];
 
                 var bmp = bmps[i];
-
-                lock(bmp)
+                if (bmp == null)
                 {
-                    BitmapData bmp_data = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-
-                    GL.TexImage2D(textureTarget, 0, PixelInternalFormat.Rgba, bmp_data.Width, bmp_data.Height, 0,
-                        OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, bmp_data.Scan0);
-
-                    bmp.UnlockBits(bmp_data);
+                    using (var s = assets[i].GetDataStream())
+                    {
+                        using (bmp = new Bitmap(s))
+                        {
+                            BitmapData bmp_data = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                            GL.TexImage2D(textureTarget, 0, PixelInternalFormat.Rgba, bmp_data.Width, bmp_data.Height, 0,
+                                OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, bmp_data.Scan0);
+                            bmp.UnlockBits(bmp_data);
+                        }
+                    }
                 }
-
+                else
+                {
+                    lock (bmp)
+                    {
+                        BitmapData bmp_data = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                        GL.TexImage2D(textureTarget, 0, PixelInternalFormat.Rgba, bmp_data.Width, bmp_data.Height, 0,
+                            OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, bmp_data.Scan0);
+                        bmp.UnlockBits(bmp_data);
+                    }
+                }
             }
             if (useMimMaps)
             {
                 GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
             }
 
-            if(KeepLocalCopyOfTexture == false)
-            {
-                foreach (var bmp in bmps) bmp.Dispose();
-                bmps = null;
-            }
         }
         void UpdateIsOnGpu()
         {

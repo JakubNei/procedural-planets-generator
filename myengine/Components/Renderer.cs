@@ -39,6 +39,7 @@ namespace MyEngine.Components
                     m_RenderingMode = value;
                     ShouldRenderGeometryOrShouldCastShadowsHasChanged();
                 }
+
             }
         }
 
@@ -47,15 +48,21 @@ namespace MyEngine.Components
         {
             set
             {
-                if (m_material != value)
+                lock (this)
                 {
-                    m_material = value;
-                    ShouldRenderGeometryOrShouldCastShadowsHasChanged();
+                    if (m_material != value)
+                    {
+                        m_material = value;
+                        ShouldRenderGeometryOrShouldCastShadowsHasChanged();
+                    }
                 }
             }
             get
             {
-                return m_material;
+                lock (this)
+                {
+                    return m_material;
+                }
             }
         }
 

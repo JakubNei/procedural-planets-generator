@@ -41,6 +41,15 @@ float gausian(float x, float totalWidth)
 }
 
 
+/// <summary>
+/// Gets the luminance value for a pixel.
+/// <summary>
+float GetLuminance (vec3 rgb)
+{
+	// ITU-R BT.709 primaries
+	//return (0.2126 * rgb.x) + (0.7152 * rgb.y) + (0.0722 * rgb.z);
+	return dot(rgb, vec3(0.2126f, 0.7152f, 0.0722f));
+}
 
 // https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch13.html
 void main()
@@ -65,7 +74,7 @@ void main()
 	float Density = 0.5;
 	float Decay = 0.9;
 	float Weight = 0.1;
-	float Exposure = 1;
+	float Exposure = 0.5;
 
 	// Calculate vector from pixel to light source in screen space.
 	vec2 deltaTexCoord = (texCoord - param_lightScreenPos.xy);
@@ -98,9 +107,9 @@ void main()
 			// Retrieve sample at new location.
 			vec3 s = textureLod(gBufferUniform.final, texCoord, 3).xyz;
 			// Apply sample attenuation scale/decay factors.
-			s *= illuminationDecay * Weight;
+			s *= illuminationDecay * GetLuminance(s) * Weight;
 			// Accumulate combined color.
-			color += s;
+			color += s * Exposure;
 		}
 
 		// Update exponential decay factor.
@@ -108,7 +117,7 @@ void main()
 	}
 
 
-	out_color = vec4(color * Exposure, 1);
+	out_color = vec4(color, 1);
 
 	//DEBUG
 	//out_color = vec4(1,0,0, 1);

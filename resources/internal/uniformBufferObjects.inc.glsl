@@ -11,7 +11,18 @@ layout(std140) uniform engine_block {
 	float farClipPlane;
 	vec3 ambientColor;
 	float totalElapsedSecondsSinceEngineStart; // totalElapsedSecondsSinceEngineStart
+	float gammaCorrectionTextureRead; // 2.2
+	float gammaCorrectionFinalColor; // 2.2
 } engine;
+
+
+
+vec3 GammaCorrectTextureRead(vec3 rgb) {
+	return pow(rgb, vec3(engine.gammaCorrectionTextureRead));
+}
+vec3 GammaCorrectFinalColor(vec3 rgb) {
+	return pow(rgb, vec3(1.0 / engine.gammaCorrectionFinalColor));
+}
 
 
 layout(std140) uniform model_block { 

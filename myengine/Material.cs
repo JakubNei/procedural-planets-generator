@@ -15,12 +15,18 @@ namespace MyEngine
         {
             get
             {
-                return gBufferShader;
+                lock(this)
+                {
+                    return gBufferShader;
+                }
             }
             set
             {
-                if (value == null) throw new NullReferenceException("can not set " + MemberName.For(() => GBufferShader) + " to null");
-                gBufferShader = value;
+                lock(this)
+                {
+                    if (value == null) throw new NullReferenceException("can not set " + MemberName.For(() => GBufferShader) + " to null");
+                    gBufferShader = value;
+                }
             }
         }
         Shader depthGrabShader;
@@ -28,12 +34,18 @@ namespace MyEngine
         {
             get
             {
-                return depthGrabShader;
+                lock(this)
+                {
+                    return depthGrabShader;
+                }
             }
             set
             {
-                if (value == null) throw new NullReferenceException("can not set " + MemberName.For(() => DepthGrabShader) + " to null");
-                depthGrabShader = value;
+                lock(this)
+                {
+                    if (value == null) throw new NullReferenceException("can not set " + MemberName.For(() => DepthGrabShader) + " to null");
+                    depthGrabShader = value;
+                }
             }
         }
 
@@ -48,13 +60,16 @@ namespace MyEngine
 
         public Material MakeCopy()
         {
-            var m = new Material()
+            lock(this)
             {
-                gBufferShader = gBufferShader,
-                depthGrabShader = depthGrabShader,
-            };
-            Uniforms.SendAllUniformsTo(m.Uniforms);
-            return m;
+                var m = new Material()
+                {
+                    gBufferShader = gBufferShader,
+                    depthGrabShader = depthGrabShader,
+                };
+                Uniforms.SendAllUniformsTo(m.Uniforms);
+                return m;
+            }
         }
         
     }

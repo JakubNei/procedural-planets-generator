@@ -58,6 +58,7 @@
     <Compile Include="Components\IComponent.cs" />
     <Compile Include="Components\PostProcessEffect.cs" />
     <Compile Include="Components\SSAO.cs" />
+    <Compile Include="Components\Tonemapping.cs" />
     <Compile Include="DataAccessibleList.cs" />
     <Compile Include="DeferredSynchronizeInvoke.cs" />
     <Compile Include="enums.cs" />

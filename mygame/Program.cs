@@ -29,17 +29,23 @@ namespace MyGame
 
                     var cam = scene.mainCamera = entity.AddComponent<Camera>();
 
-                    entity.AddComponent<Bloom>();
-                    var gr = entity.AddComponent<GodRays>();
-                    gr.lightWorldRadius = 1000;
-                    entity.EventSystem.Register((MyEngine.Events.GraphicsUpdate e) =>
+                    // post process effects
                     {
-                        var mp = cam.GetViewMat() * cam.GetProjectionMat();
-                        var p = Vector4.Transform(new Vector4(sunEntity.Transform.Position, 1), mp);                        
-                        gr.lightScreenPos = (p.Xyz / p.W) / 2 + Vector3.One / 2;
-                        gr.lightWorldPos = sunEntity.Transform.Position;
-                    });
+                        entity.AddComponent<Bloom>();
 
+                        entity.AddComponent<Tonemapping>();
+
+                        var gr = entity.AddComponent<GodRays>();
+                        gr.lightWorldRadius = 1000;
+                        entity.EventSystem.Register((MyEngine.Events.GraphicsUpdate e) =>
+                        {
+                            var mp = cam.GetViewMat() * cam.GetProjectionMat();
+                            var p = Vector4.Transform(new Vector4(sunEntity.Transform.Position, 1), mp);
+                            gr.lightScreenPos = (p.Xyz / p.W) / 2 + Vector3.One / 2;
+                            gr.lightWorldPos = sunEntity.Transform.Position;
+                        });
+
+                    }
 
                     string skyboxName = "skybox/generated/";
                     engine.skyboxCubeMap = Factory.GetCubeMap(new [] {
