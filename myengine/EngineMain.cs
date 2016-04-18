@@ -43,7 +43,7 @@ namespace MyEngine
 
             //Texture2D.InitTexture2D();
             UnloadFactory.Set(ref ubo, new UniformBlock());
-            new PhysicsUsage.PhysicsManager();
+            //new PhysicsUsage.PhysicsManager();
             Asset = new AssetSystem();
             Input = new InputSystem(this);
 
@@ -102,7 +102,7 @@ namespace MyEngine
 
         protected override void OnUnload(EventArgs e)
         {
-            PhysicsUsage.PhysicsManager.instance.CleanUp();
+            //PhysicsUsage.PhysicsManager.instance.CleanUp();
             foreach (var i in UnloadFactory.unloadables)
             {
                 i.Unload();

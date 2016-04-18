@@ -91,22 +91,15 @@
     <Compile Include="Perlin.cs" />
     <Compile Include="QuaternionUtility.cs" />
     <Compile Include="GeometryUtility.cs" />
-    <Compile Include="GameSystems\Physics.cs" />
-    <Compile Include="Physics\ConfigurationHelper.cs" />
-    <Compile Include="Physics\PhysicsManager.cs" />
     <Compile Include="GameSystems\ResourceFolder.cs" />
     <Compile Include="Bounds.cs" />
-    <Compile Include="Components\BoxCollider.cs" />
     <Compile Include="Components\Camera.cs" />
-    <Compile Include="Components\Collider.cs" />
     <Compile Include="Components\Component.cs" />
     <Compile Include="Cubemap.cs" />
     <Compile Include="Debug.cs" />
-    <Compile Include="Components\FixedJoint.cs" />
     <Compile Include="Entity.cs" />
     <Compile Include="GameSystems\InputSystem.cs" />
     <Compile Include="IUnloadable.cs" />
-    <Compile Include="Components\Joint.cs" />
     <Compile Include="Components\Light.cs" />
     <Compile Include="Material.cs" />
     <Compile Include="MaterialPBR.cs" />
@@ -120,13 +113,10 @@
     <Compile Include="DeferredGBuffer.cs" />
     <Compile Include="Plane.cs" />
     <Compile Include="Ray.cs" />
-    <Compile Include="RaycastHit.cs" />
     <Compile Include="Components\Renderer.cs" />
     <Compile Include="GameSystems\Resource.cs" />
-    <Compile Include="Components\Rigidbody.cs" />
     <Compile Include="Shader.cs" />
     <Compile Include="ShadowMap.cs" />
-    <Compile Include="Components\_SpringJoint.cs" />
     <Compile Include="SparseList.cs" />
     <Compile Include="SparseValueList.cs" />
     <Compile Include="Sphere.cs" />
@@ -159,20 +149,6 @@
     <Compile Include="ObjLoader.MaterialLibrary.cs" />
     <None Include="packages.config" />
     <Compile Include="Shader.Builder.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\BEPUik\BEPUik.csproj">
-      <Project>{2d5a0344-623a-4bfa-aab6-8ac64e2a4129}</Project>
-      <Name>BEPUik</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\BEPUphysics\BEPUphysics.csproj">
-      <Project>{c0d52c9f-14b8-4008-8ddc-109c27561a5c}</Project>
-      <Name>BEPUphysics</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\BEPUutilities\BEPUutilities.csproj">
-      <Project>{34853dea-43a6-4f2f-a379-d1ee04d256d2}</Project>
-      <Name>BEPUutilities</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Panels\TimeGraph.resx">
