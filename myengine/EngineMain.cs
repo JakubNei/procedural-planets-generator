@@ -273,6 +273,13 @@ namespace MyEngine
                                         renderer.Material.GBufferShader.Bind();
                                         renderer.UploadUBOandDraw(camera, ubo);
                                         countMeshesRendered++;
+
+                                        if (renderer.AllowsFrustumCulling == false) renderer.SetCameraRenderStatus(camera, Renderer.RenderStatus.RenderedForced);
+                                        else renderer.SetCameraRenderStatus(camera, Renderer.RenderStatus.RenderedAndVisible);
+                                    }
+                                    else
+                                    {
+                                        renderer.SetCameraRenderStatus(camera, Renderer.RenderStatus.NotRendered);
                                     }
                                 }
                             }

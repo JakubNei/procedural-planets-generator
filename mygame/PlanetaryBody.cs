@@ -15,11 +15,11 @@ namespace MyGame
     {
         public int chunkNumberOfVerticesOnEdge = 10;
         public float radius;
-        public int subdivisionRecurisonDepth = 10;
+        public int subdivisionMaxRecurisonDepth = 10;
         public volatile Material planetMaterial;
         public float radiusVariation = 20;
         public float subdivisionSphereRadiusModifier = 0.5f;
-        public float startingRadiusSubdivisionModifier = 2;
+        public float startingRadiusSubdivisionModifier = 1;
 
         Perlin perlin;
         Worley worley;
@@ -82,7 +82,7 @@ namespace MyGame
             var initialPos = calestialPos.Normalized();
             var pos = initialPos;
 
-            int octaves = 3;
+            int octaves = 1;
             float freq = 10;
             float ampModifier = .05f;
             float freqModifier = 15;
@@ -360,7 +360,7 @@ namespace MyGame
             var sphere = new Sphere(pos - Transform.Position, this.radius * startingRadiusSubdivisionModifier);
             foreach (PlanetaryBodyChunk rootChunk in this.rootChunks)
             {
-                TrySubdivideToLevel(rootChunk, sphere, this.subdivisionRecurisonDepth);
+                TrySubdivideToLevel(rootChunk, sphere, this.subdivisionMaxRecurisonDepth);
             }
         }
 

@@ -67,8 +67,9 @@ namespace MyGame
             planet = scene.AddEntity().AddComponent<PlanetaryBody>();
             planet.radius = 2000; // 6371000 earth radius
             planet.radiusVariation = 100;
-            planet.chunkNumberOfVerticesOnEdge = 10; // 20
-            planet.subdivisionRecurisonDepth = 10;
+            planet.chunkNumberOfVerticesOnEdge = 50; // 20
+            planet.subdivisionMaxRecurisonDepth = 10;
+            planet.startingRadiusSubdivisionModifier = 2f;
             planet.subdivisionSphereRadiusModifier = 0.5f;
             planet.Transform.Position = new Vector3(1000, -100, 1000);
             planet.Start();

@@ -24,7 +24,6 @@ namespace MyEngine.Components
         }
 
 
-
         RenderingMode m_RenderingMode = RenderingMode.RenderGeometryAndCastShadows;
         public virtual RenderingMode RenderingMode
         {
@@ -66,6 +65,19 @@ namespace MyEngine.Components
             }
         }
 
+
+        public enum RenderStatus
+        {
+            NotRendered = 0,
+            Rendered = (1 << 1),
+            RenderedForced = (1 << 2),
+            Visible = (1 << 3),
+            RenderedAndVisible = (1 << 1) | (1 << 3),
+            Unknown = (1 << 9),
+        }
+
+        Dictionary<Camera, RenderStatus> cameraToRenderStatus = new Dictionary<Camera, RenderStatus>();
+
         public virtual Bounds bounds { set; get; }
         public virtual bool AllowsFrustumCulling { get; set; }
 
@@ -80,6 +92,15 @@ namespace MyEngine.Components
 
         public virtual void UploadUBOandDraw(Camera camera, UniformBlock ubo)
         {
+        }
+
+        public virtual void SetCameraRenderStatus(Camera camera, RenderStatus renderStatus)
+        {
+            cameraToRenderStatus[camera] = renderStatus;
+        }
+        public virtual RenderStatus GetCameraRenderStatus(Camera camera)
+        {
+            return cameraToRenderStatus.GetValue(camera, RenderStatus.Unknown);
         }
 
 

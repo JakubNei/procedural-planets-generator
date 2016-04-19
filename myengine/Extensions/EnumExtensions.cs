@@ -14,6 +14,7 @@ namespace MyEngine
         /// <param name="variable">Flags enumeration to check</param>
         /// <param name="value">Flag to check for</param>
         /// <returns></returns>
+        /*
         public static bool HasFlag(this Enum variable, Enum value)
         {
             if (variable == null)
@@ -33,5 +34,6 @@ namespace MyEngine
             ulong num = Convert.ToUInt64(value);
             return ((Convert.ToUInt64(variable) & num) == num);
         }
+        */
     }
 }

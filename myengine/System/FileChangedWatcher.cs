@@ -9,11 +9,13 @@ namespace MyEngine
 {
     public class FileChangedWatcher
     {
-        FileSystemWatcher watcher;
+        public delegate void FileChangedCallback(string newFilePath);
 
-        public void WatchFile(string filePath, Action<string> callBack, ISynchronizeInvoke synchronizeInvoke = null)
+        List<FileSystemWatcher> watchers = new List<FileSystemWatcher>();
+
+        public void WatchFile(string filePath, FileChangedCallback callBack, ISynchronizeInvoke synchronizeInvoke = null)
         {
-            watcher = new FileSystemWatcher();
+            var watcher = new FileSystemWatcher();
             watcher.Path = Path.GetDirectoryName(filePath);
             /* Watch for changes in LastAccess and LastWrite times, and  the renaming of files or directories. */
             watcher.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.DirectoryName;
@@ -22,26 +24,30 @@ namespace MyEngine
             // Add event handlers.
             watcher.Changed += new FileSystemEventHandler((object o, FileSystemEventArgs a) => 
             {
-                callBack.Raise(filePath);
+                if (callBack != null) callBack(filePath);
             });
             //watcher.Created += new FileSystemEventHandler((object o, FileSystemEventArgs a) => { });
             //watcher.Deleted += new FileSystemEventHandler((object o, FileSystemEventArgs a) => { });
             watcher.Renamed += new RenamedEventHandler((object o, RenamedEventArgs a) =>
-            {                
-                callBack.Raise(a.FullPath);
+            {
+                if (callBack != null) callBack(filePath);
             });
             if (synchronizeInvoke != null)
             {
                 watcher.SynchronizingObject = synchronizeInvoke;
             }
             watcher.EnableRaisingEvents = true;
+            watchers.Add(watcher);
         }
 
 
         public void StopAllWatchers()
         {
-            watcher.Dispose();
-            watcher = null;
+            foreach (var watcher in watchers)
+            {
+                watcher.Dispose();
+            }
+            watchers.Clear();
         }
     }
 }

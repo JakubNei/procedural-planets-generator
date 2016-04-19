@@ -60,7 +60,7 @@
     <Compile Include="Components\SSAO.cs" />
     <Compile Include="Components\Tonemapping.cs" />
     <Compile Include="DataAccessibleList.cs" />
-    <Compile Include="DeferredSynchronizeInvoke.cs" />
+    <Compile Include="System\DeferredSynchronizeInvoke.cs" />
     <Compile Include="enums.cs" />
     <Compile Include="Events\EventBase.cs" />
     <Compile Include="Events\EventSystem.cs" />
@@ -82,17 +82,19 @@
     <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="Extensions\SystemDrawingExtensions.cs" />
     <Compile Include="Extensions\TypeExtensions.cs" />
-    <Compile Include="FileChangedWatcher.cs" />
+    <Compile Include="System\FileChangedWatcher.cs" />
     <Compile Include="GameSystems\Asset.cs" />
     <Compile Include="GameSystems\AssetFolder.cs" />
     <Compile Include="GameSystems\AssetSystem.cs" />
+    <Compile Include="GameSystems\Unit.cs" />
+    <Compile Include="GameSystems\UnitSystem.cs" />
     <Compile Include="ITest1.cs" />
-    <Compile Include="MyMath.cs" />
-    <Compile Include="Perlin.cs" />
-    <Compile Include="QuaternionUtility.cs" />
-    <Compile Include="GeometryUtility.cs" />
+    <Compile Include="Math\MyMath.cs" />
+    <Compile Include="Math\Perlin.cs" />
+    <Compile Include="Math\QuaternionUtility.cs" />
+    <Compile Include="Math\GeometryUtility.cs" />
     <Compile Include="GameSystems\ResourceFolder.cs" />
-    <Compile Include="Bounds.cs" />
+    <Compile Include="Math\Bounds.cs" />
     <Compile Include="Components\Camera.cs" />
     <Compile Include="Components\Component.cs" />
     <Compile Include="Cubemap.cs" />
@@ -119,19 +121,32 @@
     <Compile Include="ShadowMap.cs" />
     <Compile Include="SparseList.cs" />
     <Compile Include="SparseValueList.cs" />
-    <Compile Include="Sphere.cs" />
+    <Compile Include="Math\Sphere.cs" />
     <Compile Include="Panels\TimeGraph.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Panels\TimeGraph.Designer.cs">
       <DependentUpon>TimeGraph.cs</DependentUpon>
     </Compile>
+    <Compile Include="System\BiDictionary.cs" />
+    <Compile Include="System\DeferredCollection.cs" />
+    <Compile Include="System\Int2.cs" />
+    <Compile Include="System\Int3.cs" />
+    <Compile Include="System\Lazy.cs" />
+    <Compile Include="System\MyWeakReference.cs" />
+    <Compile Include="System\PropertyDescriptors.cs" />
+    <Compile Include="System\ReadOnlyDictionary.cs" />
+    <Compile Include="System\ThreadSpecific.cs" />
+    <Compile Include="System\TimeoutList.cs" />
+    <Compile Include="System\TwoKeyDictionary.cs" />
+    <Compile Include="System\ValueChanged.cs" />
+    <Compile Include="System\VirtualBrain.cs" />
     <Compile Include="Texture.cs" />
     <Compile Include="Texture2D.cs" />
     <Compile Include="Components\Transform.cs" />
     <Compile Include="GameSystems\GameSystemBase.cs" />
     <Compile Include="GameSystems\SceneSystem.cs" />
-    <Compile Include="Triangle.cs" />
+    <Compile Include="Math\Triangle.cs" />
     <Compile Include="UniformBlock.cs" />
     <Compile Include="UniformsManager.cs" />
     <Compile Include="UnloadFactory.cs" />
@@ -142,7 +157,7 @@
     <Compile Include="Utils\MemberName.cs" />
     <Compile Include="Utils\Require.cs" />
     <Compile Include="Utils\TraceUtil.cs" />
-    <Compile Include="Worley.cs" />
+    <Compile Include="Math\Worley.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

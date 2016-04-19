@@ -85,9 +85,9 @@ namespace MyEngine
             
             if(success) Debug.Info(typeof(Shader) + " " + asset + " loaded successfully");
 
-            fileWatcher.WatchFile(asset.RealPath, (string newFileName) => {
-                shouldReload = true;
+            fileWatcher.WatchFile(asset.RealPath, (string newFilePath) => {
                 fileWatcher.StopAllWatchers();
+                shouldReload = true;
             });
 
 

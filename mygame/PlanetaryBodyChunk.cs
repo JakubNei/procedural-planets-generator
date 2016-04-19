@@ -202,7 +202,7 @@ namespace MyGame
             mesh.RecalculateNormals();
 
             // the deeper chunk it the less the multiplier should be
-            var skirtMultiplier = 0.95f + 0.05f * subdivisionDepth / (planetaryBody.subdivisionRecurisonDepth + 2);
+            var skirtMultiplier = 0.95f + 0.05f * subdivisionDepth / (planetaryBody.subdivisionMaxRecurisonDepth + 2);
             skirtMultiplier = MyMath.Clamp(skirtMultiplier, 0.95f, 1.0f);
 
 
@@ -277,8 +277,15 @@ namespace MyGame
             var sphereDistanceToCameraWorldSpace = cam.Transform.Position.Distance(planetaryBody.Transform.TransformPoint(sphere.center));
             var fov = cam.fieldOfView;
             var radiusCameraSpace = radiusWorldSpace * MyMath.Cot(fov / 2) / sphereDistanceToCameraWorldSpace;
-            var priority = sphereDistanceToCameraWorldSpace;
+            var priority = sphereDistanceToCameraWorldSpace / radiusCameraSpace;
             if (priority < 0) priority *= -1;
+
+            if (parentChunk != null && parentChunk.renderer != null) {
+                var cameraStatus = parentChunk.renderer.GetCameraRenderStatus(planetaryBody.Scene.mainCamera);
+                if (cameraStatus.HasFlag(Renderer.RenderStatus.Visible)) priority *= 0.3f;
+            }
+
+            // smaller priority is more important
             meshGenerationService.RequestGenerationOfMesh(this, priority);
         }
 
