@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.IO;
 
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -116,27 +117,25 @@ namespace MyEngine
             if (textureHandle == -1) textureHandle = GL.GenTexture();
             GL.BindTexture(TextureTarget.Texture2D, textureHandle);
 
+            Stream s = null;
+
             if (bmp == null)
             {
-                using (var s = asset.GetDataStream())
-                {
-                    using (bmp = new Bitmap(s))
-                    {
-                        BitmapData bmp_data = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-                        GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, bmp_data.Width, bmp_data.Height, 0, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, bmp_data.Scan0);
-                        bmp.UnlockBits(bmp_data);
-                    }
-                }
+                s = asset.GetDataStream();
+                bmp = new Bitmap(s);
             }
-            else
+            lock (bmp)
             {
-                lock(bmp)
-                {
-                    BitmapData bmp_data = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-                    GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, bmp_data.Width, bmp_data.Height, 0, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, bmp_data.Scan0);
-                    bmp.UnlockBits(bmp_data);
-                }
+                BitmapData bmp_data = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, bmp_data.Width, bmp_data.Height, 0, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, bmp_data.Scan0);
+                bmp.UnlockBits(bmp_data);
             }
+            if (s != null)
+            {
+                bmp.Dispose();
+                s.Dispose();
+            }
+            
 
             // We will not upload mipmaps, so disable mipmapping (otherwise the texture will not appear).
             // We can use GL.GenerateMipmaps() or GL.Ext.GenerateMipmaps() to create

@@ -36,7 +36,7 @@ namespace MyEngine
         )
         {
 
-            System.Diagnostics.Process.GetCurrentProcess().PriorityClass = System.Diagnostics.ProcessPriorityClass.RealTime;
+            System.Diagnostics.Process.GetCurrentProcess().PriorityClass = System.Diagnostics.ProcessPriorityClass.AboveNormal;
 
             VSync = VSyncMode.Off;
             TargetRenderFrequency = 0;
@@ -50,6 +50,13 @@ namespace MyEngine
             stopwatchSinceStart.Restart();
 
             StartSec();
+
+
+            //{
+            //    var winForm = new Panels.DebugValuesTable();
+            //    winForm.Show();
+            //}
+
         }
 
 
@@ -177,7 +184,7 @@ namespace MyEngine
             var deltaTime = eventThreadTime.ElapsedMilliseconds / 1000.0;
             eventThreadTime.Restart();
 
-            this.Title = string.Join("\t  ", Debug.stringValues.OrderBy(kvp => kvp.Key).Select(kvp => kvp.Key + ":" + kvp.Value).ToArray());
+            //this.Title = string.Join("\t  ", Debug.stringValues.OrderBy(kvp => kvp.Key).Select(kvp => kvp.Key + ":" + kvp.Value).ToArray());
 
             if (this.Focused) Input.Update();
 
@@ -232,6 +239,7 @@ namespace MyEngine
                     GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit);
 
                     // SKYBOX PASS
+                    if(skyboxCubeMap != null)
                     {
                         GL.DepthRange(0.999, 1);
                         GL.DepthMask(false);

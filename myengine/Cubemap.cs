@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.IO;
 
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -92,7 +93,7 @@ namespace MyEngine
             if (KeepLocalCopyOfTexture == false) throw new Exception("before you can acces texture data you have to set " + MemberName.For(() => KeepLocalCopyOfTexture) + " to true");
             if (bmps == null) throw new NullReferenceException("texture was intialized only with gpu handle, no data");
             var bmp = bmps[(int)side];
-            lock(bmp)
+            lock (bmp)
             {
                 if (x < 0 || x >= bmp.Width && y < 0 && y >= bmp.Height) throw new IndexOutOfRangeException("x or y is out of texture width or height");
                 bmp.SetPixel(x, y, color);
@@ -112,7 +113,7 @@ namespace MyEngine
 
         void UnloadLocalCopy()
         {
-            if(bmps != null)
+            if (bmps != null)
             {
                 foreach (var bmp in bmps) bmp.Dispose();
                 bmps = null;
@@ -150,35 +151,33 @@ namespace MyEngine
             //GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureLodBias, this.anisoLevel);
 
 
+            Stream s;
+
             for (int i = 0; i < 6; i++)
             {
-                
+
                 var textureTarget = textureTargets[i];
 
+                s = null;
                 var bmp = bmps[i];
                 if (bmp == null)
                 {
-                    using (var s = assets[i].GetDataStream())
-                    {
-                        using (bmp = new Bitmap(s))
-                        {
-                            BitmapData bmp_data = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-                            GL.TexImage2D(textureTarget, 0, PixelInternalFormat.Rgba, bmp_data.Width, bmp_data.Height, 0,
-                                OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, bmp_data.Scan0);
-                            bmp.UnlockBits(bmp_data);
-                        }
-                    }
+                    s = assets[i].GetDataStream();
+                    bmp = new Bitmap(s);
                 }
-                else
+                lock (bmp)
                 {
-                    lock (bmp)
-                    {
-                        BitmapData bmp_data = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-                        GL.TexImage2D(textureTarget, 0, PixelInternalFormat.Rgba, bmp_data.Width, bmp_data.Height, 0,
-                            OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, bmp_data.Scan0);
-                        bmp.UnlockBits(bmp_data);
-                    }
+                    BitmapData bmp_data = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                    GL.TexImage2D(textureTarget, 0, PixelInternalFormat.Rgba, bmp_data.Width, bmp_data.Height, 0,
+                        OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, bmp_data.Scan0);
+                    bmp.UnlockBits(bmp_data);
                 }
+                if (s != null)
+                {
+                    bmp.Dispose();
+                    s.Dispose();
+                }
+
             }
             if (useMimMaps)
             {

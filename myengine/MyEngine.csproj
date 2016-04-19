@@ -60,6 +60,12 @@
     <Compile Include="Components\SSAO.cs" />
     <Compile Include="Components\Tonemapping.cs" />
     <Compile Include="DataAccessibleList.cs" />
+    <Compile Include="Panels\DebugValuesTable.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Panels\DebugValuesTable.Designer.cs">
+      <DependentUpon>DebugValuesTable.cs</DependentUpon>
+    </Compile>
     <Compile Include="System\DeferredSynchronizeInvoke.cs" />
     <Compile Include="enums.cs" />
     <Compile Include="Events\EventBase.cs" />
@@ -166,6 +172,9 @@
     <Compile Include="Shader.Builder.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Panels\DebugValuesTable.resx">
+      <DependentUpon>DebugValuesTable.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Panels\TimeGraph.resx">
       <DependentUpon>TimeGraph.cs</DependentUpon>
     </EmbeddedResource>

@@ -34,6 +34,7 @@ namespace MyEngine
 
         public Stream GetDataStream()
         {
+            return new FileStream(RealPath, FileMode.Open, FileAccess.Read, FileShare.Read);
             int numTries = 5;
             while (numTries-- > 0)
             {

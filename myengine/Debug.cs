@@ -14,7 +14,10 @@ namespace MyEngine
 
         public static void AddValue(string key, string value)
         {
-            stringValues[key] = value;
+            lock(stringValues)
+            {
+                stringValues[key] = value;
+            }
         }
 
         class TickStats
