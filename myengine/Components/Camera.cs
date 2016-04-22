@@ -25,7 +25,7 @@ namespace MyEngine.Components
         public int pixelHeight;
         Vector2 screenSize = Vector2.Zero;
 
-        public Vector3 ambientColor = new Vector3(0.2f,0.2f,0.2f);
+        public Vector3 ambientColor = Vector3.One * 0.5f;
 
         public List<IPostProcessEffect> postProcessEffects = new List<IPostProcessEffect>();
 

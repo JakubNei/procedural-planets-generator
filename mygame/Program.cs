@@ -77,8 +77,8 @@ namespace MyGame
                 */
 
 
-
-                //var proceduralPlanets = new ProceduralPlanets(scene);
+                
+                var proceduralPlanets = new ProceduralPlanets(scene);
 
 
                 {

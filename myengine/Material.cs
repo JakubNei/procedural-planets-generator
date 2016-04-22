@@ -8,7 +8,7 @@ using OpenTK.Graphics.OpenGL;
 
 namespace MyEngine
 {
-    public class Material
+    public class Material : ICloneable
     {
         Shader m_gBufferShader;
         public virtual Shader GBufferShader
@@ -54,7 +54,7 @@ namespace MyEngine
 
         }
 
-        public virtual Material MakeCopy()
+        public virtual Material CloneTyped()
         {
             var m = new Material()
             {
@@ -65,5 +65,9 @@ namespace MyEngine
             return m;
         }
 
+        public virtual object Clone()
+        {
+            return CloneTyped();
+        }
     }
 }

@@ -82,7 +82,7 @@ namespace MyGame
             var initialPos = calestialPos.Normalized();
             var pos = initialPos;
 
-            int octaves = 1;
+            int octaves = 2;
             float freq = 10;
             float ampModifier = .05f;
             float freqModifier = 15;

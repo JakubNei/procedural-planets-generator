@@ -253,7 +253,7 @@ namespace MyGame
             renderer = planetaryBody.Entity.AddComponent<MeshRenderer>();
             renderer.Mesh = mesh;
 
-            if(planetaryBody.planetMaterial != null) renderer.Material = planetaryBody.planetMaterial.MakeCopy();
+            if(planetaryBody.planetMaterial != null) renderer.Material = planetaryBody.planetMaterial.CloneTyped();
             renderer.RenderingMode = RenderingMode.DontRender;
             this.visibility = 0;
 

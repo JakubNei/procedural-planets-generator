@@ -44,7 +44,13 @@ namespace MyEngine
     }
     */
 
-    public class Mesh : IUnloadable
+    public interface IMesh
+    {
+        void Draw();
+        void UploadDataToGpu();
+    }
+
+    public class Mesh : IUnloadable, IMesh
     {
         public enum ChangedFlags
         {
@@ -121,16 +127,16 @@ namespace MyEngine
             recalculateBounds = true;
         }
 
-        internal void Draw()
+        public void Draw()
         {
-            if (!isOnGPU) UploadMeshData();
+            if (!isOnGPU) UploadDataToGpu();
             GL.BindVertexArray(vertexArrayObjectHandle);
             GL.DrawElements(PrimitiveType.Triangles, triangleIndicies.Length,
                 DrawElementsType.UnsignedInt, IntPtr.Zero);
             GL.BindVertexArray(0);
         }
 
-        public void UploadMeshData()
+        public void UploadDataToGpu()
         {
             Unload();
             CreateVBOs();
@@ -337,6 +343,87 @@ namespace MyEngine
             GL.BindVertexArray(0);
         }
 
+        VertexArrayObject vao = new VertexArrayObject();
+
+        public class VertexArrayObject
+        {
+            public Dictionary<string, IVertexBufferObject> nameToVbo = new Dictionary<string, IVertexBufferObject>();
+            
+            public int nextLayoutIndex = 0;
+
+            public int handle;
+
+            public void AddVertexBufferObject(string name, IVertexBufferObject vbo)
+            {
+                nameToVbo[name] = vbo;
+                vbo.LayoutIndex = nextLayoutIndex;
+                nextLayoutIndex++;
+
+                GL.BindVertexArray(handle);
+                vbo.BindBufferToVAO();
+            }
+            public void CreateBuffer()
+            {
+                if (handle == -1)
+                {
+                    handle = GL.GenVertexArray();
+                }
+            }
+            public void Delete()
+            {
+                if (handle != -1)
+                {
+                    GL.DeleteVertexArray(handle);
+                    handle = -1;
+                }
+                foreach(var kvp in nameToVbo)
+                {
+                    kvp.Value.DeleteBuffer();
+                }
+            }
+        }
+
+        public interface IVertexBufferObject
+        {
+            int Handle { get; set; }
+            int LayoutIndex { get; set; }
+            void CreateBuffer();
+            void BindBufferToVAO();
+            void DeleteBuffer();
+        }
+        public class VertexBufferObject<T> : List<T>, IVertexBufferObject where T : struct
+        {
+            public int Handle { get; set; }
+            public int LayoutIndex { get; set; }
+
+            public BufferTarget bufferTarget;
+            public int numberOfElements;
+            public VertexAttribPointerType pointerType;
+            public bool normalized;
+            public int dataStrideInBytes;
+            public int offset;
+
+            public void CreateBuffer()
+            {
+                if (Handle == -1) Handle = GL.GenBuffer();
+                int sizeFromGpu;
+                GL.BindBuffer(bufferTarget, Handle);
+                GL.BufferData(bufferTarget, (IntPtr)(bufferTarget), this.ToArray(), BufferUsageHint.StaticDraw);
+                GL.GetBufferParameter(bufferTarget, BufferParameterName.BufferSize, out sizeFromGpu);
+                if (this.Count != sizeFromGpu) Debug.Error("size mismatch size=" + bufferTarget + " sizeFromGpu=" + sizeFromGpu);
+            }
+            public void BindBufferToVAO()
+            {
+                GL.EnableVertexAttribArray(LayoutIndex);
+                if (Handle == -1) Handle = GL.GenBuffer();
+                GL.BindBuffer(bufferTarget, Handle);
+                GL.VertexAttribPointer(LayoutIndex, numberOfElements, pointerType, normalized, dataStrideInBytes, offset);
+            }
+            public void DeleteBuffer()
+            {
+                if (Handle != -1) GL.DeleteBuffer(Handle);
+            }
+        }
 
 
         uint GLGenBuffer()

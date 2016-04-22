@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Text;
 
@@ -10,14 +11,12 @@ namespace MyEngine
     {
         static List<string> alreadyShown = new List<string>();
 
-        public static Dictionary<string, string> stringValues = new Dictionary<string, string>();
+        
+        public static ConcurrentDictionary<string, string> stringValues = new ConcurrentDictionary<string, string>();
 
         public static void AddValue(string key, string value)
         {
-            lock(stringValues)
-            {
-                stringValues[key] = value;
-            }
+            stringValues[key] = value;
         }
 
         class TickStats
