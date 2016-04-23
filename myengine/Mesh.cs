@@ -58,7 +58,7 @@ namespace MyEngine
             VisualRepresentation
         }
 
-        public  VertexBufferObject<Vector3> vertices { get; private set; }
+        public VertexBufferObject<Vector3> vertices { get; private set; }
         public VertexBufferObject<Vector3> normals { get; private set; }
         public VertexBufferObject<Vector3> tangents { get; private set; }
         public VertexBufferObject<Vector2> uvs { get; private set; }
@@ -105,7 +105,7 @@ namespace MyEngine
             }
         }
         Bounds _bounds;
-        
+
 
 
         public bool IsRenderable
@@ -327,7 +327,7 @@ namespace MyEngine
             {
                 VertexArrayObj.Delete();
                 VertexArrayObj = null;
-            }       
+            }
         }
 
 
@@ -336,7 +336,7 @@ namespace MyEngine
             public event Action OnChanged;
 
             public Dictionary<string, IVertexBufferObject> nameToVbo = new Dictionary<string, IVertexBufferObject>();
-            
+
             public int nextLayoutIndex = 0;
 
             public int handle = -1;
@@ -372,7 +372,7 @@ namespace MyEngine
                     GL.DeleteVertexArray(handle);
                     handle = -1;
                 }
-                foreach(var kvp in nameToVbo)
+                foreach (var kvp in nameToVbo)
                 {
                     kvp.Value.DeleteBuffer();
                 }

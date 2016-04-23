@@ -184,7 +184,7 @@ namespace MyEngine
             var deltaTime = eventThreadTime.ElapsedMilliseconds / 1000.0;
             eventThreadTime.Restart();
 
-            //this.Title = string.Join("\t  ", Debug.stringValues.OrderBy(kvp => kvp.Key).Select(kvp => kvp.Key + ":" + kvp.Value).ToArray());
+            this.Title = string.Join("\t  ", Debug.stringValues.OrderBy(kvp => kvp.Key).Select(kvp => kvp.Key + ":" + kvp.Value).ToArray());
 
             if (this.Focused) Input.Update();
 
