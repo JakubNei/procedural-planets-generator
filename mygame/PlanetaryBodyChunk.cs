@@ -191,8 +191,8 @@ namespace MyGame
             }
 
 
-            mesh.vertices = vertices.ToArray();
-            mesh.triangleIndicies = indicies.ToArray();
+            mesh.vertices.SetData(vertices);
+            mesh.triangleIndicies.SetData(indicies);
 
             // add procedural heights
             for (int i = 0; i < vertices.Count; i++)

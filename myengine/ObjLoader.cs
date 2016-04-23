@@ -13,7 +13,7 @@ namespace MyEngine
         public static Mesh Load(Asset resource, Entity appendToEntity=null)
         {
             var mesh = new ObjLoader().Parse(resource, appendToEntity);
-            mesh.resource = resource;
+            mesh.asset = resource;
             return mesh;
         }
 
@@ -144,14 +144,14 @@ namespace MyEngine
         {
             var mesh = new Mesh();
 
-            mesh.vertices = verticesMesh.ToArray();
-            mesh.uvs = uvsMesh.ToArray();
-            mesh.triangleIndicies = triangleIndiciesMesh.ToArray();
+            mesh.vertices.SetData(verticesMesh);
+            mesh.uvs.SetData(uvsMesh);
+            mesh.triangleIndicies.SetData(triangleIndiciesMesh);
 
             if (failedParse > 0) Debug.Warning("Failed to parse data " + failedParse + " times");
             failedParse = 0;
 
-            if (gotNormal) mesh.normals = normalsMesh.ToArray();
+            if (gotNormal) mesh.normals.SetData(normalsMesh);
             else mesh.RecalculateNormals();
 
             return mesh;

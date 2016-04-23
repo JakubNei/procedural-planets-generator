@@ -58,12 +58,13 @@ namespace MyEngine
             VisualRepresentation
         }
 
-        public Vector3[] vertices { set { isOnGPU = false; recalculateBounds = true; m_vertices = value; } get { return m_vertices; } }
-        public Vector3[] normals { set { isOnGPU = false; m_normals = value; } get { return m_normals; } }
-        public Vector3[] tangents { set { isOnGPU = false; m_tangents = value; } get { return m_tangents; } }
-        public Vector2[] uvs { set { isOnGPU = false; m_uvs = value; } get { return m_uvs; } }
-        public int[] triangleIndicies { set { isOnGPU = false; m_triangleIndicies = value; } get { return m_triangleIndicies; } }
+        public  VertexBufferObject<Vector3> vertices { get; private set; }
+        public VertexBufferObject<Vector3> normals { get; private set; }
+        public VertexBufferObject<Vector3> tangents { get; private set; }
+        public VertexBufferObject<Vector2> uvs { get; private set; }
+        public VertexBufferObject<int> triangleIndicies { get; private set; }
 
+        public Asset asset;
 
         public event Action<ChangedFlags> OnChanged;
         void RaiseOnChanged(ChangedFlags flags)
@@ -71,11 +72,6 @@ namespace MyEngine
             if (OnChanged != null) OnChanged(flags);
         }
 
-        Vector3[] m_vertices = new Vector3[0];
-        Vector3[] m_normals = new Vector3[0];
-        Vector3[] m_tangents = new Vector3[0];
-        Vector2[] m_uvs = new Vector2[0];
-        int[] m_triangleIndicies;
 
         bool recalculateBounds = true;
 
@@ -89,7 +85,7 @@ namespace MyEngine
                 if (recalculateBounds)
                 {
                     recalculateBounds = false;
-                    if (vertices.Length > 0)
+                    if (vertices.Count > 0)
                     {
                         _bounds = new Bounds(vertices[0], Vector3.Zero);
                         foreach (var point in vertices)
@@ -111,6 +107,7 @@ namespace MyEngine
         Bounds _bounds;
         
 
+
         public bool IsRenderable
         {
             get
@@ -119,8 +116,44 @@ namespace MyEngine
             }
         }
 
+
         bool isOnGPU = false;
-        internal Asset resource;
+
+        public VertexArrayObject VertexArrayObj { get; private set; }
+
+        public Mesh()
+        {
+            vertices = new VertexBufferObject<Vector3>()
+            {
+                bufferTarget = BufferTarget.ArrayBuffer,
+                pointerType = VertexAttribPointerType.Float,
+                dataStrideInElementsNumber = 3,
+            };
+            normals = new VertexBufferObject<Vector3>()
+            {
+                bufferTarget = BufferTarget.ArrayBuffer,
+                pointerType = VertexAttribPointerType.Float,
+                dataStrideInElementsNumber = 3,
+            };
+            tangents = new VertexBufferObject<Vector3>()
+            {
+                bufferTarget = BufferTarget.ArrayBuffer,
+                pointerType = VertexAttribPointerType.Float,
+                dataStrideInElementsNumber = 3,
+            };
+            uvs = new VertexBufferObject<Vector2>()
+            {
+                bufferTarget = BufferTarget.ArrayBuffer,
+                pointerType = VertexAttribPointerType.Float,
+                dataStrideInElementsNumber = 2,
+            };
+            triangleIndicies = new VertexBufferObject<int>()
+            {
+                bufferTarget = BufferTarget.ElementArrayBuffer,
+                pointerType = VertexAttribPointerType.Float,
+                dataStrideInElementsNumber = 1,
+            };
+        }
 
         public void RecalculateBounds()
         {
@@ -130,8 +163,8 @@ namespace MyEngine
         public void Draw()
         {
             if (!isOnGPU) UploadDataToGpu();
-            GL.BindVertexArray(vertexArrayObjectHandle);
-            GL.DrawElements(PrimitiveType.Triangles, triangleIndicies.Length,
+            GL.BindVertexArray(VertexArrayObj.handle);
+            GL.DrawElements(PrimitiveType.Triangles, triangleIndicies.Count,
                 DrawElementsType.UnsignedInt, IntPtr.Zero);
             GL.BindVertexArray(0);
         }
@@ -139,42 +172,32 @@ namespace MyEngine
         public void UploadDataToGpu()
         {
             Unload();
-            CreateVBOs();
             CreateVAO();
+            VertexArrayObj.SendDataToGpu();
             isOnGPU = true;
             RaiseOnChanged(ChangedFlags.VisualRepresentation);
         }
 
-        internal uint positionVboHandle;
-        uint normalVboHandle;
-        uint tangentsVboHandle;
-        uint uvVboHandle;
-        uint elementArrayBuffeHandle;
-
-        List<uint> allBufferHandles = new List<uint>();
-        int vertexArrayObjectHandle = -1;
-
-
         public bool HasTangents()
         {
-            return tangents != null && vertices.Length == tangents.Length;
+            return tangents != null && vertices.Count == tangents.Count;
         }
         public bool HasNormals()
         {
-            return normals != null && vertices.Length == normals.Length;
+            return normals != null && vertices.Count == normals.Count;
         }
         public bool HasUVs()
         {
-            return uvs != null && vertices.Length == uvs.Length;
+            return uvs != null && vertices.Count == uvs.Count;
         }
 
 
         public void RecalculateNormals()
         {
-            if (HasNormals() == false) normals = new Vector3[vertices.Length];
+            if (HasNormals() == false) normals.Resize(vertices.Count);
 
-            int verticesNum = vertices.Length;
-            int indiciesNum = triangleIndicies.Length;
+            int verticesNum = vertices.Count;
+            int indiciesNum = triangleIndicies.Count;
 
 
             int[] counts = new int[verticesNum];
@@ -220,13 +243,13 @@ namespace MyEngine
 
         public void RecalculateTangents()
         {
-            if (HasTangents() == false) tangents = new Vector3[vertices.Length];
-            if (HasUVs() == false) uvs = new Vector2[vertices.Length];
+            if (HasTangents() == false) tangents.Resize(vertices.Count);
+            if (HasUVs() == false) uvs.Resize(vertices.Count);
 
             //partialy stolen from http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-13-normal-mapping/
 
-            int verticesNum = vertices.Length;
-            int indiciesNum = triangleIndicies.Length;
+            int verticesNum = vertices.Count;
+            int indiciesNum = triangleIndicies.Count;
 
             int[] counts = new int[verticesNum];
 
@@ -275,7 +298,7 @@ namespace MyEngine
         }
 
 
-        void CreateVBOs()
+        void CreateVAO()
         {
 
             if (!HasNormals())
@@ -287,80 +310,53 @@ namespace MyEngine
                 RecalculateTangents();
             }
 
-            positionVboHandle = CreateVBOPart(vertices, vertices.Length * 3 * sizeof(float), BufferTarget.ArrayBuffer);
-            normalVboHandle = CreateVBOPart(normals, normals.Length * 3 * sizeof(float), BufferTarget.ArrayBuffer);
-            tangentsVboHandle = CreateVBOPart(tangents, tangents.Length * 3 * sizeof(float), BufferTarget.ArrayBuffer);
-            uvVboHandle = CreateVBOPart(uvs, uvs.Length * 2 * sizeof(float), BufferTarget.ArrayBuffer);
 
-            int size;
-            int sizeFromGpu;
+            VertexArrayObj = new VertexArrayObject();
+            VertexArrayObj.AddVertexBufferObject("vertices", vertices);
+            VertexArrayObj.AddVertexBufferObject("normals", normals);
+            VertexArrayObj.AddVertexBufferObject("tangents", tangents);
+            VertexArrayObj.AddVertexBufferObject("uvs", uvs);
+            VertexArrayObj.AddVertexBufferObject("triangleIndicies", triangleIndicies);
 
-            size = triangleIndicies.Length * sizeof(Int32);
-            elementArrayBuffeHandle = GLGenBuffer();
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, elementArrayBuffeHandle);
-            GL.BufferData(BufferTarget.ElementArrayBuffer, (IntPtr)(size), triangleIndicies, BufferUsageHint.StaticDraw);
-            GL.GetBufferParameter(BufferTarget.ElementArrayBuffer, BufferParameterName.BufferSize, out sizeFromGpu);
-            if (size != sizeFromGpu) Debug.Error("size mismatch size=" + size + " sizeFromGpu=" + sizeFromGpu);
-
-            //GL.GetActiveAtomicCounterBuffer(0, 0, AtomicCounterBufferParameter.)
+            VertexArrayObj.OnChanged += () => { isOnGPU = false; };
         }
 
-        uint CreateVBOPart<T>(T[] data, int size, BufferTarget bt) where T : struct
+        public void Unload()
         {
-            int sizeFromGpu;
-            var hande = GLGenBuffer();
-            GL.BindBuffer(bt, hande);
-            GL.BufferData(bt, (IntPtr)(size), data, BufferUsageHint.StaticDraw);
-            GL.GetBufferParameter(bt, BufferParameterName.BufferSize, out sizeFromGpu);
-            if (size != sizeFromGpu) Debug.Error("size mismatch size=" + size + " sizeFromGpu=" + sizeFromGpu);
-            return hande;
+            if (VertexArrayObj != null)
+            {
+                VertexArrayObj.Delete();
+                VertexArrayObj = null;
+            }       
         }
 
-
-        void CreateVAO()
-        {
-            vertexArrayObjectHandle = GL.GenVertexArray();
-            GL.BindVertexArray(vertexArrayObjectHandle);
-
-            GL.EnableVertexAttribArray(Shader.positionLocation);
-            GL.BindBuffer(BufferTarget.ArrayBuffer, positionVboHandle);
-            GL.VertexAttribPointer(Shader.positionLocation, 3, VertexAttribPointerType.Float, false, Vector3.SizeInBytes, 0);
-
-            GL.EnableVertexAttribArray(Shader.normalLocation);
-            GL.BindBuffer(BufferTarget.ArrayBuffer, normalVboHandle);
-            GL.VertexAttribPointer(Shader.normalLocation, 3, VertexAttribPointerType.Float, false, Vector3.SizeInBytes, 0);
-
-            GL.EnableVertexAttribArray(Shader.tangentLocation);
-            GL.BindBuffer(BufferTarget.ArrayBuffer, tangentsVboHandle);
-            GL.VertexAttribPointer(Shader.tangentLocation, 3, VertexAttribPointerType.Float, false, Vector3.SizeInBytes, 0);
-
-            GL.EnableVertexAttribArray(Shader.uvLocation);
-            GL.BindBuffer(BufferTarget.ArrayBuffer, uvVboHandle);
-            GL.VertexAttribPointer(Shader.uvLocation, 2, VertexAttribPointerType.Float, false, Vector2.SizeInBytes, 0);
-
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, elementArrayBuffeHandle);
-
-            GL.BindVertexArray(0);
-        }
-
-        VertexArrayObject vao = new VertexArrayObject();
 
         public class VertexArrayObject
         {
+            public event Action OnChanged;
+
             public Dictionary<string, IVertexBufferObject> nameToVbo = new Dictionary<string, IVertexBufferObject>();
             
             public int nextLayoutIndex = 0;
 
-            public int handle;
+            public int handle = -1;
 
             public void AddVertexBufferObject(string name, IVertexBufferObject vbo)
             {
+                CreateBuffer();
+
                 nameToVbo[name] = vbo;
-                vbo.LayoutIndex = nextLayoutIndex;
-                nextLayoutIndex++;
+                if (vbo.UsesLayoutIndex)
+                {
+                    vbo.LayoutIndex = nextLayoutIndex;
+                    nextLayoutIndex++;
+                }
 
                 GL.BindVertexArray(handle);
                 vbo.BindBufferToVAO();
+                GL.BindVertexArray(0);
+
+                vbo.OnChanged += () => { OnChanged.Raise(); };
             }
             public void CreateBuffer()
             {
@@ -381,72 +377,112 @@ namespace MyEngine
                     kvp.Value.DeleteBuffer();
                 }
             }
+            public void SendDataToGpu()
+            {
+                foreach (var kvp in nameToVbo)
+                {
+                    kvp.Value.SendDataToGpu();
+                }
+            }
         }
 
         public interface IVertexBufferObject
         {
+            event Action OnChanged;
+            int Count { get; }
             int Handle { get; set; }
             int LayoutIndex { get; set; }
+            bool UsesLayoutIndex { get; }
             void CreateBuffer();
+            void SendDataToGpu();
             void BindBufferToVAO();
             void DeleteBuffer();
         }
         public class VertexBufferObject<T> : List<T>, IVertexBufferObject where T : struct
         {
+            public event Action OnChanged;
             public int Handle { get; set; }
             public int LayoutIndex { get; set; }
 
             public BufferTarget bufferTarget;
-            public int numberOfElements;
+            public int NumberOfElements { get { return this.Count; } }
             public VertexAttribPointerType pointerType;
             public bool normalized;
-            public int dataStrideInBytes;
+            public int dataStrideInElementsNumber;
+            public int DataSizeOfOneElementInBytes
+            {
+                get
+                {
+                    return System.Runtime.InteropServices.Marshal.SizeOf(new T());
+                }
+            }
+            public bool UsesLayoutIndex
+            {
+                get
+                {
+                    return bufferTarget != BufferTarget.ElementArrayBuffer;
+                }
+            }
             public int offset;
+            public VertexBufferObject()
+            {
+                Handle = -1;
+            }
 
             public void CreateBuffer()
             {
                 if (Handle == -1) Handle = GL.GenBuffer();
+            }
+            public void SendDataToGpu()
+            {
+                CreateBuffer();
                 int sizeFromGpu;
                 GL.BindBuffer(bufferTarget, Handle);
-                GL.BufferData(bufferTarget, (IntPtr)(bufferTarget), this.ToArray(), BufferUsageHint.StaticDraw);
+                var arr = this.ToArray();
+                var size = NumberOfElements * DataSizeOfOneElementInBytes;
+                GL.BufferData(bufferTarget, (IntPtr)(size), arr, BufferUsageHint.StaticDraw);
                 GL.GetBufferParameter(bufferTarget, BufferParameterName.BufferSize, out sizeFromGpu);
-                if (this.Count != sizeFromGpu) Debug.Error("size mismatch size=" + bufferTarget + " sizeFromGpu=" + sizeFromGpu);
+                if (size != sizeFromGpu) Debug.Error("size mismatch size=" + bufferTarget + " sizeFromGpu=" + sizeFromGpu);
             }
             public void BindBufferToVAO()
             {
-                GL.EnableVertexAttribArray(LayoutIndex);
-                if (Handle == -1) Handle = GL.GenBuffer();
+                CreateBuffer();
+                if (UsesLayoutIndex)
+                {
+                    GL.EnableVertexAttribArray(LayoutIndex);
+                }
                 GL.BindBuffer(bufferTarget, Handle);
-                GL.VertexAttribPointer(LayoutIndex, numberOfElements, pointerType, normalized, dataStrideInBytes, offset);
+                if (UsesLayoutIndex)
+                {
+                    //GL.VertexAttribPointer(Shader.positionLocation, 3, VertexAttribPointerType.Float, false, Vector3.SizeInBytes, 0);
+                    GL.VertexAttribPointer(LayoutIndex, dataStrideInElementsNumber, pointerType, normalized, DataSizeOfOneElementInBytes, offset);
+                }
             }
             public void DeleteBuffer()
             {
                 if (Handle != -1) GL.DeleteBuffer(Handle);
             }
-        }
-
-
-        uint GLGenBuffer()
-        {
-            uint handle = (uint)GL.GenBuffer();
-            allBufferHandles.Add(handle);
-            return handle;
-        }
-
-        public void Unload()
-        {
-            if (vertexArrayObjectHandle >= 0)
+            public void SetData(IList<T> data)
             {
-                GL.DeleteVertexArray(vertexArrayObjectHandle);
-                vertexArrayObjectHandle = -1;
+                this.Clear();
+                this.AddRange(data);
+                OnChanged.Raise();
             }
-
-            if (allBufferHandles.Count > 0)
+            public void SetData(T[] data)
             {
-                GL.DeleteBuffers(allBufferHandles.Count, allBufferHandles.ToArray());
-                allBufferHandles.Clear();
+                this.Clear();
+                this.AddRange(data);
+                OnChanged.Raise();
+            }
+            public void SetData(IEnumerable<T> data)
+            {
+                this.Clear();
+                this.AddRange(data);
+                OnChanged.Raise();
             }
         }
+
+
 
     }
 }
