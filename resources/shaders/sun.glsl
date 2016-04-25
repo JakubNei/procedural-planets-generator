@@ -68,7 +68,9 @@ void main()
 	g = texture2D(param_turbulenceMap, i.uv.yx + engine.totalElapsedSecondsSinceEngineStart*0.01).x;
 	c += 0.5 * texture2D(param_turbulenceColorGradient, vec2( 0.01+g*0.98, 0));
 
-	out_color = vec4(c.x,c.y,c.z,1);
+	vec3 color = c.rgb;
+
+	out_color = vec4(pow(color,vec3(engine.gammaCorrectionTextureRead)),1);
 	out_normal = i.normal;
 	out_position = i.worldPos;
 	GBufferPackData_Emission(out_data, 1);

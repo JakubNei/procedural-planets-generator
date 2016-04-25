@@ -35,9 +35,12 @@ layout(location = 3) out vec4 out_uv;
 void main()
 {
 
-	//out_color = vec4(i.uv/2+0.5, 1);
-	out_color = texture(skyboxCubeMap, i.uv);
+	vec3 color = texture(skyboxCubeMap, i.uv).xyz;
 
+	//DEBUG
+	//out_color = vec4(i.uv/2+0.5, 1);
+
+	out_color = vec4(pow(color,vec3(engine.gammaCorrectionTextureRead)),1);
 	out_position = vec3(0);
 	out_normal = vec3(0);
 	out_uv = vec4(0);

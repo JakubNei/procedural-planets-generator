@@ -213,109 +213,28 @@ namespace MyGame
 
 
 
-        HashSet<PlanetaryBodyChunk> toUpdateVisibility = new HashSet<PlanetaryBodyChunk>();
-
-        public float GetVisibility(PlanetaryBodyChunk chunk)
-        {
-            //return chunk.renderer.RenderingMode == RenderingMode.DontRender ? 0 : 1;
-
-            return chunk.visibility;
-        }
-
-        public void HideIn(PlanetaryBodyChunk chunk, float seconds)
-        {
-            //chunk.renderer.RenderingMode = RenderingMode.RenderGeometryAndCastShadows; return;
-
-            chunk.hideIn = seconds;
-            chunk.showIn = -1;
-            //chunk.visibility = 1;
-            lock (toUpdateVisibility)
-            {
-                toUpdateVisibility.Add(chunk);
-            }
-        }
-
-        public void ShowIn(PlanetaryBodyChunk chunk, float seconds)
-        {
-            //chunk.renderer.RenderingMode = RenderingMode.RenderGeometryAndCastShadows; return;
-
-            chunk.hideIn = -1;
-            chunk.showIn = seconds;
-            //chunk.visibility = 0;
-            lock (toUpdateVisibility)
-            {
-                toUpdateVisibility.Add(chunk);
-            }
-        }
-
+       
         void OnGraphicsUpdate(double deltaTime)
         {
-            PlanetaryBodyChunk[] toUpdateVisibility_copy;
-            lock (toUpdateVisibility)
-            {
-                toUpdateVisibility_copy = toUpdateVisibility.ToArray();
-            }
-            foreach (var chunk in toUpdateVisibility_copy)
-            {
-                if (chunk.showIn != -1)
-                {
-                    if (chunk.visibility < 1)
-                    {
-                        chunk.renderer.RenderingMode = RenderingMode.RenderGeometryAndCastShadows;
-                        chunk.visibility += (float)deltaTime / chunk.showIn;
-                    }
-                    else
-                    {
-                        chunk.renderer.RenderingMode = RenderingMode.RenderGeometryAndCastShadows;
-                        chunk.showIn = -1;
-                        chunk.hideIn = -1;
-                        chunk.visibility = 1;
-                        lock (toUpdateVisibility)
-                        {
-                            toUpdateVisibility.Remove(chunk);
-                        }
-                    }
-                }
-                else if (chunk.hideIn != -1)
-                {
-                    if (chunk.visibility > 0)
-                    {
-                        chunk.renderer.RenderingMode = RenderingMode.RenderGeometryAndCastShadows;
-                        chunk.visibility -= (float)deltaTime / chunk.hideIn;
-                    }
-                    else
-                    {
-                        chunk.renderer.RenderingMode = RenderingMode.DontRender;
-                        chunk.hideIn = -1;
-                        chunk.hideIn = -1;
-                        chunk.visibility = 0;
-                        lock (toUpdateVisibility)
-                        {
-                            toUpdateVisibility.Remove(chunk);
-                        }
-                    }
-                }
-                chunk.renderer.Material.Uniforms.Set("param_visibility", chunk.visibility);
-            }
+         
 
         }
 
 
-        void HideChildsIn(PlanetaryBodyChunk chunk, float seconds)
+        void HideChildsIn(PlanetaryBodyChunk chunk)
         {
             foreach (var child in chunk.childs)
             {
-                if (child.IsMeshReady()) HideIn(child, seconds);
+                if (child.renderer != null) child.renderer.RenderingMode = RenderingMode.DontRender;
                 child.StopMeshGeneration();
-                HideChildsIn(child, seconds);
+                HideChildsIn(child);
             }
         }
 
         // returns if chunk or its children are fully visible
+        // we need to wait for the generation to finish
         bool TrySubdivideToLevel(PlanetaryBodyChunk chunk, Sphere sphere, int recursionDepth)
         {
-            const float showTime = 0.2f;
-            const float hideTime = showTime;
             if (recursionDepth > 0 && GeometryUtility.Intersects(chunk.visibilityCollisionRange, sphere))
             {
                 var areChildrenFullyVisible = true;
@@ -323,34 +242,34 @@ namespace MyGame
                 sphere.radius *= subdivisionSphereRadiusModifier;
                 foreach (var child in chunk.childs)
                 {
-                    areChildrenFullyVisible = TrySubdivideToLevel(child, sphere, recursionDepth - 1);
+                    areChildrenFullyVisible &= TrySubdivideToLevel(child, sphere, recursionDepth - 1);
                 }
 
-                // hide only if all our childs are visible
-                if (areChildrenFullyVisible) if (chunk.IsMeshReady()) HideIn(chunk, hideTime);
+                // hide only if all our childs are visible, they mighht still be generating
+                if (areChildrenFullyVisible) if (chunk.renderer != null) chunk.renderer.RenderingMode = RenderingMode.DontRender;
 
                 return areChildrenFullyVisible;
             }
             else
             {
-                if (chunk.IsMeshReady() == false) chunk.RequestMeshGeneration();
+                // end node, we must show this one and hide all childs or parents, parents should already be hidden
+                if (chunk.renderer == null)
+                {
+                    chunk.RequestMeshGeneration();
+                    return false;
+                }
                 else
                 {
-                    if (GetVisibility(chunk) != 1)
+                    if (chunk.renderer.RenderingMode != RenderingMode.RenderGeometryAndCastShadows)
                     {
                         // is not visible
                         // show it
-                        ShowIn(chunk, showTime);
+                        chunk.renderer.RenderingMode = RenderingMode.RenderGeometryAndCastShadows;
+                        chunk.renderer.Material.Uniforms.Set("param_chunkRecursionDepth", recursionDepth);
+                        HideChildsIn(chunk);
                     }
-                    else {
-                        // is visible
-                        // now we can hide others
-
-                        // hide childs
-                        HideChildsIn(chunk, hideTime);
-                    }
+                    return true;
                 }
-                return chunk.IsMeshReady() && GetVisibility(chunk) == 1;
             }
 
         }

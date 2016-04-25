@@ -36,6 +36,8 @@ namespace MyEngine
             public float farClipPlane;
             public vec3 ambientColor;
             public float totalElapsedSecondsSinceEngineStart;
+            public float gammaCorrectionTextureRead;
+            public float gammaCorrectionFinalColor;
         }
         public EngineUniformStruct engine;
         public UniformBufferObject<EngineUniformStruct> engineUBO;

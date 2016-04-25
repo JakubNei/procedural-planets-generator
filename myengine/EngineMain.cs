@@ -69,6 +69,7 @@ namespace MyEngine
         internal static UniformBlock ubo;
         Mesh quadMesh;
         Mesh skyboxMesh;
+        Shader finalDrawShader;
 
         public SceneSystem AddScene()
         {
@@ -83,6 +84,7 @@ namespace MyEngine
 
             quadMesh = Factory.GetMesh("internal/quad.obj");
             skyboxMesh = Factory.GetMesh("internal/skybox.obj");
+            finalDrawShader = Factory.GetShader("internal/finalDraw.glsl");
 
             foreach (StringName r in System.Enum.GetValues(typeof(StringName)))
             {
@@ -201,6 +203,8 @@ namespace MyEngine
             EventThreadMain();
 
             ubo.engine.totalElapsedSecondsSinceEngineStart = (float)stopwatchSinceStart.Elapsed.TotalSeconds;
+            ubo.engine.gammaCorrectionTextureRead = 2.2f;
+            ubo.engine.gammaCorrectionFinalColor = 1/2.2f;
 
             //GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
@@ -388,6 +392,8 @@ namespace MyEngine
 
             }
 
+            if (drawLines)  GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
+
             // POST PROCESS EFFECTs
             if (enablePostProcessEffects)
             {
@@ -411,7 +417,20 @@ namespace MyEngine
 
             // FINAL DRAW TO SCREEN
             {
-                DebugDrawTexture(gBuffer.finalTextureToRead);
+                //DebugDrawTexture(gBuffer.finalTextureToRead);
+
+                GL.Disable(EnableCap.DepthTest);
+                GL.Disable(EnableCap.CullFace);
+                GL.Disable(EnableCap.Blend);
+
+                GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, 0);
+                GL.Viewport(0, 0, Width, Height);
+                //GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit);
+
+                finalDrawShader.Uniforms.Set("finalDrawTexture", gBuffer.finalTextureToRead);
+                finalDrawShader.Bind();
+
+                quadMesh.Draw();
             }
 
             /*if(debugBounds)
@@ -473,33 +492,6 @@ namespace MyEngine
 
             Debug.AddValue("countMeshesRendered", countMeshesRendered + "/" + allRenderers.NonNullCount);
 
-        }
-
-        void DebugDrawTexture(Texture2D texture, float valueScale = 1, float valueOffset = 0)
-        {
-            DebugDrawTexture(texture, Vector4.One, Vector4.Zero, valueScale, valueOffset);
-        }
-        void DebugDrawTexture(Texture2D texture, Vector4 positionScale, Vector4 positionOffset, float valueScale = 1, float valueOffset = 0)
-        {
-
-            GL.Disable(EnableCap.DepthTest);
-            GL.Disable(EnableCap.CullFace);
-            GL.Disable(EnableCap.Blend);
-
-            GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, 0);
-            GL.Viewport(0, 0, Width, Height);
-            //GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit);
-
-            var shader = Factory.GetShader("internal/debugDrawTexture.shader");
-            shader.Bind();
-
-            shader.Uniforms.Set("debugDrawTexture", texture);
-            shader.Uniforms.Set("debugDrawTexturePositionScale", positionScale);
-            shader.Uniforms.Set("debugDrawTexturePositionOffset", positionOffset);
-            shader.Uniforms.Set("debugDrawTextureScale", valueScale);
-            shader.Uniforms.Set("debugDrawTextureOffset", valueOffset);
-
-            quadMesh.Draw();
         }
 
     }

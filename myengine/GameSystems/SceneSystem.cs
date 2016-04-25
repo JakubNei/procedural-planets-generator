@@ -62,10 +62,10 @@ namespace MyEngine
 
 
 
-        SparseList<Entity> entities = new SparseList<Entity>();
-        SparseList<Light> lights = new SparseList<Light>();
-        SparseList<Renderer> geometryRenderers = new SparseList<Renderer>();
-        SparseList<Renderer> shadowCasters = new SparseList<Renderer>();
+        SparseList<Entity> entities = new SparseList<Entity>(1000);
+        SparseList<Light> lights = new SparseList<Light>(1000);
+        SparseList<Renderer> geometryRenderers = new SparseList<Renderer>(1000);
+        SparseList<Renderer> shadowCasters = new SparseList<Renderer>(1000);
 
         public SceneSystem(EngineMain engine)
         {

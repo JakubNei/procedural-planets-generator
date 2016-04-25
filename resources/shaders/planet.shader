@@ -1,8 +1,8 @@
 [include internal/prependAll.shader]
 
 uniform sampler2D param_rock;
-uniform float param_visibility;
-
+uniform float param_initialDistance;
+uniform float param_finalDistance;
 
 [VertexShader]
 
@@ -10,6 +10,7 @@ layout(location = 0) in vec3 in_position;
 layout(location = 1) in vec3 in_normal;
 layout(location = 2) in vec3 in_tangent;
 layout(location = 3) in vec2 in_uv;
+layout(location = 4) in vec3 in_positionInitial;
 // in mat4 in_modelMatrix; // instanced rendering
 
 out data {
@@ -21,18 +22,23 @@ out data {
 
 void main()
 {
-	
-	gl_Position = model.modelViewProjectionMatrix * vec4(in_position,1);
 
-	vec4 p = (model.modelMatrix * vec4(in_position, 1));
-	o.worldPos = p.xyz / p.w;
-	//o.position = in_position;
+	vec4 worldPos4 = (model.modelMatrix * vec4(in_position, 1));	
+	vec3 worldPos3 = worldPos4.xyz / worldPos4.w;
 
+	//float dist = distance(cameraPosition, worldPos);
+	//float finalWeight = smoothstep(param_initialDist, param_finalDistance, dist);
+	float finalWeight = 1;
+
+	vec3 modelPosition = in_position;
+
+	worldPos4 = (model.modelMatrix * vec4(modelPosition, 1));	
+	worldPos3 = worldPos4.xyz / worldPos4.w;
+
+	gl_Position = model.modelViewProjectionMatrix * vec4(modelPosition,1);
+	o.worldPos = worldPos3;
 	o.uv = in_uv;
-
 	o.normal = normalize((model.modelMatrix * vec4(in_normal,0)).xyz);
-	//o.normal = in_normal;
-
 	o.tangent = normalize((model.modelMatrix * vec4(in_tangent,0)).xyz);
 }
 
@@ -50,8 +56,6 @@ layout(location = 0) out vec4 out_color;
 layout(location = 1) out vec3 out_position;
 layout(location = 2) out vec3 out_normal;
 layout(location = 3) out vec4 out_data;
-
-
 
 
 
@@ -176,16 +180,18 @@ vec3 getColor(float distance) {
 void main()
 {
 
-	if(param_visibility != 1)	{
-		if(clamp(rand(gl_FragCoord.xy),0,1) > param_visibility) discard;
-	}	
+	// if(param_visibility != 1)	{
+	//	if(clamp(rand(gl_FragCoord.xy),0,1) > param_visibility) discard;
+	// }	
 
 	// BASE COLOR
 	float dist = gl_FragCoord.z/gl_FragCoord.w; //distance(EyePosition, i.worldPos);
-	vec3 c = vec3(1,1,1);
-	c=getColor(dist);
-	out_color = vec4(c,1);
+	vec3 color = vec3(1,1,1);
+	color = getColor(dist);
 
+
+
+	out_color = vec4(pow(color,vec3(engine.gammaCorrectionTextureRead)),1);
 	out_normal = i.normal;
 	out_position = i.worldPos;
 	out_data = vec4(0);

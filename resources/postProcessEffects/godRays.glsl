@@ -76,8 +76,13 @@ void main()
 	float Weight = 0.1;
 	float Exposure = 0.5;
 
+
 	// Calculate vector from pixel to light source in screen space.
 	vec2 deltaTexCoord = (texCoord - param_lightScreenPos.xy);
+
+
+	//NUM_SAMPLES = int(ceil(length(deltaTexCoord) * 20));
+
 	// Divide by number of samples and scale by control factor.
 	deltaTexCoord *= 1.0f / NUM_SAMPLES * Density;
 	// Store initial sample.
@@ -95,7 +100,7 @@ void main()
 	
 
 	// Set up illumination decay factor.
-	float illuminationDecay = 1.0f;
+	float illuminationDecay = 1;
 	// Evaluate summation from Equation 3 NUM_SAMPLES iterations.
 	for (int i = 0; i < NUM_SAMPLES; i++)
 	{
@@ -105,12 +110,12 @@ void main()
 		vec3 worldPos = textureLod(gBufferUniform.position, texCoord, 0).xyz;
 		if(worldPos==vec3(0) || distance(worldPos, param_lightWorldPos) < param_lightWorldRadius) {
 			// Retrieve sample at new location.
-			vec3 s = textureLod(gBufferUniform.final, texCoord, 3).xyz;
+			vec3 s = textureLod(gBufferUniform.final, texCoord, 5).rgb;
 			// Apply sample attenuation scale/decay factors.
 			s *= illuminationDecay * GetLuminance(s) * Weight;
 			// Accumulate combined color.
-			color += s * Exposure;
-		}
+			color += s * Exposure * 100;
+		} 
 
 		// Update exponential decay factor.
 		illuminationDecay *= Decay;

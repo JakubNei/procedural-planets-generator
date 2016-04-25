@@ -198,5 +198,36 @@ namespace MyEngine
             GL.BlitFramebuffer(0, 0, width, height, x, y, x + qw, y + qh, ClearBufferMask.ColorBufferBit, BlitFramebufferFilter.Linear);
         }
 
+
+        void DebugDrawTexture(Texture2D texture, float valueScale = 1, float valueOffset = 0)
+        {
+            DebugDrawTexture(texture, Vector4.One, Vector4.Zero, valueScale, valueOffset);
+        }
+        void DebugDrawTexture(Texture2D texture, Vector4 positionScale, Vector4 positionOffset, float valueScale = 1, float valueOffset = 0)
+        {
+            var debugDrawTextureShader = Factory.GetShader("internal/debugDrawTexture.shader");
+
+            GL.Disable(EnableCap.DepthTest);
+            GL.Disable(EnableCap.CullFace);
+            GL.Disable(EnableCap.Blend);
+
+            GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, 0);
+            GL.Viewport(0, 0, width, height);
+            //GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit);
+
+            debugDrawTextureShader.Uniforms.Set("debugDrawTexture", texture);
+            debugDrawTextureShader.Uniforms.Set("debugDrawTexturePositionScale", positionScale);
+            debugDrawTextureShader.Uniforms.Set("debugDrawTexturePositionOffset", positionOffset);
+            debugDrawTextureShader.Uniforms.Set("debugDrawTextureScale", valueScale);
+            debugDrawTextureShader.Uniforms.Set("debugDrawTextureOffset", valueOffset);
+            debugDrawTextureShader.Uniforms.Set("debugDrawTextureGamma", 0.1f);
+
+            debugDrawTextureShader.Bind();
+
+            var quadMesh = Factory.GetMesh("internal/quad.obj");
+            quadMesh.Draw();
+        }
+
+
     }
 }

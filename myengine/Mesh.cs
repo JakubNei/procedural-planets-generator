@@ -153,6 +153,14 @@ namespace MyEngine
                 pointerType = VertexAttribPointerType.Float,
                 dataStrideInElementsNumber = 1,
             };
+
+            VertexArrayObj = new VertexArrayObject();
+            VertexArrayObj.AddVertexBufferObject("vertices", vertices);
+            VertexArrayObj.AddVertexBufferObject("normals", normals);
+            VertexArrayObj.AddVertexBufferObject("tangents", tangents);
+            VertexArrayObj.AddVertexBufferObject("uvs", uvs);
+            VertexArrayObj.AddVertexBufferObject("triangleIndicies", triangleIndicies);
+            VertexArrayObj.OnChanged += () => { isOnGPU = false; };
         }
 
         public void RecalculateBounds()
@@ -162,18 +170,30 @@ namespace MyEngine
 
         public void Draw()
         {
-            if (!isOnGPU) UploadDataToGpu();
+            if (isOnGPU == false)
+            {
+                UploadDataToGpu();
+            }
             GL.BindVertexArray(VertexArrayObj.handle);
-            GL.DrawElements(PrimitiveType.Triangles, triangleIndicies.Count,
-                DrawElementsType.UnsignedInt, IntPtr.Zero);
+            GL.DrawElements(PrimitiveType.Triangles, triangleIndicies.Count, DrawElementsType.UnsignedInt, IntPtr.Zero);
             GL.BindVertexArray(0);
         }
 
         public void UploadDataToGpu()
         {
-            Unload();
-            CreateVAO();
+            if (!HasNormals())
+            {
+                RecalculateNormals();
+            }
+            if (!HasTangents())
+            {
+                RecalculateTangents();
+            }
+
+            VertexArrayObj.DeleteBuffer();
+            VertexArrayObj.CreateBufferAndBindVBOs();
             VertexArrayObj.SendDataToGpu();
+
             isOnGPU = true;
             RaiseOnChanged(ChangedFlags.VisualRepresentation);
         }
@@ -298,36 +318,10 @@ namespace MyEngine
         }
 
 
-        void CreateVAO()
-        {
-
-            if (!HasNormals())
-            {
-                RecalculateNormals();
-            }
-            if (!HasTangents())
-            {
-                RecalculateTangents();
-            }
-
-
-            VertexArrayObj = new VertexArrayObject();
-            VertexArrayObj.AddVertexBufferObject("vertices", vertices);
-            VertexArrayObj.AddVertexBufferObject("normals", normals);
-            VertexArrayObj.AddVertexBufferObject("tangents", tangents);
-            VertexArrayObj.AddVertexBufferObject("uvs", uvs);
-            VertexArrayObj.AddVertexBufferObject("triangleIndicies", triangleIndicies);
-
-            VertexArrayObj.OnChanged += () => { isOnGPU = false; };
-        }
 
         public void Unload()
         {
-            if (VertexArrayObj != null)
-            {
-                VertexArrayObj.Delete();
-                VertexArrayObj = null;
-            }
+            VertexArrayObj.DeleteBuffer();
         }
 
 
@@ -336,6 +330,7 @@ namespace MyEngine
             public event Action OnChanged;
 
             public Dictionary<string, IVertexBufferObject> nameToVbo = new Dictionary<string, IVertexBufferObject>();
+            List<string> vboNamesToBind = new List<string>();
 
             public int nextLayoutIndex = 0;
 
@@ -343,29 +338,35 @@ namespace MyEngine
 
             public void AddVertexBufferObject(string name, IVertexBufferObject vbo)
             {
-                CreateBuffer();
-
+                if (nameToVbo.ContainsKey(name) && nameToVbo[name] == vbo) return;
                 nameToVbo[name] = vbo;
                 if (vbo.UsesLayoutIndex)
                 {
                     vbo.LayoutIndex = nextLayoutIndex;
                     nextLayoutIndex++;
                 }
-
-                GL.BindVertexArray(handle);
-                vbo.BindBufferToVAO();
-                GL.BindVertexArray(0);
-
+                vboNamesToBind.Add(name);
                 vbo.OnChanged += () => { OnChanged.Raise(); };
+                OnChanged.Raise();
             }
-            public void CreateBuffer()
+            public void CreateBufferAndBindVBOs()
             {
                 if (handle == -1)
                 {
                     handle = GL.GenVertexArray();
                 }
+
+                GL.BindVertexArray(handle);
+                foreach (var vboName in vboNamesToBind)
+                {
+                    var vbo = nameToVbo[vboName];
+                    vbo.BindBufferToVAO();
+                }
+                vboNamesToBind.Clear();
+                GL.BindVertexArray(0);
+
             }
-            public void Delete()
+            public void DeleteBuffer()
             {
                 if (handle != -1)
                 {
@@ -381,10 +382,11 @@ namespace MyEngine
             {
                 foreach (var kvp in nameToVbo)
                 {
-                    kvp.Value.SendDataToGpu();
+                    kvp.Value.SendDataToGpu(kvp.Key);
                 }
             }
         }
+
 
         public interface IVertexBufferObject
         {
@@ -394,7 +396,7 @@ namespace MyEngine
             int LayoutIndex { get; set; }
             bool UsesLayoutIndex { get; }
             void CreateBuffer();
-            void SendDataToGpu();
+            void SendDataToGpu(string myName);
             void BindBufferToVAO();
             void DeleteBuffer();
         }
@@ -407,7 +409,7 @@ namespace MyEngine
             public BufferTarget bufferTarget;
             public int NumberOfElements { get { return this.Count; } }
             public VertexAttribPointerType pointerType;
-            public bool normalized;
+            public bool normalized = false;
             public int dataStrideInElementsNumber;
             public int DataSizeOfOneElementInBytes
             {
@@ -433,7 +435,7 @@ namespace MyEngine
             {
                 if (Handle == -1) Handle = GL.GenBuffer();
             }
-            public void SendDataToGpu()
+            public void SendDataToGpu(string myName)
             {
                 CreateBuffer();
                 int sizeFromGpu;
@@ -442,7 +444,7 @@ namespace MyEngine
                 var size = NumberOfElements * DataSizeOfOneElementInBytes;
                 GL.BufferData(bufferTarget, (IntPtr)(size), arr, BufferUsageHint.StaticDraw);
                 GL.GetBufferParameter(bufferTarget, BufferParameterName.BufferSize, out sizeFromGpu);
-                if (size != sizeFromGpu) Debug.Error("size mismatch size=" + bufferTarget + " sizeFromGpu=" + sizeFromGpu);
+                if (size != sizeFromGpu) Debug.Error(myName+" size mismatch size=" + bufferTarget + " sizeFromGpu=" + sizeFromGpu);
             }
             public void BindBufferToVAO()
             {

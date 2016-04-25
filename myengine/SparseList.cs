@@ -23,6 +23,11 @@ namespace MyEngine
 
         public int Capacity { get { return list.Capacity; } set { list.Capacity = value; } }
 
+        public SparseList(int capacity)
+        {
+            this.Capacity = capacity;
+        }
+
         public void Compact()
         {
             var sortedIndices = freeIndices.ToList();

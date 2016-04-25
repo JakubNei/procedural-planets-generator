@@ -44,12 +44,6 @@ namespace MyGame
         }
 
 
-        public bool IsMeshReady()
-        {
-            return renderer != null;
-        }
-
-
         void MAKE_CHILD(Vector3 A, Vector3 B, Vector3 C) {
 
             var child = new PlanetaryBodyChunk(planetaryBody, this);
@@ -98,13 +92,15 @@ namespace MyGame
             }
 
             int numberOfVerticesOnEdge = planetaryBody.chunkNumberOfVerticesOnEdge;
+            if (numberOfVerticesOnEdge % 2 == 0) numberOfVerticesOnEdge ++;
+
 
             var mesh = new Mesh();// "PlanetaryBodyChunk depth:" + subdivisionDepth + " #" + numbetOfChunksGenerated);
             numbetOfChunksGenerated++;
 
             var realRange = range;
+            
             {
-
                 var s = range.a.Distance(range.b) / (numberOfVerticesOnEdge - 1);
                 var o = (float)Math.Sqrt(s * s + s * s);
 
@@ -120,6 +116,7 @@ namespace MyGame
                 realRange.b = c + Vector3.Multiply(realRange.b - c, ratio);
                 realRange.c = c + Vector3.Multiply(realRange.c - c, ratio);
             }
+            
 
 
 
@@ -128,124 +125,219 @@ namespace MyGame
             // realRange triangle is assumed to have all sides the same length
 
             // generate evenly spaced vertices, then we make triangles out of them
-            var vertices = new List<Vector3>();
-            vertices.Add(realRange.a);
-            var startStep = (realRange.b - realRange.a) / (float)(numberOfVerticesOnEdge - 1);
-            var endStep = (realRange.c - realRange.a) / (float)(numberOfVerticesOnEdge - 1);
-            int numberOfVerticesInBetween = 0;
-            for (uint u = 1; u < numberOfVerticesOnEdge; u++)
+            var positionsFinal = new List<Vector3>();
+
+
+            // the planetary chunk vertices blend from positonsInitial to positionsFinal
+            // to nicely blend in more detail
+            // var positionsInitial = new List<Vector3>(); 
+            var positionsInitial = new Mesh.VertexBufferObject<Vector3>()
             {
-                Vector3 start = realRange.a + startStep * (float)u;
-                Vector3 end = realRange.a + endStep * (float)u;
-                vertices.Add(start);
-                if (numberOfVerticesInBetween > 0)
+                bufferTarget = OpenTK.Graphics.OpenGL.BufferTarget.ArrayBuffer,
+                pointerType = OpenTK.Graphics.OpenGL.VertexAttribPointerType.Float,
+                dataStrideInElementsNumber = 3,                
+            };
+
+            positionsFinal.Add(realRange.a);
+            // add positions, line by line
+            {
+                var startStep = (realRange.b - realRange.a) / (float)(numberOfVerticesOnEdge - 1);
+                var endStep = (realRange.c - realRange.a) / (float)(numberOfVerticesOnEdge - 1);
+                int numberOfVerticesInBetween = 0;
+                for (uint y = 1; y < numberOfVerticesOnEdge; y++)
                 {
-                    var step = (end - start) / (float)(numberOfVerticesInBetween + 1);
-                    for (uint i = 1; i <= numberOfVerticesInBetween; i++)
+                    Vector3 start = realRange.a + startStep * (float)y;
+                    Vector3 end = realRange.a + endStep * (float)y;
+                    positionsFinal.Add(start);
+                    if (numberOfVerticesInBetween > 0)
                     {
-                        var v = start + step * (float)i;
-                        vertices.Add(v);
+                        var step = (end - start) / (float)(numberOfVerticesInBetween + 1);
+                        for (uint x = 1; x <= numberOfVerticesInBetween; x++)
+                        {
+                            var v = start + step * (float)x;
+                            positionsFinal.Add(v);
+                        }
                     }
+                    positionsFinal.Add(end);
+                    numberOfVerticesInBetween++;
                 }
-                vertices.Add(end);
-                numberOfVerticesInBetween++;
             }
+
+
+            /*
+
+                 /\  top line
+                /\/\
+               /\/\/\
+              /\/\/\/\ middle lines
+             /\/\/\/\/\
+            /\/\/\/\/\/\ bottom line
+
+            */
 
 
             var indicies = new List<int>();
-
-
-            // make triangles
-
-            int lineStartIndex = 0;
-            int nextLineStartIndex = 1;
-            indicies.Add(0);
-            indicies.Add(1);
-            indicies.Add(2);
-
-            numberOfVerticesInBetween = 0;
-            // we skip first triangle as it was done manually
-            // we skip last row of vertices as there are no triangles under it
-            for (int i = 1; i < numberOfVerticesOnEdge - 1; i++)
+            // make triangles indicies list
             {
+                int lineStartIndex = 0;
+                int nextLineStartIndex = 1;
+                indicies.Add(0);
+                indicies.Add(1);
+                indicies.Add(2);
 
-                lineStartIndex = nextLineStartIndex;
-                nextLineStartIndex = lineStartIndex + numberOfVerticesInBetween + 2;
-
-                for (int u = 0; u <= numberOfVerticesInBetween + 1; u++)
+                int numberOfVerticesInBetween = 0;
+                // we skip first triangle as it was done manually
+                // we skip last row of vertices as there are no triangles under it
+                for (int y = 1; y < numberOfVerticesOnEdge - 1; y++)
                 {
 
-                    indicies.Add(lineStartIndex + u);
-                    indicies.Add(nextLineStartIndex + u);
-                    indicies.Add(nextLineStartIndex + u + 1);
+                    lineStartIndex = nextLineStartIndex;
+                    nextLineStartIndex = lineStartIndex + numberOfVerticesInBetween + 2;
 
-                    if (u <= numberOfVerticesInBetween)
+                    for (int x = 0; x <= numberOfVerticesInBetween + 1; x++)
                     {
-                        indicies.Add(lineStartIndex + u);
-                        indicies.Add(nextLineStartIndex + u + 1);
-                        indicies.Add(lineStartIndex + u + 1);
+
+                        indicies.Add(lineStartIndex + x);
+                        indicies.Add(nextLineStartIndex + x);
+                        indicies.Add(nextLineStartIndex + x + 1);
+
+                        if (x <= numberOfVerticesInBetween) // not a last triangle in line
+                        {
+                            indicies.Add(lineStartIndex + x);
+                            indicies.Add(nextLineStartIndex + x + 1);
+                            indicies.Add(lineStartIndex + x + 1);
+                        }
                     }
+
+                    numberOfVerticesInBetween++;
                 }
-
-                numberOfVerticesInBetween++;
             }
 
 
-            mesh.vertices.SetData(vertices);
-            mesh.triangleIndicies.SetData(indicies);
 
-            // add procedural heights
-            for (int i = 0; i < vertices.Count; i++)
+
+            // add procedural heights to final positions
+            for (int i = 0; i < positionsFinal.Count; i++)
             {
-                mesh.vertices[i] = planetaryBody.GetFinalPos(mesh.vertices[i]);
+                var v = planetaryBody.GetFinalPos(positionsFinal[i]);
+                positionsFinal[i] = v;
+            }           
+
+
+            // fill in initial positions, every odd positon is average of the two neighbouring final positions
+            {
+                positionsInitial.Resize(positionsFinal.Count);
+
+                int i = 0;
+                positionsInitial[i] = positionsFinal[i];
+                i++;
+                
+                int numberOfVerticesOnLine = 2;
+                for (int y = 1; y < numberOfVerticesOnEdge; y++)
+                {
+                    for (int x = 0; x < numberOfVerticesOnLine; x++)
+                    {
+                        if (y % 2 == 0)
+                        {
+                            if (x % 2 == 0)
+                            {
+                                positionsInitial[i] = positionsFinal[i];
+                                i++;
+                            }
+                            else
+                            {
+                                int a = i - 1;
+                                int b = i + 1;
+                                positionsInitial[i] = (positionsFinal[a] + positionsFinal[b]) / 2.0f;
+                                i++;
+                            }
+                        }
+                        else
+                        {
+                            if (x % 2 == 0)
+                            {
+                                int a = i - numberOfVerticesOnLine + 1;
+                                int b = i + numberOfVerticesOnLine;
+                                positionsInitial[i] = (positionsFinal[a] + positionsFinal[b]) / 2.0f;
+                                i++;
+                            }
+                            else
+                            {
+                                int a = i - numberOfVerticesOnLine;
+                                int b = i + numberOfVerticesOnLine + 1;
+                                positionsInitial[i] = (positionsFinal[a] + positionsFinal[b]) / 2.0f;
+                                i++;
+                            }
+                        }
+                    }
+                                    
+                    numberOfVerticesOnLine++;
+                }
             }
+
+
+
+            mesh.vertices.SetData(positionsFinal);
+            mesh.triangleIndicies.SetData(indicies);
             mesh.RecalculateNormals();
 
-            // the deeper chunk it the less the multiplier should be
-            var skirtMultiplier = 0.95f + 0.05f * subdivisionDepth / (planetaryBody.subdivisionMaxRecurisonDepth + 2);
-            skirtMultiplier = MyMath.Clamp(skirtMultiplier, 0.95f, 1.0f);
 
-
-            var chunkCenter = realRange.CenterPos();
 
 
             var skirtIndicies = new List<int>();
-
-            lineStartIndex = 0;
-            nextLineStartIndex = 1;
-            numberOfVerticesInBetween = 0;
-            skirtIndicies.Add(0); // first line
-
-            // all middle lines
-            for (int i = 1; i < numberOfVerticesOnEdge - 1; i++)
+            // gather the edge vertices indicies
             {
+                int lineStartIndex = 0;
+                int nextLineStartIndex = 1;
+                int numberOfVerticesInBetween = 0;
+                skirtIndicies.Add(0); // first line
+                // top and all middle lines
+                for (int i = 1; i < numberOfVerticesOnEdge - 1; i++)
+                {
+                    lineStartIndex = nextLineStartIndex;
+                    nextLineStartIndex = lineStartIndex + numberOfVerticesInBetween + 2;
+                    skirtIndicies.Add(lineStartIndex);
+                    skirtIndicies.Add((lineStartIndex + numberOfVerticesInBetween + 1));
+                    numberOfVerticesInBetween++;
+                }
+                // bottom line
                 lineStartIndex = nextLineStartIndex;
-                nextLineStartIndex = lineStartIndex + numberOfVerticesInBetween + 2;
-                skirtIndicies.Add(lineStartIndex);
-                skirtIndicies.Add((lineStartIndex + numberOfVerticesInBetween + 1));
-                numberOfVerticesInBetween++;
+                for (int i = 0; i < numberOfVerticesOnEdge; i++)
+                {
+                    skirtIndicies.Add((lineStartIndex + i));
+                }
             }
 
-            // last line
-            lineStartIndex = nextLineStartIndex;
-            for (int i = 0; i < numberOfVerticesOnEdge; i++)
+
+            // make skirts
             {
-                skirtIndicies.Add((lineStartIndex + i));
+                // the deeper chunk it the less the multiplier should be
+                var skirtMultiplier = 0.95f + 0.05f * subdivisionDepth / (planetaryBody.subdivisionMaxRecurisonDepth + 2);
+                skirtMultiplier = MyMath.Clamp(skirtMultiplier, 0.95f, 1.0f);
+
+                var chunkCenter = realRange.CenterPos();
+                foreach (var index in skirtIndicies)
+                {
+                    // lower the skirts towards middle
+                    // move chunks towards triangle center
+                    {
+                        var v = mesh.vertices[index];
+                        v *= skirtMultiplier;
+                        v = chunkCenter + (v - chunkCenter) * skirtMultiplier;
+                        mesh.vertices[index] = v;
+                    }
+                    {
+                        var v = positionsInitial[index];
+                        v *= skirtMultiplier;
+                        v = chunkCenter + (v - chunkCenter) * skirtMultiplier;
+                        positionsInitial[index] = v;
+                    }
+                }
             }
 
 
-            foreach (var index in skirtIndicies)
-            {
-                // make skirts
-                // lower the skirts towards middle
-                // move chunks towards triangle center
-                var v = mesh.vertices[index];
-                v *= skirtMultiplier;
-                v = chunkCenter + (v - chunkCenter) * skirtMultiplier;
-                mesh.vertices[index] = v;
-            }
 
-
+            mesh.VertexArrayObj.AddVertexBufferObject("positionInitial", positionsInitial);
 
             mesh.RecalculateBounds();
 

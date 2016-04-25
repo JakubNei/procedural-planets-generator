@@ -12,7 +12,7 @@ layout(std140) uniform engine_block {
 	vec3 ambientColor;
 	float totalElapsedSecondsSinceEngineStart; // totalElapsedSecondsSinceEngineStart
 	float gammaCorrectionTextureRead; // 2.2
-	float gammaCorrectionFinalColor; // 2.2
+	float gammaCorrectionFinalColor; // 1/2.2
 } engine;
 
 

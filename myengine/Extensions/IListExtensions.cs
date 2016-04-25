@@ -8,21 +8,21 @@ namespace MyEngine
 {
 	public static class ILisExtensions
 	{
-        public static void Resize<T>(this List<T> list, int sz, T c)
+        public static void Resize<T>(this List<T> list, int newCount, T valueToAdd)
         {
             int cur = list.Count;
-            if (sz < cur)
-                list.RemoveRange(sz, cur - sz);
-            else if (sz > cur)
+            if (newCount < cur)
+                list.RemoveRange(newCount, cur - newCount);
+            else if (newCount > cur)
             {
-                if (sz > list.Capacity)//this bit is purely an optimisation, to avoid multiple automatic capacity changes.
-                    list.Capacity = sz;
-                list.AddRange(Enumerable.Repeat(c, sz - cur));
+                if (newCount > list.Capacity)//this bit is purely an optimisation, to avoid multiple automatic capacity changes.
+                    list.Capacity = newCount;
+                list.AddRange(Enumerable.Repeat(valueToAdd, newCount - cur));
             }
         }
-        public static void Resize<T>(this List<T> list, int sz) where T : new()
+        public static void Resize<T>(this List<T> list, int newCount) where T : new()
         {
-            Resize(list, sz, new T());
+            Resize(list, newCount, new T());
         }
 
         public static void AddRange(this IList me, IEnumerable enumerable)
