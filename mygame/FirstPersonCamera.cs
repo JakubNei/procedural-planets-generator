@@ -93,9 +93,9 @@ namespace MyGame
 
             if (Input.LockCursor == false) return;
 
-            if (scrollWheelDelta > 0) speedModifier *= 1.5f;
-            if (scrollWheelDelta < 0) speedModifier /= 1.5f;
-            speedModifier = Math.Max(1.0f, speedModifier);
+            if (scrollWheelDelta > 0) speedModifier *= 1.3f;
+            if (scrollWheelDelta < 0) speedModifier /= 1.3f;
+            speedModifier = MyMath.Clamp(speedModifier, 1, 500);
 
 
             /*

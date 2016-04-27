@@ -240,8 +240,8 @@ namespace MyGame
 
             // fill in initial positions, every odd positon is average of the two neighbouring final positions
             {
-                normalsInitial.Resize(positionsFinal.Count);
                 positionsInitial.Resize(positionsFinal.Count);
+                normalsInitial.Resize(positionsFinal.Count);
 
                 int i = 0;
                 positionsInitial[i] = positionsFinal[i];
@@ -267,6 +267,7 @@ namespace MyGame
                                 int b = i + 1;
                                 positionsInitial[i] = (positionsFinal[a] + positionsFinal[b]) / 2.0f;
                                 normalsInitial[i] = (normalsFinal[a] + normalsFinal[b]) / 2.0f;
+                                normalsInitial[i].Normalize();
                                 //normalsInitial[i] = Vector3.UnitX;
                                 i++;
                             }
@@ -279,6 +280,7 @@ namespace MyGame
                                 int b = i + numberOfVerticesOnLine;
                                 positionsInitial[i] = (positionsFinal[a] + positionsFinal[b]) / 2.0f;
                                 normalsInitial[i] = (normalsFinal[a] + normalsFinal[b]) / 2.0f;
+                                normalsInitial[i].Normalize();
                                 //normalsInitial[i] = Vector3.UnitX;
                                 i++;
                             }
@@ -288,6 +290,7 @@ namespace MyGame
                                 int b = i + numberOfVerticesOnLine + 1;
                                 positionsInitial[i] = (positionsFinal[a] + positionsFinal[b]) / 2.0f;
                                 normalsInitial[i] = (normalsFinal[a] + normalsFinal[b]) / 2.0f;
+                                normalsInitial[i].Normalize();
                                 //normalsInitial[i] = Vector3.UnitX;
                                 i++;
                             }
@@ -297,8 +300,6 @@ namespace MyGame
                     numberOfVerticesOnLine++;
                 }
             }
-
-            mesh.RecalculateNormals();
 
             var skirtIndicies = new List<int>();
             // gather the edge vertices indicies
@@ -355,7 +356,6 @@ namespace MyGame
 
             mesh.VertexArrayObj.AddVertexBufferObject("positionsInitial", positionsInitial);
             mesh.VertexArrayObj.AddVertexBufferObject("normalsInitial", normalsInitial);
-            //mesh.RecalculateNormals();
 
             mesh.RecalculateBounds();
 
