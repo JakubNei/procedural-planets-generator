@@ -48,7 +48,7 @@ namespace MyGame
 
             PlanetaryBody planet;
 
-
+            /*
             planet = scene.AddEntity().AddComponent<PlanetaryBody>();
             planet.radius = 150;
             planet.radiusVariation = 7;
@@ -64,10 +64,13 @@ namespace MyGame
             planet.Start();
             planet.planetMaterial = planetMaterial;
             planets.Add(planet);
+            */
 
             planet = scene.AddEntity().AddComponent<PlanetaryBody>();
-            planet.radius = 2000; // 6371000 earth radius
-            planet.radiusVariation = 100;
+            //planet.radius = 2000; // 6371000 earth radius
+            //planet.radiusVariation = 100;
+            planet.radius = 100; // 6371000 earth radius
+            planet.radiusVariation = 5;
             planet.chunkNumberOfVerticesOnEdge = 20; // 20
             planet.subdivisionMaxRecurisonDepth = 10;
             planet.startingRadiusSubdivisionModifier = 2f;
@@ -77,12 +80,15 @@ namespace MyGame
             planet.planetMaterial = planetMaterial;
             planets.Add(planet);
 
-            cam.Transform.Position = new Vector3(-planet.radius, 0, 0) + planet.Transform.Position;
+            cam.Transform.Position = new Vector3((float)-planet.radius, 0, 0) + planet.Transform.Position;
 
         }
 
+        bool freezeUpdate = false;
         void OnGraphicsUpdate(double dt)
         {
+            if (scene.Input.GetKeyDown(Key.P)) freezeUpdate = !freezeUpdate;
+            if (freezeUpdate) return;
 
             var camPos = cam.Transform.Position;
 
@@ -90,13 +96,13 @@ namespace MyGame
 
             // make cam on top of the planet
             {
-                var p = cam.Transform.Position - planet.Transform.Position;
+                var p = (cam.Transform.Position - planet.Transform.Position).ToVector3d();
                 var camPosS = planet.CalestialToSpherical(p);
                 var h = 1 + planet.GetHeight(p);
                 if (camPosS.altitude < h)
                 {
                     camPosS.altitude = h;
-                    cam.Transform.Position = planet.SphericalToCalestial(camPosS) + planet.Transform.Position;
+                    cam.Transform.Position = planet.SphericalToCalestial(camPosS).ToVector3() + planet.Transform.Position;
                 }
             }
 

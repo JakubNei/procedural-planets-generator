@@ -72,7 +72,7 @@ void main()
 	int NUM_SAMPLES = 20;
 	vec2 texCoord = screenCoord;
 	float Density = 0.5;
-	float Decay = 0.9;
+	float Decay = 0.8;
 	float Weight = 0.1;
 	float Exposure = 0.5;
 
@@ -108,13 +108,13 @@ void main()
 		texCoord -= deltaTexCoord;
 
 		vec3 worldPos = textureLod(gBufferUniform.position, texCoord, 0).xyz;
-		if(worldPos==vec3(0) || distance(worldPos, param_lightWorldPos) < param_lightWorldRadius) {
+		if(distance(worldPos, param_lightWorldPos) < param_lightWorldRadius) {
 			// Retrieve sample at new location.
-			vec3 s = textureLod(gBufferUniform.final, texCoord, 5).rgb;
+			vec3 s = textureLod(gBufferUniform.final, texCoord, 4).rgb;
 			// Apply sample attenuation scale/decay factors.
 			s *= illuminationDecay * GetLuminance(s) * Weight;
 			// Accumulate combined color.
-			color += s * Exposure * 100;
+			color += s * Exposure;
 		} 
 
 		// Update exponential decay factor.

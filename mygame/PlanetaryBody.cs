@@ -14,24 +14,24 @@ namespace MyGame
     public class PlanetaryBody : ComponentWithShortcuts
     {
         public int chunkNumberOfVerticesOnEdge = 10;
-        public float radius;
+        public double radius;
         public int subdivisionMaxRecurisonDepth = 10;
         public volatile Material planetMaterial;
-        public float radiusVariation = 20;
-        public float subdivisionSphereRadiusModifier = 0.5f;
-        float subdivisionSphereRadiusModifier_debugModified
+        public double radiusVariation = 20;
+        public double subdivisionSphereRadiusModifier = 0.5f;
+        double subdivisionSphereRadiusModifier_debugModified
         {
             get
             {
                 return subdivisionSphereRadiusModifier * (0.5f + DebugKeys.keyIK);
             }
         }
-        public float startingRadiusSubdivisionModifier = 1;
+        public double startingRadiusSubdivisionModifier = 1;
 
         const bool debugSameHeightEverywhere = false; // DEBUG
 
-        Perlin perlin;
-        Worley worley;
+        PerlinD perlin;
+        WorleyD worley;
 
         List<PlanetaryBodyChunk> rootChunks = new List<PlanetaryBodyChunk>();
 
@@ -39,8 +39,8 @@ namespace MyGame
 
         public PlanetaryBody(Entity entity) : base(entity)
         {
-            perlin = new Perlin(5646);
-            worley = new Worley(894984, Worley.DistanceFunction.Euclidian);
+            perlin = new PerlinD(5646);
+            worley = new WorleyD(894984, WorleyD.DistanceFunction.Euclidian);
 
             entity.EventSystem.Register((MyEngine.Events.GraphicsUpdate evt) => OnGraphicsUpdate(evt.DeltaTime));
         }
@@ -48,13 +48,13 @@ namespace MyGame
 
 
         // http://stackoverflow.com/questions/1185408/converting-from-longitude-latitude-to-cartesian-coordinates
-        public SpehricalCoord CalestialToSpherical(Vector3 c)
+        public SpehricalCoord CalestialToSpherical(Vector3d c)
         {
             var r = c.Length;
             if (r == 0) return new SpehricalCoord(0, 0, 0);
             return new SpehricalCoord(
-                (float)Math.Atan2(c.Z, c.X),
-                (float)Math.Asin(c.Y / r),
+                Math.Atan2(c.Z, c.X),
+                Math.Asin(c.Y / r),
                 r
             );
         }
@@ -62,32 +62,34 @@ namespace MyGame
         // x = left right = longitude
         // y = top down = latitude
         // z = radius
-        public Vector3 SphericalToCalestial(SpehricalCoord s)
+        public Vector3d SphericalToCalestial(SpehricalCoord s)
         {
             var r = s.altitude;
             //s.latitude = s.latitude / 180.0f * M_PI;
             //s.longitude = s.longitude / 180.0f * M_PI;
             //if (r == 0) r = radius;
-            return new Vector3(
-                (float)Math.Cos(s.latitude) * (float)Math.Cos(s.longitude) * r,
-                (float)Math.Sin(s.latitude) * r,
-                (float)Math.Cos(s.latitude) * (float)Math.Sin(s.longitude) * r
+            return new Vector3d(
+                Math.Cos(s.latitude) * Math.Cos(s.longitude) * r,
+                Math.Sin(s.latitude) * r,
+                Math.Cos(s.latitude) * Math.Sin(s.longitude) * r
             );
         }
 
 
 
-        public Vector3 GetFinalPos(Vector3 calestialPos, int detailDensity = 1)
+        public Vector3d GetFinalPos(Vector3d calestialPos, int detailDensity = 1)
         {
-                var s = CalestialToSpherical(calestialPos);
-                s.altitude = GetHeight(calestialPos, detailDensity);
-                return SphericalToCalestial(s);
+            return calestialPos.Normalized() * GetHeight(calestialPos, detailDensity);
+
+            var s = CalestialToSpherical(calestialPos);
+            s.altitude = GetHeight(calestialPos, detailDensity);
+            return SphericalToCalestial(s);
         }
 
 
-        public float GetHeight(Vector3 calestialPos, int detailDensity = 1)
+        public double GetHeight(Vector3d calestialPos, int detailDensity = 1)
         {
-            if(debugSameHeightEverywhere)
+            if (debugSameHeightEverywhere)
             {
                 return radius;
             }
@@ -96,11 +98,11 @@ namespace MyGame
             var pos = initialPos;
 
             int octaves = 2;
-            float freq = 10;
-            float ampModifier = .05f;
-            float freqModifier = 15;
-            float result = 0.0f;
-            float amp = radiusVariation;
+            double freq = 10;
+            double ampModifier = .05f;
+            double freqModifier = 15;
+            double result = 0.0f;
+            double amp = radiusVariation;
             pos *= freq;
             for (int i = 0; i < octaves; i++)
             {
@@ -126,8 +128,8 @@ namespace MyGame
 
             /*
             int octaves = 4;
-            float sum = 0.5;
-            float freq = 1.0, amp = 1.0;
+            double sum = 0.5;
+            double freq = 1.0, amp = 1.0;
             vec2 dsum = vec2(0);
             for (int i=0; i < octaves; i++)
             {
@@ -142,7 +144,7 @@ namespace MyGame
         }
 
 
-        List<Vector3> vertices;
+        List<Vector3d> vertices;
         void FACE(int A, int B, int C)
         {
 
@@ -162,30 +164,30 @@ namespace MyGame
         {
             //detailLevel = (int)ceil(planetInfo.rootChunks[0].range.ToBoundingSphere().radius / 100);
 
-            vertices = new List<Vector3>();
+            vertices = new List<Vector3d>();
             var indicies = new List<uint>();
 
 
-            var r = this.radius / 2.0f;
+            var r = this.radius / 2.0;
 
-            var t = (1 + MyMath.Sqrt(5.0f)) / 2.0f * r;
+            var t = (1 + MyMath.Sqrt(5.0)) / 2.0 * r;
             var d = r;
 
 
-            vertices.Add(new Vector3(-d, t, 0));
-            vertices.Add(new Vector3(d, t, 0));
-            vertices.Add(new Vector3(-d, -t, 0));
-            vertices.Add(new Vector3(d, -t, 0));
+            vertices.Add(new Vector3d(-d, t, 0));
+            vertices.Add(new Vector3d(d, t, 0));
+            vertices.Add(new Vector3d(-d, -t, 0));
+            vertices.Add(new Vector3d(d, -t, 0));
 
-            vertices.Add(new Vector3(0, -d, t));
-            vertices.Add(new Vector3(0, d, t));
-            vertices.Add(new Vector3(0, -d, -t));
-            vertices.Add(new Vector3(0, d, -t));
+            vertices.Add(new Vector3d(0, -d, t));
+            vertices.Add(new Vector3d(0, d, t));
+            vertices.Add(new Vector3d(0, -d, -t));
+            vertices.Add(new Vector3d(0, d, -t));
 
-            vertices.Add(new Vector3(t, 0, -d));
-            vertices.Add(new Vector3(t, 0, d));
-            vertices.Add(new Vector3(-t, 0, -d));
-            vertices.Add(new Vector3(-t, 0, d));
+            vertices.Add(new Vector3d(t, 0, -d));
+            vertices.Add(new Vector3d(t, 0, d));
+            vertices.Add(new Vector3d(-t, 0, -d));
+            vertices.Add(new Vector3d(-t, 0, d));
 
 
 
@@ -306,11 +308,11 @@ namespace MyGame
                 // if visible, update final positions weight according to distance
                 if (chunk.renderer.RenderingMode == RenderingMode.RenderGeometryAndCastShadows)
                 {
-                    float d = chunk.renderer.bounds.Center.Distance(Scene.mainCamera.Transform.Position);
-                    float e0 = sphere.radius / subdivisionSphereRadiusModifier_debugModified;
-                    float e1 = e0 * subdivisionSphereRadiusModifier_debugModified;
-                    float w = MyMath.SmoothStep(e0, e1, d);
-                    chunk.renderer.Material.Uniforms.Set("param_finalPosWeight", w);
+                    var d = chunk.renderer.bounds.Center.Distance(Scene.mainCamera.Transform.Position);
+                    var e0 = sphere.radius / subdivisionSphereRadiusModifier_debugModified;
+                    var e1 = e0 * subdivisionSphereRadiusModifier_debugModified;
+                    var w = MyMath.SmoothStep(e0, e1, d);
+                    chunk.renderer.Material.Uniforms.Set("param_finalPosWeight", (float)w);
                 }
 
                 HideInChilds(chunk);
@@ -323,7 +325,7 @@ namespace MyGame
 
         public void TrySubdivideOver(Vector3 pos)
         {
-            var sphere = new Sphere(pos - Transform.Position, this.radius * startingRadiusSubdivisionModifier);
+            var sphere = new Sphere((pos - Transform.Position).ToVector3d(), this.radius * startingRadiusSubdivisionModifier);
             foreach (PlanetaryBodyChunk rootChunk in this.rootChunks)
             {
                 TrySubdivideToLevel_Generation(rootChunk, sphere, this.subdivisionMaxRecurisonDepth);

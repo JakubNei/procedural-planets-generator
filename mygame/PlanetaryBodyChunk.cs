@@ -34,13 +34,13 @@ namespace MyGame
             childs.Clear();
         }
 
-        public Vector3 GetCenterPos()
+        public Vector3d GetCenterPos()
         {
             return realVisibleRange.CenterPos;
         }
 
 
-        void MAKE_CHILD(Vector3 A, Vector3 B, Vector3 C) {
+        void MAKE_CHILD(Vector3d A, Vector3d B, Vector3d C) {
 
             var child = new PlanetaryBodyChunk(planetaryBody, this);
             childs.Add(child);
@@ -112,9 +112,9 @@ namespace MyGame
                 //ratio = 0.9f; // debug
 
                 var c = realRange.CenterPos;
-                realRange.a = c + Vector3.Multiply(realRange.a - c, ratio);
-                realRange.b = c + Vector3.Multiply(realRange.b - c, ratio);
-                realRange.c = c + Vector3.Multiply(realRange.c - c, ratio);
+                realRange.a = c + Vector3d.Multiply(realRange.a - c, ratio);
+                realRange.b = c + Vector3d.Multiply(realRange.b - c, ratio);
+                realRange.c = c + Vector3d.Multiply(realRange.c - c, ratio);
             }
             
 
@@ -146,27 +146,33 @@ namespace MyGame
 
 
 
-            positionsFinal.Add(realRange.a);
+            //positionsFinal.Add(noElevationRange.a.ToVector3());
+            positionsFinal.Add(planetaryBody.GetFinalPos(noElevationRange.a).ToVector3());
+
             // add positions, line by line
             {
-                var startStep = (realRange.b - realRange.a) / (float)(numberOfVerticesOnEdge - 1);
-                var endStep = (realRange.c - realRange.a) / (float)(numberOfVerticesOnEdge - 1);
+                var startStep = (noElevationRange.b - noElevationRange.a) / (numberOfVerticesOnEdge - 1);
+                var endStep = (noElevationRange.c - noElevationRange.a) / (numberOfVerticesOnEdge - 1);
                 int numberOfVerticesInBetween = 0;
                 for (uint y = 1; y < numberOfVerticesOnEdge; y++)
                 {
-                    Vector3 start = realRange.a + startStep * (float)y;
-                    Vector3 end = realRange.a + endStep * (float)y;
-                    positionsFinal.Add(start);
+                    var start = noElevationRange.a + startStep * y;
+                    var end = noElevationRange.a + endStep * y;
+                    //positionsFinal.Add(start.ToVector3());
+                    positionsFinal.Add(planetaryBody.GetFinalPos(start).ToVector3());
+
                     if (numberOfVerticesInBetween > 0)
                     {
-                        var step = (end - start) / (float)(numberOfVerticesInBetween + 1);
+                        var step = (end - start) / (numberOfVerticesInBetween + 1);
                         for (uint x = 1; x <= numberOfVerticesInBetween; x++)
                         {
-                            var v = start + step * (float)x;
-                            positionsFinal.Add(v);
+                            var v = start + step * x;
+                            //positionsFinal.Add(v.ToVector3());
+                            positionsFinal.Add(planetaryBody.GetFinalPos(v).ToVector3());
                         }
                     }
-                    positionsFinal.Add(end);
+                    //positionsFinal.Add(end.ToVector3());
+                    positionsFinal.Add(planetaryBody.GetFinalPos(end).ToVector3());
                     numberOfVerticesInBetween++;
                 }
             }
@@ -222,16 +228,6 @@ namespace MyGame
             }
 
 
-
-
-            // add procedural heights to final positions
-            for (int i = 0; i < positionsFinal.Count; i++)
-            {
-                var v = planetaryBody.GetFinalPos(positionsFinal[i]);
-                positionsFinal[i] = v;
-            }
-
-
             mesh.vertices.SetData(positionsFinal);
             mesh.triangleIndicies.SetData(indicies);
             mesh.RecalculateNormals();
@@ -267,7 +263,6 @@ namespace MyGame
                                 int b = i + 1;
                                 positionsInitial[i] = (positionsFinal[a] + positionsFinal[b]) / 2.0f;
                                 normalsInitial[i] = (normalsFinal[a] + normalsFinal[b]) / 2.0f;
-                                normalsInitial[i] = normalsFinal[a];
                                 i++;
                             }
                         }
@@ -279,7 +274,6 @@ namespace MyGame
                                 int b = i + numberOfVerticesOnLine;
                                 positionsInitial[i] = (positionsFinal[a] + positionsFinal[b]) / 2.0f;
                                 normalsInitial[i] = (normalsFinal[a] + normalsFinal[b]) / 2.0f;
-                                normalsInitial[i] = normalsFinal[a];
                                 i++;
                             }
                             else
@@ -288,7 +282,6 @@ namespace MyGame
                                 int b = i + numberOfVerticesOnLine + 1;
                                 positionsInitial[i] = (positionsFinal[a] + positionsFinal[b]) / 2.0f;
                                 normalsInitial[i] = (normalsFinal[a] + normalsFinal[b]) / 2.0f;
-                                normalsInitial[i] = normalsFinal[a];
                                 i++;
                             }
                         }
@@ -329,7 +322,7 @@ namespace MyGame
                 var skirtMultiplier = 0.99f + 0.01f * subdivisionDepth / (planetaryBody.subdivisionMaxRecurisonDepth + 2);
                 skirtMultiplier = MyMath.Clamp(skirtMultiplier, 0.95f, 1.0f);
 
-                var chunkCenter = realRange.CenterPos;
+                var chunkCenter = realRange.CenterPos.ToVector3();
                 foreach (var index in skirtIndicies)
                 {
                     // lower the skirts towards middle
@@ -381,7 +374,7 @@ namespace MyGame
             // help from http://stackoverflow.com/questions/3717226/radius-of-projected-sphere
             var sphere = realVisibleRange.ToBoundingSphere();
             var radiusWorldSpace = sphere.radius;
-            var sphereDistanceToCameraWorldSpace = cam.Transform.Position.Distance(planetaryBody.Transform.TransformPoint(sphere.center));
+            var sphereDistanceToCameraWorldSpace = cam.Transform.Position.Distance(planetaryBody.Transform.TransformPoint(sphere.center.ToVector3()));
             var fov = cam.fieldOfView;
             var radiusCameraSpace = radiusWorldSpace * MyMath.Cot(fov / 2) / sphereDistanceToCameraWorldSpace;
             var priority = sphereDistanceToCameraWorldSpace / radiusCameraSpace;
@@ -407,7 +400,7 @@ namespace MyGame
             HashSet<PlanetaryBodyChunk> chunkIsBeingGenerated = new HashSet<PlanetaryBodyChunk>();
 
             //ReaderWriterLock chunkToPriority_mutex = new ReaderWriterLock();
-            Dictionary<PlanetaryBodyChunk, float> chunkToPriority = new Dictionary<PlanetaryBodyChunk, float>();
+            Dictionary<PlanetaryBodyChunk, double> chunkToPriority = new Dictionary<PlanetaryBodyChunk, double>();
 
             List<Thread> threads = new List<Thread>();
 
@@ -443,30 +436,33 @@ namespace MyGame
                 {
 
                     PlanetaryBodyChunk chunk = null;
-                    float priority = float.MaxValue;
 
                     lock(chunkToPriority)
                     {
-                        foreach (var kvp in chunkToPriority)
+                        if (chunkToPriority.Count > 0)
                         {
-                            if (kvp.Value < priority)
+                            var priority = double.MaxValue;
+                            foreach (var kvp in chunkToPriority)
                             {
-                                priority = kvp.Value;
-                                chunk = kvp.Key;
-                            }
-                        }
-                        if(chunk != null)
-                        {
-                            lock (chunkIsBeingGenerated)
-                            {
-                                if (chunkIsBeingGenerated.Contains(chunk))
+                                if (kvp.Value < priority)
                                 {
-                                    chunk = null; // other thread found it faster than this one
+                                    priority = kvp.Value;
+                                    chunk = kvp.Key;
                                 }
-                                else
+                            }
+                            if (chunk != null)
+                            {
+                                lock (chunkIsBeingGenerated)
                                 {
-                                    chunkIsBeingGenerated.Add(chunk);
-                                    chunkToPriority.Remove(chunk);
+                                    if (chunkIsBeingGenerated.Contains(chunk))
+                                    {
+                                        chunk = null; // other thread found it faster than this one
+                                    }
+                                    else
+                                    {
+                                        chunkIsBeingGenerated.Add(chunk);
+                                        chunkToPriority.Remove(chunk);
+                                    }
                                 }
                             }
                         }
@@ -500,7 +496,7 @@ namespace MyGame
                 }
             }
 
-            public void RequestGenerationOfMesh(PlanetaryBodyChunk chunk, float priorityAdd)
+            public void RequestGenerationOfMesh(PlanetaryBodyChunk chunk, double priorityAdd)
             {
                 if (chunk.renderer != null) return;
 

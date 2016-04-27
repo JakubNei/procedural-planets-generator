@@ -8,54 +8,54 @@ using OpenTK;
 
 namespace MyEngine
 {
-    public static class Vector3Extensions
+    public static class Vector3dExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector3 RotateBy(this Vector3 vector, Quaternion rotation)
+        public static Vector3d RotateBy(this Vector3d vector, Quaterniond rotation)
         {
-            Matrix4 rot = Matrix4.CreateFromQuaternion(rotation);
-            Vector3 newDirection;
-            Vector3.TransformVector(ref vector, ref rot, out newDirection);
+            Matrix4d rot = Matrix4d.CreateFromQuaternion(rotation);
+            Vector3d newDirection;
+            Vector3d.TransformVector(ref vector, ref rot, out newDirection);
             return newDirection;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector3 CompomentWiseMult(this Vector3 a, Vector3 b)
+        public static Vector3d CompomentWiseMult(this Vector3d a, Vector3d b)
         {
-            return new Vector3(a.X * b.X, a.Y * b.Y, a.Z * b.Z);
+            return new Vector3d(a.X * b.X, a.Y * b.Y, a.Z * b.Z);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float Distance(this Vector3 a, Vector3 b)
+        public static double Distance(this Vector3d a, Vector3d b)
         {
             return (a - b).Length;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float DistanceSqr(this Vector3 a, Vector3 b)
+        public static double DistanceSqr(this Vector3d a, Vector3d b)
         {
             return (a - b).LengthSquared;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector3 Cross(this Vector3 a, Vector3 b)
+        public static Vector3d Cross(this Vector3d a, Vector3d b)
         {
-            return Vector3.Cross(a, b);
+            return Vector3d.Cross(a, b);
 
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float Dot(this Vector3 a, Vector3 b)
+        public static double Dot(this Vector3d a, Vector3d b)
         {
-            float result;
-            Vector3.Dot(ref a, ref b, out result);
+            double result;
+            Vector3d.Dot(ref a, ref b, out result);
             return result;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector3 Multiply(this Vector3 a, float scale)
+        public static Vector3d Multiply(this Vector3d a, double scale)
         {
-            return Vector3.Multiply(a, scale);
+            return Vector3d.Multiply(a, scale);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector3 Divide(this Vector3 a, float scale)
+        public static Vector3d Divide(this Vector3d a, double scale)
         {
-            Vector3.Divide(ref a, scale, out a);
-            //return Vector3.Divide(a, scale);
+            Vector3d.Divide(ref a, scale, out a);
+            //return Vector3d.Divide(a, scale);
             return a;
         }
         /// <summary>
@@ -65,9 +65,9 @@ namespace MyEngine
         /// <param name="a"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector3 Sign(this Vector3 a)
+        public static Vector3d Sign(this Vector3d a)
         {
-            var ret = new Vector3(0, 0, 0);
+            var ret = new Vector3d(0, 0, 0);
 
             if (a.X > 0) ret.X = 1;
             else if (a.X < 0) ret.X = -1;
@@ -82,7 +82,7 @@ namespace MyEngine
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector3 Abs(this Vector3 a)
+        public static Vector3d Abs(this Vector3d a)
         {
             if (a.X < 0) a.X *= -1;
             if (a.Y < 0) a.Y *= -1;
@@ -91,17 +91,17 @@ namespace MyEngine
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector3 Towards(this Vector3 from, Vector3 to)
+        public static Vector3d Towards(this Vector3d from, Vector3d to)
         {
-            return to-from;
+            return to - from;
         }
 
-        public static Vector3d ToVector3d(this Vector3 floatVector)
+        public static Vector3 ToVector3(this Vector3d doubleVector)
         {
-            return new Vector3d(
-                floatVector.X,
-                floatVector.Y,
-                floatVector.Z
+            return new Vector3(
+                (float)doubleVector.X,
+                (float)doubleVector.Y,
+                (float)doubleVector.Z
             );
         }
     }

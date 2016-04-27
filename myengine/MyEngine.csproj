@@ -60,6 +60,9 @@
     <Compile Include="Components\SSAO.cs" />
     <Compile Include="Components\Tonemapping.cs" />
     <Compile Include="DataAccessibleList.cs" />
+    <Compile Include="Extensions\OpenTK\Vector3dExtensions.cs" />
+    <Compile Include="Math\PerlinD.cs" />
+    <Compile Include="Math\WorleyD.cs" />
     <Compile Include="Panels\DebugValuesTable.cs">
       <SubType>Form</SubType>
     </Compile>

@@ -10,11 +10,11 @@ namespace MyEngine
 {
     public struct Triangle
     {
-        public Vector3 a;
-        public Vector3 b;
-        public Vector3 c;
+        public Vector3d a;
+        public Vector3d b;
+        public Vector3d c;
 
-        public Vector3 CenterPos
+        public Vector3d CenterPos
         {
             get
             {
@@ -22,7 +22,7 @@ namespace MyEngine
             }
         }
 
-        public Triangle(Vector3 a, Vector3 b, Vector3 c)
+        public Triangle(Vector3d a, Vector3d b, Vector3d c)
         {
             this.a = a;
             this.b = b;

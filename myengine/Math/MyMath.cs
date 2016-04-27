@@ -21,8 +21,16 @@ namespace MyEngine
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float SmoothStep(float edge0, float edge1, float x)
         {
-            float tmp = Clamp((x - edge0) / (edge1 - edge0), 0, 1);
+            var tmp = (x - edge0) / (edge1 - edge0);
+            Clamp01(ref tmp);
             return tmp * tmp * (3.0f - 2.0f * tmp);
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static double SmoothStep(double edge0, double edge1, double x)
+        {
+            var tmp = (x - edge0) / (edge1 - edge0);
+            Clamp01(ref tmp);
+            return tmp * tmp * (3.0 - 2.0 * tmp);
         }
         // https://www.opengl.org/sdk/docs/man/html/smoothstep.xhtml
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -33,7 +41,20 @@ namespace MyEngine
             return x;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static double Clamp(double x, double min, double max)
+        {
+            if (x > max) return max;
+            if (x < min) return min;
+            return x;
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Clamp01(ref float x)
+        {
+            if (x > 1) x = 1;
+            if (x < 0) x = 0;
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Clamp01(ref double x)
         {
             if (x > 1) x = 1;
             if (x < 0) x = 0;
@@ -55,6 +76,11 @@ namespace MyEngine
         public static float Sqrt(float x)
         {
             return (float)Math.Sqrt(x);
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static double Sqrt(double x)
+        {
+            return Math.Sqrt(x);
         }
 
         // http://stackoverflow.com/questions/2656899/mapping-a-sphere-to-a-cube
