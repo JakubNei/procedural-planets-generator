@@ -214,18 +214,19 @@ namespace MyEngine
 
         public void RecalculateNormals()
         {
-            if (HasNormals() == false) normals.Resize(vertices.Count);
-
             int verticesNum = vertices.Count;
             int indiciesNum = triangleIndicies.Count;
 
 
             int[] counts = new int[verticesNum];
 
+            normals.Clear();
+            normals.Capacity = verticesNum;
+
             for (int i = 0; i < verticesNum; i++)
             {
                 counts[i] = 0;
-                normals[i] = Vector3.Zero;
+                normals.Add(Vector3.Zero);
             }
 
             for (int i = 0; i <= indiciesNum - 3; i += 3)
@@ -256,6 +257,7 @@ namespace MyEngine
             for (int i = 0; i < verticesNum; i++)
             {
                 normals[i] /= counts[i];
+                normals[i] = normals[i].Normalized();
             }
 
 
@@ -264,7 +266,6 @@ namespace MyEngine
 
         public void RecalculateTangents()
         {
-            if (HasTangents() == false) tangents.Resize(vertices.Count);
             if (HasUVs() == false) uvs.Resize(vertices.Count);
 
             //partialy stolen from http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-13-normal-mapping/
@@ -274,10 +275,13 @@ namespace MyEngine
 
             int[] counts = new int[verticesNum];
 
+            tangents.Clear();
+            tangents.Capacity = verticesNum;
+
             for (int i = 0; i < verticesNum; i++)
             {
                 counts[i] = 0;
-                tangents[i] = Vector3.Zero;
+                tangents.Add(Vector3.Zero);
             }
 
             for (int i = 0; i <= indiciesNum - 3; i += 3)

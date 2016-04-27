@@ -144,7 +144,7 @@ namespace MyEngine
             scenes.Add(scene);
         }
 
-        bool drawShadowMapContents = false;
+        bool drawNormalGBuffer = false;
         bool drawGBufferContents = false;
         bool drawLines = false;
         bool enablePostProcessEffects = false;
@@ -217,13 +217,13 @@ namespace MyEngine
             var countMeshesRendered = 0;
 
 
-            if (Input.GetKeyDown(OpenTK.Input.Key.F11)) enablePostProcessEffects = !enablePostProcessEffects;
-            if (Input.GetKeyDown(OpenTK.Input.Key.F10)) drawLines = !drawLines;
-            if (Input.GetKeyDown(OpenTK.Input.Key.F9)) drawGBufferContents = !drawGBufferContents;
-            if (Input.GetKeyDown(OpenTK.Input.Key.F8)) drawShadowMapContents = !drawShadowMapContents;
-            if (Input.GetKeyDown(OpenTK.Input.Key.F7)) debugBounds = !debugBounds;
-            if (Input.GetKeyDown(OpenTK.Input.Key.F6)) shadowsEnabled = !shadowsEnabled;
             if (Input.GetKeyDown(OpenTK.Input.Key.F5)) Factory.ReloadAllShaders();
+            if (Input.GetKeyDown(OpenTK.Input.Key.F6)) shadowsEnabled = !shadowsEnabled;
+            if (Input.GetKeyDown(OpenTK.Input.Key.F7)) debugBounds = !debugBounds;
+            if (Input.GetKeyDown(OpenTK.Input.Key.F8)) enablePostProcessEffects = !enablePostProcessEffects;
+            if (Input.GetKeyDown(OpenTK.Input.Key.F9)) drawGBufferContents = !drawGBufferContents;
+            if (Input.GetKeyDown(OpenTK.Input.Key.F10)) drawNormalGBuffer = !drawNormalGBuffer;
+            if (Input.GetKeyDown(OpenTK.Input.Key.F11)) drawLines = !drawLines;
 
 
             var frustrumPlanes = camera.GetFrustumPlanes();
@@ -456,6 +456,7 @@ namespace MyEngine
                     skyboxMesh.Draw();
                 }
             }*/
+            if (drawNormalGBuffer) gBuffer.DebugDrawNormal();
             if (drawGBufferContents) gBuffer.DebugDrawContents();
             //if (drawShadowMapContents) DebugDrawTexture(shadowMap.depthMap, new Vector4(0.5f, 0.5f, 1, 1), new Vector4(0.5f,0.5f,0,1), 1, 0);
 

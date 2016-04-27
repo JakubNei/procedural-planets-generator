@@ -19,6 +19,13 @@ namespace MyGame
         public volatile Material planetMaterial;
         public float radiusVariation = 20;
         public float subdivisionSphereRadiusModifier = 0.5f;
+        float subdivisionSphereRadiusModifier_debugModified
+        {
+            get
+            {
+                return subdivisionSphereRadiusModifier * (0.5f + DebugKeys.keyIK);
+            }
+        }
         public float startingRadiusSubdivisionModifier = 1;
 
         const bool debugSameHeightEverywhere = false; // DEBUG
@@ -239,7 +246,7 @@ namespace MyGame
             {
                 chunk.SubDivide();
                 chunk.StopMeshGeneration();
-                sphere.radius *= subdivisionSphereRadiusModifier * 1.1f;
+                sphere.radius *= subdivisionSphereRadiusModifier_debugModified * 1.1f;
                 foreach (var child in chunk.childs)
                 {
                     TrySubdivideToLevel_Generation(child, sphere, recursionDepth - 1);
@@ -273,7 +280,7 @@ namespace MyGame
             {
                 var areChildrenFullyVisible = true;
                 chunk.SubDivide();
-                sphere.radius *= subdivisionSphereRadiusModifier;
+                sphere.radius *= subdivisionSphereRadiusModifier_debugModified;
                 foreach (var child in chunk.childs)
                 {
                     areChildrenFullyVisible &= TrySubdivideToLevel_Visibility(child, sphere, recursionDepth - 1);
@@ -300,11 +307,10 @@ namespace MyGame
                 if (chunk.renderer.RenderingMode == RenderingMode.RenderGeometryAndCastShadows)
                 {
                     float d = chunk.renderer.bounds.Center.Distance(Scene.mainCamera.Transform.Position);
-                    float e0 = sphere.radius / subdivisionSphereRadiusModifier;
-                    float e1 = e0 * subdivisionSphereRadiusModifier;
+                    float e0 = sphere.radius / subdivisionSphereRadiusModifier_debugModified;
+                    float e1 = e0 * subdivisionSphereRadiusModifier_debugModified;
                     float w = MyMath.SmoothStep(e0, e1, d);
                     chunk.renderer.Material.Uniforms.Set("param_finalPosWeight", w);
-                    //chunk.renderer.Material.Uniforms.Set("param_finalPosWeight", DebugKeys.keyOL);
                 }
 
                 HideInChilds(chunk);

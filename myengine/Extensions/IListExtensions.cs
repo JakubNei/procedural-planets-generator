@@ -10,14 +10,14 @@ namespace MyEngine
 	{
         public static void Resize<T>(this List<T> list, int newCount, T valueToAdd)
         {
-            int cur = list.Count;
-            if (newCount < cur)
-                list.RemoveRange(newCount, cur - newCount);
-            else if (newCount > cur)
+            int currentCount = list.Count;
+            if (newCount < currentCount)
+                list.RemoveRange(newCount, currentCount - newCount);
+            else if (newCount > currentCount)
             {
                 if (newCount > list.Capacity)//this bit is purely an optimisation, to avoid multiple automatic capacity changes.
                     list.Capacity = newCount;
-                list.AddRange(Enumerable.Repeat(valueToAdd, newCount - cur));
+                list.AddRange(Enumerable.Repeat(valueToAdd, newCount - currentCount));
             }
         }
         public static void Resize<T>(this List<T> list, int newCount) where T : new()

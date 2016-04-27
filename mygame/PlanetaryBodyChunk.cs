@@ -267,8 +267,7 @@ namespace MyGame
                                 int b = i + 1;
                                 positionsInitial[i] = (positionsFinal[a] + positionsFinal[b]) / 2.0f;
                                 normalsInitial[i] = (normalsFinal[a] + normalsFinal[b]) / 2.0f;
-                                normalsInitial[i].Normalize();
-                                //normalsInitial[i] = Vector3.UnitX;
+                                normalsInitial[i] = normalsFinal[a];
                                 i++;
                             }
                         }
@@ -280,8 +279,7 @@ namespace MyGame
                                 int b = i + numberOfVerticesOnLine;
                                 positionsInitial[i] = (positionsFinal[a] + positionsFinal[b]) / 2.0f;
                                 normalsInitial[i] = (normalsFinal[a] + normalsFinal[b]) / 2.0f;
-                                normalsInitial[i].Normalize();
-                                //normalsInitial[i] = Vector3.UnitX;
+                                normalsInitial[i] = normalsFinal[a];
                                 i++;
                             }
                             else
@@ -290,8 +288,7 @@ namespace MyGame
                                 int b = i + numberOfVerticesOnLine + 1;
                                 positionsInitial[i] = (positionsFinal[a] + positionsFinal[b]) / 2.0f;
                                 normalsInitial[i] = (normalsFinal[a] + normalsFinal[b]) / 2.0f;
-                                normalsInitial[i].Normalize();
-                                //normalsInitial[i] = Vector3.UnitX;
+                                normalsInitial[i] = normalsFinal[a];
                                 i++;
                             }
                         }

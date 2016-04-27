@@ -175,22 +175,26 @@ namespace MyEngine
             int x = 0;
             int y = 0;
 
-            DrawBufferToScreen(ReadBufferMode.ColorAttachment0, qw * 0, qh * 0);
+            if (readFirstFinalTexture) DrawBufferToQuarterOfScreen(ReadBufferMode.ColorAttachment4, qw * 1, qh * 0);
+            else DrawBufferToQuarterOfScreen(ReadBufferMode.ColorAttachment5, qw * 1, qh * 0);
+            if (readFirstFinalTexture) DrawBufferToQuarterOfScreen(ReadBufferMode.ColorAttachment5, qw * 2, qh * 0);
+            else DrawBufferToQuarterOfScreen(ReadBufferMode.ColorAttachment4, qw * 2, qh * 0);
 
-            if (readFirstFinalTexture) DrawBufferToScreen(ReadBufferMode.ColorAttachment4, qw * 1, qh * 0);
-            else DrawBufferToScreen(ReadBufferMode.ColorAttachment5, qw * 1, qh * 0);
-            if (readFirstFinalTexture) DrawBufferToScreen(ReadBufferMode.ColorAttachment5, qw * 2, qh * 0);
-            else DrawBufferToScreen(ReadBufferMode.ColorAttachment4, qw * 2, qh * 0);
-
-            //DrawBufferToScreen(ReadBufferMode.ColorAttachment4, qw * 1, qh * 0);
-            //DrawBufferToScreen(ReadBufferMode.ColorAttachment5, qw * 2, qh * 0);
-
-            DrawBufferToScreen(ReadBufferMode.ColorAttachment1, qw * 0, qh * 1);
-            DrawBufferToScreen(ReadBufferMode.ColorAttachment2, qw * 1, qh * 1);
-            DrawBufferToScreen(ReadBufferMode.ColorAttachment3, qw * 0, qh * 2);
+            DrawBufferToQuarterOfScreen(ReadBufferMode.ColorAttachment0, qw * 0, qh * 0);
+            DrawBufferToQuarterOfScreen(ReadBufferMode.ColorAttachment1, qw * 0, qh * 1);
+            DrawBufferToQuarterOfScreen(ReadBufferMode.ColorAttachment2, qw * 1, qh * 1);
+            DrawBufferToQuarterOfScreen(ReadBufferMode.ColorAttachment3, qw * 0, qh * 2);
 
         }
-        void DrawBufferToScreen(ReadBufferMode buffer, int x, int y)
+
+        public void DebugDrawNormal()
+        {
+            GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, frameBufferObjectHandle);
+            GL.ReadBuffer(ReadBufferMode.ColorAttachment2);
+            GL.BlitFramebuffer(0, 0, width, height, 0, 0, width, height, ClearBufferMask.ColorBufferBit, BlitFramebufferFilter.Linear);
+        }
+
+        void DrawBufferToQuarterOfScreen(ReadBufferMode buffer, int x, int y)
         {
             int qh = height / 4;
             int qw = width / 4;
