@@ -1,8 +1,7 @@
 [include internal/prependAll.shader]
 
 uniform sampler2D param_rock;
-uniform float param_initialDistance;
-uniform float param_finalDistance;
+uniform float param_finalPosWeight;
 
 [VertexShader]
 
@@ -11,6 +10,7 @@ layout(location = 1) in vec3 in_normal;
 layout(location = 2) in vec3 in_tangent;
 layout(location = 3) in vec2 in_uv;
 layout(location = 4) in vec3 in_positionInitial;
+layout(location = 5) in vec3 in_normalInitial;
 // in mat4 in_modelMatrix; // instanced rendering
 
 out data {
@@ -22,24 +22,17 @@ out data {
 
 void main()
 {
-
-	vec4 worldPos4 = (model.modelMatrix * vec4(in_position, 1));	
+	vec3 modelPosition = mix(in_positionInitial, in_position, param_finalPosWeight);
+	vec4 worldPos4 = (model.modelMatrix * vec4(modelPosition, 1));	
 	vec3 worldPos3 = worldPos4.xyz / worldPos4.w;
 
-	//float dist = distance(cameraPosition, worldPos);
-	//float finalWeight = smoothstep(param_initialDist, param_finalDistance, dist);
-	float finalWeight = 1;
-
-	vec3 modelPosition = in_position;
-
-	worldPos4 = (model.modelMatrix * vec4(modelPosition, 1));	
-	worldPos3 = worldPos4.xyz / worldPos4.w;
+	vec3 normalModelSpace = mix(in_normalInitial, in_normal, param_finalPosWeight);
 
 	gl_Position = model.modelViewProjectionMatrix * vec4(modelPosition,1);
 	o.worldPos = worldPos3;
 	o.uv = in_uv;
-	o.normal = normalize((model.modelMatrix * vec4(in_normal,0)).xyz);
-	o.tangent = normalize((model.modelMatrix * vec4(in_tangent,0)).xyz);
+	o.normal = (model.modelMatrix * vec4(normalModelSpace,0)).xyz;
+	o.tangent = (model.modelMatrix * vec4(in_tangent,0)).xyz;
 }
 
 
@@ -192,12 +185,13 @@ void main()
 
 
 	out_color = vec4(pow(color,vec3(engine.gammaCorrectionTextureRead)),1);
-	out_normal = i.normal;
+	out_normal = normalize(i.normal);
 	out_position = i.worldPos;
 	out_data = vec4(0);
 
 	//DEBUG
 	//out_color = vec4(vec3(0,1,0),1);
+	//out_color = vec4(vec3(param_finalPosWeight,0,0),1);
 	
 }
 

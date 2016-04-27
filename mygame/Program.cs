@@ -20,6 +20,9 @@ namespace MyGame
 
                 var scene = engine.AddScene();
 
+                new DebugKeys(scene);
+
+
                 Entity sunEntity = null;
 
                 {

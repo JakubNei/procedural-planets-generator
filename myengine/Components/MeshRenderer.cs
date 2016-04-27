@@ -91,7 +91,7 @@ namespace MyEngine.Components
                     return new Bounds(Entity.Transform.Position, Vector3.Zero);
                 }
 
-                var boundsPos = Entity.Transform.Position + (Mesh.bounds.center * Entity.Transform.Scale).RotateBy(Entity.Transform.Rotation);
+                var boundsPos = Entity.Transform.Position + (Mesh.bounds.Center * Entity.Transform.Scale).RotateBy(Entity.Transform.Rotation);
                 var boundsExtents = (Mesh.bounds.Extents * Entity.Transform.Scale).RotateBy(Entity.Transform.Rotation);
 
                 var bounds = new Bounds(boundsPos, Vector3.Zero);

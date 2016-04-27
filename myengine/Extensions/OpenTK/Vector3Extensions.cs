@@ -89,5 +89,11 @@ namespace MyEngine
             if (a.Z < 0) a.Z *= -1;
             return a;
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector3 Towards(this Vector3 from, Vector3 to)
+        {
+            return to-from;
+        }
     }
 }

@@ -14,7 +14,7 @@ namespace MyEngine
         {
             for (uint i = 0; i < 6; i++)
             {
-                if (planes[i].GetDistanceToPoint(bounds.center) < -bounds.Size.Length)
+                if (planes[i].GetDistanceToPoint(bounds.Center) < -bounds.Size.Length)
                 {
                     return false;
                 }

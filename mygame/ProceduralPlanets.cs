@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using OpenTK;
+using OpenTK.Input;
 
 using MyEngine;
 using MyEngine.Components;
@@ -23,7 +24,7 @@ namespace MyGame
         {
             this.scene = scene;
             Start();
-            scene.EventSystem.Register((MyEngine.Events.GraphicsUpdate e) => OnGraphicsUpdate());
+            scene.EventSystem.Register((MyEngine.Events.GraphicsUpdate e) => OnGraphicsUpdate(e.DeltaTime));
         }
 
         void Start()
@@ -80,11 +81,9 @@ namespace MyGame
 
         }
 
-
-
-
-        void OnGraphicsUpdate()
+        void OnGraphicsUpdate(double dt)
         {
+
             var camPos = cam.Transform.Position;
 
             var planet = planets.OrderBy(p => p.Transform.Position.Distance(camPos) - p.radius).First();

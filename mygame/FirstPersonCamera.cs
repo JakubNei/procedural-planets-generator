@@ -18,11 +18,14 @@ namespace MyGame
 
         public float velocityChangeSpeed = 10.0f;
 
-        private Vector3 up = Vector3.UnitY;
 
         public bool disabledInput = false;
 
-        Matrix4 currentRotation = Matrix4.Identity;
+        public bool alignToEnabled;
+        public Vector3 alignToPosition;
+
+        Vector3 direction = new Vector3(1, 0, 0);
+        Vector3 up = new Vector3(0, 1, 0);
 
         float speedModifier = 1.0f;
         Point lastMousePos;
@@ -90,7 +93,8 @@ namespace MyGame
 
             if (Input.LockCursor == false) return;
 
-            speedModifier += scrollWheelDelta;
+            if (scrollWheelDelta > 0) speedModifier *= 1.5f;
+            if (scrollWheelDelta < 0) speedModifier /= 1.5f;
             speedModifier = Math.Max(1.0f, speedModifier);
 
 
@@ -112,13 +116,13 @@ namespace MyGame
             if (Input.GetKey(Key.Q)) roll -= c;
             if (Input.GetKey(Key.E)) roll += c;
 
-            var rot = Matrix4.CreateFromQuaternion(
-                Quaternion.FromAxisAngle(Entity.Transform.TransformDirection(Vector3.UnitY), -yaw) *
-                Quaternion.FromAxisAngle(Entity.Transform.TransformDirection(Vector3.UnitX), -pitch) *
-                Quaternion.FromAxisAngle(Entity.Transform.TransformDirection(Vector3.UnitZ), -roll)
-            );
+            var rot =
+                Quaternion.FromAxisAngle(Vector3.UnitX, pitch) *
+                Quaternion.FromAxisAngle(Vector3.UnitY, yaw) *
+                Quaternion.FromAxisAngle(Vector3.UnitZ, roll);
 
-            currentRotation = currentRotation * rot;
+            up = up.RotateBy(rot);
+            direction = direction.RotateBy(rot);
 
 
             float d = speedModifier * (float)deltaTime;
@@ -136,11 +140,24 @@ namespace MyGame
             //var pos = Matrix4.CreateTranslation(targetVelocity);
 
 
-            targetVelocity = Vector3.TransformPosition(targetVelocity, currentRotation);
+            var currentUp = this.up;
+             
+            if (alignToEnabled)
+            {
+                alignToPosition = new Vector3(1000, -100, 1000);
+                currentUp = alignToPosition.Towards(Transform.Position).Normalized();
+            }
+
+
+            var mat = Matrix4.LookAt(Vector3.Zero, direction, currentUp);
+            var currentRotation = mat.ExtractRotation();
+
+            Entity.Transform.Rotation = currentRotation;
+
+            targetVelocity = targetVelocity.RotateBy(Transform.Rotation);
             currentVelocity = Vector3.Lerp(currentVelocity, targetVelocity, velocityChangeSpeed * (float)deltaTime);
 
-            Entity.Transform.Rotation = currentRotation.ExtractRotation();
-            Entity.Transform.Position += currentVelocity;
+            Transform.Position += currentVelocity;
 
             //Debug.Info(entity.transform.position);
 

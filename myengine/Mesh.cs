@@ -225,9 +225,10 @@ namespace MyEngine
             for (int i = 0; i < verticesNum; i++)
             {
                 counts[i] = 0;
+                normals[i] = Vector3.Zero;
             }
 
-            for (int i = 0; i < indiciesNum - 3; i += 3)
+            for (int i = 0; i <= indiciesNum - 3; i += 3)
             {
 
                 int ai = triangleIndicies[i];
@@ -276,9 +277,10 @@ namespace MyEngine
             for (int i = 0; i < verticesNum; i++)
             {
                 counts[i] = 0;
+                tangents[i] = Vector3.Zero;
             }
 
-            for (int i = 0; i < indiciesNum - 3; i += 3)
+            for (int i = 0; i <= indiciesNum - 3; i += 3)
             {
 
                 int ai = triangleIndicies[i];

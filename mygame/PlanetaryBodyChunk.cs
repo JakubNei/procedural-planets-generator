@@ -14,8 +14,8 @@ namespace MyGame
 {
     public class PlanetaryBodyChunk
     {
-        public Triangle range;
-        public Triangle visibilityCollisionRange;
+        public Triangle noElevationRange;
+        public Triangle realVisibleRange;
         public List<PlanetaryBodyChunk> childs = new List<PlanetaryBodyChunk>();
         public MeshRenderer renderer;
 
@@ -36,11 +36,7 @@ namespace MyGame
 
         public Vector3 GetCenterPos()
         {
-            return (
-                (visibilityCollisionRange.a) +
-                (visibilityCollisionRange.b) +
-                (visibilityCollisionRange.c)
-            ) / 3.0f;
+            return realVisibleRange.CenterPos;
         }
 
 
@@ -49,21 +45,21 @@ namespace MyGame
             var child = new PlanetaryBodyChunk(planetaryBody, this);
             childs.Add(child);
             child.subdivisionDepth = subdivisionDepth + 1;
-            child.range.a = A;
-            child.range.b = B;
-            child.range.c = C;
-            child.visibilityCollisionRange.a = planetaryBody.GetFinalPos(child.range.a);
-            child.visibilityCollisionRange.b = planetaryBody.GetFinalPos(child.range.b);
-            child.visibilityCollisionRange.c = planetaryBody.GetFinalPos(child.range.c);
+            child.noElevationRange.a = A;
+            child.noElevationRange.b = B;
+            child.noElevationRange.c = C;
+            child.realVisibleRange.a = planetaryBody.GetFinalPos(child.noElevationRange.a);
+            child.realVisibleRange.b = planetaryBody.GetFinalPos(child.noElevationRange.b);
+            child.realVisibleRange.c = planetaryBody.GetFinalPos(child.noElevationRange.c);
         }
 
         public void SubDivide()
         {
             if (childs.Count <= 0)
             {
-                var a = range.a;
-                var b = range.b;
-                var c = range.c;
+                var a = noElevationRange.a;
+                var b = noElevationRange.b;
+                var c = noElevationRange.c;
                 var ab = (a + b).Divide(2.0f).Normalized();
                 var ac = (a + c).Divide(2.0f).Normalized();
                 var bc = (b + c).Divide(2.0f).Normalized();
@@ -98,20 +94,24 @@ namespace MyGame
             var mesh = new Mesh();// "PlanetaryBodyChunk depth:" + subdivisionDepth + " #" + numbetOfChunksGenerated);
             numbetOfChunksGenerated++;
 
-            var realRange = range;
-            
+            var realRange = noElevationRange;
+
+            const bool useSkirts = false;
+            //const bool useSkirts = true;
+
+            if (useSkirts)
             {
-                var s = range.a.Distance(range.b) / (numberOfVerticesOnEdge - 1);
+                var s = noElevationRange.a.Distance(noElevationRange.b) / (numberOfVerticesOnEdge - 1);
                 var o = (float)Math.Sqrt(s * s + s * s);
 
-                var d = range.a.Distance(range.CenterPos());
+                var d = noElevationRange.a.Distance(noElevationRange.CenterPos);
 
                 var ratio = d / (d - o);
                 //ratio *= 1.06f;
-                ratio *= 1.12f;
+                //ratio *= 1.12f;
                 //ratio = 0.9f; // debug
 
-                var c = realRange.CenterPos();
+                var c = realRange.CenterPos;
                 realRange.a = c + Vector3.Multiply(realRange.a - c, ratio);
                 realRange.b = c + Vector3.Multiply(realRange.b - c, ratio);
                 realRange.c = c + Vector3.Multiply(realRange.c - c, ratio);
@@ -137,6 +137,14 @@ namespace MyGame
                 pointerType = OpenTK.Graphics.OpenGL.VertexAttribPointerType.Float,
                 dataStrideInElementsNumber = 3,                
             };
+            var normalsInitial = new Mesh.VertexBufferObject<Vector3>()
+            {
+                bufferTarget = OpenTK.Graphics.OpenGL.BufferTarget.ArrayBuffer,
+                pointerType = OpenTK.Graphics.OpenGL.VertexAttribPointerType.Float,
+                dataStrideInElementsNumber = 3,
+            };
+
+
 
             positionsFinal.Add(realRange.a);
             // add positions, line by line
@@ -221,15 +229,23 @@ namespace MyGame
             {
                 var v = planetaryBody.GetFinalPos(positionsFinal[i]);
                 positionsFinal[i] = v;
-            }           
+            }
 
+
+            mesh.vertices.SetData(positionsFinal);
+            mesh.triangleIndicies.SetData(indicies);
+            mesh.RecalculateNormals();
+
+            var normalsFinal = mesh.normals;
 
             // fill in initial positions, every odd positon is average of the two neighbouring final positions
             {
+                normalsInitial.Resize(positionsFinal.Count);
                 positionsInitial.Resize(positionsFinal.Count);
 
                 int i = 0;
                 positionsInitial[i] = positionsFinal[i];
+                normalsInitial[i] = normalsFinal[i];
                 i++;
                 
                 int numberOfVerticesOnLine = 2;
@@ -242,6 +258,7 @@ namespace MyGame
                             if (x % 2 == 0)
                             {
                                 positionsInitial[i] = positionsFinal[i];
+                                normalsInitial[i] = normalsFinal[i];
                                 i++;
                             }
                             else
@@ -249,6 +266,8 @@ namespace MyGame
                                 int a = i - 1;
                                 int b = i + 1;
                                 positionsInitial[i] = (positionsFinal[a] + positionsFinal[b]) / 2.0f;
+                                normalsInitial[i] = (normalsFinal[a] + normalsFinal[b]) / 2.0f;
+                                //normalsInitial[i] = Vector3.UnitX;
                                 i++;
                             }
                         }
@@ -259,6 +278,8 @@ namespace MyGame
                                 int a = i - numberOfVerticesOnLine + 1;
                                 int b = i + numberOfVerticesOnLine;
                                 positionsInitial[i] = (positionsFinal[a] + positionsFinal[b]) / 2.0f;
+                                normalsInitial[i] = (normalsFinal[a] + normalsFinal[b]) / 2.0f;
+                                //normalsInitial[i] = Vector3.UnitX;
                                 i++;
                             }
                             else
@@ -266,6 +287,8 @@ namespace MyGame
                                 int a = i - numberOfVerticesOnLine;
                                 int b = i + numberOfVerticesOnLine + 1;
                                 positionsInitial[i] = (positionsFinal[a] + positionsFinal[b]) / 2.0f;
+                                normalsInitial[i] = (normalsFinal[a] + normalsFinal[b]) / 2.0f;
+                                //normalsInitial[i] = Vector3.UnitX;
                                 i++;
                             }
                         }
@@ -275,14 +298,7 @@ namespace MyGame
                 }
             }
 
-
-
-            mesh.vertices.SetData(positionsFinal);
-            mesh.triangleIndicies.SetData(indicies);
             mesh.RecalculateNormals();
-
-
-
 
             var skirtIndicies = new List<int>();
             // gather the edge vertices indicies
@@ -310,12 +326,12 @@ namespace MyGame
 
 
             // make skirts
-            {
+            if(useSkirts) {
                 // the deeper chunk it the less the multiplier should be
-                var skirtMultiplier = 0.95f + 0.05f * subdivisionDepth / (planetaryBody.subdivisionMaxRecurisonDepth + 2);
+                var skirtMultiplier = 0.99f + 0.01f * subdivisionDepth / (planetaryBody.subdivisionMaxRecurisonDepth + 2);
                 skirtMultiplier = MyMath.Clamp(skirtMultiplier, 0.95f, 1.0f);
 
-                var chunkCenter = realRange.CenterPos();
+                var chunkCenter = realRange.CenterPos;
                 foreach (var index in skirtIndicies)
                 {
                     // lower the skirts towards middle
@@ -337,7 +353,9 @@ namespace MyGame
 
 
 
-            mesh.VertexArrayObj.AddVertexBufferObject("positionInitial", positionsInitial);
+            mesh.VertexArrayObj.AddVertexBufferObject("positionsInitial", positionsInitial);
+            mesh.VertexArrayObj.AddVertexBufferObject("normalsInitial", normalsInitial);
+            //mesh.RecalculateNormals();
 
             mesh.RecalculateBounds();
 
@@ -364,7 +382,7 @@ namespace MyGame
             var cam = planetaryBody.Entity.Scene.mainCamera;
 
             // help from http://stackoverflow.com/questions/3717226/radius-of-projected-sphere
-            var sphere = visibilityCollisionRange.ToBoundingSphere();
+            var sphere = realVisibleRange.ToBoundingSphere();
             var radiusWorldSpace = sphere.radius;
             var sphereDistanceToCameraWorldSpace = cam.Transform.Position.Distance(planetaryBody.Transform.TransformPoint(sphere.center));
             var fov = cam.fieldOfView;

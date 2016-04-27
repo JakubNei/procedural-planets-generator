@@ -11,7 +11,7 @@ namespace MyEngine
     {
         private Vector3 m_Center;
         private Vector3 m_Extents;
-        public Vector3 center
+        public Vector3 Center
         {
             get
             {
@@ -44,26 +44,26 @@ namespace MyEngine
                 this.m_Extents = value;
             }
         }
-        public Vector3 min
+        public Vector3 Min
         {
             get
             {
-                return this.center - this.Extents;
+                return this.Center - this.Extents;
             }
             set
             {
-                this.SetMinMax(value, this.max);
+                this.SetMinMax(value, this.Max);
             }
         }
-        public Vector3 max
+        public Vector3 Max
         {
             get
             {
-                return this.center + this.Extents;
+                return this.Center + this.Extents;
             }
             set
             {
-                this.SetMinMax(this.min, value);
+                this.SetMinMax(this.Min, value);
             }
         }
         public Bounds(Vector3 center, Vector3 size)
@@ -73,7 +73,7 @@ namespace MyEngine
         }
         public override int GetHashCode()
         {
-            return this.center.GetHashCode() ^ this.Extents.GetHashCode() << 2;
+            return this.Center.GetHashCode() ^ this.Extents.GetHashCode() << 2;
         }
         public override bool Equals(object other)
         {
@@ -82,17 +82,17 @@ namespace MyEngine
                 return false;
             }
             Bounds bounds = (Bounds)other;
-            return this.center.Equals(bounds.center) && this.Extents.Equals(bounds.Extents);
+            return this.Center.Equals(bounds.Center) && this.Extents.Equals(bounds.Extents);
         }
         public void SetMinMax(Vector3 min, Vector3 max)
         {
             this.Extents = (max - min) * 0.5f;
-            this.center = min + this.Extents;
+            this.Center = min + this.Extents;
         }
         public void Encapsulate(Vector3 point)
         {
-            var min = this.min;
-            var max = this.max;
+            var min = this.Min;
+            var max = this.Max;
             if (point.X < min.X) min.X = point.X;
             if (point.Y < min.Y) min.Y = point.Y;
             if (point.Z < min.Z) min.Z = point.Z;
@@ -103,8 +103,8 @@ namespace MyEngine
         }
         public void Encapsulate(Bounds bounds)
         {
-            this.Encapsulate(bounds.center - bounds.Extents);
-            this.Encapsulate(bounds.center + bounds.Extents);
+            this.Encapsulate(bounds.Center - bounds.Extents);
+            this.Encapsulate(bounds.Center + bounds.Extents);
         }
         public void Expand(float amount)
         {
@@ -117,7 +117,7 @@ namespace MyEngine
         }
         public bool Intersects(Bounds bounds)
         {
-            return this.min.X <= bounds.max.X && this.max.X >= bounds.min.X && this.min.Y <= bounds.max.Y && this.max.Y >= bounds.min.Y && this.min.Z <= bounds.max.Z && this.max.Z >= bounds.min.Z;
+            return this.Min.X <= bounds.Max.X && this.Max.X >= bounds.Min.X && this.Min.Y <= bounds.Max.Y && this.Max.Y >= bounds.Min.Y && this.Min.Z <= bounds.Max.Z && this.Max.Z >= bounds.Min.Z;
         }
     /*
         public bool Contains(Vector3 point)
@@ -161,7 +161,7 @@ namespace MyEngine
         }*/
         public static bool operator ==(Bounds lhs, Bounds rhs)
         {
-            return lhs.center == rhs.center && lhs.Extents == rhs.Extents;
+            return lhs.Center == rhs.Center && lhs.Extents == rhs.Extents;
         }
         public static bool operator !=(Bounds lhs, Bounds rhs)
         {

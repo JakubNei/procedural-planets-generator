@@ -34,7 +34,7 @@ namespace MyGame
                 Entity.Transform.Scale = r.Mesh.bounds.Extents;
 
                 Entity.Transform.Rotation = drawForThisTransform.Rotation;
-                Entity.Transform.Position = drawForThisTransform.Position + r.Mesh.bounds.center.RotateBy(Entity.Transform.Rotation);                
+                Entity.Transform.Position = drawForThisTransform.Position + r.Mesh.bounds.Center.RotateBy(Entity.Transform.Rotation);                
             }
             else
             {

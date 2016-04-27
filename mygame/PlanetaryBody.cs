@@ -11,7 +11,7 @@ using MyEngine.Components;
 
 namespace MyGame
 {
-    public class PlanetaryBody : ComponentWithShortcuts, ITest1
+    public class PlanetaryBody : ComponentWithShortcuts
     {
         public int chunkNumberOfVerticesOnEdge = 10;
         public float radius;
@@ -20,6 +20,8 @@ namespace MyGame
         public float radiusVariation = 20;
         public float subdivisionSphereRadiusModifier = 0.5f;
         public float startingRadiusSubdivisionModifier = 1;
+
+        const bool debugSameHeightEverywhere = false; // DEBUG
 
         Perlin perlin;
         Worley worley;
@@ -70,15 +72,19 @@ namespace MyGame
 
         public Vector3 GetFinalPos(Vector3 calestialPos, int detailDensity = 1)
         {
-            //return calestialPos;
-            var s = CalestialToSpherical(calestialPos);
-            s.altitude = GetHeight(calestialPos, detailDensity);
-            return SphericalToCalestial(s);
+                var s = CalestialToSpherical(calestialPos);
+                s.altitude = GetHeight(calestialPos, detailDensity);
+                return SphericalToCalestial(s);
         }
 
 
         public float GetHeight(Vector3 calestialPos, int detailDensity = 1)
         {
+            if(debugSameHeightEverywhere)
+            {
+                return radius;
+            }
+
             var initialPos = calestialPos.Normalized();
             var pos = initialPos;
 
@@ -134,12 +140,12 @@ namespace MyGame
         {
 
             var child = new PlanetaryBodyChunk(this, null);
-            child.range.a = vertices[A];
-            child.range.b = vertices[B];
-            child.range.c = vertices[C];
-            child.visibilityCollisionRange.a = GetFinalPos(child.range.a);
-            child.visibilityCollisionRange.b = GetFinalPos(child.range.b);
-            child.visibilityCollisionRange.c = GetFinalPos(child.range.c);
+            child.noElevationRange.a = vertices[A];
+            child.noElevationRange.b = vertices[B];
+            child.noElevationRange.c = vertices[C];
+            child.realVisibleRange.a = GetFinalPos(child.noElevationRange.a);
+            child.realVisibleRange.b = GetFinalPos(child.noElevationRange.b);
+            child.realVisibleRange.c = GetFinalPos(child.noElevationRange.c);
             this.rootChunks.Add(child);
         }
 
@@ -149,11 +155,8 @@ namespace MyGame
         {
             //detailLevel = (int)ceil(planetInfo.rootChunks[0].range.ToBoundingSphere().radius / 100);
 
-
             vertices = new List<Vector3>();
             var indicies = new List<uint>();
-
-
 
 
             var r = this.radius / 2.0f;
@@ -213,36 +216,67 @@ namespace MyGame
 
 
 
-       
+
         void OnGraphicsUpdate(double deltaTime)
         {
-         
+
 
         }
 
 
-        void HideChildsIn(PlanetaryBodyChunk chunk)
+        void StopMeshGenerationInChilds(PlanetaryBodyChunk chunk)
         {
             foreach (var child in chunk.childs)
             {
-                if (child.renderer != null) child.renderer.RenderingMode = RenderingMode.DontRender;
                 child.StopMeshGeneration();
-                HideChildsIn(child);
+                StopMeshGenerationInChilds(child);
             }
         }
 
-        // returns if chunk or its children are fully visible
-        // we need to wait for the generation to finish
-        bool TrySubdivideToLevel(PlanetaryBodyChunk chunk, Sphere sphere, int recursionDepth)
+        void TrySubdivideToLevel_Generation(PlanetaryBodyChunk chunk, Sphere sphere, int recursionDepth)
         {
-            if (recursionDepth > 0 && GeometryUtility.Intersects(chunk.visibilityCollisionRange, sphere))
+            if (recursionDepth > 0 && GeometryUtility.Intersects(chunk.realVisibleRange, sphere))
+            {
+                chunk.SubDivide();
+                chunk.StopMeshGeneration();
+                sphere.radius *= subdivisionSphereRadiusModifier * 1.1f;
+                foreach (var child in chunk.childs)
+                {
+                    TrySubdivideToLevel_Generation(child, sphere, recursionDepth - 1);
+                }
+            }
+            else
+            {
+                if (chunk.renderer == null)
+                {
+                    chunk.RequestMeshGeneration();
+                }
+                StopMeshGenerationInChilds(chunk);
+            }
+
+        }
+
+        void HideInChilds(PlanetaryBodyChunk chunk)
+        {
+            foreach (var child in chunk.childs)
+            {
+                if (child.renderer != null && child.renderer.RenderingMode != RenderingMode.DontRender) child.renderer.RenderingMode = RenderingMode.DontRender;
+                HideInChilds(child);
+            }
+        }
+
+
+        // return true if all childs are visible
+        bool TrySubdivideToLevel_Visibility(PlanetaryBodyChunk chunk, Sphere sphere, int recursionDepth)
+        {
+            if (recursionDepth > 0 && GeometryUtility.Intersects(chunk.realVisibleRange, sphere))
             {
                 var areChildrenFullyVisible = true;
                 chunk.SubDivide();
                 sphere.radius *= subdivisionSphereRadiusModifier;
                 foreach (var child in chunk.childs)
                 {
-                    areChildrenFullyVisible &= TrySubdivideToLevel(child, sphere, recursionDepth - 1);
+                    areChildrenFullyVisible &= TrySubdivideToLevel_Visibility(child, sphere, recursionDepth - 1);
                 }
 
                 // hide only if all our childs are visible, they mighht still be generating
@@ -252,34 +286,42 @@ namespace MyGame
             }
             else
             {
+                if (chunk.renderer == null) return false;
+
                 // end node, we must show this one and hide all childs or parents, parents should already be hidden
-                if (chunk.renderer == null)
+                if (chunk.renderer.RenderingMode != RenderingMode.RenderGeometryAndCastShadows)
                 {
-                    chunk.RequestMeshGeneration();
-                    return false;
+                    // is not visible
+                    // show it
+                    chunk.renderer.RenderingMode = RenderingMode.RenderGeometryAndCastShadows;
                 }
-                else
+
+                // if visible, update final positions weight according to distance
+                if (chunk.renderer.RenderingMode == RenderingMode.RenderGeometryAndCastShadows)
                 {
-                    if (chunk.renderer.RenderingMode != RenderingMode.RenderGeometryAndCastShadows)
-                    {
-                        // is not visible
-                        // show it
-                        chunk.renderer.RenderingMode = RenderingMode.RenderGeometryAndCastShadows;
-                        chunk.renderer.Material.Uniforms.Set("param_chunkRecursionDepth", recursionDepth);
-                        HideChildsIn(chunk);
-                    }
-                    return true;
+                    float d = chunk.renderer.bounds.Center.Distance(Scene.mainCamera.Transform.Position);
+                    float e0 = sphere.radius / subdivisionSphereRadiusModifier;
+                    float e1 = e0 * subdivisionSphereRadiusModifier;
+                    float w = MyMath.SmoothStep(e0, e1, d);
+                    chunk.renderer.Material.Uniforms.Set("param_finalPosWeight", w);
+                    //chunk.renderer.Material.Uniforms.Set("param_finalPosWeight", DebugKeys.keyOL);
                 }
+
+                HideInChilds(chunk);
+
+                return true;
             }
 
         }
+
 
         public void TrySubdivideOver(Vector3 pos)
         {
             var sphere = new Sphere(pos - Transform.Position, this.radius * startingRadiusSubdivisionModifier);
             foreach (PlanetaryBodyChunk rootChunk in this.rootChunks)
             {
-                TrySubdivideToLevel(rootChunk, sphere, this.subdivisionMaxRecurisonDepth);
+                TrySubdivideToLevel_Generation(rootChunk, sphere, this.subdivisionMaxRecurisonDepth);
+                TrySubdivideToLevel_Visibility(rootChunk, sphere, this.subdivisionMaxRecurisonDepth);
             }
         }
 

@@ -13,20 +13,25 @@ namespace MyEngine
         public Vector3 a;
         public Vector3 b;
         public Vector3 c;
-        
+
+        public Vector3 CenterPos
+        {
+            get
+            {
+                return (a + b + c) / 3.0f;
+            }
+        }
+
         public Triangle(Vector3 a, Vector3 b, Vector3 c)
         {
             this.a = a;
             this.b = b;
             this.c = c;
         }
-        public Vector3 CenterPos()
-        {
-            return (a + b + c) / 3.0f;
-        }
+
         public Sphere ToBoundingSphere()
         {
-            var c = CenterPos();
+            var c = CenterPos;
             var radius = (float)Math.Sqrt(
                 Math.Max(
                     Math.Max(

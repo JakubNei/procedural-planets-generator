@@ -11,6 +11,7 @@ namespace MyEngine
 {
     public static class MyMath
     {
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float Cot(float x)
         {
@@ -23,12 +24,25 @@ namespace MyEngine
             float tmp = Clamp((x - edge0) / (edge1 - edge0), 0, 1);
             return tmp * tmp * (3.0f - 2.0f * tmp);
         }
+        // https://www.opengl.org/sdk/docs/man/html/smoothstep.xhtml
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float Clamp(float x, float min, float max)
         {
             if (x > max) return max;
             if (x < min) return min;
             return x;
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Clamp01(ref float x)
+        {
+            if (x > 1) x = 1;
+            if (x < 0) x = 0;
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Clamp01(ref int x)
+        {
+            if (x > 1) x = 1;
+            if (x < 0) x = 0;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int Clamp(int x, int min, int max)
