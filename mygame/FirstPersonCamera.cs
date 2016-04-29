@@ -27,7 +27,7 @@ namespace MyGame
         Vector3 direction = new Vector3(1, 0, 0);
         Vector3 up = new Vector3(0, 1, 0);
 
-        float speedModifier = 1.0f;
+        float cameraSpeed = 10.0f;
         Point lastMousePos;
         int scrollWheelValue;
         Vector3 currentVelocity;
@@ -44,7 +44,7 @@ namespace MyGame
         void Update(double deltaTime)
         {
 
-            Debug.AddValue("cameraSpeed", speedModifier.ToString());
+            Debug.AddValue("cameraSpeed", cameraSpeed.ToString());
             Debug.AddValue("cameraPos", Transform.Position.ToString());
 
             var mouse = Mouse.GetState();
@@ -93,9 +93,9 @@ namespace MyGame
 
             if (Input.LockCursor == false) return;
 
-            if (scrollWheelDelta > 0) speedModifier *= 1.3f;
-            if (scrollWheelDelta < 0) speedModifier /= 1.3f;
-            speedModifier = MyMath.Clamp(speedModifier, 1, 500);
+            if (scrollWheelDelta > 0) cameraSpeed *= 1.3f;
+            if (scrollWheelDelta < 0) cameraSpeed /= 1.3f;
+            cameraSpeed = MyMath.Clamp(cameraSpeed, 1, 500);
 
 
             /*
@@ -125,7 +125,7 @@ namespace MyGame
             direction = direction.RotateBy(rot);
 
 
-            float d = speedModifier * (float)deltaTime;
+            float d = cameraSpeed * (float)deltaTime;
 
             if (Input.GetKey(Key.ShiftLeft)) d *= 5;
 

@@ -212,41 +212,43 @@ namespace MyEngine
         }
 
 
-        public void RecalculateNormals()
+        public static void CalculateNormals(IList<int> intTriangleIndicies, IList<Vector3> inPositions, IList<Vector3> outNormals)
         {
-            int verticesNum = vertices.Count;
-            int indiciesNum = triangleIndicies.Count;
+            int verticesNum = inPositions.Count;
+            int indiciesNum = intTriangleIndicies.Count;
 
 
             int[] counts = new int[verticesNum];
 
-            normals.Clear();
-            normals.Capacity = verticesNum;
+            outNormals.Clear();
+            if (outNormals is List<Vector3>)
+            {
+                (outNormals as List<Vector3>).Capacity = verticesNum;
+            }
 
             for (int i = 0; i < verticesNum; i++)
             {
-                counts[i] = 0;
-                normals.Add(Vector3.Zero);
+                outNormals.Add(Vector3.Zero);
             }
 
             for (int i = 0; i <= indiciesNum - 3; i += 3)
             {
 
-                int ai = triangleIndicies[i];
-                int bi = triangleIndicies[i + 1];
-                int ci = triangleIndicies[i + 2];
+                int ai = intTriangleIndicies[i];
+                int bi = intTriangleIndicies[i + 1];
+                int ci = intTriangleIndicies[i + 2];
 
                 if (ai < verticesNum && bi < verticesNum && ci < verticesNum)
                 {
-                    Vector3 av = vertices[ai];
+                    Vector3 av = inPositions[ai];
                     Vector3 n = Vector3.Normalize(Vector3.Cross(
-                        vertices[bi] - av,
-                        vertices[ci] - av
+                        inPositions[bi] - av,
+                        inPositions[ci] - av
                     ));
 
-                    normals[ai] += n;
-                    normals[bi] += n;
-                    normals[ci] += n;
+                    outNormals[ai] += n;
+                    outNormals[bi] += n;
+                    outNormals[ci] += n;
 
                     counts[ai]++;
                     counts[bi]++;
@@ -256,12 +258,14 @@ namespace MyEngine
 
             for (int i = 0; i < verticesNum; i++)
             {
-                normals[i] /= counts[i];
-                normals[i] = normals[i].Normalized();
+                outNormals[i] /= counts[i];
             }
 
 
-
+        }
+        public void RecalculateNormals()
+        {
+            CalculateNormals(triangleIndicies, vertices, normals);       
         }
 
         public void RecalculateTangents()
@@ -450,7 +454,7 @@ namespace MyEngine
                 var size = NumberOfElements * DataSizeOfOneElementInBytes;
                 GL.BufferData(bufferTarget, (IntPtr)(size), arr, BufferUsageHint.StaticDraw);
                 GL.GetBufferParameter(bufferTarget, BufferParameterName.BufferSize, out sizeFromGpu);
-                if (size != sizeFromGpu) Debug.Error(myName+" size mismatch size=" + bufferTarget + " sizeFromGpu=" + sizeFromGpu);
+                if (size != sizeFromGpu) Debug.Error(myName + " size mismatch size=" + bufferTarget + " sizeFromGpu=" + sizeFromGpu);
             }
             public void BindBufferToVAO()
             {

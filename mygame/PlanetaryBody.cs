@@ -23,7 +23,7 @@ namespace MyGame
         {
             get
             {
-                return subdivisionSphereRadiusModifier * (0.5f + DebugKeys.keyIK);
+                return subdivisionSphereRadiusModifier * ( 0.5f + DebugKeys.keyIK);
             }
         }
         public double startingRadiusSubdivisionModifier = 1;

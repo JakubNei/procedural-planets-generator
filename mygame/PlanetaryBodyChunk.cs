@@ -291,6 +291,8 @@ namespace MyGame
                 }
             }
 
+            Mesh.CalculateNormals(mesh.triangleIndicies, positionsInitial, normalsInitial);
+
             var skirtIndicies = new List<int>();
             // gather the edge vertices indicies
             {
