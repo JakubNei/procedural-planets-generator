@@ -278,7 +278,7 @@ namespace MyGame
         // return true if all childs are visible
         bool TrySubdivideToLevel_Visibility(PlanetaryBodyChunk chunk, Sphere sphere, int recursionDepth)
         {
-            if (recursionDepth > 0 && GeometryUtility.Intersects(chunk.realVisibleRange, sphere))
+            if (recursionDepth > 0 && GeometryUtility.Intersects(chunk.noElevationRange, sphere))
             {
                 var areChildrenFullyVisible = true;
                 chunk.SubDivide();
@@ -308,7 +308,8 @@ namespace MyGame
                 // if visible, update final positions weight according to distance
                 if (chunk.renderer.RenderingMode == RenderingMode.RenderGeometryAndCastShadows)
                 {
-                    var d = chunk.renderer.bounds.Center.Distance(Scene.mainCamera.Transform.Position);
+                    var pos = this.Transform.Position + chunk.noElevationRange.CenterPos.ToVector3();
+                    var d = pos.Distance(Scene.mainCamera.Transform.Position);
                     var e0 = sphere.radius / subdivisionSphereRadiusModifier_debugModified;
                     var e1 = e0 * subdivisionSphereRadiusModifier_debugModified;
                     var w = MyMath.SmoothStep(e0, e1, d);

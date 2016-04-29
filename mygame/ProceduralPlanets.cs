@@ -72,7 +72,7 @@ namespace MyGame
             planet.radius = 100; // 6371000 earth radius
             planet.radiusVariation = 5;
             planet.chunkNumberOfVerticesOnEdge = 20; // 20
-            planet.subdivisionMaxRecurisonDepth = 10;
+            planet.subdivisionMaxRecurisonDepth = 11;
             planet.startingRadiusSubdivisionModifier = 2f;
             planet.subdivisionSphereRadiusModifier = 0.5f;
             planet.Transform.Position = new Vector3(1000, -100, 1000);

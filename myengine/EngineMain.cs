@@ -179,11 +179,20 @@ namespace MyEngine
         System.Diagnostics.Stopwatch eventThreadTime = new System.Diagnostics.Stopwatch();
         ManualResetEvent onRenderGameWaitHandle = new ManualResetEvent(false);
 
+
+        Queue<DateTime> frameTimes1sec = new Queue<DateTime>();
         void EventThreadMain()
         {
 
             //Debug.Tick("eventThread");
+
+            var now = DateTime.Now;
+            frameTimes1sec.Enqueue(now);
+            while ((now - frameTimes1sec.Peek()).TotalSeconds > 1) frameTimes1sec.Dequeue();
+
             var deltaTime = eventThreadTime.ElapsedMilliseconds / 1000.0;
+            deltaTime = 1.0 / frameTimes1sec.Count;
+
             eventThreadTime.Restart();
 
             this.Title = string.Join("\t  ", Debug.stringValues.OrderBy(kvp => kvp.Key).Select(kvp => kvp.Key + ":" + kvp.Value).ToArray());
@@ -204,7 +213,7 @@ namespace MyEngine
 
             ubo.engine.totalElapsedSecondsSinceEngineStart = (float)stopwatchSinceStart.Elapsed.TotalSeconds;
             ubo.engine.gammaCorrectionTextureRead = 2.2f;
-            ubo.engine.gammaCorrectionFinalColor = 1/2.2f;
+            ubo.engine.gammaCorrectionFinalColor = 1 / 2.2f;
 
             //GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
@@ -243,7 +252,7 @@ namespace MyEngine
                     GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit);
 
                     // SKYBOX PASS
-                    if(skyboxCubeMap != null)
+                    if (skyboxCubeMap != null)
                     {
                         GL.DepthRange(0.999, 1);
                         GL.DepthMask(false);
@@ -392,7 +401,7 @@ namespace MyEngine
 
             }
 
-            if (drawLines)  GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
+            if (drawLines) GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
 
             // POST PROCESS EFFECTs
             if (enablePostProcessEffects)
