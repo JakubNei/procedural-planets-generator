@@ -61,6 +61,7 @@
     <Compile Include="Components\Tonemapping.cs" />
     <Compile Include="DataAccessibleList.cs" />
     <Compile Include="Extensions\OpenTK\Vector3dExtensions.cs" />
+    <Compile Include="GameSystems\RenderersCollection.cs" />
     <Compile Include="Math\PerlinD.cs" />
     <Compile Include="Math\WorleyD.cs" />
     <Compile Include="Panels\DebugValuesTable.cs">

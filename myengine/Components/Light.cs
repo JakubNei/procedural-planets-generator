@@ -56,7 +56,7 @@ namespace MyEngine.Components
 
         public Light(Entity entity) : base(entity)
         {
-            entity.Scene.Add(this);
+            entity.Scene.RenderData.Add(this);
         }
 
         public void UploadUBOdata(UniformBlock ubo, int lightIndex) {
@@ -80,7 +80,7 @@ namespace MyEngine.Components
 
         public void Dispose()
         {
-            Entity.Scene.Remove(this);
+            Entity.Scene.RenderData.Remove(this);
         }
     }
 }

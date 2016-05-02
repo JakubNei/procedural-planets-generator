@@ -236,8 +236,9 @@ namespace MyEngine
 
 
             var frustrumPlanes = camera.GetFrustumPlanes();
+            var renderData = camera.RenderData;
 
-            var allRenderers = scene.Renderers;
+            var allRenderers = renderData.Renderers;
             {
                 camera.UploadDataToUBO(ubo); // bind camera view params
                                              //GL.BeginQuery(QueryTarget.)
@@ -314,7 +315,7 @@ namespace MyEngine
 
                 #region Lights rendering
 
-                var allLights = scene.Lights;
+                var allLights = renderData.Lights;
                 lock (allLights)
                 {
                     for (int lightIndex = 0; lightIndex < allLights.Count; lightIndex++)

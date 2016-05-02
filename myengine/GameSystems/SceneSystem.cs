@@ -21,29 +21,8 @@ namespace MyEngine
             }
         }
 
-        public SparseList<Light> Lights
-        {
-            get
-            {
-                return lights;
-            }
-        }
-        public SparseList<Renderer> Renderers
-        {
-            get
-            {
-                return geometryRenderers;
-            }
-        }
-        public SparseList<Renderer> ShadowCasters
-        {
-            get
-            {
-                return shadowCasters;
-            }
-        }
 
-
+        public RenderData RenderData { get; private set; }
 
         //public ISynchronizeInvoke SynchronizeInvoke { get; private set; }
         //DeferredSynchronizeInvoke.Owner deferredSynchronizeInvokeOwner;
@@ -63,14 +42,12 @@ namespace MyEngine
 
 
         SparseList<Entity> entities = new SparseList<Entity>(1000);
-        SparseList<Light> lights = new SparseList<Light>(1000);
-        SparseList<Renderer> geometryRenderers = new SparseList<Renderer>(1000);
-        SparseList<Renderer> shadowCasters = new SparseList<Renderer>(1000);
-
+        
         public SceneSystem(EngineMain engine)
         {
             this.Engine = engine;
             this.EventSystem = new EventSystem();
+            this.RenderData = new RenderData();
             this.EventSystem.OnAnyEventCalled += (IEvent evt) =>
             {
                 foreach(var e in entities)
@@ -110,50 +87,7 @@ namespace MyEngine
                 entities.Remove(entity);
             }
         }
-        public void Add(Light light)
-        {
-            lock (lights)
-            {
-                lights.Add(light);
-            }
-        }
-        public void Remove(Light light)
-        {
-            lock (lights)
-            {
-                lights.Remove(light);
-            }
-        }
-        public void AddGeometry(Renderer renderer)
-        {
-            lock(geometryRenderers)
-            {
-                geometryRenderers.Add(renderer);
-            }
-        }
-        public void RemoveGeometry(Renderer renderer)
-        {
-            lock(geometryRenderers)
-            {
-                geometryRenderers.Remove(renderer);
-            }
-        }
-        public void AddShadowCaster(Renderer renderer)
-        {
-            lock (shadowCasters)
-            {
-                shadowCasters.Add(renderer);
-            }
-        }
-        public void RemoveShadowCaster(Renderer renderer)
-        {
-            lock (shadowCasters)
-            {
-                shadowCasters.Remove(renderer);
-            }
-        }
-
-
+      
         public class RenderSettings
         {
 

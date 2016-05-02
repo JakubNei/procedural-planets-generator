@@ -29,8 +29,11 @@ namespace MyEngine.Components
 
         public List<IPostProcessEffect> postProcessEffects = new List<IPostProcessEffect>();
 
+        public RenderData RenderData { get; set; }
+
         public Camera(Entity entity) : base(entity)
         {
+            this.RenderData = Scene.RenderData;
         }
 
         public void SetSize(int w, int h) {
