@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using OpenTK;
 
 namespace MyGame
 {
@@ -17,6 +18,18 @@ namespace MyGame
             this.longitude = longitude;
             this.latitude = latitude;
             this.altitude = altitude;
+        }
+
+        public Vector3d ToVec3d()
+        {
+            return new Vector3d(longitude, latitude, altitude);
+        }
+
+        public SpehricalCoord (Vector3d fromVec3d)
+        {
+            this.longitude = fromVec3d.X;
+            this.latitude = fromVec3d.Y;
+            this.altitude = fromVec3d.Z;
         }
     }
 
