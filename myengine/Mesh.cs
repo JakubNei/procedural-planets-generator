@@ -58,7 +58,7 @@ namespace MyEngine
             VisualRepresentation
         }
 
-        public VertexBufferObject<Vector3> vertices { get; private set; }
+        public VertexBufferObject<Vector3> Vertices { get; private set; }
         public VertexBufferObject<Vector3> normals { get; private set; }
         public VertexBufferObject<Vector3> tangents { get; private set; }
         public VertexBufferObject<Vector2> uvs { get; private set; }
@@ -85,10 +85,10 @@ namespace MyEngine
                 if (recalculateBounds)
                 {
                     recalculateBounds = false;
-                    if (vertices.Count > 0)
+                    if (Vertices.Count > 0)
                     {
-                        _bounds = new Bounds(vertices[0], Vector3.Zero);
-                        foreach (var point in vertices)
+                        _bounds = new Bounds(Vertices[0], Vector3.Zero);
+                        foreach (var point in Vertices)
                         {
                             _bounds.Encapsulate(point);
                         }
@@ -123,7 +123,7 @@ namespace MyEngine
 
         public Mesh()
         {
-            vertices = new VertexBufferObject<Vector3>()
+            Vertices = new VertexBufferObject<Vector3>()
             {
                 bufferTarget = BufferTarget.ArrayBuffer,
                 pointerType = VertexAttribPointerType.Float,
@@ -155,7 +155,7 @@ namespace MyEngine
             };
 
             VertexArrayObj = new VertexArrayObject();
-            VertexArrayObj.AddVertexBufferObject("vertices", vertices);
+            VertexArrayObj.AddVertexBufferObject("vertices", Vertices);
             VertexArrayObj.AddVertexBufferObject("normals", normals);
             VertexArrayObj.AddVertexBufferObject("tangents", tangents);
             VertexArrayObj.AddVertexBufferObject("uvs", uvs);
@@ -200,15 +200,15 @@ namespace MyEngine
 
         public bool HasTangents()
         {
-            return tangents != null && vertices.Count == tangents.Count;
+            return tangents != null && Vertices.Count == tangents.Count;
         }
         public bool HasNormals()
         {
-            return normals != null && vertices.Count == normals.Count;
+            return normals != null && Vertices.Count == normals.Count;
         }
         public bool HasUVs()
         {
-            return uvs != null && vertices.Count == uvs.Count;
+            return uvs != null && Vertices.Count == uvs.Count;
         }
 
 
@@ -265,16 +265,16 @@ namespace MyEngine
         }
         public void RecalculateNormals()
         {
-            CalculateNormals(triangleIndicies, vertices, normals);       
+            CalculateNormals(triangleIndicies, Vertices, normals);       
         }
 
         public void RecalculateTangents()
         {
-            if (HasUVs() == false) uvs.Resize(vertices.Count);
+            if (HasUVs() == false) uvs.Resize(Vertices.Count);
 
             //partialy stolen from http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-13-normal-mapping/
 
-            int verticesNum = vertices.Count;
+            int verticesNum = Vertices.Count;
             int indiciesNum = triangleIndicies.Count;
 
             int[] counts = new int[verticesNum];
@@ -297,9 +297,9 @@ namespace MyEngine
 
                 if (ai < verticesNum && bi < verticesNum && ci < verticesNum)
                 {
-                    Vector3 av = vertices[ai];
-                    Vector3 deltaPos1 = vertices[bi] - av;
-                    Vector3 deltaPos2 = vertices[ci] - av;
+                    Vector3 av = Vertices[ai];
+                    Vector3 deltaPos1 = Vertices[bi] - av;
+                    Vector3 deltaPos2 = Vertices[ci] - av;
 
                     Vector2 auv = uvs[ai];
                     Vector2 deltaUV1 = uvs[bi] - auv;

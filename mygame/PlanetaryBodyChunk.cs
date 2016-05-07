@@ -9,6 +9,7 @@ using OpenTK;
 
 using MyEngine;
 using MyEngine.Components;
+using System.Collections;
 
 namespace MyGame
 {
@@ -25,12 +26,23 @@ namespace MyGame
 
         int subdivisionDepth;
         PlanetaryBody planetaryBody;
-        PlanetaryBodyChunk parentChunk;      
+        PlanetaryBodyChunk parentChunk;
+        ChildPosition childPosition;
 
-        public PlanetaryBodyChunk(PlanetaryBody planetInfo, PlanetaryBodyChunk parentChunk)
+        public enum ChildPosition
+        {
+            Top = 0,
+            Left = 1,
+            Middle = 2,
+            Right = 3,
+            NoneNoParent = -1,
+        }
+
+        public PlanetaryBodyChunk(PlanetaryBody planetInfo, PlanetaryBodyChunk parentChunk, ChildPosition childPosition = ChildPosition.NoneNoParent)
         {
             this.planetaryBody = planetInfo;
             this.parentChunk = parentChunk;
+            this.childPosition = childPosition;
             childs.Clear();
         }
 
@@ -39,10 +51,124 @@ namespace MyGame
             return realVisibleRange.CenterPos;
         }
 
+        class ParentIndiciesPartEnumerator : IEnumerator<int>
+        {
+            public int Current
+            {
+                get
+                {
+                    return parent_current;
+                }
+            }
 
-        void MAKE_CHILD(Vector3d A, Vector3d B, Vector3d C) {
+            object IEnumerator.Current
+            {
+                get
+                {
+                    return Current;
+                }
+            }
+            int parent_current;
+            int parent_lineLength;
+            int child_currentOnLine;
+            int child_lineLength;
+            int numOfVerticesOnEdgeWholeTriangle
+            {
+                get
+                {
+                    return parentChunk.planetaryBody.chunkNumberOfVerticesOnEdge;
+                }
+            }
+            PlanetaryBodyChunk parentChunk;
+            ChildPosition myPos;
+            public ParentIndiciesPartEnumerator(PlanetaryBodyChunk parentChunk, ChildPosition myPos)
+            {
+                this.parentChunk = parentChunk;
+                this.myPos = myPos;
+                Reset();
+            }
+            public void Dispose()
+            {
 
-            var child = new PlanetaryBodyChunk(planetaryBody, this);
+            }
+
+            public bool MoveNext()
+            {
+                switch (myPos)
+                {
+                    case ChildPosition.Top:
+                        parent_current++;
+                        break;
+                    case ChildPosition.Left:
+                        parent_current++;
+                        child_currentOnLine++;
+                        if (child_currentOnLine >= child_lineLength)
+                        {
+                            parent_current += parent_lineLength - child_lineLength;
+                            child_lineLength++;
+                            parent_lineLength++;
+                            child_currentOnLine = 0;
+                        }
+                        break;
+                    case ChildPosition.Right:
+                        parent_current++;
+                        child_currentOnLine++;
+                        if (child_currentOnLine >= child_lineLength)
+                        {
+                            parent_current += parent_lineLength - child_lineLength;
+                            child_lineLength++;
+                            parent_lineLength++;
+                            child_currentOnLine = 0;
+                        }
+                        break;
+                    case ChildPosition.Middle:
+                        break;
+
+                }
+                return true;
+            }
+
+            public void Reset()
+            {
+                switch (myPos)
+                {
+                    case ChildPosition.Top:
+                        parent_current = 0;
+                        break;
+                    case ChildPosition.Left:
+                        parent_current = 0;
+                        parent_lineLength = 1;
+                        for (int i = 0; i < (numOfVerticesOnEdgeWholeTriangle - 1) / 2; i++)
+                        {
+                            parent_current += parent_lineLength;
+                            parent_lineLength++;
+                        }
+                        child_lineLength = 1;
+                        child_currentOnLine = 0;
+                        break;
+                    case ChildPosition.Right:
+                        parent_current = 0;
+                        parent_lineLength = 1;
+                        for (int i = 0; i < (numOfVerticesOnEdgeWholeTriangle - 1) / 2; i++)
+                        {
+                            parent_current += parent_lineLength;
+                            parent_lineLength++;
+                        }
+                        parent_current += parent_lineLength - 1; // move to the end of the line
+                        child_lineLength = 1;
+                        child_currentOnLine = 0;
+                        break;
+                    case ChildPosition.Middle:
+                        parent_current = 0;
+                        break;
+                }
+            }
+        }
+
+        void MAKE_CHILD(Vector3d A, Vector3d B, Vector3d C, ChildPosition cp)
+        {
+
+            var child = new PlanetaryBodyChunk(planetaryBody, this, cp);
             childs.Add(child);
             child.subdivisionDepth = subdivisionDepth + 1;
             child.noElevationRange.a = A;
@@ -68,10 +194,10 @@ namespace MyGame
                 ac *= planetaryBody.radius;
                 bc *= planetaryBody.radius;
 
-                MAKE_CHILD(a, ab, ac);
-                MAKE_CHILD(ab, b, bc);
-                MAKE_CHILD(ac, bc, c);
-                MAKE_CHILD(ab, bc, ac);
+                MAKE_CHILD(a, ab, ac, ChildPosition.Top);
+                MAKE_CHILD(ab, b, bc, ChildPosition.Left);
+                MAKE_CHILD(ac, bc, c, ChildPosition.Right);
+                MAKE_CHILD(ab, bc, ac, ChildPosition.Middle);
             }
 
         }
@@ -79,16 +205,80 @@ namespace MyGame
 
         int numbetOfChunksGenerated = 0;
         bool isGenerated = false;
+
+        static Dictionary<int, List<int>> numberOfVerticesOnEdge_To_oneTimeGeneratedIndicies = new Dictionary<int, List<int>>();
+        static void GetIndiciesList(int numberOfVerticesOnEdge, out List<int> newIndicies)
+        {
+
+            /*
+
+                 /\  top line
+                /\/\
+               /\/\/\
+              /\/\/\/\ middle lines
+             /\/\/\/\/\
+            /\/\/\/\/\/\ bottom line
+
+            */
+            List<int> oneTimeGeneratedIndicies;
+            if (numberOfVerticesOnEdge_To_oneTimeGeneratedIndicies.TryGetValue(numberOfVerticesOnEdge, out oneTimeGeneratedIndicies) == false)
+            {
+                oneTimeGeneratedIndicies = new List<int>();
+                numberOfVerticesOnEdge_To_oneTimeGeneratedIndicies[numberOfVerticesOnEdge] = oneTimeGeneratedIndicies;
+                // make triangles indicies list
+                {
+                    int lineStartIndex = 0;
+                    int nextLineStartIndex = 1;
+                    oneTimeGeneratedIndicies.Add(0);
+                    oneTimeGeneratedIndicies.Add(1);
+                    oneTimeGeneratedIndicies.Add(2);
+
+                    int numberOfVerticesInBetween = 0;
+                    // we skip first triangle as it was done manually
+                    // we skip last row of vertices as there are no triangles under it
+                    for (int y = 1; y < numberOfVerticesOnEdge - 1; y++)
+                    {
+
+                        lineStartIndex = nextLineStartIndex;
+                        nextLineStartIndex = lineStartIndex + numberOfVerticesInBetween + 2;
+
+                        for (int x = 0; x <= numberOfVerticesInBetween + 1; x++)
+                        {
+
+                            oneTimeGeneratedIndicies.Add(lineStartIndex + x);
+                            oneTimeGeneratedIndicies.Add(nextLineStartIndex + x);
+                            oneTimeGeneratedIndicies.Add(nextLineStartIndex + x + 1);
+
+                            if (x <= numberOfVerticesInBetween) // not a last triangle in line
+                            {
+                                oneTimeGeneratedIndicies.Add(lineStartIndex + x);
+                                oneTimeGeneratedIndicies.Add(nextLineStartIndex + x + 1);
+                                oneTimeGeneratedIndicies.Add(lineStartIndex + x + 1);
+                            }
+                        }
+
+                        numberOfVerticesInBetween++;
+                    }
+                }
+            }
+
+            newIndicies = oneTimeGeneratedIndicies;//.ToList();
+        }
+
         void CreateRendererAndGenerateMesh()
         {
-            lock(this)
+            if (parentChunk != null && parentChunk.renderer == null)
+            {
+                parentChunk.RequestMeshGeneration();
+                return;
+            }
+            lock (this)
             {
                 if (isGenerated) return;
                 isGenerated = true;
             }
 
             int numberOfVerticesOnEdge = planetaryBody.chunkNumberOfVerticesOnEdge;
-            if (numberOfVerticesOnEdge % 2 == 0) numberOfVerticesOnEdge ++;
 
 
             var mesh = new Mesh();// "PlanetaryBodyChunk depth:" + subdivisionDepth + " #" + numbetOfChunksGenerated);
@@ -116,7 +306,7 @@ namespace MyGame
                 realRange.b = c + Vector3d.Multiply(realRange.b - c, ratio);
                 realRange.c = c + Vector3d.Multiply(realRange.c - c, ratio);
             }
-            
+
 
 
 
@@ -126,6 +316,7 @@ namespace MyGame
 
             // generate evenly spaced vertices, then we make triangles out of them
             var positionsFinal = new List<Vector3>();
+            var normalsFinal = mesh.normals;
 
 
             // the planetary chunk vertices blend from positonsInitial to positionsFinal
@@ -135,7 +326,7 @@ namespace MyGame
             {
                 bufferTarget = OpenTK.Graphics.OpenGL.BufferTarget.ArrayBuffer,
                 pointerType = OpenTK.Graphics.OpenGL.VertexAttribPointerType.Float,
-                dataStrideInElementsNumber = 3,                
+                dataStrideInElementsNumber = 3,
             };
             var normalsInitial = new Mesh.VertexBufferObject<Vector3>()
             {
@@ -144,95 +335,124 @@ namespace MyGame
                 dataStrideInElementsNumber = 3,
             };
 
+            List<int> indicies;
+            GetIndiciesList(numberOfVerticesOnEdge, out indicies);
 
-
-            //positionsFinal.Add(noElevationRange.a.ToVector3());
-            positionsFinal.Add(planetaryBody.GetFinalPos(noElevationRange.a).ToVector3());
-
-            // add positions, line by line
+            // generate all of our vertices
+            if (childPosition == ChildPosition.NoneNoParent)
             {
-                var startStep = (noElevationRange.b - noElevationRange.a) / (numberOfVerticesOnEdge - 1);
-                var endStep = (noElevationRange.c - noElevationRange.a) / (numberOfVerticesOnEdge - 1);
-                int numberOfVerticesInBetween = 0;
-                for (uint y = 1; y < numberOfVerticesOnEdge; y++)
+                // add positions, line by line
                 {
-                    var start = noElevationRange.a + startStep * y;
-                    var end = noElevationRange.a + endStep * y;
-                    //positionsFinal.Add(start.ToVector3());
-                    positionsFinal.Add(planetaryBody.GetFinalPos(start).ToVector3());
+                    // add the very first one first
+                    //positionsFinal.Add(noElevationRange.a.ToVector3());
+                    positionsFinal.Add(planetaryBody.GetFinalPos(noElevationRange.a).ToVector3());
 
-                    if (numberOfVerticesInBetween > 0)
+                    var startStep = (noElevationRange.b - noElevationRange.a) / (numberOfVerticesOnEdge - 1);
+                    var endStep = (noElevationRange.c - noElevationRange.a) / (numberOfVerticesOnEdge - 1);
+                    int numberOfVerticesInBetween = 0;
+                    for (uint y = 1; y < numberOfVerticesOnEdge; y++)
                     {
-                        var step = (end - start) / (numberOfVerticesInBetween + 1);
-                        for (uint x = 1; x <= numberOfVerticesInBetween; x++)
+                        var start = noElevationRange.a + startStep * y;
+                        var end = noElevationRange.a + endStep * y;
+                        //positionsFinal.Add(start.ToVector3());
+                        positionsFinal.Add(planetaryBody.GetFinalPos(start).ToVector3());
+
+                        if (numberOfVerticesInBetween > 0)
                         {
-                            var v = start + step * x;
-                            //positionsFinal.Add(v.ToVector3());
-                            positionsFinal.Add(planetaryBody.GetFinalPos(v).ToVector3());
+                            var step = (end - start) / (numberOfVerticesInBetween + 1);
+                            for (uint x = 1; x <= numberOfVerticesInBetween; x++)
+                            {
+                                var v = start + step * x;
+                                //positionsFinal.Add(v.ToVector3());
+                                positionsFinal.Add(planetaryBody.GetFinalPos(v).ToVector3());
+                            }
                         }
+                        //positionsFinal.Add(end.ToVector3());
+                        positionsFinal.Add(planetaryBody.GetFinalPos(end).ToVector3());
+                        numberOfVerticesInBetween++;
                     }
-                    //positionsFinal.Add(end.ToVector3());
-                    positionsFinal.Add(planetaryBody.GetFinalPos(end).ToVector3());
-                    numberOfVerticesInBetween++;
+                }
+            }
+            else
+            {
+                // take some vertices from parents
+                {
+                    var parentVertices = parentChunk.renderer.Mesh.Vertices;
+
+                    positionsFinal.Resize(parentVertices.Count);
+
+                    var parentIndicies = new ParentIndiciesPartEnumerator(parentChunk, childPosition);
+
+                    int i = 0;
+                    positionsFinal[i] = parentVertices[parentIndicies.Current];
+                    parentIndicies.MoveNext();
+                    i++;
+
+                    // copy position from parent
+                    int numberOfVerticesOnLine = 2;
+                    for (int y = 1; y < numberOfVerticesOnEdge; y++)
+                    {
+                        for (int x = 0; x < numberOfVerticesOnLine; x++)
+                        {
+                            if (y % 2 == 0)
+                            {
+                                if (x % 2 == 0)
+                                {
+                                    positionsFinal[i] = parentVertices[parentIndicies.Current];
+                                    parentIndicies.MoveNext();
+                                }
+                            }
+                            i++;
+                        }
+                        numberOfVerticesOnLine++;
+                    }
+
+                    // fill in positions in between
+                    i = 1;
+                    numberOfVerticesOnLine = 2;
+                    for (int y = 1; y < numberOfVerticesOnEdge; y++)
+                    {
+                        for (int x = 0; x < numberOfVerticesOnLine; x++)
+                        {
+                            if (y % 2 == 0)
+                            {
+                                if (x % 2 == 0)
+                                {
+                                }
+                                else
+                                {
+                                    int a = i - 1;
+                                    int b = i + 1;
+                                    positionsFinal[i] = planetaryBody.GetFinalPos((positionsFinal[a].ToVector3d() + positionsFinal[b].ToVector3d()) / 2.0f).ToVector3();
+                                }
+                            }
+                            else
+                            {
+                                if (x % 2 == 0)
+                                {
+                                    int a = i - numberOfVerticesOnLine + 1;
+                                    int b = i + numberOfVerticesOnLine;
+                                    positionsFinal[i] = planetaryBody.GetFinalPos((positionsFinal[a].ToVector3d() + positionsFinal[b].ToVector3d()) / 2.0f).ToVector3();
+                                }
+                                else
+                                {
+                                    int a = i - numberOfVerticesOnLine;
+                                    int b = i + numberOfVerticesOnLine + 1;
+                                    positionsFinal[i] = planetaryBody.GetFinalPos((positionsFinal[a].ToVector3d() + positionsFinal[b].ToVector3d()) / 2.0f).ToVector3();
+                                }
+                            }
+                            i++;
+                        }
+                        numberOfVerticesOnLine++;
+                    }
+
                 }
             }
 
 
-            /*
-
-                 /\  top line
-                /\/\
-               /\/\/\
-              /\/\/\/\ middle lines
-             /\/\/\/\/\
-            /\/\/\/\/\/\ bottom line
-
-            */
-
-
-            var indicies = new List<int>();
-            // make triangles indicies list
-            {
-                int lineStartIndex = 0;
-                int nextLineStartIndex = 1;
-                indicies.Add(0);
-                indicies.Add(1);
-                indicies.Add(2);
-
-                int numberOfVerticesInBetween = 0;
-                // we skip first triangle as it was done manually
-                // we skip last row of vertices as there are no triangles under it
-                for (int y = 1; y < numberOfVerticesOnEdge - 1; y++)
-                {
-
-                    lineStartIndex = nextLineStartIndex;
-                    nextLineStartIndex = lineStartIndex + numberOfVerticesInBetween + 2;
-
-                    for (int x = 0; x <= numberOfVerticesInBetween + 1; x++)
-                    {
-
-                        indicies.Add(lineStartIndex + x);
-                        indicies.Add(nextLineStartIndex + x);
-                        indicies.Add(nextLineStartIndex + x + 1);
-
-                        if (x <= numberOfVerticesInBetween) // not a last triangle in line
-                        {
-                            indicies.Add(lineStartIndex + x);
-                            indicies.Add(nextLineStartIndex + x + 1);
-                            indicies.Add(lineStartIndex + x + 1);
-                        }
-                    }
-
-                    numberOfVerticesInBetween++;
-                }
-            }
-
-
-            mesh.vertices.SetData(positionsFinal);
+            mesh.Vertices.SetData(positionsFinal);
             mesh.triangleIndicies.SetData(indicies);
             mesh.RecalculateNormals();
-
-            var normalsFinal = mesh.normals;
 
             // fill in initial positions, every odd positon is average of the two neighbouring final positions
             {
@@ -243,7 +463,7 @@ namespace MyGame
                 positionsInitial[i] = positionsFinal[i];
                 normalsInitial[i] = normalsFinal[i];
                 i++;
-                
+
                 int numberOfVerticesOnLine = 2;
                 for (int y = 1; y < numberOfVerticesOnEdge; y++)
                 {
@@ -255,7 +475,6 @@ namespace MyGame
                             {
                                 positionsInitial[i] = positionsFinal[i];
                                 normalsInitial[i] = normalsFinal[i];
-                                i++;
                             }
                             else
                             {
@@ -263,7 +482,6 @@ namespace MyGame
                                 int b = i + 1;
                                 positionsInitial[i] = (positionsFinal[a] + positionsFinal[b]) / 2.0f;
                                 normalsInitial[i] = (normalsFinal[a] + normalsFinal[b]) / 2.0f;
-                                i++;
                             }
                         }
                         else
@@ -274,7 +492,6 @@ namespace MyGame
                                 int b = i + numberOfVerticesOnLine;
                                 positionsInitial[i] = (positionsFinal[a] + positionsFinal[b]) / 2.0f;
                                 normalsInitial[i] = (normalsFinal[a] + normalsFinal[b]) / 2.0f;
-                                i++;
                             }
                             else
                             {
@@ -282,11 +499,11 @@ namespace MyGame
                                 int b = i + numberOfVerticesOnLine + 1;
                                 positionsInitial[i] = (positionsFinal[a] + positionsFinal[b]) / 2.0f;
                                 normalsInitial[i] = (normalsFinal[a] + normalsFinal[b]) / 2.0f;
-                                i++;
                             }
                         }
+                        i++;
                     }
-                                    
+
                     numberOfVerticesOnLine++;
                 }
             }
@@ -319,7 +536,8 @@ namespace MyGame
 
 
             // make skirts
-            if(useSkirts) {
+            if (useSkirts)
+            {
                 // the deeper chunk it the less the multiplier should be
                 var skirtMultiplier = 0.99f + 0.01f * subdivisionDepth / (planetaryBody.subdivisionMaxRecurisonDepth + 2);
                 skirtMultiplier = MyMath.Clamp(skirtMultiplier, 0.95f, 1.0f);
@@ -330,10 +548,10 @@ namespace MyGame
                     // lower the skirts towards middle
                     // move chunks towards triangle center
                     {
-                        var v = mesh.vertices[index];
+                        var v = mesh.Vertices[index];
                         v *= skirtMultiplier;
                         v = chunkCenter + (v - chunkCenter) * skirtMultiplier;
-                        mesh.vertices[index] = v;
+                        mesh.Vertices[index] = v;
                     }
                     {
                         var v = positionsInitial[index];
@@ -355,7 +573,7 @@ namespace MyGame
             renderer = planetaryBody.Entity.AddComponent<MeshRenderer>();
             renderer.Mesh = mesh;
 
-            if(planetaryBody.planetMaterial != null) renderer.Material = planetaryBody.planetMaterial.CloneTyped();
+            if (planetaryBody.planetMaterial != null) renderer.Material = planetaryBody.planetMaterial.CloneTyped();
             renderer.RenderingMode = RenderingMode.DontRender;
             this.visibility = 0;
 
@@ -382,7 +600,8 @@ namespace MyGame
             var priority = sphereDistanceToCameraWorldSpace / radiusCameraSpace;
             if (priority < 0) priority *= -1;
 
-            if (parentChunk != null && parentChunk.renderer != null) {
+            if (parentChunk != null && parentChunk.renderer != null)
+            {
                 var cameraStatus = parentChunk.renderer.GetCameraRenderStatus(planetaryBody.Scene.mainCamera);
                 if (cameraStatus.HasFlag(Renderer.RenderStatus.Visible)) priority *= 0.3f;
             }
@@ -393,7 +612,8 @@ namespace MyGame
 
 
         static MeshGenerationService meshGenerationService = new MeshGenerationService();
-        class MeshGenerationService {
+        class MeshGenerationService
+        {
 
 
             int generationThreadMiliSecondsSleep;
@@ -439,7 +659,7 @@ namespace MyGame
 
                     PlanetaryBodyChunk chunk = null;
 
-                    lock(chunkToPriority)
+                    lock (chunkToPriority)
                     {
                         if (chunkToPriority.Count > 0)
                         {
@@ -526,7 +746,7 @@ namespace MyGame
 
             public void DoesNotNeedMeshGeneration(PlanetaryBodyChunk chunk)
             {
-                lock(chunkToPriority)
+                lock (chunkToPriority)
                 {
                     chunkToPriority.Remove(chunk);
                 }

@@ -144,7 +144,7 @@ namespace MyEngine
         {
             var mesh = new Mesh();
 
-            mesh.vertices.SetData(verticesMesh);
+            mesh.Vertices.SetData(verticesMesh);
             mesh.uvs.SetData(uvsMesh);
             mesh.triangleIndicies.SetData(triangleIndiciesMesh);
 

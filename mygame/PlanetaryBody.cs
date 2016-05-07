@@ -13,6 +13,9 @@ namespace MyGame
 {
     public class PlanetaryBody : ComponentWithShortcuts
     {
+        /// <summary>
+        /// Is guaranteeed to be odd (1, 3, 5, 7, ...)
+        /// </summary>
         public int chunkNumberOfVerticesOnEdge = 10;
         public double radius;
         public int subdivisionMaxRecurisonDepth = 10;
@@ -162,6 +165,8 @@ namespace MyGame
 
         public void Start()
         {
+            if (chunkNumberOfVerticesOnEdge % 2 == 0) chunkNumberOfVerticesOnEdge++;
+
             //detailLevel = (int)ceil(planetInfo.rootChunks[0].range.ToBoundingSphere().radius / 100);
 
             vertices = new List<Vector3d>();
