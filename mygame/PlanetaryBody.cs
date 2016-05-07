@@ -79,7 +79,7 @@ namespace MyGame
 
         public Vector3d GetFinalPos(Vector3d calestialPos, int detailDensity = 1)
         {
-            return calestialPos.Normalized() * GetHeight(calestialPos, detailDensity);
+            //return calestialPos.Normalized() * GetHeight(calestialPos, detailDensity);
 
             var s = CalestialToSpherical(calestialPos);
             s.altitude = GetHeight(calestialPos, detailDensity);
@@ -244,7 +244,7 @@ namespace MyGame
 
         void TrySubdivideToLevel_Generation(PlanetaryBodyChunk chunk, Sphere sphere, int recursionDepth)
         {
-            if (recursionDepth > 0 && GeometryUtility.Intersects(chunk.realVisibleRange, sphere))
+            if (recursionDepth > 0 && GeometryUtility.Intersects(chunk.noElevationRange, sphere))
             {
                 chunk.SubDivide();
                 chunk.StopMeshGeneration();

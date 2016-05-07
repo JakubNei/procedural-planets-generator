@@ -94,7 +94,7 @@ namespace MyGame
             var mesh = new Mesh();// "PlanetaryBodyChunk depth:" + subdivisionDepth + " #" + numbetOfChunksGenerated);
             numbetOfChunksGenerated++;
 
-            var realRange = noElevationRange;
+            var realRange = realVisibleRange;
 
             const bool useSkirts = false;
             //const bool useSkirts = true;
