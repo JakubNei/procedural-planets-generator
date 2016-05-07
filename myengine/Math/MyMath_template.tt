@@ -1,0 +1,33 @@
+﻿<#@ template debug="true" hostspecific="true" language="C#" #>
+<#@ output extension=".cs" #>
+<#    
+    string fileName = this.Host.ResolvePath("MyMath.cs");
+    var lines = System.IO.File.ReadLines(fileName);
+
+    var convertTypes = new [] {
+        "float", "double",
+        "int", "long",
+        "Vector2", "Vector2d",
+        "Vector3", "Vector3d",
+        "Vector4", "Vector4d",
+        "Matrix4", "Matrix4d",
+        "Quaternion", "Quaterniond",
+    };
+
+    foreach (var l in lines) 
+    { 	        
+        var line = l;
+		for(int i = 0; i < convertTypes.Length-1; i+=2)
+		{
+			line = line.Replace("(" + convertTypes[i] + ")", "(" + convertTypes[i +1] + ")");
+			line = line.Replace("" + convertTypes[i] + " ", "" + convertTypes[i + 1] + " ");
+			line = line.Replace("" + convertTypes[i] + ".", "" + convertTypes[i + 1] + ".");
+			line = line.Replace("new " + convertTypes[i] + "(", "new " + convertTypes[i + 1] + "(");
+			line = line.Replace("__" + convertTypes[i] + "", "__" + convertTypes[i + 1] + "");
+			line = line.Replace("" + convertTypes[i] + "__", "" + convertTypes[i + 1] + "__");
+		}
+#>
+<#= line #>
+<# 
+    } 
+#>

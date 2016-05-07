@@ -8,7 +8,7 @@ using OpenTK;
 
 namespace MyEngine
 {
-    public static class Vector3Extensions
+    public static partial class Vector3Extensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3 RotateBy(this Vector3 vector, Quaternion rotation)
@@ -96,13 +96,5 @@ namespace MyEngine
             return to-from;
         }
 
-        public static Vector3d ToVector3d(this Vector3 floatVector)
-        {
-            return new Vector3d(
-                floatVector.X,
-                floatVector.Y,
-                floatVector.Z
-            );
-        }
     }
 }

@@ -13,13 +13,13 @@ namespace MyEngine
     {
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float Cot(float x)
+        public static double Cot(double x)
         {
             //#define cot(V) 1.0/tan(V)
-            return (float)(1.0 / Math.Tan(x));
+            return (double)(1.0 / Math.Tan(x));
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float SmoothStep(float edge0, float edge1, float x)
+        public static double SmoothStep(double edge0, double edge1, double x)
         {
             var tmp = (x - edge0) / (edge1 - edge0);
             Clamp01(ref tmp);
@@ -27,21 +27,21 @@ namespace MyEngine
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float Lerp(float edge0, float edge1, float x)
+        public static double Lerp(double edge0, double edge1, double x)
         {
             return edge0 * x + edge1 * (1 - x);
         }
 
 
-        public static Vector3 Slerp(Vector3 start, Vector3 end, float percent)
+        public static Vector3d Slerp(Vector3d start, Vector3d end, double percent)
         {
-            Vector3 ret;
+            Vector3d ret;
             Slerp(ref start, ref end, percent, out ret);
             return ret;
         }
 
         // https://keithmaggio.wordpress.com/2011/02/15/math-magician-lerp-slerp-and-nlerp/
-        public static void Slerp(ref Vector3 start, ref Vector3 end, float percent, out Vector3 ret)
+        public static void Slerp(ref Vector3d start, ref Vector3d end, double percent, out Vector3d ret)
         {
             var startMagnitude = start.Length;
             var endMagnitude = end.Length;
@@ -81,10 +81,10 @@ namespace MyEngine
             var mag = Lerp(fromMag, toMag, x);
             var rot = Quaterniond.Slerp(fromRot, toRot, x);
 
-            Vector3 newDirection;
-            Vector3 vector = Vector3.UnitX;
-            Matrix4 rotMat = Matrix4.CreateFromQuaternion(rot);
-            Vector3.TransformVector(ref vector, ref rotMat, out newDirection);
+            Vector3d newDirection;
+            Vector3d vector = Vector3d.UnitX;
+            Matrix4d rotMat = Matrix4d.CreateFromQuaternion(rot);
+            Vector3d.TransformVector(ref vector, ref rotMat, out newDirection);
 
             return newDirection * mag
                 */
@@ -93,7 +93,7 @@ namespace MyEngine
 
         // https://www.opengl.org/sdk/docs/man/html/smoothstep.xhtml
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float Clamp(float x, float min, float max)
+        public static double Clamp(double x, double min, double max)
         {
             if (x > max) return max;
             if (x < min) return min;
@@ -101,77 +101,77 @@ namespace MyEngine
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Clamp01(ref float x)
+        public static void Clamp01(ref double x)
         {
             if (x > 1) x = 1;
             if (x < 0) x = 0;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Clamp01(ref int x)
+        public static void Clamp01(ref long x)
         {
             if (x > 1) x = 1;
             if (x < 0) x = 0;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int Clamp(int x, int min, int max)
+        public static long Clamp(long x, long min, long max)
         {
             if (x > max) return max;
             if (x < min) return min;
             return x;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float Sqrt(float x)
+        public static double Sqrt(double x)
         {
-            return (float)Math.Sqrt(x);
+            return (double)Math.Sqrt(x);
         }
 
 
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float Cos(float x)
+        public static double Cos(double x)
         {
-            return (float)System.Math.Cos(x);
+            return (double)System.Math.Cos(x);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float Acos(float x)
+        public static double Acos(double x)
         {
-            return (float)System.Math.Acos(x);
+            return (double)System.Math.Acos(x);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float Sin(float x)
+        public static double Sin(double x)
         {
-            return (float)System.Math.Sin(x);
+            return (double)System.Math.Sin(x);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float Asin(float x)
+        public static double Asin(double x)
         {
-            return (float)System.Math.Asin(x);
+            return (double)System.Math.Asin(x);
         }
 
 
-        const float float__isqrt2 = (float)0.70710676908493042;
+        const double double__isqrt2 = (double)0.70710676908493042;
 
         // http://stackoverflow.com/questions/2656899/mapping-a-sphere-to-a-cube        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static Vector3 Cubify(Vector3 s)
+        static Vector3d Cubify(Vector3d s)
         {
-            float xx2 = s.X * s.X * 2.0f;
-            float yy2 = s.Y * s.Y * 2.0f;
+            double xx2 = s.X * s.X * 2.0f;
+            double yy2 = s.Y * s.Y * 2.0f;
 
-            Vector2 v = new Vector2(xx2 - yy2, yy2 - xx2);
+            Vector2d v = new Vector2d(xx2 - yy2, yy2 - xx2);
 
-            float ii = v.Y - 3.0f;
+            double ii = v.Y - 3.0f;
             ii *= ii;
 
-            float isqrt = -Sqrt(ii - 12.0f * xx2) + 3.0f;
+            double isqrt = -Sqrt(ii - 12.0f * xx2) + 3.0f;
 
             v.X = Sqrt(v.X + isqrt);
             v.Y = Sqrt(v.Y + isqrt);
-            v *= float__isqrt2;
+            v *= double__isqrt2;
 
-            return s.Sign().CompomentWiseMult(new Vector3(v.X, v.Y, 1.0f));
+            return s.Sign().CompomentWiseMult(new Vector3d(v.X, v.Y, 1.0f));
         }
         /// <summary>
         /// Transforms spherical direction into cube coordinates.
@@ -179,10 +179,10 @@ namespace MyEngine
         /// <param name="sphere"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector3 Sphere2Cube(Vector3 sphere)
+        public static Vector3d Sphere2Cube(Vector3d sphere)
         {
 
-            Vector3 f = sphere.Abs();
+            Vector3d f = sphere.Abs();
 
             bool a = f.Y >= f.X && f.Y >= f.Z;
             bool b = f.X >= f.Z;

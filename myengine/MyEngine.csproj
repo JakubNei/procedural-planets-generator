@@ -60,8 +60,26 @@
     <Compile Include="Components\SSAO.cs" />
     <Compile Include="Components\Tonemapping.cs" />
     <Compile Include="DataAccessibleList.cs" />
-    <Compile Include="Extensions\OpenTK\Vector3dExtensions.cs" />
+    <Compile Include="Extensions\OpenTK\Vector3Extensions_other.cs" />
+    <Compile Include="Extensions\OpenTK\Vector3Extensions_template.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Vector3Extensions_template.tt</DependentUpon>
+    </Compile>
     <Compile Include="GameSystems\RenderersCollection.cs" />
+    <Content Include="Extensions\OpenTK\Vector3Extensions_template.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Vector3Extensions_template.cs</LastGenOutput>
+    </Content>
+    <Content Include="Math\MyMath_template.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>MyMath_template.cs</LastGenOutput>
+    </Content>
+    <Compile Include="Math\MyMath_template.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>MyMath_template.tt</DependentUpon>
+    </Compile>
     <Compile Include="Math\PerlinD.cs" />
     <Compile Include="Math\WorleyD.cs" />
     <Compile Include="Panels\DebugValuesTable.cs">
@@ -99,7 +117,9 @@
     <Compile Include="GameSystems\Unit.cs" />
     <Compile Include="GameSystems\UnitSystem.cs" />
     <Compile Include="ITest1.cs" />
-    <Compile Include="Math\MyMath.cs" />
+    <Compile Include="Math\MyMath.cs">
+      <LastGenOutput>MyMath1.cs</LastGenOutput>
+    </Compile>
     <Compile Include="Math\Perlin.cs" />
     <Compile Include="Math\QuaternionUtility.cs" />
     <Compile Include="Math\GeometryUtility.cs" />
@@ -182,6 +202,9 @@
     <EmbeddedResource Include="Panels\TimeGraph.resx">
       <DependentUpon>TimeGraph.cs</DependentUpon>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

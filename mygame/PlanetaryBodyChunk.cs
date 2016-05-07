@@ -25,7 +25,7 @@ namespace MyGame
 
         int subdivisionDepth;
         PlanetaryBody planetaryBody;
-        PlanetaryBodyChunk parentChunk;      
+        PlanetaryBodyChunk parentChunk;
 
         public PlanetaryBodyChunk(PlanetaryBody planetInfo, PlanetaryBodyChunk parentChunk)
         {
@@ -34,13 +34,9 @@ namespace MyGame
             childs.Clear();
         }
 
-        public Vector3d GetCenterPos()
+
+        void MAKE_CHILD(Vector3d A, Vector3d B, Vector3d C)
         {
-            return realVisibleRange.CenterPos;
-        }
-
-
-        void MAKE_CHILD(Vector3d A, Vector3d B, Vector3d C) {
 
             var child = new PlanetaryBodyChunk(planetaryBody, this);
             childs.Add(child);
@@ -81,20 +77,20 @@ namespace MyGame
         bool isGenerated = false;
         void CreateRendererAndGenerateMesh()
         {
-            lock(this)
+            lock (this)
             {
                 if (isGenerated) return;
                 isGenerated = true;
             }
 
             int numberOfVerticesOnEdge = planetaryBody.chunkNumberOfVerticesOnEdge;
-            if (numberOfVerticesOnEdge % 2 == 0) numberOfVerticesOnEdge ++;
+            if (numberOfVerticesOnEdge % 2 == 0) numberOfVerticesOnEdge++;
 
 
             var mesh = new Mesh();// "PlanetaryBodyChunk depth:" + subdivisionDepth + " #" + numbetOfChunksGenerated);
             numbetOfChunksGenerated++;
 
-            var realRange = realVisibleRange;
+            var realRange = noElevationRange;
 
             const bool useSkirts = false;
             //const bool useSkirts = true;
@@ -116,7 +112,7 @@ namespace MyGame
                 realRange.b = c + Vector3d.Multiply(realRange.b - c, ratio);
                 realRange.c = c + Vector3d.Multiply(realRange.c - c, ratio);
             }
-            
+
 
 
 
@@ -135,7 +131,7 @@ namespace MyGame
             {
                 bufferTarget = OpenTK.Graphics.OpenGL.BufferTarget.ArrayBuffer,
                 pointerType = OpenTK.Graphics.OpenGL.VertexAttribPointerType.Float,
-                dataStrideInElementsNumber = 3,                
+                dataStrideInElementsNumber = 3,
             };
             var normalsInitial = new Mesh.VertexBufferObject<Vector3>()
             {
@@ -151,22 +147,20 @@ namespace MyGame
 
             // add positions, line by line
             {
-                var startStep = (noElevationRange.b - noElevationRange.a) / (numberOfVerticesOnEdge - 1);
-                var endStep = (noElevationRange.c - noElevationRange.a) / (numberOfVerticesOnEdge - 1);
                 int numberOfVerticesInBetween = 0;
                 for (uint y = 1; y < numberOfVerticesOnEdge; y++)
                 {
-                    var start = noElevationRange.a + startStep * y;
-                    var end = noElevationRange.a + endStep * y;
+                    var percent = y / (float)(numberOfVerticesOnEdge - 1);
+                    var start = MyMath.Slerp(noElevationRange.a, noElevationRange.b, percent);
+                    var end = MyMath.Slerp(noElevationRange.a, noElevationRange.c, percent);
                     //positionsFinal.Add(start.ToVector3());
                     positionsFinal.Add(planetaryBody.GetFinalPos(start).ToVector3());
 
                     if (numberOfVerticesInBetween > 0)
                     {
-                        var step = (end - start) / (numberOfVerticesInBetween + 1);
                         for (uint x = 1; x <= numberOfVerticesInBetween; x++)
                         {
-                            var v = start + step * x;
+                            var v = MyMath.Slerp(start, end, x / (float)(numberOfVerticesInBetween + 1));                            
                             //positionsFinal.Add(v.ToVector3());
                             positionsFinal.Add(planetaryBody.GetFinalPos(v).ToVector3());
                         }
@@ -243,7 +237,7 @@ namespace MyGame
                 positionsInitial[i] = positionsFinal[i];
                 normalsInitial[i] = normalsFinal[i];
                 i++;
-                
+
                 int numberOfVerticesOnLine = 2;
                 for (int y = 1; y < numberOfVerticesOnEdge; y++)
                 {
@@ -286,7 +280,7 @@ namespace MyGame
                             }
                         }
                     }
-                                    
+
                     numberOfVerticesOnLine++;
                 }
             }
@@ -319,7 +313,8 @@ namespace MyGame
 
 
             // make skirts
-            if(useSkirts) {
+            if (useSkirts)
+            {
                 // the deeper chunk it the less the multiplier should be
                 var skirtMultiplier = 0.99f + 0.01f * subdivisionDepth / (planetaryBody.subdivisionMaxRecurisonDepth + 2);
                 skirtMultiplier = MyMath.Clamp(skirtMultiplier, 0.95f, 1.0f);
@@ -355,7 +350,7 @@ namespace MyGame
             renderer = planetaryBody.Entity.AddComponent<MeshRenderer>();
             renderer.Mesh = mesh;
 
-            if(planetaryBody.planetMaterial != null) renderer.Material = planetaryBody.planetMaterial.CloneTyped();
+            if (planetaryBody.planetMaterial != null) renderer.Material = planetaryBody.planetMaterial.CloneTyped();
             renderer.RenderingMode = RenderingMode.DontRender;
             this.visibility = 0;
 
@@ -374,7 +369,7 @@ namespace MyGame
             var cam = planetaryBody.Entity.Scene.mainCamera;
 
             // help from http://stackoverflow.com/questions/3717226/radius-of-projected-sphere
-            var sphere = realVisibleRange.ToBoundingSphere();
+            var sphere = noElevationRange.ToBoundingSphere();
             var radiusWorldSpace = sphere.radius;
             var sphereDistanceToCameraWorldSpace = cam.Transform.Position.Distance(planetaryBody.Transform.TransformPoint(sphere.center.ToVector3()));
             var fov = cam.fieldOfView;
@@ -382,7 +377,8 @@ namespace MyGame
             var priority = sphereDistanceToCameraWorldSpace / radiusCameraSpace;
             if (priority < 0) priority *= -1;
 
-            if (parentChunk != null && parentChunk.renderer != null) {
+            if (parentChunk != null && parentChunk.renderer != null)
+            {
                 var cameraStatus = parentChunk.renderer.GetCameraRenderStatus(planetaryBody.Scene.mainCamera);
                 if (cameraStatus.HasFlag(Renderer.RenderStatus.Visible)) priority *= 0.3f;
             }
@@ -393,7 +389,8 @@ namespace MyGame
 
 
         static MeshGenerationService meshGenerationService = new MeshGenerationService();
-        class MeshGenerationService {
+        class MeshGenerationService
+        {
 
 
             int generationThreadMiliSecondsSleep;
@@ -439,7 +436,7 @@ namespace MyGame
 
                     PlanetaryBodyChunk chunk = null;
 
-                    lock(chunkToPriority)
+                    lock (chunkToPriority)
                     {
                         if (chunkToPriority.Count > 0)
                         {
@@ -526,7 +523,7 @@ namespace MyGame
 
             public void DoesNotNeedMeshGeneration(PlanetaryBodyChunk chunk)
             {
-                lock(chunkToPriority)
+                lock (chunkToPriority)
                 {
                     chunkToPriority.Remove(chunk);
                 }
