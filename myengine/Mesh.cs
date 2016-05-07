@@ -212,10 +212,10 @@ namespace MyEngine
         }
 
 
-        public static void CalculateNormals(IList<int> intTriangleIndicies, IList<Vector3> inPositions, IList<Vector3> outNormals)
+        public static void CalculateNormals(IList<int> inTriangleIndicies, IList<Vector3> inPositions, IList<Vector3> outNormals)
         {
             int verticesNum = inPositions.Count;
-            int indiciesNum = intTriangleIndicies.Count;
+            int indiciesNum = inTriangleIndicies.Count;
 
 
             int[] counts = new int[verticesNum];
@@ -234,9 +234,9 @@ namespace MyEngine
             for (int i = 0; i <= indiciesNum - 3; i += 3)
             {
 
-                int ai = intTriangleIndicies[i];
-                int bi = intTriangleIndicies[i + 1];
-                int ci = intTriangleIndicies[i + 2];
+                int ai = inTriangleIndicies[i];
+                int bi = inTriangleIndicies[i + 1];
+                int ci = inTriangleIndicies[i + 2];
 
                 if (ai < verticesNum && bi < verticesNum && ci < verticesNum)
                 {

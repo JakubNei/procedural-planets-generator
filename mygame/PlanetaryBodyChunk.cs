@@ -336,28 +336,36 @@ namespace MyGame
             // generate all of our vertices
             if (childPosition == ChildPosition.NoneNoParent)
             {
-                int numberOfVerticesInBetween = 0;
-                for (uint y = 1; y < numberOfVerticesOnEdge; y++)
-                {
-                    var percent = y / (float)(numberOfVerticesOnEdge - 1);
-                    var start = MyMath.Slerp(noElevationRange.a, noElevationRange.b, percent);
-                    var end = MyMath.Slerp(noElevationRange.a, noElevationRange.c, percent);
-                    //positionsFinal.Add(start.ToVector3());
-                    positionsFinal.Add(planetaryBody.GetFinalPos(start).ToVector3());
 
-                    if (numberOfVerticesInBetween > 0)
+                //positionsFinal.Add(noElevationRange.a.ToVector3());
+                positionsFinal.Add(planetaryBody.GetFinalPos(noElevationRange.a).ToVector3());
+
+                // add positions, line by line
+                {
+                    int numberOfVerticesInBetween = 0;
+                    for (uint y = 1; y < numberOfVerticesOnEdge; y++)
                     {
-                        for (uint x = 1; x <= numberOfVerticesInBetween; x++)
+                        var percent = y / (float)(numberOfVerticesOnEdge - 1);
+                        var start = MyMath.Slerp(noElevationRange.a, noElevationRange.b, percent);
+                        var end = MyMath.Slerp(noElevationRange.a, noElevationRange.c, percent);
+                        //positionsFinal.Add(start.ToVector3());
+                        positionsFinal.Add(planetaryBody.GetFinalPos(start).ToVector3());
+
+                        if (numberOfVerticesInBetween > 0)
                         {
-                            var v = MyMath.Slerp(start, end, x / (float)(numberOfVerticesInBetween + 1));                            
-                            //positionsFinal.Add(v.ToVector3());
-                            positionsFinal.Add(planetaryBody.GetFinalPos(v).ToVector3());
+                            for (uint x = 1; x <= numberOfVerticesInBetween; x++)
+                            {
+                                var v = MyMath.Slerp(start, end, x / (float)(numberOfVerticesInBetween + 1));
+                                //positionsFinal.Add(v.ToVector3());
+                                positionsFinal.Add(planetaryBody.GetFinalPos(v).ToVector3());
+                            }
                         }
                         //positionsFinal.Add(end.ToVector3());
                         positionsFinal.Add(planetaryBody.GetFinalPos(end).ToVector3());
                         numberOfVerticesInBetween++;
                     }
                 }
+
             }
             else
             {
@@ -494,36 +502,36 @@ namespace MyGame
                 }
             }
 
-            Mesh.CalculateNormals(mesh.triangleIndicies, positionsInitial, normalsInitial);
 
-            var skirtIndicies = new List<int>();
-            // gather the edge vertices indicies
-            {
-                int lineStartIndex = 0;
-                int nextLineStartIndex = 1;
-                int numberOfVerticesInBetween = 0;
-                skirtIndicies.Add(0); // first line
-                // top and all middle lines
-                for (int i = 1; i < numberOfVerticesOnEdge - 1; i++)
-                {
-                    lineStartIndex = nextLineStartIndex;
-                    nextLineStartIndex = lineStartIndex + numberOfVerticesInBetween + 2;
-                    skirtIndicies.Add(lineStartIndex);
-                    skirtIndicies.Add((lineStartIndex + numberOfVerticesInBetween + 1));
-                    numberOfVerticesInBetween++;
-                }
-                // bottom line
-                lineStartIndex = nextLineStartIndex;
-                for (int i = 0; i < numberOfVerticesOnEdge; i++)
-                {
-                    skirtIndicies.Add((lineStartIndex + i));
-                }
-            }
-
+            //Mesh.CalculateNormals(mesh.triangleIndicies, positionsInitial, normalsInitial);
 
             // make skirts
             if (useSkirts)
             {
+                var skirtIndicies = new List<int>();
+                // gather the edge vertices indicies
+                {
+                    int lineStartIndex = 0;
+                    int nextLineStartIndex = 1;
+                    int numberOfVerticesInBetween = 0;
+                    skirtIndicies.Add(0); // first line
+                                          // top and all middle lines
+                    for (int i = 1; i < numberOfVerticesOnEdge - 1; i++)
+                    {
+                        lineStartIndex = nextLineStartIndex;
+                        nextLineStartIndex = lineStartIndex + numberOfVerticesInBetween + 2;
+                        skirtIndicies.Add(lineStartIndex);
+                        skirtIndicies.Add((lineStartIndex + numberOfVerticesInBetween + 1));
+                        numberOfVerticesInBetween++;
+                    }
+                    // bottom line
+                    lineStartIndex = nextLineStartIndex;
+                    for (int i = 0; i < numberOfVerticesOnEdge; i++)
+                    {
+                        skirtIndicies.Add((lineStartIndex + i));
+                    }
+                }
+
                 // the deeper chunk it the less the multiplier should be
                 var skirtMultiplier = 0.99f + 0.01f * subdivisionDepth / (planetaryBody.subdivisionMaxRecurisonDepth + 2);
                 skirtMultiplier = MyMath.Clamp(skirtMultiplier, 0.95f, 1.0f);
