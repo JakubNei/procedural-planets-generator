@@ -7,6 +7,7 @@
 
 [include lightingModels.inc.glsl]
 
+[include snoise.inc.glsl]
 
 
 // from http://stackoverflow.com/questions/6652253/getting-the-true-z-value-from-the-depth-buffer

@@ -18,8 +18,8 @@ namespace MyGame
         public List<PlanetaryBody> planets = new List<PlanetaryBody>();
         SceneSystem scene;
 
-        bool clampCameraToSurface = false;
-        bool moveCameraToSurfaceOnStart = false;
+        bool clampCameraToSurface = true;
+        bool moveCameraToSurfaceOnStart = true;
 
         Camera cam { get { return scene.mainCamera; } }
 
@@ -39,7 +39,7 @@ namespace MyGame
             var planetShader = Factory.GetShader("shaders/planet.shader");
             planetMaterial = new Material();
             planetMaterial.GBufferShader = planetShader;
-            planetMaterial.Uniforms.Set("param_grass", Factory.GetTexture2D("textures/grass.jpg"));
+            planetMaterial.Uniforms.Set("param_moon", Factory.GetTexture2D("textures/moon1.jpg"));
             planetMaterial.Uniforms.Set("param_rock", Factory.GetTexture2D("textures/rock.jpg"));
             planetMaterial.Uniforms.Set("param_snow", Factory.GetTexture2D("textures/snow.jpg"));
             planetMaterial.Uniforms.Set("param_perlinNoise", Factory.GetTexture2D("textures/perlin_noise.png"));
@@ -71,10 +71,10 @@ namespace MyGame
 
             planet = scene.AddEntity().AddComponent<PlanetaryBody>();
             planets.Add(planet);
-            //planet.radius = 2000; // 6371000 earth radius
-            //planet.radiusVariation = 100;
-            planet.radius = 100; // 6371000 earth radius
-            planet.radiusVariation = 5;
+            planet.radius = 2000; // 6371000 earth radius
+            planet.radius = 300; // 6371000 earth radius
+            planet.radiusVariation = 100;
+            planet.radiusVariation = 15;
             //planet.chunkNumberOfVerticesOnEdge = 20; // 20
             planet.chunkNumberOfVerticesOnEdge = 20;
             planet.subdivisionMaxRecurisonDepth = 11;

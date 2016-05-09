@@ -59,7 +59,7 @@
     <Compile Include="Components\PostProcessEffect.cs" />
     <Compile Include="Components\SSAO.cs" />
     <Compile Include="Components\Tonemapping.cs" />
-    <Compile Include="Consts.cs" />
+    <Compile Include="Constants.cs" />
     <Compile Include="DataAccessibleList.cs" />
     <Compile Include="Extensions\OpenTK\Vector3Extensions_other.cs" />
     <Compile Include="Extensions\OpenTK\Vector3Extensions_template.cs">
@@ -144,7 +144,7 @@
     <Compile Include="Factory.cs" />
     <Compile Include="Components\MeshRenderer.cs" />
     <Compile Include="DeferredGBuffer.cs" />
-    <Compile Include="Plane.cs" />
+    <Compile Include="Math\Plane.cs" />
     <Compile Include="Ray.cs" />
     <Compile Include="Components\Renderer.cs" />
     <Compile Include="GameSystems\Resource.cs" />

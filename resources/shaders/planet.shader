@@ -1,6 +1,9 @@
 [include internal/prependAll.shader]
 
 uniform sampler2D param_rock;
+uniform sampler2D param_moon;
+uniform sampler2D param_snow;
+
 uniform float param_finalPosWeight;
 
 [VertexShader]
@@ -123,50 +126,15 @@ float rand(vec2 co){
 
 vec3 getColor(float distance) {
 
-	float base = 4;
-
-	distance = clamp(distance, 10, 1000);
-	float exp = myLog(base, distance);
-	exp = floor(exp);
-
-	float lowerScaleDistance = pow(base, exp);
-	float upperScaleDistance = pow(base, exp+1);
-
-	float scaleModifier = 4;
-	float scaleBase = 0.2;
-	float lowerScale = scaleModifier * pow(scaleBase, exp);
-	float upperScale = scaleModifier * pow(scaleBase, exp+1);
-
-
-	//DEBUG
-	//return vec3(upperScale*100);
-	//return triPlanar(rock,i.worldPos,i.normal,upperScale);
-	//return vec3(upperScale, 0, 0) / 10;		
-	//return triPlanar(rock,i.worldPos,i.normal,1000);
-
-	// zde byl problém, lowerScale a upperScale se na hranici najednou otočilo
-	/*
-	return mix(
-		triPlanar(param_rock, i.worldPos, i.normal, lowerScale),
-		triPlanar(param_rock, i.worldPos, i.normal, upperScale),
-		smoothstep(lowerScaleDistance, upperScaleDistance, distance)
+	vec3 c;
+	vec3 c1 = triPlanar(param_rock, i.worldPos, i.normal, 0.5);  
+	vec3 c2 = triPlanar(param_moon, i.worldPos, i.normal, 0.5);  
+	c = mix(
+		c1,
+		c2,
+		clamp(snoise(i.worldPos/100, 10)*2, 0, 1)
 	);
-	*/
-
-	if(int(exp) % 2 == 0) {
-		return mix(
-			triPlanar(param_rock, i.worldPos, i.normal, lowerScale),
-			triPlanar(param_rock, i.worldPos, i.normal, upperScale),
-			smoothstep(lowerScaleDistance, upperScaleDistance, distance)
-		);
-	} else {
-		return mix(
-			triPlanar(param_rock, i.worldPos, i.normal, upperScale),
-			triPlanar(param_rock, i.worldPos, i.normal, lowerScale),
-			smoothstep(upperScaleDistance, lowerScaleDistance, distance)
-		);
-	}
-  
+	return c;
 }
 
 

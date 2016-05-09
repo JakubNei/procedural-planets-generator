@@ -26,7 +26,7 @@ namespace MyGame
         {
             get
             {
-                return subdivisionSphereRadiusModifier * ( 0.5f + DebugKeys.keyIK);
+                return subdivisionSphereRadiusModifier * (0.5f + DebugKeys.keyIK);
             }
         }
         public double startingRadiusSubdivisionModifier = 1;
@@ -313,10 +313,26 @@ namespace MyGame
                 // if visible, update final positions weight according to distance
                 if (chunk.renderer.RenderingMode == RenderingMode.RenderGeometryAndCastShadows)
                 {
-                    var pos = this.Transform.Position + chunk.realVisibleRange.CenterPos.ToVector3();
-                    var d = pos.Distance(Scene.mainCamera.Transform.Position);
+                    var camPos = Scene.mainCamera.Transform.Position - this.Transform.Position;
+                    var d = chunk.renderer.Mesh.Vertices.FindClosest(p => p.Distance(camPos)).Distance(camPos);
                     var e0 = sphere.radius / subdivisionSphereRadiusModifier_debugModified;
                     var e1 = e0 * subdivisionSphereRadiusModifier_debugModified;
+
+                    /*
+                                        var t = chunk.realVisibleRange;
+                    var pos = this.Transform.Position;
+                    var d = (new Plane(t.a.ToVector3() + pos, t.b.ToVector3() + pos, t.c.ToVector3() + pos)).GetDistanceToPoint(
+                        Scene.mainCamera.Transform.Position
+                        ).Abs();
+                    var e0 = sphere.radius / subdivisionSphereRadiusModifier_debugModified;
+                    var e1 = e0 * subdivisionSphereRadiusModifier_debugModified;
+                    */
+                    /*
+                    var t = e0 - e1;
+                    var m = (e0 + e1) / 2;
+                    e0 = m + t * 0.3f;
+                    e1 = m - t * 0.3f;
+                    */
                     var w = MyMath.SmoothStep(e0, e1, d);
                     chunk.renderer.Material.Uniforms.Set("param_finalPosWeight", (float)w);
                 }

@@ -657,11 +657,13 @@ namespace MyGame
             var priority = sphereDistanceToCameraWorldSpace / radiusCameraSpace;
             if (priority < 0) priority *= -1;
 
+            /*
             if (parentChunk != null && parentChunk.renderer != null)
             {
                 var cameraStatus = parentChunk.renderer.GetCameraRenderStatus(planetaryBody.Scene.mainCamera);
                 if (cameraStatus.HasFlag(Renderer.RenderStatus.Visible)) priority *= 0.3f;
             }
+            */
 
             // smaller priority is more important
             meshGenerationService.RequestGenerationOfMesh(this, priority);
@@ -697,7 +699,7 @@ namespace MyGame
                 doRun = true;
                 int numThreads = Environment.ProcessorCount;
 #if DEBUG
-                numThreads = 1;
+                //numThreads = 1;
 #endif
                 for (int i = 0; i < numThreads; i++)
                 {
@@ -781,6 +783,12 @@ namespace MyGame
             public void RequestGenerationOfMesh(PlanetaryBodyChunk chunk, double priorityAdd)
             {
                 if (chunk.renderer != null) return;
+
+                if (chunk.parentChunk != null && chunk.parentChunk.renderer == null)
+                {
+                    chunk.parentChunk.RequestMeshGeneration();
+                    return;
+                }
 
                 lock (chunkIsBeingGenerated)
                 {

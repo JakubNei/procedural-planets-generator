@@ -70,14 +70,14 @@ namespace MyEngine.Components
         {
             get
             {
-                return (-Vector3.UnitX).RotateBy(Rotation);
+                return Constants.Vector3Right.RotateBy(Rotation);
             }
         }
         public Vector3 Up
         {
             get
             {
-                return (-Vector3.UnitY).RotateBy(Rotation);
+                return Constants.Vector3Up.RotateBy(Rotation);
             }
         }
 
@@ -85,7 +85,11 @@ namespace MyEngine.Components
         {
             get
             {
-                return (-Vector3.UnitZ).RotateBy(Rotation);
+                return Constants.Vector3Forward.RotateBy(Rotation);
+            }
+            set
+            {
+                this.Rotation = value.LookRot();
             }
         }
         

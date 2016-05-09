@@ -155,13 +155,16 @@ namespace MyEngine
             var extensions = GL.GetString(StringName.Extensions);
             if (extensions.Contains("GL_EXT_texture_filter_anisotropic"))
             {
-                int max_aniso = GL.GetInteger((GetPName)ExtTextureFilterAnisotropic.MaxTextureMaxAnisotropyExt);
+                if(maxAniso.HasValue == false) maxAniso = GL.GetInteger((GetPName)ExtTextureFilterAnisotropic.MaxTextureMaxAnisotropyExt);
                 GL.TexParameter(
                    TextureTarget.Texture2D,
                    (TextureParameterName)ExtTextureFilterAnisotropic.TextureMaxAnisotropyExt,
-                   max_aniso);
+                   maxAniso.Value
+                );
             }
         }
+
+        static int? maxAniso;
 
         void UpdateIsOnGpu()
         {
