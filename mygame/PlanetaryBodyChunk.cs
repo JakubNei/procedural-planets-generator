@@ -115,7 +115,7 @@ namespace MyGame
                             parent_current += child_lineLength + 1;
                             child_lineLength++;
                             parent_lineLength--;
-                            child_currentOnLine = child_lineLength-1;
+                            child_currentOnLine = child_lineLength - 1;
                         }
                         break;
 
@@ -385,7 +385,9 @@ namespace MyGame
 
                     var parentIndicies = new ParentIndiciesPartEnumerator(parentChunk, childPosition);
 
-                    int i = 0;
+                    int i;
+
+                    i = 0;
                     positionsFinal[i] = parentVertices[parentIndicies.Current];
                     parentIndicies.MoveNext();
                     i++;
@@ -461,12 +463,59 @@ namespace MyGame
                 positionsInitial.Resize(positionsFinal.Count);
                 normalsInitial.Resize(positionsFinal.Count);
 
-                int i = 0;
+
+                int numberOfVerticesOnLine;
+                int i;
+
+                {
+                    var parentIndicies = new ParentIndiciesPartEnumerator(parentChunk, childPosition);
+                    IList<Vector3> parentNormals = null;
+                    i = 0;
+                    if (childPosition == ChildPosition.NoneNoParent)
+                    {
+                        normalsInitial[i] = normalsFinal[i];
+                    }
+                    else
+                    {
+                        parentNormals = parentChunk.renderer.Mesh.normals;
+                        normalsInitial[i] = parentNormals[parentIndicies.Current];
+                        parentIndicies.MoveNext();
+                    }
+                    i++;
+                    numberOfVerticesOnLine = 2;
+                    for (int y = 1; y < numberOfVerticesOnEdge; y++)
+                    {
+                        for (int x = 0; x < numberOfVerticesOnLine; x++)
+                        {
+                            if (y % 2 == 0)
+                            {
+                                if (x % 2 == 0)
+                                {
+                                    if (childPosition == ChildPosition.NoneNoParent)
+                                    {
+                                        normalsInitial[i] = normalsFinal[i];
+                                    }
+                                    else
+                                    {
+                                        normalsInitial[i] = parentNormals[parentIndicies.Current];
+                                        parentIndicies.MoveNext();
+                                    }
+                                }
+                            }
+                            i++;
+                        }
+                        numberOfVerticesOnLine++;
+                    }
+                }
+
+
+
+                i = 0;
                 positionsInitial[i] = positionsFinal[i];
-                normalsInitial[i] = normalsFinal[i];
+                if (childPosition == ChildPosition.NoneNoParent) normalsInitial[i] = normalsFinal[i];
                 i++;
 
-                int numberOfVerticesOnLine = 2;
+                numberOfVerticesOnLine = 2;
                 for (int y = 1; y < numberOfVerticesOnEdge; y++)
                 {
                     for (int x = 0; x < numberOfVerticesOnLine; x++)
@@ -476,14 +525,13 @@ namespace MyGame
                             if (x % 2 == 0)
                             {
                                 positionsInitial[i] = positionsFinal[i];
-                                normalsInitial[i] = normalsFinal[i];
                             }
                             else
                             {
                                 int a = i - 1;
                                 int b = i + 1;
                                 positionsInitial[i] = (positionsFinal[a] + positionsFinal[b]) / 2.0f;
-                                normalsInitial[i] = (normalsFinal[a] + normalsFinal[b]) / 2.0f;
+                                normalsInitial[i] = (normalsInitial[a] + normalsInitial[b]) / 2.0f;
                             }
                         }
                         else
@@ -493,14 +541,14 @@ namespace MyGame
                                 int a = i - numberOfVerticesOnLine + 1;
                                 int b = i + numberOfVerticesOnLine;
                                 positionsInitial[i] = (positionsFinal[a] + positionsFinal[b]) / 2.0f;
-                                normalsInitial[i] = (normalsFinal[a] + normalsFinal[b]) / 2.0f;
+                                normalsInitial[i] = (normalsInitial[a] + normalsInitial[b]) / 2.0f;
                             }
                             else
                             {
                                 int a = i - numberOfVerticesOnLine;
                                 int b = i + numberOfVerticesOnLine + 1;
                                 positionsInitial[i] = (positionsFinal[a] + positionsFinal[b]) / 2.0f;
-                                normalsInitial[i] = (normalsFinal[a] + normalsFinal[b]) / 2.0f;
+                                normalsInitial[i] = (normalsInitial[a] + normalsInitial[b]) / 2.0f;
                             }
                         }
                         i++;
