@@ -186,7 +186,8 @@ namespace MyEngine.Components
         }
         public void LookAt(Vector3 worldPosition)
         {
-            LookAt(worldPosition, Vector3.UnitZ);
+            var dir = this.Position.Towards(worldPosition);
+            this.Rotation = dir.LookRot();
         }
 
         //public Matrix4 GetScalePosRotMatrix()

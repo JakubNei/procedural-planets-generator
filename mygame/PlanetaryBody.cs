@@ -315,7 +315,7 @@ namespace MyGame
                 {
                     var pos = this.Transform.Position + chunk.realVisibleRange.CenterPos.ToVector3();
                     var d = pos.Distance(Scene.mainCamera.Transform.Position);
-                    var e0 = sphere.radius * subdivisionSphereRadiusModifier_debugModified;
+                    var e0 = sphere.radius / subdivisionSphereRadiusModifier_debugModified;
                     var e1 = e0 * subdivisionSphereRadiusModifier_debugModified;
                     var w = MyMath.SmoothStep(e0, e1, d);
                     chunk.renderer.Material.Uniforms.Set("param_finalPosWeight", (float)w);

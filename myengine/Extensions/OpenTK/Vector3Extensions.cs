@@ -96,5 +96,30 @@ namespace MyEngine
             return to-from;
         }
 
+        // http://stackoverflow.com/questions/12435671/quaternion-lookat-function
+        // http://gamedev.stackexchange.com/questions/15070/orienting-a-model-to-face-a-target
+        public static Quaternion LookRot(this Vector3 dir)
+        {
+            var up = Constants.Vector3Up;
+            var fwd = Constants.Vector3Forward;
+            dir.Normalize();
+            float dot = Vector3.Dot(fwd, dir);
+
+            if (Math.Abs(dot - (-1.0f)) < 0.000001f)
+            {
+                return new Quaternion(up.X, up.Y, up.Z, 3.1415926535897932f);
+            }
+            if (Math.Abs(dot - (1.0f)) < 0.000001f)
+            {
+                return Quaternion.Identity;
+            }
+
+            float rotAngle = (float)Math.Acos(dot);
+            Vector3 rotAxis = Vector3.Cross(fwd, dir);
+            rotAxis = Vector3.Normalize(rotAxis);
+            return Quaternion.FromAxisAngle(rotAxis, rotAngle);
+        }
+
+
     }
 }

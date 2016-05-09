@@ -95,16 +95,6 @@ namespace MyGame
                         parent_current++;
                         break;
                     case ChildPosition.Left:
-                        parent_current++;
-                        child_currentOnLine++;
-                        if (child_currentOnLine >= child_lineLength)
-                        {
-                            parent_current += parent_lineLength - child_lineLength;
-                            child_lineLength++;
-                            parent_lineLength++;
-                            child_currentOnLine = 0;
-                        }
-                        break;
                     case ChildPosition.Right:
                         parent_current++;
                         child_currentOnLine++;
@@ -117,6 +107,15 @@ namespace MyGame
                         }
                         break;
                     case ChildPosition.Middle:
+                        parent_current++;
+                        child_currentOnLine++;
+                        if (child_currentOnLine >= child_lineLength)
+                        {
+                            parent_current += parent_lineLength - child_lineLength + 1;
+                            child_lineLength--;
+                            parent_lineLength++;
+                            child_currentOnLine = 0;
+                        }
                         break;
 
                 }
@@ -155,6 +154,14 @@ namespace MyGame
                         break;
                     case ChildPosition.Middle:
                         parent_current = 0;
+                        parent_lineLength = 1;
+                        for (int i = 0; i < (numOfVerticesOnEdgeWholeTriangle - 1) / 2; i++)
+                        {
+                            parent_current += parent_lineLength;
+                            parent_lineLength++;
+                        }
+                        child_lineLength = parent_lineLength;
+                        child_currentOnLine = 0;
                         break;
                 }
             }
@@ -319,15 +326,13 @@ namespace MyGame
             // var positionsInitial = new List<Vector3>(); 
             var positionsInitial = new Mesh.VertexBufferObject<Vector3>()
             {
-                bufferTarget = OpenTK.Graphics.OpenGL.BufferTarget.ArrayBuffer,
-                pointerType = OpenTK.Graphics.OpenGL.VertexAttribPointerType.Float,
-                dataStrideInElementsNumber = 3,
+                ElementType = typeof(float),
+                DataStrideInElementsNumber = 3,
             };
             var normalsInitial = new Mesh.VertexBufferObject<Vector3>()
             {
-                bufferTarget = OpenTK.Graphics.OpenGL.BufferTarget.ArrayBuffer,
-                pointerType = OpenTK.Graphics.OpenGL.VertexAttribPointerType.Float,
-                dataStrideInElementsNumber = 3,
+                ElementType = typeof(float),
+                DataStrideInElementsNumber = 3,
             };
 
             List<int> indicies;
@@ -502,6 +507,13 @@ namespace MyGame
                 }
             }
 
+            // DEBUG
+            for(int i=0; i <positionsFinal.Count; i++)
+            {
+                normalsFinal[i].Normalize();
+                normalsInitial[i].Normalize();
+                //normalsInitial[i] = Vector3.Zero;
+            }
 
             //Mesh.CalculateNormals(mesh.triangleIndicies, positionsInitial, normalsInitial);
 

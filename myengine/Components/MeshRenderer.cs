@@ -91,13 +91,13 @@ namespace MyEngine.Components
                     return new Bounds(Entity.Transform.Position, Vector3.Zero);
                 }
 
-                var boundsPos = Entity.Transform.Position + (Mesh.bounds.Center * Entity.Transform.Scale).RotateBy(Entity.Transform.Rotation);
+                var boundsCenter = Entity.Transform.Position + (Mesh.bounds.Center * Entity.Transform.Scale).RotateBy(Entity.Transform.Rotation);
                 var boundsExtents = (Mesh.bounds.Extents * Entity.Transform.Scale).RotateBy(Entity.Transform.Rotation);
 
-                var bounds = new Bounds(boundsPos, Vector3.Zero);
+                var bounds = new Bounds(boundsCenter, Vector3.Zero);
                 for (int i = 0; i < 8; i++)
                 {
-                    bounds.Encapsulate(boundsPos + boundsExtents.CompomentWiseMult(extentsTransformsToEdges[i]));
+                    bounds.Encapsulate(boundsCenter + boundsExtents.CompomentWiseMult(extentsTransformsToEdges[i]));
                 }
                 return bounds;
 

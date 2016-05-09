@@ -59,6 +59,7 @@
     <Compile Include="Components\PostProcessEffect.cs" />
     <Compile Include="Components\SSAO.cs" />
     <Compile Include="Components\Tonemapping.cs" />
+    <Compile Include="Consts.cs" />
     <Compile Include="DataAccessibleList.cs" />
     <Compile Include="Extensions\OpenTK\Vector3Extensions_other.cs" />
     <Compile Include="Extensions\OpenTK\Vector3Extensions_template.cs">

@@ -44,13 +44,13 @@ namespace MyEngine
     }
     */
 
-    public interface IMesh
+    public interface IDrawable
     {
         void Draw();
         void UploadDataToGpu();
     }
 
-    public class Mesh : IUnloadable, IMesh
+    public class Mesh : IUnloadable, IDrawable
     {
         public enum ChangedFlags
         {
@@ -125,33 +125,29 @@ namespace MyEngine
         {
             Vertices = new VertexBufferObject<Vector3>()
             {
-                bufferTarget = BufferTarget.ArrayBuffer,
-                pointerType = VertexAttribPointerType.Float,
-                dataStrideInElementsNumber = 3,
+                ElementType = typeof(float),
+                DataStrideInElementsNumber = 3,
             };
             normals = new VertexBufferObject<Vector3>()
             {
-                bufferTarget = BufferTarget.ArrayBuffer,
-                pointerType = VertexAttribPointerType.Float,
-                dataStrideInElementsNumber = 3,
+                ElementType = typeof(float),
+                DataStrideInElementsNumber = 3,
             };
             tangents = new VertexBufferObject<Vector3>()
             {
-                bufferTarget = BufferTarget.ArrayBuffer,
-                pointerType = VertexAttribPointerType.Float,
-                dataStrideInElementsNumber = 3,
+                ElementType = typeof(float),
+                DataStrideInElementsNumber = 3,
             };
             uvs = new VertexBufferObject<Vector2>()
             {
-                bufferTarget = BufferTarget.ArrayBuffer,
-                pointerType = VertexAttribPointerType.Float,
-                dataStrideInElementsNumber = 2,
+                ElementType = typeof(float),
+                DataStrideInElementsNumber = 2,
             };
             triangleIndicies = new VertexBufferObject<int>()
             {
-                bufferTarget = BufferTarget.ElementArrayBuffer,
-                pointerType = VertexAttribPointerType.Float,
-                dataStrideInElementsNumber = 1,
+                Target = BufTarget.ControlElementArray,
+                ElementType = typeof(int),
+                DataStrideInElementsNumber = 1,
             };
 
             VertexArrayObj = new VertexArrayObject();
@@ -265,7 +261,7 @@ namespace MyEngine
         }
         public void RecalculateNormals()
         {
-            CalculateNormals(triangleIndicies, Vertices, normals);       
+            CalculateNormals(triangleIndicies, Vertices, normals);
         }
 
         public void RecalculateTangents()
@@ -410,17 +406,43 @@ namespace MyEngine
             void BindBufferToVAO();
             void DeleteBuffer();
         }
+        public enum BufTarget
+        {
+            Array,
+            ControlElementArray,
+        }
         public class VertexBufferObject<T> : List<T>, IVertexBufferObject where T : struct
         {
             public event Action OnChanged;
             public int Handle { get; set; }
             public int LayoutIndex { get; set; }
-
-            public BufferTarget bufferTarget;
+            public BufTarget Target { get; set; }
+            BufferTarget GL_BufferTarget
+            {
+                get
+                {
+                    if (Target == BufTarget.ControlElementArray) return BufferTarget.ElementArrayBuffer;
+                    if (Target == BufTarget.Array) return BufferTarget.ArrayBuffer;
+                    return BufferTarget.ArrayBuffer;
+                }
+            }
             public int NumberOfElements { get { return this.Count; } }
-            public VertexAttribPointerType pointerType;
-            public bool normalized = false;
-            public int dataStrideInElementsNumber;
+            public Type ElementType { get; set; }
+            VertexAttribPointerType GL_PointerType
+            {
+                get
+                {
+                    if (ElementType == typeof(byte)) return VertexAttribPointerType.Byte;
+                    if (ElementType == typeof(short)) return VertexAttribPointerType.Short;
+                    if (ElementType == typeof(ushort)) return VertexAttribPointerType.UnsignedInt;
+                    if (ElementType == typeof(int)) return VertexAttribPointerType.Int;
+                    if (ElementType == typeof(uint)) return VertexAttribPointerType.UnsignedInt;
+                    if (ElementType == typeof(float)) return VertexAttribPointerType.Float;
+                    if (ElementType == typeof(double)) return VertexAttribPointerType.Double;
+                    throw new Exception(MemberName.For(() => ElementType) + " of type:" + ElementType + " is not supported");
+                }
+            }
+            public int DataStrideInElementsNumber { get; set; }
             public int DataSizeOfOneElementInBytes
             {
                 get
@@ -432,7 +454,7 @@ namespace MyEngine
             {
                 get
                 {
-                    return bufferTarget != BufferTarget.ElementArrayBuffer;
+                    return GL_BufferTarget != BufferTarget.ElementArrayBuffer;
                 }
             }
             public int offset;
@@ -449,12 +471,12 @@ namespace MyEngine
             {
                 CreateBuffer();
                 int sizeFromGpu;
-                GL.BindBuffer(bufferTarget, Handle);
+                GL.BindBuffer(GL_BufferTarget, Handle);
                 var arr = this.ToArray();
                 var size = NumberOfElements * DataSizeOfOneElementInBytes;
-                GL.BufferData(bufferTarget, (IntPtr)(size), arr, BufferUsageHint.StaticDraw);
-                GL.GetBufferParameter(bufferTarget, BufferParameterName.BufferSize, out sizeFromGpu);
-                if (size != sizeFromGpu) Debug.Error(myName + " size mismatch size=" + bufferTarget + " sizeFromGpu=" + sizeFromGpu);
+                GL.BufferData(GL_BufferTarget, (IntPtr)(size), arr, BufferUsageHint.StaticDraw);
+                GL.GetBufferParameter(GL_BufferTarget, BufferParameterName.BufferSize, out sizeFromGpu);
+                if (size != sizeFromGpu) Debug.Error(myName + " size mismatch size=" + GL_BufferTarget + " sizeFromGpu=" + sizeFromGpu);
             }
             public void BindBufferToVAO()
             {
@@ -463,11 +485,11 @@ namespace MyEngine
                 {
                     GL.EnableVertexAttribArray(LayoutIndex);
                 }
-                GL.BindBuffer(bufferTarget, Handle);
+                GL.BindBuffer(GL_BufferTarget, Handle);
                 if (UsesLayoutIndex)
                 {
                     //GL.VertexAttribPointer(Shader.positionLocation, 3, VertexAttribPointerType.Float, false, Vector3.SizeInBytes, 0);
-                    GL.VertexAttribPointer(LayoutIndex, dataStrideInElementsNumber, pointerType, normalized, DataSizeOfOneElementInBytes, offset);
+                    GL.VertexAttribPointer(LayoutIndex, DataStrideInElementsNumber, GL_PointerType, false, DataSizeOfOneElementInBytes, offset);
                 }
             }
             public void DeleteBuffer()

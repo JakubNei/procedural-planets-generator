@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 
 using OpenTK;
 
@@ -11,6 +12,11 @@ namespace MyGame
 {
     class Program
     {
+
+        public static Entity sunEntity = null;
+        public static Entity sunTarget = null;
+        public static FirstPersonCamera fpc;
+
         [STAThread]
         public static void Main()
         {
@@ -23,12 +29,12 @@ namespace MyGame
                 new DebugKeys(scene);
 
 
-                Entity sunEntity = null;
+
 
                 {
 
                     var entity = scene.AddEntity();
-                    entity.AddComponent<FirstPersonCamera>();
+                    fpc = entity.AddComponent<FirstPersonCamera>();
 
                     var cam = scene.mainCamera = entity.AddComponent<Camera>();
 
@@ -90,7 +96,7 @@ namespace MyGame
                     entity.Transform.Position = new Vector3(-2000, -2000, 100);
 
                     var renderer = entity.AddComponent<MeshRenderer>();
-                    renderer.Mesh = Factory.GetMesh("sphere.obj");
+                    renderer.Mesh = Factory.GetMesh("sphere_smooth.obj");
 
                     var mat = renderer.Material = new Material();
                     mat.GBufferShader = Factory.GetShader("shaders/sun.glsl");
@@ -110,9 +116,16 @@ namespace MyGame
                     scene.EventSystem.Register((MyEngine.Events.GraphicsUpdate e) =>
                     {
                         entity.Transform.Position = sunEntity.Transform.Position;
-                        entity.Transform.LookAt(scene.mainCamera.Transform.Position);
+                        var p = proceduralPlanets.planets.FirstOrDefault();
+                        if (p != null)
+                        {
+                            entity.Transform.LookAt(p.Transform.Position);
+                        }
                     });
+
+                    
                 }
+                
  
                 engine.Run();
 

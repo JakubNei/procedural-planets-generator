@@ -15,8 +15,11 @@ namespace MyGame
     public class ProceduralPlanets
     {
 
-        List<PlanetaryBody> planets = new List<PlanetaryBody>();
+        public List<PlanetaryBody> planets = new List<PlanetaryBody>();
         SceneSystem scene;
+
+        bool clampCameraToSurface = false;
+        bool moveCameraToSurfaceOnStart = false;
 
         Camera cam { get { return scene.mainCamera; } }
 
@@ -67,6 +70,7 @@ namespace MyGame
             */
 
             planet = scene.AddEntity().AddComponent<PlanetaryBody>();
+            planets.Add(planet);
             //planet.radius = 2000; // 6371000 earth radius
             //planet.radiusVariation = 100;
             planet.radius = 100; // 6371000 earth radius
@@ -80,7 +84,10 @@ namespace MyGame
             planet.planetMaterial = planetMaterial;
             planets.Add(planet);
 
-            cam.Transform.Position = new Vector3((float)-planet.radius, 0, 0) + planet.Transform.Position;
+            if (moveCameraToSurfaceOnStart)
+            {
+                cam.Transform.Position = new Vector3((float)-planet.radius, 0, 0) + planet.Transform.Position;
+            }
 
         }
 
@@ -95,7 +102,7 @@ namespace MyGame
             var planet = planets.OrderBy(p => p.Transform.Position.Distance(camPos) - p.radius).First();
 
             // make cam on top of the planet
-            {
+            if(clampCameraToSurface) {
                 var p = (cam.Transform.Position - planet.Transform.Position).ToVector3d();
                 var camPosS = planet.CalestialToSpherical(p);
                 var h = 1 + planet.GetHeight(p);

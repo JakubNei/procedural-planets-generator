@@ -185,7 +185,8 @@ void main()
 
 
 	out_color = vec4(pow(color,vec3(engine.gammaCorrectionTextureRead)),1);
-	out_normal = normalize(i.normal);
+	//out_normal = normalize(i.normal);
+	out_normal = i.normal;
 	out_position = i.worldPos;
 	out_data = vec4(0);
 

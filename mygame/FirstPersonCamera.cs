@@ -130,12 +130,12 @@ namespace MyGame
             if (Input.GetKey(Key.ShiftLeft)) d *= 5;
 
             var targetVelocity = Vector3.Zero;
-            if (Input.GetKey(Key.W)) targetVelocity.Z -= d;
-            if (Input.GetKey(Key.S)) targetVelocity.Z += d;
-            if (Input.GetKey(Key.D)) targetVelocity.X += d;
-            if (Input.GetKey(Key.A)) targetVelocity.X -= d;
-            if (Input.GetKey(Key.Space)) targetVelocity.Y += d;
-            if (Input.GetKey(Key.ControlLeft)) targetVelocity.Y -= d;
+            if (Input.GetKey(Key.W)) targetVelocity += d * Constants.Vector3Forward;
+            if (Input.GetKey(Key.S)) targetVelocity -= d * Constants.Vector3Forward;
+            if (Input.GetKey(Key.D)) targetVelocity += d * Constants.Vector3Right;
+            if (Input.GetKey(Key.A)) targetVelocity -= d * Constants.Vector3Right;
+            if (Input.GetKey(Key.Space)) targetVelocity += d * Constants.Vector3Up;
+            if (Input.GetKey(Key.ControlLeft)) targetVelocity -= d * Constants.Vector3Up;
 
             //var pos = Matrix4.CreateTranslation(targetVelocity);
 
