@@ -107,14 +107,15 @@ namespace MyGame
                         }
                         break;
                     case ChildPosition.Middle:
-                        parent_current++;
-                        child_currentOnLine++;
-                        if (child_currentOnLine >= child_lineLength)
+                        parent_current--;
+                        child_currentOnLine--;
+                        if (child_currentOnLine < 0)
                         {
-                            parent_current += parent_lineLength - child_lineLength + 1;
-                            child_lineLength--;
-                            parent_lineLength++;
-                            child_currentOnLine = 0;
+                            parent_current -= parent_lineLength;
+                            parent_current += child_lineLength + 1;
+                            child_lineLength++;
+                            parent_lineLength--;
+                            child_currentOnLine = child_lineLength-1;
                         }
                         break;
 
@@ -126,6 +127,7 @@ namespace MyGame
             {
                 switch (myPos)
                 {
+                    // all but middle child triangles are iterated from left to right, top to bottm
                     case ChildPosition.Top:
                         parent_current = 0;
                         break;
@@ -152,15 +154,16 @@ namespace MyGame
                         child_lineLength = 1;
                         child_currentOnLine = 0;
                         break;
-                    case ChildPosition.Middle:
+                    case ChildPosition.Middle: // child middle triangle is iterated from right to left, bottom to top
                         parent_current = 0;
                         parent_lineLength = 1;
-                        for (int i = 0; i < (numOfVerticesOnEdgeWholeTriangle - 1) / 2; i++)
+                        for (int i = 0; i < numOfVerticesOnEdgeWholeTriangle - 1; i++) // stop at last line
                         {
                             parent_current += parent_lineLength;
                             parent_lineLength++;
                         }
-                        child_lineLength = parent_lineLength;
+                        parent_current += (parent_lineLength - 1) / 2; // move to middle
+                        child_lineLength = 1;
                         child_currentOnLine = 0;
                         break;
                 }
@@ -508,7 +511,7 @@ namespace MyGame
             }
 
             // DEBUG
-            for(int i=0; i <positionsFinal.Count; i++)
+            for (int i = 0; i < positionsFinal.Count; i++)
             {
                 normalsFinal[i].Normalize();
                 normalsInitial[i].Normalize();
@@ -645,6 +648,9 @@ namespace MyGame
                 chunkToPriority.Clear();
                 doRun = true;
                 int numThreads = Environment.ProcessorCount;
+#if DEBUG
+                numThreads = 1;
+#endif
                 for (int i = 0; i < numThreads; i++)
                 {
                     var threadIndex = i;

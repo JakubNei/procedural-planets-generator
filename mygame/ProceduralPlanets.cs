@@ -43,7 +43,7 @@ namespace MyGame
             planetMaterial.Uniforms.Set("param_rock", Factory.GetTexture2D("textures/rock.jpg"));
             planetMaterial.Uniforms.Set("param_snow", Factory.GetTexture2D("textures/snow.jpg"));
             planetMaterial.Uniforms.Set("param_perlinNoise", Factory.GetTexture2D("textures/perlin_noise.png"));
-            
+
 
 
 
@@ -75,7 +75,8 @@ namespace MyGame
             //planet.radiusVariation = 100;
             planet.radius = 100; // 6371000 earth radius
             planet.radiusVariation = 5;
-            planet.chunkNumberOfVerticesOnEdge = 20; // 20
+            //planet.chunkNumberOfVerticesOnEdge = 20; // 20
+            planet.chunkNumberOfVerticesOnEdge = 20;
             planet.subdivisionMaxRecurisonDepth = 11;
             planet.startingRadiusSubdivisionModifier = 2f;
             planet.subdivisionSphereRadiusModifier = 0.5f;
@@ -102,7 +103,8 @@ namespace MyGame
             var planet = planets.OrderBy(p => p.Transform.Position.Distance(camPos) - p.radius).First();
 
             // make cam on top of the planet
-            if(clampCameraToSurface) {
+            if (clampCameraToSurface)
+            {
                 var p = (cam.Transform.Position - planet.Transform.Position).ToVector3d();
                 var camPosS = planet.CalestialToSpherical(p);
                 var h = 1 + planet.GetHeight(p);
