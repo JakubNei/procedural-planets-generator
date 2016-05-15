@@ -12,20 +12,19 @@ namespace MyEngine.Components
     [ComponentSetting(allowMultiple = false)]
     public partial class Transform : Component
     {
-        internal Vector3 m_position = Vector3.Zero;
-        internal Vector3 m_scale = Vector3.One;
-        internal Quaternion m_rotation = Quaternion.Identity;
+        WorldPos m_position = WorldPos.Zero;
+        Vector3 m_scale = Vector3.One;
+        Quaternion m_rotation = Quaternion.Identity;
 
         public Transform(Entity entity) : base(entity)
         {
         }
 
-        public Vector3 Position
+        public WorldPos Position
         {
             set
             {
                 m_position = value;
-                shouldRecalculateMatrixes = true;
                 // TODO
                 // Entity.RaiseOnChanged(ChangedFlags.Position);
             }
@@ -39,7 +38,6 @@ namespace MyEngine.Components
             set
             {
                 m_scale = value;
-                shouldRecalculateMatrixes = true;
                 // TODO
                 // Entity.RaiseOnChanged(ChangedFlags.Scale);
             }
@@ -53,7 +51,6 @@ namespace MyEngine.Components
             set
             {
                 m_rotation = value;
-                shouldRecalculateMatrixes = true;
                 // TODO
                 // Entity.RaiseOnChanged(ChangedFlags.Rotation);
             }
@@ -93,37 +90,17 @@ namespace MyEngine.Components
             }
         }
         
-
-        public Matrix4 LocalToWorldMatrix
+        public Matrix4 GetLocalToWorldMatrix(WorldPos viewPointPos)
         {
-            get
-            {
-                if (shouldRecalculateMatrixes) RecalculateMatrix();
-                return m_LocalToWorldMatrix;
-            }
-        }
-        public Matrix4 WorldToLocalMatrix
-        {
-            get
-            {
-                if (shouldRecalculateMatrixes) RecalculateMatrix();
-                return m_WorldToLocalMatrix;
-            }
-        }
-
-        bool shouldRecalculateMatrixes = false;
-        Matrix4 m_LocalToWorldMatrix;
-        Matrix4 m_WorldToLocalMatrix;
-        void RecalculateMatrix()
-        {
-            m_LocalToWorldMatrix =
+            return
                 Matrix4.CreateScale(Scale) *
                 Matrix4.CreateFromQuaternion(Rotation) *
-                Matrix4.CreateTranslation(Position);
+                Matrix4.CreateTranslation(viewPointPos.Towards(Position).ToVector3());
+        }
 
-            m_WorldToLocalMatrix = Matrix4.Invert(m_LocalToWorldMatrix);
-
-            shouldRecalculateMatrixes = false;
+        public Matrix4 GetWorldToLocalMatrix(WorldPos viewPointPos)
+        {
+            return Matrix4.Invert(GetLocalToWorldMatrix(viewPointPos));
         }
 
         public void Translate(Vector3 translation, Space relativeTo = Space.Self)
@@ -139,7 +116,7 @@ namespace MyEngine.Components
             }
         }
 
-        
+        /*
         /// <summary>
         /// Transforms position from local space to world space.
         /// </summary>
@@ -153,7 +130,7 @@ namespace MyEngine.Components
             return world;
         }
 
-
+        
         /// <summary>
         /// Transforms position from world space to local space. The opposite of Transform.TransformPoint.
         /// </summary>
@@ -183,15 +160,15 @@ namespace MyEngine.Components
             Vector3.TransformVector(ref world, ref mat, out local);
             return local;
         }
-
-        public void LookAt(Vector3 worldPosition, Vector3 worldUp)
+        */
+        public void LookAt(WorldPos worldPosition, Vector3 worldUp)
         {            
-            this.Rotation = Matrix4.LookAt(this.Position, worldPosition, worldUp).ExtractRotation();
+            this.Rotation = Matrix4.LookAt(Vector3.Zero, this.Position.Towards(worldPosition).ToVector3(), worldUp).ExtractRotation();
         }
-        public void LookAt(Vector3 worldPosition)
+        public void LookAt(WorldPos worldPosition)
         {
             var dir = this.Position.Towards(worldPosition);
-            this.Rotation = dir.LookRot();
+            this.Rotation = dir.ToVector3().LookRot();
         }
 
         //public Matrix4 GetScalePosRotMatrix()

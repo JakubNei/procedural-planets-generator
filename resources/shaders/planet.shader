@@ -138,10 +138,10 @@ vec3 getColor(float distance) {
 	*/
 
 	vec3 c = 
-		triPlanar(param_rock, i.worldPos, i.normal, 0.005) * 0.3 +
-		triPlanar(param_rock, i.worldPos, i.normal, 0.05) * 0.3 +
-		triPlanar(param_rock, i.worldPos, i.normal, 0.5) * 0.3;
-	return c;
+		triPlanar(param_rock, i.worldPos, i.normal, 0.005) * 2+
+		triPlanar(param_rock, i.worldPos, i.normal, 0.05) +
+		triPlanar(param_rock, i.worldPos, i.normal, 0.5) * 2;
+	return c/5.0;
 }
 
 

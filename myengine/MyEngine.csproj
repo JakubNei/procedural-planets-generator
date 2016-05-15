@@ -83,6 +83,7 @@
       <DependentUpon>MyMath_template.tt</DependentUpon>
     </Compile>
     <Compile Include="Math\PerlinD.cs" />
+    <Compile Include="Math\WorldPos.cs" />
     <Compile Include="Math\WorleyD.cs" />
     <Compile Include="Panels\DebugValuesTable.cs">
       <SubType>Form</SubType>
@@ -126,7 +127,7 @@
     <Compile Include="Math\QuaternionUtility.cs" />
     <Compile Include="Math\GeometryUtility.cs" />
     <Compile Include="GameSystems\ResourceFolder.cs" />
-    <Compile Include="Math\Bounds.cs" />
+    <Compile Include="Math\LocalBounds.cs" />
     <Compile Include="Components\Camera.cs" />
     <Compile Include="Components\Component.cs" />
     <Compile Include="Cubemap.cs" />

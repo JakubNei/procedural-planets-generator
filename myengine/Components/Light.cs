@@ -26,7 +26,14 @@ namespace MyEngine.Components
         Hard,
         Soft,
     }
-    public class Light : Component, IDisposable
+
+    public interface ILight
+    {
+        bool HasShadows { get; }
+        ShadowMap ShadowMap { get; }
+        void UploadUBOdata(Camera camera, UniformBlock ubo, int lightIndex);
+    }
+    public class Light : Component, IDisposable, ILight
     {
 
         public LightType LighType = LightType.Point;
@@ -58,13 +65,13 @@ namespace MyEngine.Components
         {
             entity.Scene.RenderData.Add(this);
         }
-
-        public void UploadUBOdata(UniformBlock ubo, int lightIndex) {
+        
+        public void UploadUBOdata(Camera camera, UniformBlock ubo, int lightIndex) {
 
             ubo.light.color = this.color;
 
             if (LighType == LightType.Directional) ubo.light.position = Vector3.Zero;
-            else ubo.light.position = this.Entity.Transform.Position;
+            else ubo.light.position = camera.ViewPointPosition.Towards(this.Entity.Transform.Position).ToVector3();
 
             if (LighType == LightType.Point) ubo.light.direction = Vector3.Zero;
             else ubo.light.direction = this.Entity.Transform.Forward;

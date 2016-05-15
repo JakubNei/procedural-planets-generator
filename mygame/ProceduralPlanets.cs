@@ -53,7 +53,7 @@ namespace MyGame
                 for (int i = 0; i < 1000; i++)
                 {
                     var e = scene.AddEntity("start dust #" + i);
-                    e.Transform.Position = new Vector3(random.Next(-ra, ra), random.Next(-ra, ra), random.Next(-ra, ra));
+                    e.Transform.Position = new WorldPos(random.Next(-ra, ra), random.Next(-ra, ra), random.Next(-ra, ra));
                     e.Transform.Scale *= 1f;
                     var r = e.AddComponent<MeshRenderer>();
                     r.Mesh = Factory.GetMesh("sphere.obj");
@@ -97,14 +97,14 @@ namespace MyGame
             planet.subdivisionMaxRecurisonDepth = 11;
             planet.startingRadiusSubdivisionModifier = 2f;
             planet.subdivisionSphereRadiusModifier = 0.5f;
-            planet.Transform.Position = new Vector3(1000, -100, 1000);
+            planet.Transform.Position = new WorldPos(1000, -100, 1000);
             planet.Start();
             planet.planetMaterial = planetMaterial;
             planets.Add(planet);
 
             if (moveCameraToSurfaceOnStart)
             {
-                cam.Transform.Position = new Vector3((float)-planet.radius, 0, 0) + planet.Transform.Position;
+                cam.Transform.Position = new WorldPos((float)-planet.radius, 0, 0) + planet.Transform.Position;
             }
 
         }
@@ -128,7 +128,7 @@ namespace MyGame
                 if (camPosS.altitude < h)
                 {
                     camPosS.altitude = h;
-                    cam.Transform.Position = planet.SphericalToCalestial(camPosS).ToVector3() + planet.Transform.Position;
+                    cam.Transform.Position = planet.Transform.Position + planet.SphericalToCalestial(camPosS).ToVector3();
                 }
             }
 

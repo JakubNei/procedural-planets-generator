@@ -48,10 +48,8 @@ namespace MyGame
                         gr.lightWorldRadius = 1000;
                         entity.EventSystem.Register((MyEngine.Events.GraphicsUpdate e) =>
                         {
-                            var mp = cam.GetViewMat() * cam.GetProjectionMat();
-                            var p = Vector4.Transform(new Vector4(sunEntity.Transform.Position, 1), mp);
-                            gr.lightScreenPos = (p.Xyz / p.W) / 2 + Vector3.One / 2;
-                            gr.lightWorldPos = sunEntity.Transform.Position;
+                            gr.lightScreenPos = cam.GetScreenPos(sunEntity.Transform.Position);
+                            gr.lightWorldPos = cam.Transform.Position.Towards(sunEntity.Transform.Position).ToVector3();
                         });
 
                     }
@@ -67,8 +65,8 @@ namespace MyGame
                     });
 
 
-                    entity.Transform.Position = (new Vector3(1, 1, 1)) * 100;
-                    entity.Transform.LookAt(new Vector3(0, 0, 100));
+                    entity.Transform.Position = new WorldPos(100, 100, 100);
+                    entity.Transform.LookAt(new WorldPos(0, 0, 100));
 
                     //engine.camera.entity.AddComponent<SSAO>();
 
@@ -93,7 +91,7 @@ namespace MyGame
                 {
                     var entity = sunEntity = scene.AddEntity();
                     entity.Transform.Scale *= 1000;
-                    entity.Transform.Position = new Vector3(-2000, -2000, 100);
+                    entity.Transform.Position = new WorldPos(-2000, -2000, 100);
 
                     var renderer = entity.AddComponent<MeshRenderer>();
                     renderer.Mesh = Factory.GetMesh("sphere_smooth.obj");

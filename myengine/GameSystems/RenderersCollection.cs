@@ -11,14 +11,14 @@ namespace MyEngine
 {
     public class RenderData
     {
-        public SparseList<Renderer> Renderers
+        public SparseList<IRenderable> Renderers
         {
             get
             {
                 return geometryRenderers;
             }
         }
-        public SparseList<Renderer> ShadowCasters
+        public SparseList<IRenderable> ShadowCasters
         {
             get
             {
@@ -26,7 +26,7 @@ namespace MyEngine
             }
         }
 
-        public SparseList<Light> Lights
+        public SparseList<ILight> Lights
         {
             get
             {
@@ -34,32 +34,32 @@ namespace MyEngine
             }
         }
 
-        SparseList<Renderer> geometryRenderers = new SparseList<Renderer>(1000);
-        SparseList<Renderer> shadowCasters = new SparseList<Renderer>(1000);
-        SparseList<Light> lights = new SparseList<Light>(1000);
+        SparseList<IRenderable> geometryRenderers = new SparseList<IRenderable>(1000);
+        SparseList<IRenderable> shadowCasters = new SparseList<IRenderable>(1000);
+        SparseList<ILight> lights = new SparseList<ILight>(1000);
 
-        public void AddGeometry(Renderer renderer)
+        public void AddGeometry(IRenderable renderer)
         {
             lock (geometryRenderers)
             {
                 geometryRenderers.Add(renderer);
             }
         }
-        public void RemoveGeometry(Renderer renderer)
+        public void RemoveGeometry(IRenderable renderer)
         {
             lock (geometryRenderers)
             {
                 geometryRenderers.Remove(renderer);
             }
         }
-        public void AddShadowCaster(Renderer renderer)
+        public void AddShadowCaster(IRenderable renderer)
         {
             lock (shadowCasters)
             {
                 shadowCasters.Add(renderer);
             }
         }
-        public void RemoveShadowCaster(Renderer renderer)
+        public void RemoveShadowCaster(IRenderable renderer)
         {
             lock (shadowCasters)
             {
@@ -67,14 +67,14 @@ namespace MyEngine
             }
         }
 
-        public void Add(Light light)
+        public void Add(ILight light)
         {
             lock (lights)
             {
                 lights.Add(light);
             }
         }
-        public void Remove(Light light)
+        public void Remove(ILight light)
         {
             lock (lights)
             {

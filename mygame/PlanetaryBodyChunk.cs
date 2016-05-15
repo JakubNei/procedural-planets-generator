@@ -652,7 +652,7 @@ namespace MyGame
             // help from http://stackoverflow.com/questions/3717226/radius-of-projected-sphere
             var sphere = noElevationRange.ToBoundingSphere();
             var radiusWorldSpace = sphere.radius;
-            var sphereDistanceToCameraWorldSpace = cam.Transform.Position.Distance(planetaryBody.Transform.TransformPoint(sphere.center.ToVector3()));
+            var sphereDistanceToCameraWorldSpace = cam.Transform.Position.Distance(planetaryBody.Transform.Position + sphere.center.ToVector3());
             var fov = cam.fieldOfView;
             var radiusCameraSpace = radiusWorldSpace * MyMath.Cot(fov / 2) / sphereDistanceToCameraWorldSpace;
             var priority = sphereDistanceToCameraWorldSpace / radiusCameraSpace;

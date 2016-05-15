@@ -44,13 +44,8 @@ namespace MyEngine
     }
     */
 
-    public interface IDrawable
-    {
-        void Draw();
-        void UploadDataToGpu();
-    }
 
-    public class Mesh : IUnloadable, IDrawable
+    public class Mesh : IUnloadable
     {
         public enum ChangedFlags
         {

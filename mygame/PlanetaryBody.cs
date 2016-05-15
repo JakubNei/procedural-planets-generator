@@ -313,7 +313,7 @@ namespace MyGame
                 // if visible, update final positions weight according to distance
                 if (chunk.renderer.RenderingMode == RenderingMode.RenderGeometryAndCastShadows)
                 {
-                    var camPos = Scene.mainCamera.Transform.Position - this.Transform.Position;
+                    var camPos = (Scene.mainCamera.Transform.Position - this.Transform.Position).ToVector3();
                     var d = chunk.renderer.Mesh.Vertices.FindClosest(p => p.Distance(camPos)).Distance(camPos);
                     var e0 = sphere.radius / subdivisionSphereRadiusModifier_debugModified;
                     var e1 = e0 * subdivisionSphereRadiusModifier_debugModified;
@@ -345,7 +345,7 @@ namespace MyGame
         }
 
 
-        public void TrySubdivideOver(Vector3 pos)
+        public void TrySubdivideOver(WorldPos pos)
         {
             var sphere = new Sphere((pos - Transform.Position).ToVector3d(), this.radius * startingRadiusSubdivisionModifier);
             foreach (PlanetaryBodyChunk rootChunk in this.rootChunks)

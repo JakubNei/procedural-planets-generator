@@ -80,7 +80,7 @@ namespace MyEngine
         public void BindUniforms(Shader shader)
         {
 
-            var shadowMatrix = this.shadowViewCamera.GetViewMat() * this.shadowViewCamera.GetProjectionMat();
+            var shadowMatrix = this.shadowViewCamera.GetRotationMatrix() * this.shadowViewCamera.GetProjectionMat();
 
             // projection matrix is in range -1 1, but it is rendered into rexture which is in range 0 1
             // so lets move it from -1 1 into 0 1 range, since we are reading from texture

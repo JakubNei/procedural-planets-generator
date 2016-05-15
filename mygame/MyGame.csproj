@@ -48,7 +48,6 @@
     <Compile Include="DebugShowFrustumPlanes.cs" />
     <Compile Include="FirstPersonCamera.cs" />
     <Compile Include="DrawBounds.cs" />
-    <Compile Include="LightMovement.cs" />
     <Compile Include="MoveWithArrowKeys.cs" />
     <Compile Include="PlanetaryBody.cs" />
     <Compile Include="PlanetaryBodyChunk.cs" />

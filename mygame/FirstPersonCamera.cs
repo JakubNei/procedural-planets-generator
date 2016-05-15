@@ -144,8 +144,8 @@ namespace MyGame
              
             if (alignToEnabled)
             {
-                alignToPosition = new Vector3(1000, -100, 1000);
-                currentUp = alignToPosition.Towards(Transform.Position).Normalized();
+                //alignToPosition = new Vector3(1000, -100, 1000);
+                //currentUp = alignToPosition.Towards(Transform.Position).Normalized();
             }
 
 

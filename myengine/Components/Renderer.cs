@@ -5,7 +5,33 @@ using System.Text;
 
 namespace MyEngine.Components
 {
-    public abstract class Renderer : Component
+    public enum RenderStatus
+    {
+        NotRendered = 0,
+        Rendered = (1 << 1),
+        RenderedForced = (1 << 2),
+        Visible = (1 << 3),
+        RenderedAndVisible = (1 << 1) | (1 << 3),
+        Unknown = (1 << 9),
+    }
+    public interface IRenderable
+    {
+        Material Material { get; }
+        bool ForcePassFrustumCulling { get; }
+        bool ShouldRenderGeometry { get; }
+        bool ShouldCastShadows { get; }
+        Bounds GetBounds(WorldPos viewPointPos);
+        void UploadUBOandDraw(Camera camera, UniformBlock ubo);
+        void SetCameraRenderStatus(Camera camera, RenderStatus renderStatus);
+
+        /*
+        bool ShouldRenderGeometry { get; }
+        bool ShouldCastShadows { get; }
+        Material Material { get; }
+        */
+    }
+
+    public abstract class Renderer : Component, IRenderable
     {
         public virtual bool ShouldRenderGeometry
         {
@@ -66,29 +92,19 @@ namespace MyEngine.Components
         }
 
 
-        public enum RenderStatus
-        {
-            NotRendered = 0,
-            Rendered = (1 << 1),
-            RenderedForced = (1 << 2),
-            Visible = (1 << 3),
-            RenderedAndVisible = (1 << 1) | (1 << 3),
-            Unknown = (1 << 9),
-        }
-
         Dictionary<Camera, RenderStatus> cameraToRenderStatus = new Dictionary<Camera, RenderStatus>();
 
-        public virtual Bounds bounds { set; get; }
-        public virtual bool AllowsFrustumCulling { get; set; }
+        public virtual bool ForcePassFrustumCulling { get; set; }
 
         bool last_ShouldRenderGeometry = false;
         bool last_ShouldCastShadows = false;
 
+
         public Renderer(Entity entity) : base(entity)
         {
-            AllowsFrustumCulling = true;
             ShouldRenderGeometryOrShouldCastShadowsHasChanged();
         }
+        public abstract Bounds GetBounds(WorldPos viewPointPos);
 
         public virtual void UploadUBOandDraw(Camera camera, UniformBlock ubo)
         {

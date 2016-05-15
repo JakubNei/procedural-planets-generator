@@ -13,8 +13,6 @@ namespace MyEngine.Components
     public class Camera : ComponentWithShortcuts
     {
 
-        public static Camera main { get; internal set; }
-
         public float aspect = 0.8f;
         public float fieldOfView = 45.0f;
         public float nearClipPlane = 0.1f;
@@ -24,6 +22,14 @@ namespace MyEngine.Components
         public int pixelWidth;
         public int pixelHeight;
         Vector2 screenSize = Vector2.Zero;
+
+        public WorldPos ViewPointPosition
+        {
+            get
+            {
+                return this.Entity.Transform.Position;
+            }
+        }
 
         public Vector3 ambientColor = Vector3.One * 0.1f;
 
@@ -50,19 +56,24 @@ namespace MyEngine.Components
         }
         
 
-        public Matrix4 GetViewMat()
+        public Matrix4 GetRotationMatrix()
         {
             return
-                Matrix4.CreateTranslation(-Transform.Position) *
                 Matrix4.CreateFromQuaternion(Quaternion.Invert(Transform.Rotation));
+        }
+
+        public Vector3 GetScreenPos(WorldPos worldPos)
+        {
+            var mp = GetRotationMatrix() * GetProjectionMat();
+            var p = Vector4.Transform(new Vector4(this.Transform.Position.Towards(worldPos).ToVector3(), 1), mp);
+            return (p.Xyz / p.W) / 2 + Vector3.One / 2;
         }
 
         public void UploadDataToUBO(UniformBlock ubo)
         {
-            ubo.engine.viewMatrix = GetViewMat();
+            ubo.engine.viewMatrix = GetRotationMatrix();
             ubo.engine.projectionMatrix = GetProjectionMat();
             ubo.engine.viewProjectionMatrix = ubo.engine.viewMatrix * ubo.engine.projectionMatrix;
-            ubo.engine.cameraPosition = this.Entity.Transform.Position;
             ubo.engine.screenSize = this.screenSize;
             ubo.engine.nearClipPlane = this.nearClipPlane;
             ubo.engine.farClipPlane = this.farClipPlane;
@@ -79,7 +90,7 @@ namespace MyEngine.Components
         public Plane[] GetFrustumPlanes()
         {
             var p = new Plane[6];
-            var m = GetViewMat() * GetProjectionMat();
+            var m = GetRotationMatrix() * GetProjectionMat();
 
             const int FRUSTUM_RIGHT = 0;
             const int FRUSTUM_LEFT = 1;

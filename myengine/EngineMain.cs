@@ -288,7 +288,7 @@ namespace MyEngine
 
                                 if (renderer.ShouldRenderGeometry)
                                 {
-                                    if (renderer.AllowsFrustumCulling == false || GeometryUtility.TestPlanesAABB(frustrumPlanes, renderer.bounds))
+                                    if (renderer.ForcePassFrustumCulling || GeometryUtility.TestPlanesAABB(frustrumPlanes, renderer.GetBounds(camera.Transform.Position)))
                                     {
                                         renderer.Material.BeforeBindCallback();
                                         renderer.Material.Uniforms.SendAllUniformsTo(renderer.Material.GBufferShader.Uniforms);
@@ -296,12 +296,12 @@ namespace MyEngine
                                         renderer.UploadUBOandDraw(camera, ubo);
                                         countMeshesRendered++;
 
-                                        if (renderer.AllowsFrustumCulling == false) renderer.SetCameraRenderStatus(camera, Renderer.RenderStatus.RenderedForced);
-                                        else renderer.SetCameraRenderStatus(camera, Renderer.RenderStatus.RenderedAndVisible);
+                                        if (renderer.ForcePassFrustumCulling) renderer.SetCameraRenderStatus(camera, RenderStatus.RenderedForced);
+                                        else renderer.SetCameraRenderStatus(camera, RenderStatus.RenderedAndVisible);
                                     }
                                     else
                                     {
-                                        renderer.SetCameraRenderStatus(camera, Renderer.RenderStatus.NotRendered);
+                                        renderer.SetCameraRenderStatus(camera, RenderStatus.NotRendered);
                                     }
                                 }
                             }
@@ -373,7 +373,7 @@ namespace MyEngine
                             GL.DepthMask(false);
 
 
-                            light.UploadUBOdata(ubo, lightIndex);
+                            light.UploadUBOdata(camera, ubo, lightIndex);
 
                             var shader = Factory.GetShader("internal/deferred.oneLight.shader");
                             gBuffer.BindForLightPass(shader);

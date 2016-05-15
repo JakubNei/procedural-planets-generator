@@ -79,40 +79,31 @@ namespace MyEngine.Components
             Material = new Material();
         }
 
-        /// <summary>
-        /// World space bounds of the associatd mesh and transform.
-        /// </summary>
-        public override Bounds bounds
+
+        public override Bounds GetBounds(WorldPos viewPointPos)
         {
-            get
+            var relativePos = viewPointPos.Towards(Entity.Transform.Position).ToVector3();
+            if (Mesh == null)
             {
-                if(Mesh == null)
-                {
-                    return new Bounds(Entity.Transform.Position, Vector3.Zero);
-                }
-
-                var boundsCenter = Entity.Transform.Position + (Mesh.bounds.Center * Entity.Transform.Scale).RotateBy(Entity.Transform.Rotation);
-                var boundsExtents = (Mesh.bounds.Extents * Entity.Transform.Scale).RotateBy(Entity.Transform.Rotation);
-
-                var bounds = new Bounds(boundsCenter, Vector3.Zero);
-                for (int i = 0; i < 8; i++)
-                {
-                    bounds.Encapsulate(boundsCenter + boundsExtents.CompomentWiseMult(extentsTransformsToEdges[i]));
-                }
-                return bounds;
-
-                /*var bounds = mesh.bounds;
-                bounds.center = bounds.center * transform.scale + transform.position;
-                bounds.extents *= transform.scale;
-                return bounds;*/
+                return new Bounds(relativePos, Vector3.Zero);
             }
+
+            var boundsCenter = relativePos + (Mesh.bounds.Center * Entity.Transform.Scale).RotateBy(Entity.Transform.Rotation);
+            var boundsExtents = (Mesh.bounds.Extents * Entity.Transform.Scale).RotateBy(Entity.Transform.Rotation);
+
+            var bounds = new Bounds(boundsCenter, Vector3.Zero);
+            for (int i = 0; i < 8; i++)
+            {
+                bounds.Encapsulate(boundsCenter + boundsExtents.CompomentWiseMult(extentsTransformsToEdges[i]));
+            }
+            return bounds;
         }
 
 
         public override void UploadUBOandDraw(Camera camera, UniformBlock ubo)
         {
-            var modelMat = this.Entity.Transform.LocalToWorldMatrix;
-            var modelViewMat = modelMat * camera.GetViewMat();
+            var modelMat = this.Entity.Transform.GetLocalToWorldMatrix(camera.Transform.Position);
+            var modelViewMat = modelMat * camera.GetRotationMatrix();
             ubo.model.modelMatrix = modelMat;
             ubo.model.modelViewMatrix = modelViewMat;
             ubo.model.modelViewProjectionMatrix = modelViewMat * camera.GetProjectionMat();
