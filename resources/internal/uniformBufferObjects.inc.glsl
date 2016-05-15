@@ -34,25 +34,6 @@ layout(std140) uniform model_block {
 
 
 
-struct MaterialData {
-	vec4 albedo;
-	sampler2D albedoTexture;
-	float metallic;
-	sampler2D metallicTexture;
-	float smoothness;
-	sampler2D smoothnessTexture;
-	vec3 emission;
-
-	bool useNormalMapping;
-	bool useParallaxMapping;
-	sampler2D normalMap;
-	sampler2D depthMap;
-};
-uniform MaterialData material;
-
-uniform mat4 shadowMapMatrix;
-
-
 
 layout(std140) uniform light_block {
 	vec3 color;

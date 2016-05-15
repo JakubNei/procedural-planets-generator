@@ -126,6 +126,7 @@ float rand(vec2 co){
 
 vec3 getColor(float distance) {
 
+	/*
 	vec3 c;
 	vec3 c1 = triPlanar(param_rock, i.worldPos, i.normal, 0.5);  
 	vec3 c2 = triPlanar(param_moon, i.worldPos, i.normal, 0.5);  
@@ -134,6 +135,12 @@ vec3 getColor(float distance) {
 		c2,
 		clamp(snoise(i.worldPos/100, 10)*2, 0, 1)
 	);
+	*/
+
+	vec3 c = 
+		triPlanar(param_rock, i.worldPos, i.normal, 0.005) * 0.3 +
+		triPlanar(param_rock, i.worldPos, i.normal, 0.05) * 0.3 +
+		triPlanar(param_rock, i.worldPos, i.normal, 0.5) * 0.3;
 	return c;
 }
 

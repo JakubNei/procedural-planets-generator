@@ -1,6 +1,27 @@
 [include internal/prependAll.shader]
 
 
+
+
+struct MaterialData {
+	vec4 albedo;
+	sampler2D albedoTexture;
+	float metallic;
+	sampler2D metallicTexture;
+	float smoothness;
+	sampler2D smoothnessTexture;
+	vec3 emission;
+
+	bool useNormalMapping;
+	bool useParallaxMapping;
+	sampler2D normalMap;
+	sampler2D depthMap;
+};
+uniform MaterialData material;
+
+uniform mat4 shadowMapMatrix;
+
+
 [VertexShader]
 
 layout(location = 0) in vec3 in_position;
@@ -110,7 +131,7 @@ void main()
 
 
 	//DEBUG
-	out_color = vec4(0,1,0,1);
+	//out_color = vec4(0,1,0,1);
 	//LightData light = lights[0];
 	//out_color = vec3( dot(out_normal, normalize(lights[0].position-out_position)) );
 	//out_color = vec3(   pow(max(dot(normalize(engine.cameraPosition-out_position), reflect( normalize(lights[0].position-out_position),out_normal)),0), 100) );

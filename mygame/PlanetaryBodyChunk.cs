@@ -211,7 +211,7 @@ namespace MyGame
         int numbetOfChunksGenerated = 0;
         bool isGenerated = false;
 
-        static Dictionary<int, List<int>> numberOfVerticesOnEdge_To_oneTimeGeneratedIndicies = new Dictionary<int, List<int>>();
+        static Dictionary<int, List<int>> numberOfVerticesOnEdge_To_oneTimeGeneratedIndicies;
         static void GetIndiciesList(int numberOfVerticesOnEdge, out List<int> newIndicies)
         {
 
@@ -226,6 +226,7 @@ namespace MyGame
 
             */
             List<int> oneTimeGeneratedIndicies;
+            if(numberOfVerticesOnEdge_To_oneTimeGeneratedIndicies == null)  numberOfVerticesOnEdge_To_oneTimeGeneratedIndicies = new Dictionary<int, List<int>>();
             if (numberOfVerticesOnEdge_To_oneTimeGeneratedIndicies.TryGetValue(numberOfVerticesOnEdge, out oneTimeGeneratedIndicies) == false)
             {
                 oneTimeGeneratedIndicies = new List<int>();

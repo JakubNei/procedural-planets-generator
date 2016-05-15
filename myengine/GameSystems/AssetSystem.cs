@@ -13,6 +13,13 @@ namespace MyEngine
 
         string rootResourceFolderPath;
 
+        public Dictionary<string, Type> extensionToTypeAssociation = new Dictionary<string, Type>()
+        {
+            {"obj", typeof(Mesh)},
+            {"glsl", typeof(Shader)},
+            {"shader", typeof(Shader)},
+        };
+
         public AssetSystem(string rootResourceFolderPath = "../../../Resources/")
         {
             this.rootResourceFolderPath = rootResourceFolderPath;

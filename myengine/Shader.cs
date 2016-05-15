@@ -40,8 +40,8 @@ namespace MyEngine
 
         static Shader()
         {
-            DefaultGBufferShader = Factory.GetShader("internal/deferred.gBuffer.standard.shader");
-            DefaultDepthGrabShader = Factory.GetShader("internal/depthGrab.standard.shader");
+            DefaultGBufferShader = Factory.GetShader("internal/deferred.gBuffer.PBR.shader");
+            DefaultDepthGrabShader = Factory.GetShader("internal/depthGrab.default.shader");
         }
 
         public Shader(Asset asset)

@@ -67,6 +67,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Vector3Extensions_template.tt</DependentUpon>
     </Compile>
+    <Compile Include="Extensions\RandomExtensions.cs" />
     <Compile Include="GameSystems\RenderersCollection.cs" />
     <Content Include="Extensions\OpenTK\Vector3Extensions_template.tt">
       <Generator>TextTemplatingFileGenerator</Generator>

@@ -46,7 +46,24 @@ namespace MyGame
 
 
 
-
+            
+            {
+                var random = new Random();
+                var ra = 2000f;
+                for (int i = 0; i < 1000; i++)
+                {
+                    var e = scene.AddEntity("start dust #" + i);
+                    e.Transform.Position = new Vector3(random.Next(-ra, ra), random.Next(-ra, ra), random.Next(-ra, ra));
+                    e.Transform.Scale *= 1f;
+                    var r = e.AddComponent<MeshRenderer>();
+                    r.Mesh = Factory.GetMesh("sphere.obj");
+                    var m = new MaterialPBR();
+                    r.Material = m;
+                    m.GBufferShader = Factory.GetShader("internal/deferred.gBuffer.PBR.shader");
+                    m.albedo = new Vector4(10);
+                }
+            }
+            
 
 
             PlanetaryBody planet;
