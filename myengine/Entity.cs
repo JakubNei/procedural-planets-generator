@@ -11,7 +11,7 @@ using MyEngine.Components;
 
 namespace MyEngine
 {
-    public class Entity : IDisposable
+    public class Entity : System.IDisposable
     {
         public EventSystem EventSystem { get; private set; }
 
@@ -105,9 +105,9 @@ namespace MyEngine
                     return;
                 }
             }
-            if (component is IDisposable)
+            if (component is System.IDisposable)
             {
-                (component as IDisposable).Dispose();
+                (component as System.IDisposable).Dispose();
             }
         }
 

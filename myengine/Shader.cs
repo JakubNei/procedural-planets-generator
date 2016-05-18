@@ -10,7 +10,7 @@ using OpenTK.Graphics.OpenGL;
 
 namespace MyEngine
 {
-    public partial class Shader : IUnloadable
+    public partial class Shader : IDisposable
     {
         public const int positionLocation = 0;
         public const int normalLocation = 1;
@@ -53,11 +53,7 @@ namespace MyEngine
         }
 
 
-        public void Unload()
-        {
-            foreach (var p in shaderPartHandles) GL.DeleteShader(p);
-            GL.DeleteProgram(shaderProgramHandle);
-        }
+        
 
 
         static void OnChanged(object source, FileSystemEventArgs e)
@@ -106,7 +102,7 @@ namespace MyEngine
             if (shouldReload)
             {
                 Debug.Info("Reloading " + asset.VirtualPath);
-                Unload();
+                Dispose();
                 Load();
                 Uniforms.MarkAllUniformsAsChanged();
                 shouldReload = false;
@@ -227,7 +223,11 @@ namespace MyEngine
             }
             return location;
         }
-        
 
+        public void Dispose()
+        {
+            foreach (var p in shaderPartHandles) GL.DeleteShader(p);
+            GL.DeleteProgram(shaderProgramHandle);
+        }
     }
 }

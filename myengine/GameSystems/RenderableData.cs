@@ -9,7 +9,7 @@ using MyEngine.Events;
 
 namespace MyEngine
 {
-    public class RenderData
+    public class RenderableData
     {
         public SparseList<IRenderable> Renderers
         {

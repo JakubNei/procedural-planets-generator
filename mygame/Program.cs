@@ -55,7 +55,7 @@ namespace MyGame
                     }
 
                     string skyboxName = "skybox/generated/";
-                    engine.skyboxCubeMap = Factory.GetCubeMap(new[] {
+                    scene.skyBox = Factory.GetCubeMap(new[] {
                         skyboxName + "left.png",
                         skyboxName + "right.png",
                         skyboxName + "top.png",

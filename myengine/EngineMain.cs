@@ -42,7 +42,7 @@ namespace MyEngine
             TargetRenderFrequency = 0;
 
             //Texture2D.InitTexture2D();
-            UnloadFactory.Set(ref ubo, new UniformBlock());
+            ubo = new UniformBlock();
             //new PhysicsUsage.PhysicsManager();
             Asset = new AssetSystem();
             Input = new InputSystem(this);
@@ -56,19 +56,15 @@ namespace MyEngine
             //    var winForm = new Panels.DebugValuesTable();
             //    winForm.Show();
             //}
-
+            renderManager = new RenderManager(eventSystem);
         }
-
+        RenderManager renderManager;
+        Events.EventSystem eventSystem = new Events.EventSystem();
 
         System.Diagnostics.Stopwatch stopwatchSinceStart = new System.Diagnostics.Stopwatch();
 
-        public Cubemap skyboxCubeMap;
 
-
-        internal UnloadFactory unloadFactory = new UnloadFactory();
         internal static UniformBlock ubo;
-        Mesh quadMesh;
-        Mesh skyboxMesh;
         Shader finalDrawShader;
 
         public SceneSystem AddScene()
@@ -81,9 +77,6 @@ namespace MyEngine
 
         protected override void OnLoad(System.EventArgs e)
         {
-
-            quadMesh = Factory.GetMesh("internal/quad.obj");
-            skyboxMesh = Factory.GetMesh("internal/skybox.obj");
             finalDrawShader = Factory.GetShader("internal/finalDraw.glsl");
 
             foreach (StringName r in System.Enum.GetValues(typeof(StringName)))
@@ -111,45 +104,24 @@ namespace MyEngine
 
         protected override void OnUnload(EventArgs e)
         {
-            //PhysicsUsage.PhysicsManager.instance.CleanUp();
-            foreach (var i in UnloadFactory.unloadables)
-            {
-                i.Unload();
-            }
+
         }
-
-
-
-
-        DeferredGBuffer gBuffer;
-
 
         protected override void OnResize(EventArgs e)
         {
-            foreach (var scene in scenes)
-            {
-                scene.mainCamera.SetSize(ClientSize.Width, ClientSize.Height);
-            }
-
-            UnloadFactory.Set(ref gBuffer, new DeferredGBuffer(Width, Height));
-
-            //screenCenter = new Point(Bounds.Left + (Bounds.Width / 2), Bounds.Top + (Bounds.Height / 2));
-            //windowCenter = new Point(Width / 2, Height / 2);
-
-            Debug.Info("Windows resized to: width:" + ClientSize.Width + " height:" + ClientSize.Height);
+            var resizeEvent = new Events.WindowResized(Width, Height);
+            eventSystem.Raise(resizeEvent);
+            Debug.Info("Window resized to: width:" + resizeEvent.NewPixelWidth + " height:" + resizeEvent.NewPixelHeight);
         }
 
         public void AddScene(SceneSystem scene)
         {
+            eventSystem.PassEventsTo(scene.EventSystem);
             scenes.Add(scene);
         }
 
         bool drawNormalGBuffer = false;
-        bool drawGBufferContents = false;
-        bool drawLines = false;
-        bool enablePostProcessEffects = false;
-        bool debugBounds = true;
-        bool shadowsEnabled = true;
+        bool drawGBufferContents = false;        
 
         public override void Exit()
         {
@@ -199,8 +171,7 @@ namespace MyEngine
 
             if (this.Focused) Input.Update();
 
-            var scene = scenes[0];
-            scene.EventSystem.Raise(new MyEngine.Events.GraphicsUpdate(deltaTime));
+            eventSystem.Raise(new MyEngine.Events.GraphicsUpdate(deltaTime));
 
         }
 
@@ -217,213 +188,33 @@ namespace MyEngine
 
             //GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
-            var scene = scenes[0];
-
-            var camera = scene.mainCamera;
-            var allEntitys = scene.Entities;
-
-
             var countMeshesRendered = 0;
 
 
-            if (Input.GetKeyDown(OpenTK.Input.Key.F5)) Factory.ReloadAllShaders();
-            if (Input.GetKeyDown(OpenTK.Input.Key.F6)) shadowsEnabled = !shadowsEnabled;
-            if (Input.GetKeyDown(OpenTK.Input.Key.F7)) debugBounds = !debugBounds;
-            if (Input.GetKeyDown(OpenTK.Input.Key.F8)) enablePostProcessEffects = !enablePostProcessEffects;
-            if (Input.GetKeyDown(OpenTK.Input.Key.F9)) drawGBufferContents = !drawGBufferContents;
-            if (Input.GetKeyDown(OpenTK.Input.Key.F10)) drawNormalGBuffer = !drawNormalGBuffer;
-            if (Input.GetKeyDown(OpenTK.Input.Key.F11)) drawLines = !drawLines;
 
-
-            var frustrumPlanes = camera.GetFrustumPlanes();
-            var renderData = camera.RenderData;
-
-            var allRenderers = renderData.Renderers;
             {
-                camera.UploadDataToUBO(ubo); // bind camera view params
-                                             //GL.BeginQuery(QueryTarget.)
-
-                // G BUFFER GRAB PASS
-                {
-                    gBuffer.BindAllFrameBuffersForDrawing();
+                var scene = scenes[0];
+                var camera = scene.mainCamera;
+                var dataToRender = scene.DataToRender;
 
 
-                    GL.Enable(EnableCap.DepthTest);
-                    GL.DepthMask(true);
-                    GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit);
-
-                    // SKYBOX PASS
-                    if (skyboxCubeMap != null)
-                    {
-                        GL.DepthRange(0.999, 1);
-                        GL.DepthMask(false);
-
-                        var shader = Factory.GetShader("internal/deferred.skybox.shader");
-                        shader.Uniforms.Set("skyboxCubeMap", skyboxCubeMap);
-                        shader.Bind();
-
-                        skyboxMesh.Draw();
-                        GL.DepthRange(0, 1);
-                    }
+                if (Input.GetKeyDown(OpenTK.Input.Key.F5)) Factory.ReloadAllShaders();
+                if (Input.GetKeyDown(OpenTK.Input.Key.F6)) renderManager.shadowsEnabled = !renderManager.shadowsEnabled;
+                if (Input.GetKeyDown(OpenTK.Input.Key.F7)) renderManager.debugBounds = !renderManager.debugBounds;
+                if (Input.GetKeyDown(OpenTK.Input.Key.F8)) renderManager.enablePostProcessEffects = !renderManager.enablePostProcessEffects;
+                if (Input.GetKeyDown(OpenTK.Input.Key.F9)) drawGBufferContents = !drawGBufferContents;
+                if (Input.GetKeyDown(OpenTK.Input.Key.F10)) drawNormalGBuffer = !drawNormalGBuffer;
+                if (Input.GetKeyDown(OpenTK.Input.Key.F11)) renderManager.drawLines = !renderManager.drawLines;
 
 
 
-                    if (drawLines) GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
-                    else GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
-
-                    // RENDER ALL OBJECTS
-                    {
-                        GL.DepthMask(true);
-
-                        GL.Enable(EnableCap.CullFace);
-                        GL.Disable(EnableCap.Blend);
-                        GL.CullFace(CullFaceMode.Back);
-                        lock (allRenderers)
-                        {
-
-                            for (int i = 0; i < allRenderers.Count; i++)
-                            {
-                                var renderer = allRenderers[i];
-                                if (renderer == null) continue;
-
-                                if (renderer.ShouldRenderGeometry)
-                                {
-                                    if (renderer.ForcePassFrustumCulling || GeometryUtility.TestPlanesAABB(frustrumPlanes, renderer.GetBounds(camera.Transform.Position)))
-                                    {
-                                        renderer.Material.BeforeBindCallback();
-                                        renderer.Material.Uniforms.SendAllUniformsTo(renderer.Material.GBufferShader.Uniforms);
-                                        renderer.Material.GBufferShader.Bind();
-                                        renderer.UploadUBOandDraw(camera, ubo);
-                                        countMeshesRendered++;
-
-                                        if (renderer.ForcePassFrustumCulling) renderer.SetCameraRenderStatus(camera, RenderStatus.RenderedForced);
-                                        else renderer.SetCameraRenderStatus(camera, RenderStatus.RenderedAndVisible);
-                                    }
-                                    else
-                                    {
-                                        renderer.SetCameraRenderStatus(camera, RenderStatus.NotRendered);
-                                    }
-                                }
-                            }
-                        }
-
-                    }
-
-                    GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
-
-                }
-
-                #region Lights rendering
-
-                var allLights = renderData.Lights;
-                lock (allLights)
-                {
-                    for (int lightIndex = 0; lightIndex < allLights.Count; lightIndex++)
-                    {
-                        var light = allLights[lightIndex];
-                        if (light == null) continue;
-
-                        var shadowMap = light.ShadowMap;
-
-                        // SHADOW MAAPING
-                        if (shadowsEnabled && light.HasShadows)
-                        {
-
-                            //GL.Enable(EnableCap.CullFace);
-                            //GL.CullFace(CullFaceMode.Back);
-
-                            shadowMap.FrameBufferForWriting();
-
-                            GL.Enable(EnableCap.DepthTest);
-                            GL.DepthMask(true);
-
-                            shadowMap.Clear();
-
-
-
-                            shadowMap.shadowViewCamera.UploadDataToUBO(ubo);
-
-
-                            for (int i = 0; i < allRenderers.Count; i++)
-                            {
-                                var renderer = allRenderers[i];
-                                if (renderer == null) continue;
-
-                                //if (renderer.CanBeFrustumCulled == false || GeometryUtility.TestPlanesAABB(frustrumPlanes, renderer.bounds)) 
-                                {
-                                    renderer.Material.BeforeBindCallback();
-                                    renderer.Material.Uniforms.SendAllUniformsTo(renderer.Material.DepthGrabShader.Uniforms);
-                                    renderer.Material.DepthGrabShader.Bind();
-                                    renderer.UploadUBOandDraw(shadowMap.shadowViewCamera, ubo);
-                                }
-                            }
-
-                        }
-
-
-                        camera.UploadDataToUBO(ubo); // bind camera view params
-
-                        // G BUFFER LIGHT PASS
-
-                        {
-                            GL.Disable(EnableCap.CullFace);
-                            //GL.CullFace(CullFaceMode.Back);
-
-                            GL.Disable(EnableCap.DepthTest);
-                            GL.DepthMask(false);
-
-
-                            light.UploadUBOdata(camera, ubo, lightIndex);
-
-                            var shader = Factory.GetShader("internal/deferred.oneLight.shader");
-                            gBuffer.BindForLightPass(shader);
-                            if (shadowsEnabled && light.HasShadows)
-                            {
-                                shadowMap.BindUniforms(shader);
-                            }
-
-                            shader.Bind();
-
-                            GL.Enable(EnableCap.Blend);
-                            //GL.BlendEquationSeparate(BlendEquationMode.FuncAdd, BlendEquationMode.FuncAdd);
-                            //GL.BlendFunc(BlendingFactorSrc.SrcColor, BlendingFactorDest.SrcColor);                    
-                            GL.BlendEquation(BlendEquationMode.FuncAdd);
-                            GL.BlendFunc(BlendingFactorSrc.One, BlendingFactorDest.One);
-                            quadMesh.Draw();
-                            GL.Disable(EnableCap.Blend);
-
-                        }
-
-                    }
-
-                }
-
-                #endregion
-
+                renderManager.skyboxCubeMap = scene.skyBox;
+                renderManager.BuildRenderList(dataToRender.Renderers, camera);
+                renderManager.RenderAll(ubo, camera, dataToRender.Lights, camera.postProcessEffects);
             }
 
-            if (drawLines) GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
 
-            // POST PROCESS EFFECTs
-            if (enablePostProcessEffects)
-            {
-                GL.Disable(EnableCap.DepthTest);
-                GL.Disable(EnableCap.CullFace);
-                GL.Disable(EnableCap.Blend);
-
-                GL.Disable(EnableCap.DepthTest);
-                GL.DepthMask(false);
-
-                foreach (var pe in camera.postProcessEffects)
-                {
-                    if (pe.IsEnabled == false) continue;
-                    pe.BeforeBindCallBack();
-                    gBuffer.BindForPostProcessEffects(pe);
-                    pe.Shader.Bind();
-                    quadMesh.Draw();
-                }
-            }
-
+            var gBuffer = renderManager.gBuffer;
 
             // FINAL DRAW TO SCREEN
             {
@@ -440,7 +231,7 @@ namespace MyEngine
                 finalDrawShader.Uniforms.Set("finalDrawTexture", gBuffer.finalTextureToRead);
                 finalDrawShader.Bind();
 
-                quadMesh.Draw();
+                Mesh.Quad.Draw();
             }
 
             /*if(debugBounds)
@@ -501,7 +292,7 @@ namespace MyEngine
 
             SwapBuffers();
 
-            Debug.AddValue("countMeshesRendered", countMeshesRendered + "/" + allRenderers.NonNullCount);
+            Debug.AddValue("countMeshesRendered", countMeshesRendered + "/" + renderManager.CountRenderablesRendered);
 
         }
 

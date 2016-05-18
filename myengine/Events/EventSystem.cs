@@ -10,7 +10,7 @@ namespace MyEngine.Events
     {
         Dictionary<Type, Delegate> typeToCallbacks = new Dictionary<Type, Delegate>();
         HashSet<Delegate> allDelegates = new HashSet<Delegate>();
-
+        List<EventSystem> passEventsTo = new List<EventSystem>();
         public event Action<IEvent> OnAnyEventCalled;
 
 
@@ -23,6 +23,11 @@ namespace MyEngine.Events
                 delegat.DynamicInvoke(evt);
             }
             if (OnAnyEventCalled != null) OnAnyEventCalled(evt);
+            foreach (var e in passEventsTo) e.Raise(evt);
+        }
+        public void PassEventsTo(EventSystem eventSystem)
+        {
+            passEventsTo.Add(eventSystem);
         }
 
         public void Register<T>(Action<T> callback) where T : IEvent

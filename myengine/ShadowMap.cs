@@ -11,7 +11,7 @@ using MyEngine.Components;
 namespace MyEngine
 {
     // http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-16-shadow-mapping/
-    public class ShadowMap : IUnloadable
+    public class ShadowMap : IDisposable
     {
         public int frameBufferObjectHandle;
         public Camera shadowViewCamera;
@@ -62,10 +62,10 @@ namespace MyEngine
             GL.ReadBuffer(ReadBufferMode.None);
             GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0); //restore default FBO
         }
-        public void Unload()
+        public void Dispose()
         {
             GL.DeleteFramebuffer(frameBufferObjectHandle);
-            depthMap.Unload();
+            depthMap.Dispose();
         }
         public void Clear()
         {

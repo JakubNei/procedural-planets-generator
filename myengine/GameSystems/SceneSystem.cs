@@ -21,8 +21,8 @@ namespace MyEngine
             }
         }
 
-
-        public RenderData RenderData { get; private set; }
+        public Cubemap skyBox;
+        public RenderableData DataToRender { get; private set; }
 
         //public ISynchronizeInvoke SynchronizeInvoke { get; private set; }
         //DeferredSynchronizeInvoke.Owner deferredSynchronizeInvokeOwner;
@@ -47,7 +47,7 @@ namespace MyEngine
         {
             this.Engine = engine;
             this.EventSystem = new EventSystem();
-            this.RenderData = new RenderData();
+            this.DataToRender = new RenderableData();
             this.EventSystem.OnAnyEventCalled += (IEvent evt) =>
             {
                 foreach(var e in entities)
@@ -87,16 +87,6 @@ namespace MyEngine
                 entities.Remove(entity);
             }
         }
-      
-        public class RenderSettings
-        {
 
-        }
-
-
-        public void Render(RenderSettings settings)
-        {
-
-        }
     }
 }

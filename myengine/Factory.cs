@@ -17,7 +17,6 @@ namespace MyEngine
             {
                 s = new Shader(AssetSystem.Instance.FindAsset(asset));
                 allShaders[asset] = s;
-                UnloadFactory.Add(s);                
             }
             return s;
         }
@@ -44,7 +43,6 @@ namespace MyEngine
             {
                 s = ObjLoader.Load(AssetSystem.Instance.FindAsset(asset));
                 allMeshes[asset] = s;
-                UnloadFactory.Add(s);
             }
             return s;
         }

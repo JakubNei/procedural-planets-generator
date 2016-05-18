@@ -124,16 +124,16 @@ namespace MyEngine.Components
         {
             if (last_ShouldRenderGeometry != ShouldRenderGeometry)
             {
-                if (last_ShouldRenderGeometry) Entity.Scene.RenderData.RemoveGeometry(this);
-                if (ShouldRenderGeometry) Entity.Scene.RenderData.AddGeometry(this);
+                if (last_ShouldRenderGeometry) Entity.Scene.DataToRender.RemoveGeometry(this);
+                if (ShouldRenderGeometry) Entity.Scene.DataToRender.AddGeometry(this);
 
                 last_ShouldRenderGeometry = ShouldRenderGeometry;
             }
 
             if (last_ShouldCastShadows != ShouldCastShadows)
             {
-                if (last_ShouldCastShadows) Entity.Scene.RenderData.RemoveShadowCaster(this);
-                if (ShouldCastShadows) Entity.Scene.RenderData.AddShadowCaster(this);
+                if (last_ShouldCastShadows) Entity.Scene.DataToRender.RemoveShadowCaster(this);
+                if (ShouldCastShadows) Entity.Scene.DataToRender.AddShadowCaster(this);
 
                 last_ShouldCastShadows = ShouldCastShadows;
             }

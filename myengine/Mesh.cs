@@ -45,8 +45,34 @@ namespace MyEngine
     */
 
 
-    public class Mesh : IUnloadable
+    public class Mesh : IDisposable
     {
+        static Mesh m_SkyBox;
+        public static Mesh SkyBox
+        {
+            get
+            {
+                if(m_SkyBox == null)
+                {
+                    m_SkyBox = Factory.GetMesh("internal/skybox.obj");
+                }
+                return m_SkyBox;
+            }
+        }
+
+        static Mesh m_Quad;
+        public static Mesh Quad
+        {
+            get
+            {
+                if(m_Quad == null)
+                {
+                    m_Quad = Factory.GetMesh("internal/quad.obj");
+                }
+                return m_Quad;
+            }
+        }        
+
         public enum ChangedFlags
         {
             Bounds,
@@ -181,7 +207,7 @@ namespace MyEngine
                 RecalculateTangents();
             }
 
-            VertexArrayObj.DeleteBuffer();
+            VertexArrayObj.Dispose();
             VertexArrayObj.CreateBufferAndBindVBOs();
             VertexArrayObj.SendDataToGpu();
 
@@ -320,13 +346,13 @@ namespace MyEngine
 
 
 
-        public void Unload()
+        public void Dispose()
         {
-            VertexArrayObj.DeleteBuffer();
+            VertexArrayObj.Dispose();
         }
 
 
-        public class VertexArrayObject
+        public class VertexArrayObject : IDisposable
         {
             public event Action OnChanged;
 
@@ -367,7 +393,10 @@ namespace MyEngine
                 GL.BindVertexArray(0);
 
             }
-            public void DeleteBuffer()
+            /// <summary>
+            /// Delete buffers
+            /// </summary>
+            public void Dispose()
             {
                 if (handle != -1)
                 {

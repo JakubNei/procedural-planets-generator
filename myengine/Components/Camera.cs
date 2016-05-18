@@ -7,9 +7,12 @@ using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 
 using MyEngine;
+using MyEngine.Components;
+
 
 namespace MyEngine.Components
-{
+{    
+
     public class Camera : ComponentWithShortcuts
     {
 
@@ -35,17 +38,15 @@ namespace MyEngine.Components
 
         public List<IPostProcessEffect> postProcessEffects = new List<IPostProcessEffect>();
 
-        public RenderData RenderData { get; set; }
-
         public Camera(Entity entity) : base(entity)
         {
-            this.RenderData = Scene.RenderData;
+            entity.EventSystem.Register<Events.WindowResized>(e => SetSize(e.NewPixelWidth, e.NewPixelHeight));
         }
 
-        public void SetSize(int w, int h) {
-            this.pixelHeight = h;
-            this.pixelWidth = w;
-            screenSize = new Vector2(w, h);
+        public void SetSize(int newPixelWidth, int newPixelHeight) {
+            this.pixelHeight = newPixelHeight;
+            this.pixelWidth = newPixelWidth;
+            screenSize = new Vector2(newPixelWidth, newPixelHeight);
             aspect = screenSize.X / screenSize.Y;
         }
 
@@ -87,6 +88,10 @@ namespace MyEngine.Components
             postProcessEffects.Add(shader);
         }
 
+        /// <summary>
+        /// Returns frustum planes of rotation and projection matrix
+        /// </summary>
+        /// <returns></returns>
         public Plane[] GetFrustumPlanes()
         {
             var p = new Plane[6];

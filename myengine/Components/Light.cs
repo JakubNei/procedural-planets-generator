@@ -33,7 +33,7 @@ namespace MyEngine.Components
         ShadowMap ShadowMap { get; }
         void UploadUBOdata(Camera camera, UniformBlock ubo, int lightIndex);
     }
-    public class Light : Component, IDisposable, ILight
+    public class Light : Component, System.IDisposable, ILight
     {
 
         public LightType LighType = LightType.Point;
@@ -63,7 +63,7 @@ namespace MyEngine.Components
 
         public Light(Entity entity) : base(entity)
         {
-            entity.Scene.RenderData.Add(this);
+            entity.Scene.DataToRender.Add(this);
         }
         
         public void UploadUBOdata(Camera camera, UniformBlock ubo, int lightIndex) {
@@ -87,7 +87,7 @@ namespace MyEngine.Components
 
         public void Dispose()
         {
-            Entity.Scene.RenderData.Remove(this);
+            Entity.Scene.DataToRender.Remove(this);
         }
     }
 }

@@ -10,7 +10,7 @@ using OpenTK;
 
 namespace MyEngine
 {
-    public class Texture2D : Texture, IUnloadable
+    public class Texture2D : Texture, IDisposable
     {
 
 
@@ -90,7 +90,7 @@ namespace MyEngine
             throw new NotImplementedException();
         }
 
-        public void Unload()
+        public void Dispose()
         {
             if (IsOnGpu)
             {
@@ -177,7 +177,7 @@ namespace MyEngine
         {
             if (WantsToBeUploadedToGpu)
             {
-                Unload();
+                Dispose();
                 WantsToBeUploadedToGpu = false;
                 UploadToGpu();
                 UpdateIsOnGpu();

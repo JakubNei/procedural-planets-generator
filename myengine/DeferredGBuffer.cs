@@ -10,7 +10,7 @@ using MyEngine.Components;
 
 namespace MyEngine
 {
-    public class DeferredGBuffer : IUnloadable
+    public class DeferredGBuffer : System.IDisposable
     {
         int frameBufferObjectHandle;
 
@@ -92,12 +92,6 @@ namespace MyEngine
             if (status != FramebufferErrorCode.FramebufferComplete) Debug.Error(status);
 
             GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, 0); //restore default FBO
-        }
-        public void Unload()
-        {
-            GL.DeleteFramebuffer(frameBufferObjectHandle);
-            depthTexture.Unload();
-            foreach (var t in textures) t.Unload();
         }
 
         public void BindAllFrameBuffersForDrawing()
@@ -232,6 +226,11 @@ namespace MyEngine
             quadMesh.Draw();
         }
 
-
+        public void Dispose()
+        {
+            GL.DeleteFramebuffer(frameBufferObjectHandle);
+            depthTexture.Dispose();
+            foreach (var t in textures) t.Dispose();
+        }
     }
 }

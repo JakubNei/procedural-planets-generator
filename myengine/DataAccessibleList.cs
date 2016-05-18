@@ -178,7 +178,7 @@ namespace MyEngine
         /// <summary>Enumerates the elements of a <see cref="T:System.Collections.Generic.List`1" />.</summary>
 
         [Serializable]
-        public struct Enumerator : IEnumerator<T>, IDisposable, IEnumerator
+        public struct Enumerator : IEnumerator<T>, System.IDisposable, IEnumerator
         {
             private DataAccessibleList<T> list;
             private int index;
