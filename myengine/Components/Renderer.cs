@@ -14,12 +14,26 @@ namespace MyEngine.Components
         RenderedAndVisible = (1 << 1) | (1 << 3),
         Unknown = (1 << 9),
     }
+    public class RenderContext
+    {
+        public static readonly object Geometry = new RenderContext("geometry");
+        public static readonly object Shadows = new RenderContext("shadow");
+        public static readonly object Depth = new RenderContext("depth");
+        public string Name { get; set; }
+        public RenderContext(string name)
+        {
+            this.Name = name;
+        }
+        public override string ToString()
+        {
+            return this.Name;
+        }
+    }
     public interface IRenderable
     {
         Material Material { get; }
         bool ForcePassFrustumCulling { get; }
-        bool ShouldRenderGeometry { get; }
-        bool ShouldCastShadows { get; }
+        bool ShouldRender(object renderContext);
         Bounds GetBounds(WorldPos viewPointPos);
         void UploadUBOandDraw(Camera camera, UniformBlock ubo);
         void SetCameraRenderStatus(Camera camera, RenderStatus renderStatus);
@@ -31,67 +45,12 @@ namespace MyEngine.Components
         */
     }
 
-    public abstract class Renderer : Component, IRenderable
+    public abstract class Renderer : Component, IRenderable, IDisposable
     {
-        public virtual bool ShouldRenderGeometry
-        {
-            get
-            {
-                return RenderingMode.HasFlag(RenderingMode.RenderGeometry);
-            }
-        }
 
-        public virtual bool ShouldCastShadows
-        {
-            get
-            {
-                return RenderingMode.HasFlag(RenderingMode.CastShadows);
-            }
-        }
-
-
-        RenderingMode m_RenderingMode = RenderingMode.RenderGeometryAndCastShadows;
-        public virtual RenderingMode RenderingMode
-        {
-            get
-            {
-                return m_RenderingMode;
-            }
-            set
-            {
-                if (m_RenderingMode != value)
-                {
-                    m_RenderingMode = value;
-                    ShouldRenderGeometryOrShouldCastShadowsHasChanged();
-                }
-
-            }
-        }
-
-        Material m_material;
-        public virtual Material Material
-        {
-            set
-            {
-                lock (this)
-                {
-                    if (m_material != value)
-                    {
-                        m_material = value;
-                        ShouldRenderGeometryOrShouldCastShadowsHasChanged();
-                    }
-                }
-            }
-            get
-            {
-                lock (this)
-                {
-                    return m_material;
-                }
-            }
-        }
-
-
+        public virtual RenderingMode RenderingMode { get; set; }
+        public virtual Material Material { get; set; }
+        
         Dictionary<Camera, RenderStatus> cameraToRenderStatus = new Dictionary<Camera, RenderStatus>();
 
         public virtual bool ForcePassFrustumCulling { get; set; }
@@ -99,10 +58,11 @@ namespace MyEngine.Components
         bool last_ShouldRenderGeometry = false;
         bool last_ShouldCastShadows = false;
 
-
+        MyWeakReference<RenderableData> dataToRender;
         public Renderer(Entity entity) : base(entity)
         {
-            ShouldRenderGeometryOrShouldCastShadowsHasChanged();
+            dataToRender = new MyWeakReference<RenderableData>(Entity.Scene.DataToRender);
+            dataToRender.Target?.Add(this);
         }
         public abstract Bounds GetBounds(WorldPos viewPointPos);
 
@@ -119,25 +79,20 @@ namespace MyEngine.Components
             return cameraToRenderStatus.GetValue(camera, RenderStatus.Unknown);
         }
 
-
-        protected virtual void ShouldRenderGeometryOrShouldCastShadowsHasChanged()
+        public virtual bool ShouldRender(object renderContext)
         {
-            if (last_ShouldRenderGeometry != ShouldRenderGeometry)
-            {
-                if (last_ShouldRenderGeometry) Entity.Scene.DataToRender.RemoveGeometry(this);
-                if (ShouldRenderGeometry) Entity.Scene.DataToRender.AddGeometry(this);
-
-                last_ShouldRenderGeometry = ShouldRenderGeometry;
-            }
-
-            if (last_ShouldCastShadows != ShouldCastShadows)
-            {
-                if (last_ShouldCastShadows) Entity.Scene.DataToRender.RemoveShadowCaster(this);
-                if (ShouldCastShadows) Entity.Scene.DataToRender.AddShadowCaster(this);
-
-                last_ShouldCastShadows = ShouldCastShadows;
-            }
+            if (renderContext == RenderContext.Geometry && RenderingMode.HasFlag(RenderingMode.RenderGeometry)) return true;
+            if (renderContext == RenderContext.Shadows && RenderingMode.HasFlag(RenderingMode.CastShadows)) return true;
+            return false;
         }
 
+        public void Dispose()
+        {
+            dataToRender.Target?.Remove(this);
+        }
+        public override string ToString()
+        {
+            return Entity.Name;
+        }
     }
 }

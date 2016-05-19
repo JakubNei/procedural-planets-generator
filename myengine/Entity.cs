@@ -31,12 +31,14 @@ namespace MyEngine
 
         List<IComponent> components = new List<IComponent>();
 
+        public string Name { get; set; }
 
         public Entity(SceneSystem scene, string name = "")
         {
             this.Transform = this.AddComponent<Transform>();
             this.Scene = scene;
             this.Input = Scene.Input;
+            this.Name = name;
             EventSystem = new EventSystem();
         }
 

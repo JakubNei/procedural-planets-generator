@@ -6,6 +6,17 @@ using System.Threading.Tasks;
 
 namespace MyEngine.Events
 {
+    public class InputUpdate : IEvent
+    {
+        public double DeltaTime
+        {
+            get; private set;
+        }
+        public InputUpdate(double deltaTime)
+        {
+            this.DeltaTime = deltaTime;
+        }
+    }
     public class WindowResized : IEvent
     {
         public int NewPixelWidth { get; private set; }

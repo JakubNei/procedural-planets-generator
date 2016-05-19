@@ -45,7 +45,7 @@ namespace MyGame
             perlin = new PerlinD(5646);
             worley = new WorleyD(894984, WorleyD.DistanceFunction.Euclidian);
 
-            entity.EventSystem.Register((MyEngine.Events.GraphicsUpdate evt) => OnGraphicsUpdate(evt.DeltaTime));
+            entity.EventSystem.Register((MyEngine.Events.InputUpdate evt) => OnGraphicsUpdate(evt.DeltaTime));
         }
 
 

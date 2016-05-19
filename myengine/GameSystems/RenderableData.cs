@@ -15,17 +15,9 @@ namespace MyEngine
         {
             get
             {
-                return geometryRenderers;
+                return renderers;
             }
         }
-        public SparseList<IRenderable> ShadowCasters
-        {
-            get
-            {
-                return shadowCasters;
-            }
-        }
-
         public SparseList<ILight> Lights
         {
             get
@@ -34,39 +26,23 @@ namespace MyEngine
             }
         }
 
-        SparseList<IRenderable> geometryRenderers = new SparseList<IRenderable>(1000);
-        SparseList<IRenderable> shadowCasters = new SparseList<IRenderable>(1000);
+        SparseList<IRenderable> renderers = new SparseList<IRenderable>(1000);
         SparseList<ILight> lights = new SparseList<ILight>(1000);
 
-        public void AddGeometry(IRenderable renderer)
+        public void Add(IRenderable renderer)
         {
-            lock (geometryRenderers)
+            lock (renderers)
             {
-                geometryRenderers.Add(renderer);
+                renderers.Add(renderer);
             }
         }
-        public void RemoveGeometry(IRenderable renderer)
+        public void Remove(IRenderable renderer)
         {
-            lock (geometryRenderers)
+            lock (renderers)
             {
-                geometryRenderers.Remove(renderer);
+                renderers.Remove(renderer);
             }
         }
-        public void AddShadowCaster(IRenderable renderer)
-        {
-            lock (shadowCasters)
-            {
-                shadowCasters.Add(renderer);
-            }
-        }
-        public void RemoveShadowCaster(IRenderable renderer)
-        {
-            lock (shadowCasters)
-            {
-                shadowCasters.Remove(renderer);
-            }
-        }
-
         public void Add(ILight light)
         {
             lock (lights)

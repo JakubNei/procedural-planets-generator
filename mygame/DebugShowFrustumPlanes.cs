@@ -27,7 +27,7 @@ namespace MyGame
                 e.Transform.Scale = new Vector3(10, 10, 1);
             }
 
-            Entity.EventSystem.Register<GraphicsUpdate>(e => Update(e.DeltaTime));
+            Entity.EventSystem.Register<InputUpdate>(e => Update(e.DeltaTime));
         }
         void Update(double deltaTime)
         {

@@ -20,7 +20,7 @@ namespace MyGame
         public VisualizeDir(Entity entity) : base(entity)
         {
             Start();
-            Entity.EventSystem.Register<GraphicsUpdate>(e => Update(e.DeltaTime));
+            Entity.EventSystem.Register<InputUpdate>(e => Update(e.DeltaTime));
         }
 
         void Start()

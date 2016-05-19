@@ -21,9 +21,11 @@ namespace MyEngine
             }
         }
 
-        public DeferredGBuffer gBuffer { get; private set; }
+        public object RenderContext { get; set; } = Components.RenderContext.Geometry;
 
-        public Cubemap skyboxCubeMap;
+        public DeferredGBuffer GBuffer { get; private set; }
+
+        public Cubemap SkyboxCubeMap { get; set; }
 
         List<IRenderable> toRender = new List<IRenderable>();
 
@@ -36,8 +38,8 @@ namespace MyEngine
         {
             eventSystem.Register<Events.WindowResized>(evt =>
             {
-                if (gBuffer != null) gBuffer.Dispose();
-                gBuffer = new DeferredGBuffer(evt.NewPixelWidth, evt.NewPixelHeight);
+                if (GBuffer != null) GBuffer.Dispose();
+                GBuffer = new DeferredGBuffer(evt.NewPixelWidth, evt.NewPixelHeight);
             });
         }
 
@@ -58,7 +60,7 @@ namespace MyEngine
 
             // G BUFFER GRAB PASS
             {
-                gBuffer.BindAllFrameBuffersForDrawing();
+                GBuffer.BindAllFrameBuffersForDrawing();
 
 
                 GL.Enable(EnableCap.DepthTest);
@@ -66,13 +68,13 @@ namespace MyEngine
                 GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit);
 
                 // SKYBOX PASS
-                if (skyboxCubeMap != null)
+                if (SkyboxCubeMap != null)
                 {
                     GL.DepthRange(0.999, 1);
                     GL.DepthMask(false);
 
                     var shader = Factory.GetShader("internal/deferred.skybox.shader");
-                    shader.Uniforms.Set("skyboxCubeMap", skyboxCubeMap);
+                    shader.Uniforms.Set("skyboxCubeMap", SkyboxCubeMap);
                     shader.Bind();
 
                     Mesh.SkyBox.Draw();
@@ -175,7 +177,7 @@ namespace MyEngine
                         light.UploadUBOdata(camera, ubo, lightIndex);
 
                         var shader = Factory.GetShader("internal/deferred.oneLight.shader");
-                        gBuffer.BindForLightPass(shader);
+                        GBuffer.BindForLightPass(shader);
                         if (shadowsEnabled && light.HasShadows)
                         {
                             shadowMap.BindUniforms(shader);
@@ -216,7 +218,7 @@ namespace MyEngine
                 {
                     if (pe.IsEnabled == false) continue;
                     pe.BeforeBindCallBack();
-                    gBuffer.BindForPostProcessEffects(pe);
+                    GBuffer.BindForPostProcessEffects(pe);
                     pe.Shader.Bind();
                     Mesh.Quad.Draw();
                 }
@@ -224,32 +226,30 @@ namespace MyEngine
         }
         public void BuildRenderList(IEnumerable<IRenderable> possibleRenderables, Camera camera)
         {
-            lock (this)
+            var newToRender = new List<IRenderable>();
+            var frustrumPlanes = camera.GetFrustumPlanes();
+            lock (possibleRenderables)
             {
-                toRender.Clear();
-                var frustrumPlanes = camera.GetFrustumPlanes();
-                lock (possibleRenderables)
+                foreach (var renderable in possibleRenderables)
                 {
-                    foreach (var renderable in possibleRenderables)
+                    if (renderable.ShouldRender(RenderContext))
                     {
-                        if (renderable.ShouldRenderGeometry)
+                        if (renderable.ForcePassFrustumCulling || GeometryUtility.TestPlanesAABB(frustrumPlanes, renderable.GetBounds(camera.Transform.Position)))
                         {
-                            if (renderable.ForcePassFrustumCulling || GeometryUtility.TestPlanesAABB(frustrumPlanes, renderable.GetBounds(camera.Transform.Position)))
-                            {
-                                toRender.Add(renderable);
-                                if (renderable.ForcePassFrustumCulling) renderable.SetCameraRenderStatus(camera, RenderStatus.RenderedForced);
-                                else renderable.SetCameraRenderStatus(camera, RenderStatus.RenderedAndVisible);
-                            }
-                            else
-                            {
-                                renderable.SetCameraRenderStatus(camera, RenderStatus.NotRendered);
-                            }
+                            newToRender.Add(renderable);
+                            if (renderable.ForcePassFrustumCulling) renderable.SetCameraRenderStatus(camera, RenderStatus.RenderedForced);
+                            else renderable.SetCameraRenderStatus(camera, RenderStatus.RenderedAndVisible);
+                        }
+                        else
+                        {
+                            renderable.SetCameraRenderStatus(camera, RenderStatus.NotRendered);
                         }
                     }
                 }
-                var comparer = new RenderableDistanceComparer(camera.ViewPointPosition);
-                toRender.Sort(comparer);
             }
+            var comparer = new RenderableDistanceComparer(camera.ViewPointPosition);
+            newToRender.Sort(comparer);
+            this.toRender = newToRender;
         }
 
         class RenderableDistanceComparer : IComparer<IRenderable>

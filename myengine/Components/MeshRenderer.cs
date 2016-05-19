@@ -21,25 +21,7 @@ namespace MyEngine.Components
 
     public class MeshRenderer : Renderer
     {
-        public override bool ShouldRenderGeometry
-        {
-            get
-            {
-                return base.ShouldRenderGeometry && Mesh != null && Mesh.IsRenderable && Material != null && Material.GBufferShader != null;
-            }
-        }
-
-        public override bool ShouldCastShadows
-        {
-            get
-            {
-                return base.ShouldCastShadows && Mesh != null && Mesh.IsRenderable && Material != null && Material.DepthGrabShader != null;
-            }
-        }
-
-
-
-    
+  
 
 
         Mesh m_mesh;
@@ -49,10 +31,10 @@ namespace MyEngine.Components
             {
                 if (m_mesh != value)
                 {
-                    if (m_mesh != null) m_mesh.OnChanged -= OnMeshHasChanged;
+                    if (m_mesh != null) m_mesh.OnDataChanged -= OnMeshDataHasChanged;
+                    OnMashChanged.Raise(new ValueChanged<Mesh>(m_mesh, value));
                     m_mesh = value;
-                    if (m_mesh != null) m_mesh.OnChanged += OnMeshHasChanged;
-                    ShouldRenderGeometryOrShouldCastShadowsHasChanged();
+                    if (m_mesh != null) m_mesh.OnDataChanged += OnMeshDataHasChanged;
                 }
             }
             get
@@ -61,6 +43,8 @@ namespace MyEngine.Components
             }
         }
 
+        public event Action<ValueChanged<Mesh>> OnMashChanged;
+        public event Action OnMashDataChanged;
 
 
         static readonly Vector3[] extentsTransformsToEdges = {
@@ -77,6 +61,7 @@ namespace MyEngine.Components
         public MeshRenderer(Entity entity) : base(entity)
         {
             Material = new Material();
+            RenderingMode = RenderingMode.RenderGeometryAndCastShadows;
         }
 
 
@@ -111,9 +96,14 @@ namespace MyEngine.Components
             Mesh.Draw();
         }
 
-        void OnMeshHasChanged(Mesh.ChangedFlags flags)
+        void OnMeshDataHasChanged(Mesh.ChangedFlags flags)
         {
-            ShouldRenderGeometryOrShouldCastShadowsHasChanged();
+            OnMashDataChanged.Raise();
+        }
+
+        public override bool ShouldRender(object renderContext)
+        {
+            return Mesh != null && Mesh.IsRenderable && Material != null && Material.DepthGrabShader != null && base.ShouldRender(renderContext);
         }
 
     }

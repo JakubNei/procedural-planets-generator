@@ -46,7 +46,7 @@ namespace MyGame
 
                         var gr = entity.AddComponent<GodRays>();
                         gr.lightWorldRadius = 1000;
-                        entity.EventSystem.Register((MyEngine.Events.GraphicsUpdate e) =>
+                        entity.EventSystem.Register((MyEngine.Events.InputUpdate e) =>
                         {
                             gr.lightScreenPos = cam.GetScreenPos(sunEntity.Transform.Position);
                             gr.lightWorldPos = cam.Transform.Position.Towards(sunEntity.Transform.Position).ToVector3();
@@ -111,7 +111,7 @@ namespace MyGame
                     light.color = Vector3.One * 1f;
                     light.Shadows = LightShadows.None;
 
-                    scene.EventSystem.Register((MyEngine.Events.GraphicsUpdate e) =>
+                    scene.EventSystem.Register((MyEngine.Events.InputUpdate e) =>
                     {
                         entity.Transform.Position = sunEntity.Transform.Position;
                         var p = proceduralPlanets.planets.FirstOrDefault();

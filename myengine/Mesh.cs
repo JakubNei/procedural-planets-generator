@@ -87,10 +87,10 @@ namespace MyEngine
 
         public Asset asset;
 
-        public event Action<ChangedFlags> OnChanged;
+        public event Action<ChangedFlags> OnDataChanged;
         void RaiseOnChanged(ChangedFlags flags)
         {
-            if (OnChanged != null) OnChanged(flags);
+            if (OnDataChanged != null) OnDataChanged(flags);
         }
 
 

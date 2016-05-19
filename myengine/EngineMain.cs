@@ -121,7 +121,7 @@ namespace MyEngine
         }
 
         bool drawNormalGBuffer = false;
-        bool drawGBufferContents = false;        
+        bool drawGBufferContents = false;
 
         public override void Exit()
         {
@@ -130,22 +130,56 @@ namespace MyEngine
             base.Exit();
         }
 
+        bool autoBuildRenderList = true;
+
         void StartSec()
         {
             eventThreadTime.Restart();
-            /*
-            var t = new Thread(() =>
-            {
-                while (this.IsDisposed == false && this.IsExiting == false)
-                {
-                    EventThreadMain();
-                }
-            });
 
-            t.Priority = ThreadPriority.Highest;
-            t.IsBackground = true;
-            t.Start();
-            */
+            {
+                var t = new Thread(() =>
+                {
+                    while (this.IsDisposed == false && this.IsExiting == false)
+                    {
+                        if (Input.GetKeyDown(OpenTK.Input.Key.F4)) autoBuildRenderList = !autoBuildRenderList;
+                        if (autoBuildRenderList)
+                        {
+                            if (scenes.Count > 0)
+                            {
+                                Debug.Tick("BuildRenderList");
+                                foreach (var scene in scenes)
+                                {
+                                    var camera = scene.mainCamera;
+                                    var dataToRender = scene.DataToRender;
+                                    if (camera != null && dataToRender != null)
+                                    {
+                                        renderManager.BuildRenderList(dataToRender.Renderers, camera);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+
+                t.Priority = ThreadPriority.Highest;
+                t.IsBackground = true;
+                t.Start();
+            }
+
+            {
+                var t = new Thread(() =>
+                {
+                    while (this.IsDisposed == false && this.IsExiting == false)
+                    {
+                        EventThreadMain();
+                    }
+                });
+
+                t.Priority = ThreadPriority.Highest;
+                t.IsBackground = true;
+                t.Start();
+            }
+            
         }
 
         System.Diagnostics.Stopwatch eventThreadTime = new System.Diagnostics.Stopwatch();
@@ -155,8 +189,7 @@ namespace MyEngine
         Queue<DateTime> frameTimes1sec = new Queue<DateTime>();
         void EventThreadMain()
         {
-
-            //Debug.Tick("eventThread");
+            Debug.Tick("eventThread");
 
             var now = DateTime.Now;
             frameTimes1sec.Enqueue(now);
@@ -171,7 +204,7 @@ namespace MyEngine
 
             if (this.Focused) Input.Update();
 
-            eventSystem.Raise(new MyEngine.Events.GraphicsUpdate(deltaTime));
+            eventSystem.Raise(new MyEngine.Events.InputUpdate(deltaTime));
 
         }
 
@@ -180,11 +213,12 @@ namespace MyEngine
             //Debug.AddValue("fps", (1 / e.Time).ToString());
             Debug.Tick("renderThread");
 
-            EventThreadMain();
-
+            
+            
             ubo.engine.totalElapsedSecondsSinceEngineStart = (float)stopwatchSinceStart.Elapsed.TotalSeconds;
             ubo.engine.gammaCorrectionTextureRead = 2.2f;
             ubo.engine.gammaCorrectionFinalColor = 1 / 2.2f;
+
 
             //GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
@@ -208,13 +242,12 @@ namespace MyEngine
 
 
 
-                renderManager.skyboxCubeMap = scene.skyBox;
-                renderManager.BuildRenderList(dataToRender.Renderers, camera);
+                renderManager.SkyboxCubeMap = scene.skyBox;
                 renderManager.RenderAll(ubo, camera, dataToRender.Lights, camera.postProcessEffects);
             }
 
 
-            var gBuffer = renderManager.gBuffer;
+            var gBuffer = renderManager.GBuffer;
 
             // FINAL DRAW TO SCREEN
             {
