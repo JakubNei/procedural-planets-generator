@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,7 +18,7 @@ namespace MyGame
     {
         public Triangle noElevationRange;
         public Triangle realVisibleRange;
-        public List<PlanetaryBodyChunk> childs = new List<PlanetaryBodyChunk>();
+        public List<PlanetaryBodyChunk> childs { get; } = new List<PlanetaryBodyChunk>();
         public MeshRenderer renderer;
 
         public float hideIn;
@@ -43,7 +44,10 @@ namespace MyGame
             this.planetaryBody = planetInfo;
             this.parentChunk = parentChunk;
             this.childPosition = childPosition;
-            childs.Clear();
+            lock (childs)
+            {
+                childs.Clear();
+            }
         }
 
         class ParentIndiciesPartEnumerator : IEnumerator<int>
@@ -186,25 +190,27 @@ namespace MyGame
 
         public void SubDivide()
         {
-            if (childs.Count <= 0)
+            lock(childs)
             {
-                var a = noElevationRange.a;
-                var b = noElevationRange.b;
-                var c = noElevationRange.c;
-                var ab = (a + b).Divide(2.0f).Normalized();
-                var ac = (a + c).Divide(2.0f).Normalized();
-                var bc = (b + c).Divide(2.0f).Normalized();
+                if (childs.Count <= 0)
+                {
+                    var a = noElevationRange.a;
+                    var b = noElevationRange.b;
+                    var c = noElevationRange.c;
+                    var ab = (a + b).Divide(2.0f).Normalized();
+                    var ac = (a + c).Divide(2.0f).Normalized();
+                    var bc = (b + c).Divide(2.0f).Normalized();
 
-                ab *= planetaryBody.radius;
-                ac *= planetaryBody.radius;
-                bc *= planetaryBody.radius;
+                    ab *= planetaryBody.radius;
+                    ac *= planetaryBody.radius;
+                    bc *= planetaryBody.radius;
 
-                MAKE_CHILD(a, ab, ac, ChildPosition.Top);
-                MAKE_CHILD(ab, b, bc, ChildPosition.Left);
-                MAKE_CHILD(ac, bc, c, ChildPosition.Right);
-                MAKE_CHILD(ab, bc, ac, ChildPosition.Middle);
+                    MAKE_CHILD(a, ab, ac, ChildPosition.Top);
+                    MAKE_CHILD(ab, b, bc, ChildPosition.Left);
+                    MAKE_CHILD(ac, bc, c, ChildPosition.Right);
+                    MAKE_CHILD(ab, bc, ac, ChildPosition.Middle);
+                }
             }
-
         }
 
 

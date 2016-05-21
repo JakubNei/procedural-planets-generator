@@ -4,6 +4,7 @@ using System.IO;
 using System.Drawing;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 
 using OpenTK;
 using OpenTK.Graphics;
@@ -49,14 +50,25 @@ namespace MyEngine
 
             stopwatchSinceStart.Restart();
 
-            StartSec();
-
-
+            
             //{
             //    var winForm = new Panels.DebugValuesTable();
             //    winForm.Show();
             //}
             renderManager = new RenderManager(eventSystem);
+
+            RenderFrame += (sender, evt) =>
+            {
+                TryStartSecondary();
+                RenderMain();
+
+                /*
+                var task1 = Task.Factory.StartNew(BuildRenderListMain);
+                var task2 = Task.Factory.StartNew(EventThreadMain);
+                var continuationTask = Task.Factory.ContinueWhenAll(new[] { task1, task2 }, task => Task.Factory.StartNew(RenderMain));
+                continuationTask.Wait();
+                */
+            };
         }
         RenderManager renderManager;
         Events.EventSystem eventSystem = new Events.EventSystem();
@@ -131,61 +143,58 @@ namespace MyEngine
         }
 
         bool autoBuildRenderList = true;
-
-        void StartSec()
+        bool secondaryAlreadyStarted = false;
+        void TryStartSecondary()
         {
+            if (secondaryAlreadyStarted) return;
+            secondaryAlreadyStarted = true;
+
             eventThreadTime.Restart();
 
+            StartSecondaryThread(EventThreadMain);
+            StartSecondaryThread(BuildRenderListMain);
+        }
+
+        void StartSecondaryThread(Action action)
+        {
+            var t = new Thread(() =>
             {
-                var t = new Thread(() =>
+                while (this.IsDisposed == false && this.IsExiting == false)
                 {
-                    while (this.IsDisposed == false && this.IsExiting == false)
+                    action();
+                }
+            });
+
+            t.Priority = ThreadPriority.Highest;
+            t.IsBackground = true;
+            t.Start();
+        }
+
+
+
+        void BuildRenderListMain()
+        {
+            if (Input.GetKeyDown(OpenTK.Input.Key.F4)) autoBuildRenderList = !autoBuildRenderList;
+            if (autoBuildRenderList)
+            {
+                if (scenes.Count > 0)
+                {
+                    Debug.Tick("BuildRenderList");
+                    foreach (var scene in scenes)
                     {
-                        if (Input.GetKeyDown(OpenTK.Input.Key.F4)) autoBuildRenderList = !autoBuildRenderList;
-                        if (autoBuildRenderList)
+                        var camera = scene.mainCamera;
+                        var dataToRender = scene.DataToRender;
+                        if (camera != null && dataToRender != null)
                         {
-                            if (scenes.Count > 0)
-                            {
-                                Debug.Tick("BuildRenderList");
-                                foreach (var scene in scenes)
-                                {
-                                    var camera = scene.mainCamera;
-                                    var dataToRender = scene.DataToRender;
-                                    if (camera != null && dataToRender != null)
-                                    {
-                                        renderManager.BuildRenderList(dataToRender.Renderers, camera);
-                                    }
-                                }
-                            }
+                            renderManager.BuildRenderList(dataToRender.Renderers, camera);
                         }
                     }
-                });
-
-                t.Priority = ThreadPriority.Highest;
-                t.IsBackground = true;
-                t.Start();
+                }
             }
-
-            {
-                var t = new Thread(() =>
-                {
-                    while (this.IsDisposed == false && this.IsExiting == false)
-                    {
-                        EventThreadMain();
-                    }
-                });
-
-                t.Priority = ThreadPriority.Highest;
-                t.IsBackground = true;
-                t.Start();
-            }
-            
         }
 
         System.Diagnostics.Stopwatch eventThreadTime = new System.Diagnostics.Stopwatch();
         ManualResetEvent onRenderGameWaitHandle = new ManualResetEvent(false);
-
-
         Queue<DateTime> frameTimes1sec = new Queue<DateTime>();
         void EventThreadMain()
         {
@@ -208,8 +217,7 @@ namespace MyEngine
 
         }
 
-        protected override void OnRenderFrame(FrameEventArgs e)
-        {
+        void RenderMain() { 
             //Debug.AddValue("fps", (1 / e.Time).ToString());
             Debug.Tick("renderThread");
 

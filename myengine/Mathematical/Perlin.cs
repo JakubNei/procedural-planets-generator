@@ -192,7 +192,7 @@ namespace MyEngine
         void Normalize2DVec(float[] v, int index)
         {
             float s;
-            s = (float)Math.Sqrt(v[index + 0] * v[index + 0] + v[index + 1] * v[index + 1]);
+            s = (float)System.Math.Sqrt(v[index + 0] * v[index + 0] + v[index + 1] * v[index + 1]);
             s = 1.0f / s;
             v[index + 0] = v[index + 0] * s;
             v[index + 1] = v[index + 1] * s;
@@ -202,7 +202,7 @@ namespace MyEngine
         {
             float s;
 
-            s = (float)Math.Sqrt(v[index + 0] * v[index + 0] + v[index + 1] * v[index + 1] + v[index + 2] * v[index + 2]);
+            s = (float)System.Math.Sqrt(v[index + 0] * v[index + 0] + v[index + 1] * v[index + 1] + v[index + 2] * v[index + 2]);
             s = 1.0f / s;
 
             v[index + 0] = v[index + 0] * s;

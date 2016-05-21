@@ -61,7 +61,6 @@
     <Compile Include="Components\Tonemapping.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="DataAccessibleList.cs" />
-    <Compile Include="Events\WindowResized.cs" />
     <Compile Include="Extensions\OpenTK\Vector3Extensions_other.cs" />
     <Compile Include="Extensions\OpenTK\Vector3Extensions_template.cs">
       <AutoGen>True</AutoGen>
@@ -74,18 +73,19 @@
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>Vector3Extensions_template.cs</LastGenOutput>
     </Content>
-    <Content Include="Math\MyMath_template.tt">
+    <Content Include="Mathematical\MyMath_template.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>MyMath_template.cs</LastGenOutput>
     </Content>
-    <Compile Include="Math\MyMath_template.cs">
+    <Compile Include="Mathematical\MyMath_template.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>MyMath_template.tt</DependentUpon>
     </Compile>
-    <Compile Include="Math\PerlinD.cs" />
-    <Compile Include="Math\WorldPos.cs" />
-    <Compile Include="Math\WorleyD.cs" />
+    <Compile Include="Mathematical\PerlinD.cs" />
+    <Compile Include="Mathematical\SoftwareOcclusionCuller.cs" />
+    <Compile Include="Mathematical\WorldPos.cs" />
+    <Compile Include="Mathematical\WorleyD.cs" />
     <Compile Include="Panels\DebugValuesTable.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -97,7 +97,7 @@
     <Compile Include="enums.cs" />
     <Compile Include="Events\IEvent.cs" />
     <Compile Include="Events\EventSystem.cs" />
-    <Compile Include="Events\GraphicsUpdate.cs" />
+    <Compile Include="Events\Events.cs" />
     <Compile Include="Extensions\ActionExtensions.cs" />
     <Compile Include="Extensions\ArrayExtensions.cs" />
     <Compile Include="Extensions\AssemblyExtensions.cs" />
@@ -122,14 +122,14 @@
     <Compile Include="GameSystems\Unit.cs" />
     <Compile Include="GameSystems\UnitSystem.cs" />
     <Compile Include="ITest1.cs" />
-    <Compile Include="Math\MyMath.cs">
+    <Compile Include="Mathematical\MyMath.cs">
       <LastGenOutput>MyMath1.cs</LastGenOutput>
     </Compile>
-    <Compile Include="Math\Perlin.cs" />
-    <Compile Include="Math\QuaternionUtility.cs" />
-    <Compile Include="Math\GeometryUtility.cs" />
+    <Compile Include="Mathematical\Perlin.cs" />
+    <Compile Include="Mathematical\QuaternionUtility.cs" />
+    <Compile Include="Mathematical\GeometryUtility.cs" />
     <Compile Include="GameSystems\ResourceFolder.cs" />
-    <Compile Include="Math\LocalBounds.cs" />
+    <Compile Include="Mathematical\LocalBounds.cs" />
     <Compile Include="Components\Camera.cs" />
     <Compile Include="Components\Component.cs" />
     <Compile Include="Cubemap.cs" />
@@ -147,7 +147,7 @@
     <Compile Include="Factory.cs" />
     <Compile Include="Components\MeshRenderer.cs" />
     <Compile Include="DeferredGBuffer.cs" />
-    <Compile Include="Math\Plane.cs" />
+    <Compile Include="Mathematical\Plane.cs" />
     <Compile Include="Ray.cs" />
     <Compile Include="Components\Renderer.cs" />
     <Compile Include="GameSystems\Resource.cs" />
@@ -155,7 +155,7 @@
     <Compile Include="ShadowMap.cs" />
     <Compile Include="SparseList.cs" />
     <Compile Include="SparseValueList.cs" />
-    <Compile Include="Math\Sphere.cs" />
+    <Compile Include="Mathematical\Sphere.cs" />
     <Compile Include="Panels\TimeGraph.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -166,7 +166,6 @@
     <Compile Include="System\DeferredCollection.cs" />
     <Compile Include="System\Int2.cs" />
     <Compile Include="System\Int3.cs" />
-    <Compile Include="System\Lazy.cs" />
     <Compile Include="System\MyWeakReference.cs" />
     <Compile Include="System\PropertyDescriptors.cs" />
     <Compile Include="System\ReadOnlyDictionary.cs" />
@@ -180,7 +179,7 @@
     <Compile Include="Components\Transform.cs" />
     <Compile Include="GameSystems\GameSystemBase.cs" />
     <Compile Include="GameSystems\SceneSystem.cs" />
-    <Compile Include="Math\Triangle.cs" />
+    <Compile Include="Mathematical\Triangle.cs" />
     <Compile Include="UniformBlock.cs" />
     <Compile Include="UniformsManager.cs" />
     <Compile Include="Extensions\OpenTK\Vector3Extensions.cs" />
@@ -190,7 +189,7 @@
     <Compile Include="Utils\MemberName.cs" />
     <Compile Include="Utils\Require.cs" />
     <Compile Include="Utils\TraceUtil.cs" />
-    <Compile Include="Math\Worley.cs" />
+    <Compile Include="Mathematical\Worley.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

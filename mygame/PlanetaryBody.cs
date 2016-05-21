@@ -240,10 +240,13 @@ namespace MyGame
 
         void StopMeshGenerationInChilds(PlanetaryBodyChunk chunk)
         {
-            foreach (var child in chunk.childs)
+            lock(chunk.childs)
             {
-                child.StopMeshGeneration();
-                StopMeshGenerationInChilds(child);
+                foreach (var child in chunk.childs)
+                {
+                    child.StopMeshGeneration();
+                    StopMeshGenerationInChilds(child);
+                }
             }
         }
 
@@ -254,9 +257,12 @@ namespace MyGame
                 chunk.SubDivide();
                 chunk.StopMeshGeneration();
                 sphere.radius *= subdivisionSphereRadiusModifier_debugModified * 1.1f;
-                foreach (var child in chunk.childs)
+                lock(chunk.childs)
                 {
-                    TrySubdivideToLevel_Generation(child, sphere, recursionDepth - 1);
+                    foreach (var child in chunk.childs)
+                    {
+                        TrySubdivideToLevel_Generation(child, sphere, recursionDepth - 1);
+                    }
                 }
             }
             else
@@ -272,10 +278,13 @@ namespace MyGame
 
         void HideInChilds(PlanetaryBodyChunk chunk)
         {
-            foreach (var child in chunk.childs)
+            lock(chunk.childs)
             {
-                if (child.renderer != null && child.renderer.RenderingMode != RenderingMode.DontRender) child.renderer.RenderingMode = RenderingMode.DontRender;
-                HideInChilds(child);
+                foreach (var child in chunk.childs)
+                {
+                    if (child.renderer != null && child.renderer.RenderingMode != RenderingMode.DontRender) child.renderer.RenderingMode = RenderingMode.DontRender;
+                    HideInChilds(child);
+                }
             }
         }
 
@@ -288,9 +297,12 @@ namespace MyGame
                 var areChildrenFullyVisible = true;
                 chunk.SubDivide();
                 sphere.radius *= subdivisionSphereRadiusModifier_debugModified;
-                foreach (var child in chunk.childs)
+                lock(chunk.childs)
                 {
-                    areChildrenFullyVisible &= TrySubdivideToLevel_Visibility(child, sphere, recursionDepth - 1);
+                    foreach (var child in chunk.childs)
+                    {
+                        areChildrenFullyVisible &= TrySubdivideToLevel_Visibility(child, sphere, recursionDepth - 1);
+                    }
                 }
 
                 // hide only if all our childs are visible, they mighht still be generating

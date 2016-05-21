@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Text;
 
 
@@ -39,13 +40,13 @@ namespace MyEngine
             }
         }
 
-        static Dictionary<Key, bool> isDown = new Dictionary<Key, bool>();
-        static Dictionary<Key, bool> releasedThisFrame = new Dictionary<Key, bool>();
-        static Dictionary<Key, bool> pressedThisFrame = new Dictionary<Key, bool>();
+        static ConcurrentDictionary<Key, bool> isDown = new ConcurrentDictionary<Key, bool>();
+        static ConcurrentDictionary<Key, bool> releasedThisFrame = new ConcurrentDictionary<Key, bool>();
+        static ConcurrentDictionary<Key, bool> pressedThisFrame = new ConcurrentDictionary<Key, bool>();
 
-        static Dictionary<MouseButton, bool> isDown_mouseButton = new Dictionary<MouseButton, bool>();
-        static Dictionary<MouseButton, bool> releasedThisFrame_mouseButton = new Dictionary<MouseButton, bool>();
-        static Dictionary<MouseButton, bool> pressedThisFrame_mouseButton = new Dictionary<MouseButton, bool>();
+        static ConcurrentDictionary<MouseButton, bool> isDown_mouseButton = new ConcurrentDictionary<MouseButton, bool>();
+        static ConcurrentDictionary<MouseButton, bool> releasedThisFrame_mouseButton = new ConcurrentDictionary<MouseButton, bool>();
+        static ConcurrentDictionary<MouseButton, bool> pressedThisFrame_mouseButton = new ConcurrentDictionary<MouseButton, bool>();
 
         EngineMain engine;
 
@@ -54,7 +55,7 @@ namespace MyEngine
             this.engine = engine;
         }
 
-        internal void Update()
+        public void Update()
         {
             var keyboard = Keyboard.GetState();
             foreach (Key k in System.Enum.GetValues(typeof(Key)))
