@@ -136,11 +136,12 @@ vec3 getColor(float distance) {
 		clamp(snoise(i.worldPos/100, 10)*2, 0, 1)
 	);
 	*/
+	vec3 pos = engine.cameraPosition + i.worldPos;
 
 	vec3 c = 
-		triPlanar(param_rock, i.worldPos, i.normal, 0.005) * 2+
-		triPlanar(param_rock, i.worldPos, i.normal, 0.05) +
-		triPlanar(param_rock, i.worldPos, i.normal, 0.5) * 2;
+		triPlanar(param_rock, pos, i.normal, 0.005) * 2+
+		triPlanar(param_rock, pos, i.normal, 0.05) +
+		triPlanar(param_rock, pos, i.normal, 0.5) * 2;
 	return c/5.0;
 }
 

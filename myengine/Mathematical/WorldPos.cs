@@ -122,12 +122,15 @@ namespace MyEngine
             left.sectorZ += right.sectorZ;
             return left;
         }
-
-        public static WorldPos operator +(WorldPos left, Vector3 right)
+        public static WorldPos operator +(WorldPos left, Vector3d right)
         {
-            left.insideSectorPosition += right.ToVector3d();
+            left.insideSectorPosition += right;
             left.MoveSectorIfNeeded();
             return left;
+        }
+        public static WorldPos operator +(WorldPos left, Vector3 right)
+        {
+            return left + right.ToVector3d();
         }
 
         //
@@ -152,13 +155,17 @@ namespace MyEngine
             left.sectorZ -= right.sectorZ;
             return left;
         }
-
-        public static WorldPos operator -(WorldPos left, Vector3 right)
+        public static WorldPos operator -(WorldPos left, Vector3d right)
         {
-            left.insideSectorPosition -= right.ToVector3d();
+            left.insideSectorPosition -= right;
             left.MoveSectorIfNeeded();
             return left;
         }
+        public static WorldPos operator -(WorldPos left, Vector3 right)
+        {
+            return left - right.ToVector3d();
+        }
+
 
         //
         // Summary:
@@ -213,7 +220,8 @@ namespace MyEngine
         */
         public override string ToString()
         {
-            return $"({insideSectorPosition.ToString()}[{sectorX},{sectorY},{sectorZ}])";
+            var f = "0.000";
+            return $"({insideSectorPosition.X.ToString(f)};{insideSectorPosition.Y.ToString(f)};{insideSectorPosition.Z.ToString(f)})[{sectorX},{sectorY},{sectorZ}])";
         }
     }
 }

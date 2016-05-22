@@ -53,7 +53,7 @@ float GetShadowValue2(vec2 screenCoord) {
 	if(light.hasShadows<1) return 1; // return lit up value if we have no shadows
 
 	vec3 worldPos = texture(gBufferUniform.position, screenCoord).xyz;
-	float distancePixelToCamera = distance(worldPos, engine.cameraPosition);
+	float distancePixelToCamera = distance(worldPos, vec3(0));
 
 	float visibility = 1;
 
@@ -210,7 +210,6 @@ void main()
 	//float d=dot(normalize(normal),normalize(lights[0].position-position));
 	//out_color = vec4(d,d,d );
 	//out_color=vec4(1,1,0,1);
-	//out_color=vec4(engine.cameraPosition,1);
 	//out_color = vec4(vec3(1- texture(gBufferUniform.depthBuffer, screenCoord).x*10000.0), 1);
 	//float depth=(1-texture(shadowMap.level0,screenCoord).x) * 10; out_color=vec4(depth,depth,depth,1);
 	

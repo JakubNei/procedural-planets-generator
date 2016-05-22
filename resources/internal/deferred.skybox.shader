@@ -13,7 +13,7 @@ out data {
 
 void main()
 {
-	gl_Position = engine.viewProjectionMatrix * vec4(in_position + engine.cameraPosition , 1);
+	gl_Position = engine.viewProjectionMatrix * vec4(in_position, 1);
 		
 	o.uv = in_position;
 }

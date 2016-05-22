@@ -23,7 +23,7 @@ vec3 PhongShader(vec3 worldPosition, vec3 worldNormal, float metallic, float smo
 	else dirPixelToLight = normalize(lightPosition - worldPosition); // is point light
 	// else is spot light
 
-	vec3 dirPixelToEye = normalize(engine.cameraPosition - worldPosition);
+	vec3 dirPixelToEye = normalize(worldPosition);
 
 
 	float NdotL = max(dot(worldNormal, dirPixelToLight), 0.0);
@@ -53,7 +53,7 @@ vec3 CookTorence(vec3 position, vec3 normal, float metallic, float smoothness) {
 	else dirPixelToLight = normalize(lightPosition - position); // is point light
 	// else is spot light
 
-	vec3 dirPixelToEye = normalize(engine.cameraPosition - position);
+	vec3 dirPixelToEye = normalize(position);
 
 	// http://ruh.li/GraphicsCookTorrance.html
 

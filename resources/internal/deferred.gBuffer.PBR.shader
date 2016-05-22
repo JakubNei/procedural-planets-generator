@@ -85,7 +85,7 @@ void main()
 	mat3 normalMatrix = mat3(-T,B,N); // column0, column1, column2
 	//mat3 normalMatrix = mat3(-T,B,N); //works // column0, column1, column2
 
-	vec3 pixelToCamera = engine.cameraPosition - i.position;
+	vec3 pixelToCamera = i.position;
 	float pixelToCameraDist = length(pixelToCamera);
 	
 	//paralax mapping
@@ -134,7 +134,7 @@ void main()
 	//out_color = vec4(0,1,0,1);
 	//LightData light = lights[0];
 	//out_color = vec3( dot(out_normal, normalize(lights[0].position-out_position)) );
-	//out_color = vec3(   pow(max(dot(normalize(engine.cameraPosition-out_position), reflect( normalize(lights[0].position-out_position),out_normal)),0), 100) );
+	//out_color = vec3(   pow(max(dot(normalize(out_position), reflect( normalize(lights[0].position-out_position),out_normal)),0), 100) );
 }
 
 	
