@@ -29,10 +29,10 @@ namespace MyEngine
 
         List<IRenderable> toRender = new List<IRenderable>();
 
-        public bool drawLines = false;
-        public bool enablePostProcessEffects = false;
-        public bool debugBounds = true;
-        public bool shadowsEnabled = true;
+        public bool drawLines { get { return Debug.Value("debugRenderWithLines").Bool; } }
+        public bool enablePostProcessEffects { get { return Debug.Value("enablePostProcessEffects").Bool; } }
+        public bool debugBounds { get { return Debug.Value("disablePostProcessEffects").Bool; } }
+        public bool shadowsEnabled { get { return Debug.Value("shadowsDisabled").Bool == false; } }
 
         public RenderManager(Events.EventSystem eventSystem)
         {

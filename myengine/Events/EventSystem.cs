@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace MyEngine.Events
 {
-    public class EventSystem
+    // TODO: add WeakReference (weak event pattern) probably WeakEventManager https://msdn.microsoft.com/en-us/library/system.windows.weakeventmanager(v=vs.100).aspx
+    public class EventSystem 
     {
         Dictionary<Type, Delegate> typeToCallbacks = new Dictionary<Type, Delegate>();
         HashSet<Delegate> allDelegates = new HashSet<Delegate>();

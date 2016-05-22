@@ -15,7 +15,7 @@ namespace MyGame
 
         public DrawBounds(Entity entity) : base(entity)
         {
-            Entity.EventSystem.Register<InputUpdate>(e => Update(e.DeltaTime));
+            Entity.EventSystem.Register<InputUpdate>(e => Update(e.DeltaTimeNow));
         }
 
         public static void ForEntity(Entity entity)

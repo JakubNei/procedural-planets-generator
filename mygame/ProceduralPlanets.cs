@@ -27,7 +27,7 @@ namespace MyGame
         {
             this.scene = scene;
             Start();
-            scene.EventSystem.Register((MyEngine.Events.InputUpdate e) => OnGraphicsUpdate(e.DeltaTime));
+            scene.EventSystem.Register((MyEngine.Events.InputUpdate e) => OnGraphicsUpdate(e.DeltaTimeNow));
         }
 
         void Start()

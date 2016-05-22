@@ -37,7 +37,7 @@ namespace MyGame
 
             Input.LockCursor = disabledInput;
 
-            Entity.EventSystem.Register<InputUpdate>(e => Update(e.DeltaTime));
+            Entity.EventSystem.Register<InputUpdate>(e => Update(e.DeltaTimeNow));
 
         }
 
@@ -95,7 +95,7 @@ namespace MyGame
 
             if (scrollWheelDelta > 0) cameraSpeed *= 1.3f;
             if (scrollWheelDelta < 0) cameraSpeed /= 1.3f;
-            //cameraSpeed = MyMath.Clamp(cameraSpeed, 1, 500);
+            cameraSpeed = MyMath.Clamp(cameraSpeed, 1, 100000);
 
 
             /*
@@ -157,7 +157,7 @@ namespace MyGame
             targetVelocity = targetVelocity.RotateBy(Transform.Rotation);
             currentVelocity = Vector3.Lerp(currentVelocity, targetVelocity, velocityChangeSpeed * (float)deltaTime);
 
-            Transform.Position += currentVelocity;
+            Transform.Position += currentVelocity * (float)deltaTime;
 
             //Debug.Info(entity.transform.position);
 

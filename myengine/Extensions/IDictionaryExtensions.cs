@@ -66,6 +66,7 @@ namespace MyEngine
 	        return value;
 	    }
 
+
         /// <summary>
         /// Tries to TryGetValue value by key, if not found new value is created, new value is added to the Dictionary.
         /// TValue must have parameterless constructor: new TValue()
@@ -106,7 +107,28 @@ namespace MyEngine
 	        }
 	        return value;
 	    }
-	
-	
-	}
+
+
+        /// <summary>
+        /// Tries to TryGetValue value by key, if not found new value is created with value returned by Func defaultValueFunc, new value is added to the Dictionary
+        /// </summary>
+        /// <typeparam name="TKey"></typeparam>
+        /// <typeparam name="TValue"></typeparam>
+        /// <param name="dictionary"></param>
+        /// <param name="key"></param>
+        /// <param name="defaultValueFunc">Is caled only if it is needed, that is when key is not found</param>
+        /// <returns></returns>
+        public static TValue GetOrAdd<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, Func<TKey, TValue> defaultValueFunc)
+        {
+            TValue value;
+            if (!dictionary.TryGetValue(key, out value))
+            {
+                value = defaultValueFunc(key);
+                dictionary[key] = value;
+            }
+            return value;
+        }
+
+
+    }
 }

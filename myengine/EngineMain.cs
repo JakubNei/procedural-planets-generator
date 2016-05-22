@@ -36,6 +36,7 @@ namespace MyEngine
             GraphicsContextFlags.ForwardCompatible
         )
         {
+            Debug.Info("START"); // to have debug initialized before anything else
 
             System.Diagnostics.Process.GetCurrentProcess().PriorityClass = System.Diagnostics.ProcessPriorityClass.AboveNormal;
 
@@ -50,7 +51,7 @@ namespace MyEngine
 
             stopwatchSinceStart.Restart();
 
-            
+
             //{
             //    var winForm = new Panels.DebugValuesTable();
             //    winForm.Show();
@@ -132,9 +133,6 @@ namespace MyEngine
             scenes.Add(scene);
         }
 
-        bool drawNormalGBuffer = false;
-        bool drawGBufferContents = false;
-
         public override void Exit()
         {
             if (IsDisposed) return;
@@ -196,33 +194,57 @@ namespace MyEngine
         System.Diagnostics.Stopwatch eventThreadTime = new System.Diagnostics.Stopwatch();
         ManualResetEvent onRenderGameWaitHandle = new ManualResetEvent(false);
         Queue<DateTime> frameTimes1sec = new Queue<DateTime>();
+        Queue<DateTime> frameTimes10sec = new Queue<DateTime>();
         void EventThreadMain()
         {
             Debug.Tick("eventThread");
 
             var now = DateTime.Now;
+
             frameTimes1sec.Enqueue(now);
-            while ((now - frameTimes1sec.Peek()).TotalSeconds > 1) frameTimes1sec.Dequeue();
+            while ((now - frameTimes1sec.Peek()).TotalMilliseconds > 1000) frameTimes1sec.Dequeue();
+            var deltaTime1Second = 1.0 / (double)frameTimes1sec.Count;
 
-            var deltaTime = eventThreadTime.ElapsedMilliseconds / 1000.0;
-            deltaTime = 1.0 / frameTimes1sec.Count;
 
+            frameTimes10sec.Enqueue(now);
+            while ((now - frameTimes10sec.Peek()).TotalMilliseconds > 10000) frameTimes10sec.Dequeue();
+            var deltaTime10Seconds = 10.0 / (double)frameTimes10sec.Count;
+
+            var deltaTimeNow = eventThreadTime.ElapsedMilliseconds / 1000.0;
             eventThreadTime.Restart();
+
 
             this.Title = string.Join("\t  ", Debug.stringValues.OrderBy(kvp => kvp.Key).Select(kvp => kvp.Key + ":" + kvp.Value).ToArray());
 
             if (this.Focused) Input.Update();
 
-            eventSystem.Raise(new MyEngine.Events.InputUpdate(deltaTime));
+
+            if (Input.GetKeyDown(OpenTK.Input.Key.F5)) Factory.ReloadAllShaders();
+            if (Input.GetKeyDown(OpenTK.Input.Key.F6)) Debug.Value("shadowsDisabled").Bool = !Debug.Value("shadowsDisabled").Bool;
+            if (Input.GetKeyDown(OpenTK.Input.Key.F7)) Debug.Value("drawDebugBounds").Bool = !Debug.Value("drawDebugBounds").Bool;
+            if (Input.GetKeyDown(OpenTK.Input.Key.F8)) Debug.Value("enablePostProcessEffects").Bool = !Debug.Value("enablePostProcessEffects").Bool;
+            if (Input.GetKeyDown(OpenTK.Input.Key.F9)) Debug.Value("debugDrawGBufferContents").Bool = !Debug.Value("debugDrawGBufferContents").Bool;
+            if (Input.GetKeyDown(OpenTK.Input.Key.F10)) Debug.Value("debugDrawNormalBufferContents").Bool = !Debug.Value("debugDrawNormalBufferContents").Bool;
+            if (Input.GetKeyDown(OpenTK.Input.Key.F11)) Debug.Value("debugRenderWithLines").Bool = !Debug.Value("debugRenderWithLines").Bool;
+
+
+            eventSystem.Raise(
+                new MyEngine.Events.InputUpdate(
+                    deltaTimeNow: deltaTimeNow,
+                    deltaTimeOver1Second: deltaTime1Second,
+                    deltaTimeOver10Seconds: deltaTime10Seconds
+                )
+            );
 
         }
 
-        void RenderMain() { 
+        void RenderMain()
+        {
             //Debug.AddValue("fps", (1 / e.Time).ToString());
             Debug.Tick("renderThread");
 
-            
-            
+
+
             ubo.engine.totalElapsedSecondsSinceEngineStart = (float)stopwatchSinceStart.Elapsed.TotalSeconds;
             ubo.engine.gammaCorrectionTextureRead = 2.2f;
             ubo.engine.gammaCorrectionFinalColor = 1 / 2.2f;
@@ -232,23 +254,10 @@ namespace MyEngine
 
             var countMeshesRendered = 0;
 
-
-
             {
                 var scene = scenes[0];
                 var camera = scene.mainCamera;
                 var dataToRender = scene.DataToRender;
-
-
-                if (Input.GetKeyDown(OpenTK.Input.Key.F5)) Factory.ReloadAllShaders();
-                if (Input.GetKeyDown(OpenTK.Input.Key.F6)) renderManager.shadowsEnabled = !renderManager.shadowsEnabled;
-                if (Input.GetKeyDown(OpenTK.Input.Key.F7)) renderManager.debugBounds = !renderManager.debugBounds;
-                if (Input.GetKeyDown(OpenTK.Input.Key.F8)) renderManager.enablePostProcessEffects = !renderManager.enablePostProcessEffects;
-                if (Input.GetKeyDown(OpenTK.Input.Key.F9)) drawGBufferContents = !drawGBufferContents;
-                if (Input.GetKeyDown(OpenTK.Input.Key.F10)) drawNormalGBuffer = !drawNormalGBuffer;
-                if (Input.GetKeyDown(OpenTK.Input.Key.F11)) renderManager.drawLines = !renderManager.drawLines;
-
-
 
                 renderManager.SkyboxCubeMap = scene.skyBox;
                 renderManager.RenderAll(ubo, camera, dataToRender.Lights, camera.postProcessEffects);
@@ -298,8 +307,8 @@ namespace MyEngine
                     skyboxMesh.Draw();
                 }
             }*/
-            if (drawNormalGBuffer) gBuffer.DebugDrawNormal();
-            if (drawGBufferContents) gBuffer.DebugDrawContents();
+            if (Debug.Value("debugDrawNormalBufferContents").Bool) gBuffer.DebugDrawNormal();
+            if (Debug.Value("debugDrawGBufferContents").Bool) gBuffer.DebugDrawContents();
             //if (drawShadowMapContents) DebugDrawTexture(shadowMap.depthMap, new Vector4(0.5f, 0.5f, 1, 1), new Vector4(0.5f,0.5f,0,1), 1, 0);
 
 

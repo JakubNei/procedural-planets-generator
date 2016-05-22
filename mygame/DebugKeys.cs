@@ -19,7 +19,7 @@ namespace MyGame
         public DebugKeys(SceneSystem scene)
         {
             this.scene = scene;
-            scene.EventSystem.Register((MyEngine.Events.InputUpdate e) => OnGraphicsUpdate(e.DeltaTime));
+            scene.EventSystem.Register((MyEngine.Events.InputUpdate e) => OnGraphicsUpdate(e.DeltaTimeNow));
         }
 
 

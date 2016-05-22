@@ -8,13 +8,14 @@ namespace MyEngine.Events
 {
     public class InputUpdate : IEvent
     {
-        public double DeltaTime
+        public double DeltaTimeNow { get; }
+        public double DeltaTimeOver1Second { get; }
+        public double DeltaTimeOver10Seconds { get; }
+        public InputUpdate(double deltaTimeNow, double deltaTimeOver1Second, double deltaTimeOver10Seconds)
         {
-            get; private set;
-        }
-        public InputUpdate(double deltaTime)
-        {
-            this.DeltaTime = deltaTime;
+            this.DeltaTimeNow = deltaTimeNow;
+            this.DeltaTimeOver1Second = deltaTimeOver1Second;
+            this.DeltaTimeOver10Seconds = deltaTimeOver10Seconds;
         }
     }
     public class WindowResized : IEvent

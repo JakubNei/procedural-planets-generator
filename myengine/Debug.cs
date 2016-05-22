@@ -57,6 +57,20 @@ namespace MyEngine
 
         static Dictionary<string, TickStats> nameToTickStat = new Dictionary<string, TickStats>();
 
+
+        static Dictionary<string, DebugValue> nameToDebugValue = new Dictionary<string, DebugValue>();
+
+        public class DebugValue
+        {
+            //public dynamic Value { get; set; }
+            public bool Bool { get; set; }
+        }
+
+        public static DebugValue Value(string name)
+        {
+            return nameToDebugValue.GetOrAdd(name);
+        }
+
         public static void Tick(string name)
         {
             TickStats t;

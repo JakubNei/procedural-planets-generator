@@ -45,7 +45,7 @@ namespace MyGame
             perlin = new PerlinD(5646);
             worley = new WorleyD(894984, WorleyD.DistanceFunction.Euclidian);
 
-            entity.EventSystem.Register((MyEngine.Events.InputUpdate evt) => OnGraphicsUpdate(evt.DeltaTime));
+            entity.EventSystem.Register((MyEngine.Events.InputUpdate evt) => OnGraphicsUpdate(evt.DeltaTimeNow));
         }
 
 
@@ -331,7 +331,7 @@ namespace MyGame
                     var e1 = e0 * subdivisionSphereRadiusModifier_debugModified;
 
                     /*
-                                        var t = chunk.realVisibleRange;
+                    var t = chunk.realVisibleRange;
                     var pos = this.Transform.Position;
                     var d = (new Plane(t.a.ToVector3() + pos, t.b.ToVector3() + pos, t.c.ToVector3() + pos)).GetDistanceToPoint(
                         Scene.mainCamera.Transform.Position

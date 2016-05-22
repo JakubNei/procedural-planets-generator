@@ -53,7 +53,7 @@ namespace MyEngine
         }
         public double Distance(WorldPos worldPos)
         {
-            return worldPos.insideSectorPosition.Distance(this.insideSectorPosition);
+            return this.Towards(worldPos).ToVector3().Length;
         }
 
         public Vector3d ToVector3d()
@@ -96,7 +96,33 @@ namespace MyEngine
 
         public WorldPos Towards(WorldPos other)
         {
-            return other - this;
+            return this.Towards(ref other);
+        }
+        public WorldPos Towards(ref WorldPos other)
+        {
+            return other.Sub(ref this);
+        }
+
+        public WorldPos Sub(ref WorldPos other)
+        {
+            var ret = new WorldPos();
+            ret.insideSectorPosition = this.insideSectorPosition - other.insideSectorPosition;
+            ret.MoveSectorIfNeeded();
+            ret.sectorX = this.sectorX - other.sectorX;
+            ret.sectorY = this.sectorY - other.sectorY;
+            ret.sectorZ = this.sectorZ - other.sectorZ;
+            return ret;
+        }
+
+        public WorldPos Add(ref WorldPos other)
+        {
+            var ret = new WorldPos();
+            ret.insideSectorPosition = this.insideSectorPosition + other.insideSectorPosition;
+            ret.MoveSectorIfNeeded();
+            ret.sectorX = this.sectorX + other.sectorX;
+            ret.sectorY = this.sectorY + other.sectorY;
+            ret.sectorZ = this.sectorZ + other.sectorZ;
+            return ret;
         }
 
 
@@ -115,12 +141,7 @@ namespace MyEngine
         //     The result of the calculation.
         public static WorldPos operator +(WorldPos left, WorldPos right)
         {
-            left.insideSectorPosition += right.insideSectorPosition;
-            left.MoveSectorIfNeeded();
-            left.sectorX += right.sectorX;
-            left.sectorY += right.sectorY;
-            left.sectorZ += right.sectorZ;
-            return left;
+            return left.Add(ref right);
         }
         public static WorldPos operator +(WorldPos left, Vector3d right)
         {
@@ -148,12 +169,7 @@ namespace MyEngine
         //     The result of the calculation.
         public static WorldPos operator -(WorldPos left, WorldPos right)
         {
-            left.insideSectorPosition -= right.insideSectorPosition;
-            left.MoveSectorIfNeeded();
-            left.sectorX -= right.sectorX;
-            left.sectorY -= right.sectorY;
-            left.sectorZ -= right.sectorZ;
-            return left;
+            return left.Sub(ref right);
         }
         public static WorldPos operator -(WorldPos left, Vector3d right)
         {
