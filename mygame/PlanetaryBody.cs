@@ -21,12 +21,12 @@ namespace MyGame
         public int subdivisionMaxRecurisonDepth = 10;
         public volatile Material planetMaterial;
         public double radiusVariation = 20;
-        public double subdivisionSphereRadiusModifier = 0.5f;
+        public double subdivisionSphereRadiusModifier { get; set; } = 2f;
         double subdivisionSphereRadiusModifier_debugModified
         {
             get
             {
-                return subdivisionSphereRadiusModifier * (0.5f + DebugKeys.keyIK);
+                return subdivisionSphereRadiusModifier * (1.0f + DebugKeys.keyIK);
             }
         }
         public double startingRadiusSubdivisionModifier = 1;
@@ -240,7 +240,7 @@ namespace MyGame
 
         void StopMeshGenerationInChilds(PlanetaryBodyChunk chunk)
         {
-            lock(chunk.childs)
+            lock (chunk.childs)
             {
                 foreach (var child in chunk.childs)
                 {
@@ -250,18 +250,23 @@ namespace MyGame
             }
         }
 
-        void TrySubdivideToLevel_Generation(PlanetaryBodyChunk chunk, Sphere sphere, int recursionDepth)
+
+
+        void TrySubdivideToLevel_Generation(PlanetaryBodyChunk chunk, double tresholdWeight, int recursionDepth)
         {
-            if (recursionDepth > 0 && GeometryUtility.Intersects(chunk.realVisibleRange, sphere))
+            var cam = Entity.Scene.mainCamera;
+            var weight = chunk.GetWeight(cam);
+            if (recursionDepth > 0 && weight > tresholdWeight)
+            //if (recursionDepth > 0 && GeometryUtility.Intersects(chunk.realVisibleRange, sphere))
             {
                 chunk.SubDivide();
                 chunk.StopMeshGeneration();
-                sphere.radius *= subdivisionSphereRadiusModifier_debugModified * 1.1f;
-                lock(chunk.childs)
+                tresholdWeight *= subdivisionSphereRadiusModifier_debugModified * 1.1f;
+                lock (chunk.childs)
                 {
                     foreach (var child in chunk.childs)
                     {
-                        TrySubdivideToLevel_Generation(child, sphere, recursionDepth - 1);
+                        TrySubdivideToLevel_Generation(child, tresholdWeight, recursionDepth - 1);
                     }
                 }
             }
@@ -278,7 +283,7 @@ namespace MyGame
 
         void HideInChilds(PlanetaryBodyChunk chunk)
         {
-            lock(chunk.childs)
+            lock (chunk.childs)
             {
                 foreach (var child in chunk.childs)
                 {
@@ -290,18 +295,21 @@ namespace MyGame
 
 
         // return true if all childs are visible
-        bool TrySubdivideToLevel_Visibility(PlanetaryBodyChunk chunk, Sphere sphere, int recursionDepth)
+        bool TrySubdivideToLevel_Visibility(PlanetaryBodyChunk chunk, double tresholdWeight, int recursionDepth)
         {
-            if (recursionDepth > 0 && GeometryUtility.Intersects(chunk.realVisibleRange, sphere))
+            var cam = Entity.Scene.mainCamera;
+            var weight = chunk.GetWeight(cam);
+            //if (recursionDepth > 0 && GeometryUtility.Intersects(chunk.realVisibleRange, sphere))
+            if (recursionDepth > 0 && weight > tresholdWeight)
             {
                 var areChildrenFullyVisible = true;
                 chunk.SubDivide();
-                sphere.radius *= subdivisionSphereRadiusModifier_debugModified;
-                lock(chunk.childs)
+                tresholdWeight *= subdivisionSphereRadiusModifier_debugModified;
+                lock (chunk.childs)
                 {
                     foreach (var child in chunk.childs)
                     {
-                        areChildrenFullyVisible &= TrySubdivideToLevel_Visibility(child, sphere, recursionDepth - 1);
+                        areChildrenFullyVisible &= TrySubdivideToLevel_Visibility(child, tresholdWeight, recursionDepth - 1);
                     }
                 }
 
@@ -325,27 +333,14 @@ namespace MyGame
                 // if visible, update final positions weight according to distance
                 if (chunk.renderer.RenderingMode == RenderingMode.RenderGeometryAndCastShadows)
                 {
+                    /*
                     var camPos = (Scene.mainCamera.Transform.Position - this.Transform.Position).ToVector3();
                     var d = chunk.renderer.Mesh.Vertices.FindClosest(p => p.Distance(camPos)).Distance(camPos);
                     var e0 = sphere.radius / subdivisionSphereRadiusModifier_debugModified;
                     var e1 = e0 * subdivisionSphereRadiusModifier_debugModified;
-
-                    /*
-                    var t = chunk.realVisibleRange;
-                    var pos = this.Transform.Position;
-                    var d = (new Plane(t.a.ToVector3() + pos, t.b.ToVector3() + pos, t.c.ToVector3() + pos)).GetDistanceToPoint(
-                        Scene.mainCamera.Transform.Position
-                        ).Abs();
-                    var e0 = sphere.radius / subdivisionSphereRadiusModifier_debugModified;
-                    var e1 = e0 * subdivisionSphereRadiusModifier_debugModified;
-                    */
-                    /*
-                    var t = e0 - e1;
-                    var m = (e0 + e1) / 2;
-                    e0 = m + t * 0.3f;
-                    e1 = m - t * 0.3f;
-                    */
                     var w = MyMath.SmoothStep(e0, e1, d);
+                    */
+                    var w = 1;
                     chunk.renderer.Material.Uniforms.Set("param_finalPosWeight", (float)w);
                 }
 
@@ -362,8 +357,8 @@ namespace MyGame
             var sphere = new Sphere((pos - Transform.Position).ToVector3d(), this.radius * startingRadiusSubdivisionModifier);
             foreach (PlanetaryBodyChunk rootChunk in this.rootChunks)
             {
-                TrySubdivideToLevel_Generation(rootChunk, sphere, this.subdivisionMaxRecurisonDepth);
-                TrySubdivideToLevel_Visibility(rootChunk, sphere, this.subdivisionMaxRecurisonDepth);
+                TrySubdivideToLevel_Generation(rootChunk, 100, this.subdivisionMaxRecurisonDepth);
+                TrySubdivideToLevel_Visibility(rootChunk, 100, this.subdivisionMaxRecurisonDepth);
             }
         }
 
