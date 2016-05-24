@@ -13,15 +13,15 @@ namespace MyGame
 {
     public class PlanetaryBody : ComponentWithShortcuts
     {
+        public double radius;
+        public double radiusVariation = 20;
         /// <summary>
         /// Is guaranteeed to be odd (1, 3, 5, 7, ...)
         /// </summary>
-        public int chunkNumberOfVerticesOnEdge = 10;
-        public double radius;
+        public int chunkNumberOfVerticesOnEdge = 20;
         public int subdivisionMaxRecurisonDepth = 10;
         public volatile Material planetMaterial;
-        public double radiusVariation = 20;
-        public double subdivisionSphereRadiusModifier { get; set; } = 2f;
+        public double subdivisionSphereRadiusModifier { get; set; } = 1f;
         double subdivisionSphereRadiusModifier_debugModified
         {
             get
@@ -44,8 +44,6 @@ namespace MyGame
         {
             perlin = new PerlinD(5646);
             worley = new WorleyD(894984, WorleyD.DistanceFunction.Euclidian);
-
-            entity.EventSystem.Register((MyEngine.Events.InputUpdate evt) => OnGraphicsUpdate(evt.DeltaTimeNow));
         }
 
 
@@ -231,13 +229,6 @@ namespace MyGame
 
 
 
-        void OnGraphicsUpdate(double deltaTime)
-        {
-
-
-        }
-
-
         void StopMeshGenerationInChilds(PlanetaryBodyChunk chunk)
         {
             lock (chunk.childs)
@@ -261,7 +252,7 @@ namespace MyGame
             {
                 chunk.SubDivide();
                 chunk.StopMeshGeneration();
-                tresholdWeight *= subdivisionSphereRadiusModifier_debugModified * 1.1f;
+                tresholdWeight *= subdivisionSphereRadiusModifier_debugModified;
                 lock (chunk.childs)
                 {
                     foreach (var child in chunk.childs)
@@ -299,6 +290,7 @@ namespace MyGame
         {
             var cam = Entity.Scene.mainCamera;
             var weight = chunk.GetWeight(cam);
+
             //if (recursionDepth > 0 && GeometryUtility.Intersects(chunk.realVisibleRange, sphere))
             if (recursionDepth > 0 && weight > tresholdWeight)
             {
@@ -357,8 +349,8 @@ namespace MyGame
             var sphere = new Sphere((pos - Transform.Position).ToVector3d(), this.radius * startingRadiusSubdivisionModifier);
             foreach (PlanetaryBodyChunk rootChunk in this.rootChunks)
             {
-                TrySubdivideToLevel_Generation(rootChunk, 100, this.subdivisionMaxRecurisonDepth);
-                TrySubdivideToLevel_Visibility(rootChunk, 100, this.subdivisionMaxRecurisonDepth);
+                TrySubdivideToLevel_Generation(rootChunk, startingRadiusSubdivisionModifier, this.subdivisionMaxRecurisonDepth);
+                TrySubdivideToLevel_Visibility(rootChunk, startingRadiusSubdivisionModifier, this.subdivisionMaxRecurisonDepth);
             }
         }
 

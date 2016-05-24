@@ -10,6 +10,12 @@ namespace MyEngine
 {
     public static class GeometryUtility
     {
+        /// <summary>
+        /// Returns true if bounds are partially inside planes. False if bounds are completely outside planes.
+        /// </summary>
+        /// <param name="planes"></param>
+        /// <param name="bounds"></param>
+        /// <returns></returns>
         public static bool TestPlanesAABB(Plane[] planes, Bounds bounds)
         {
             for (uint i = 0; i < 6; i++)

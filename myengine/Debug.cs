@@ -55,10 +55,9 @@ namespace MyEngine
             }
         }
 
-        volatile static Dictionary<string, TickStats> nameToTickStat = new Dictionary<string, TickStats>();
+        static Dictionary<string, TickStats> nameToTickStat = new Dictionary<string, TickStats>();
 
-
-        volatile static Dictionary<string, DebugValue> nameToDebugValue = new Dictionary<string, DebugValue>();
+        static Dictionary<string, DebugValue> nameToDebugValue = new Dictionary<string, DebugValue>();
 
         public class DebugValue
         {

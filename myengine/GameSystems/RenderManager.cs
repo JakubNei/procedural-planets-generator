@@ -249,8 +249,11 @@ namespace MyEngine
                 }
             }
             var comparer = new RenderableDistanceComparer(camera.ViewPointPosition);
-            //newToRender.Sort(comparer);
-            this.toRender = newToRender;
+            newToRender.Sort(comparer);
+            lock (this)
+            {
+                this.toRender = newToRender;
+            }
         }
 
         class RenderableDistanceComparer : IComparer<IRenderable>

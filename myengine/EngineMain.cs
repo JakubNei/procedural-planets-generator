@@ -177,7 +177,7 @@ namespace MyEngine
             {
                 if (scenes.Count > 0)
                 {
-                    Debug.Tick("BuildRenderList");
+                    Debug.Tick("buildRender");
                     foreach (var scene in scenes)
                     {
                         var camera = scene.mainCamera;
@@ -197,7 +197,7 @@ namespace MyEngine
         Queue<DateTime> frameTimes10sec = new Queue<DateTime>();
         void EventThreadMain()
         {
-            Debug.Tick("eventThread");
+            Debug.Tick("event");
 
             var now = DateTime.Now;
 
@@ -234,11 +234,13 @@ namespace MyEngine
                 )
             );
 
+            Thread.Sleep(5);
+
         }
 
         void RenderMain()
         {
-            Debug.Tick("renderThread");
+            Debug.Tick("render");
 
             this.Title = string.Join("\t  ", Debug.stringValues.OrderBy(kvp => kvp.Key).Select(kvp => kvp.Key + ":" + kvp.Value).ToArray());
 

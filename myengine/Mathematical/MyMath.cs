@@ -106,6 +106,14 @@ namespace MyEngine
             if (x > 1) x = 1;
             if (x < 0) x = 0;
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float Clamp01(float x)
+        {
+            if (x > 1) return 1;
+            if (x < 0) return 0;
+            return x;
+        }
+
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Clamp01(ref int x)

@@ -37,7 +37,7 @@ namespace MyGame
 
             Input.LockCursor = disabledInput;
 
-            Entity.EventSystem.Register<InputUpdate>(e => Update(e.DeltaTimeNow));
+            Entity.EventSystem.Register<InputUpdate>(e => Update(e.DeltaTimeOver1Second));
 
         }
 
@@ -95,7 +95,7 @@ namespace MyGame
 
             if (scrollWheelDelta > 0) cameraSpeed *= 1.3f;
             if (scrollWheelDelta < 0) cameraSpeed /= 1.3f;
-            cameraSpeed = MyMath.Clamp(cameraSpeed, 1, 100000);
+            cameraSpeed = MyMath.Clamp(cameraSpeed, 1, 1000);
 
 
             /*
@@ -125,7 +125,7 @@ namespace MyGame
             direction = direction.RotateBy(rot);
 
 
-            float d = cameraSpeed * (float)deltaTime;
+            float d = cameraSpeed;
 
             if (Input.GetKey(Key.ShiftLeft)) d *= 5;
 

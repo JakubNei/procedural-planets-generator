@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 using OpenTK;
@@ -27,7 +28,18 @@ namespace MyGame
         {
             this.scene = scene;
             Start();
-            scene.EventSystem.Register((MyEngine.Events.InputUpdate e) => OnGraphicsUpdate(e.DeltaTimeNow));
+
+            var t = new Thread(() =>
+            {
+                while (scene.Engine.IsExiting == false)
+                {
+                    Debug.Tick("planets");
+                    OnGraphicsUpdate();
+                }
+            });
+            t.Priority = ThreadPriority.Highest;
+            t.IsBackground = true;
+            t.Start();
         }
 
         void Start()
@@ -92,11 +104,6 @@ namespace MyGame
             planet.radius = 300; // 6371000 earth radius
             planet.radiusVariation = 100;
             planet.radiusVariation = 15;
-            //planet.chunkNumberOfVerticesOnEdge = 20; // 20
-            planet.chunkNumberOfVerticesOnEdge = 20;
-            planet.subdivisionMaxRecurisonDepth = 11;
-            planet.startingRadiusSubdivisionModifier = 2f;
-            planet.subdivisionSphereRadiusModifier = 2f;
             planet.Transform.Position = new WorldPos(1000, -100, 1000);
             planet.Start();
             planet.planetMaterial = planetMaterial;
@@ -110,7 +117,7 @@ namespace MyGame
         }
 
         bool freezeUpdate = false;
-        void OnGraphicsUpdate(double dt)
+        void OnGraphicsUpdate()
         {
             if (scene.Input.GetKeyDown(Key.P)) freezeUpdate = !freezeUpdate;
             if (freezeUpdate) return;
