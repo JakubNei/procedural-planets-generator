@@ -48,7 +48,7 @@ namespace MyGame
                         gr.lightWorldRadius = 1000;
                         entity.EventSystem.Register((MyEngine.Events.InputUpdate e) =>
                         {
-                            gr.lightScreenPos = cam.GetScreenPos(sunEntity.Transform.Position);
+                            gr.lightScreenPos = cam.WorldToScreenPos(sunEntity.Transform.Position);
                             gr.lightWorldPos = cam.Transform.Position.Towards(sunEntity.Transform.Position).ToVector3();
                         });
 

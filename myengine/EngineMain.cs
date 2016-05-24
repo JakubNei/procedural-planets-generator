@@ -214,8 +214,6 @@ namespace MyEngine
             eventThreadTime.Restart();
 
 
-            this.Title = string.Join("\t  ", Debug.stringValues.OrderBy(kvp => kvp.Key).Select(kvp => kvp.Key + ":" + kvp.Value).ToArray());
-
             if (this.Focused) Input.Update();
 
 
@@ -240,8 +238,9 @@ namespace MyEngine
 
         void RenderMain()
         {
-            //Debug.AddValue("fps", (1 / e.Time).ToString());
             Debug.Tick("renderThread");
+
+            this.Title = string.Join("\t  ", Debug.stringValues.OrderBy(kvp => kvp.Key).Select(kvp => kvp.Key + ":" + kvp.Value).ToArray());
 
 
 

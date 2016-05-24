@@ -37,39 +37,45 @@ namespace MyEngine
 
         void MoveSectorIfNeeded()
         {
+            const double c = 0.5f;
+
             long sector_add;
 
-            sector_add = (long)Math.Floor(insideSectorPosition.X / sectorCubeSideLength + 0.5);
+            sector_add = (long)Math.Floor(insideSectorPosition.X / sectorCubeSideLength + c);
             insideSectorPosition.X -= sectorCubeSideLength * sector_add;
             sectorX += sector_add;
 
-            sector_add = (long)Math.Floor(insideSectorPosition.Y / sectorCubeSideLength + 0.5);
+            sector_add = (long)Math.Floor(insideSectorPosition.Y / sectorCubeSideLength + c);
             insideSectorPosition.Y -= sectorCubeSideLength * sector_add;
             sectorY += sector_add;
 
-            sector_add = (long)Math.Floor(insideSectorPosition.Z / sectorCubeSideLength + 0.5);
+            sector_add = (long)Math.Floor(insideSectorPosition.Z / sectorCubeSideLength + c);
             insideSectorPosition.Z -= sectorCubeSideLength * sector_add;
             sectorZ += sector_add;
         }
         public double Distance(WorldPos worldPos)
         {
-            return this.Towards(worldPos).ToVector3().Length;
+            return this.Towards(worldPos).ToVector3d().Length;
+        }
+        public double DistanceSqr(WorldPos worldPos)
+        {
+            return this.Towards(worldPos).ToVector3d().LengthSquared;
         }
 
         public Vector3d ToVector3d()
         {
             return new Vector3d(
-                insideSectorPosition.X + sectorX * sectorCubeSideLength,
-                insideSectorPosition.Y + sectorY * sectorCubeSideLength,
-                insideSectorPosition.Z + sectorZ * sectorCubeSideLength
+                insideSectorPosition.X + (sectorX * sectorCubeSideLength),
+                insideSectorPosition.Y + (sectorY * sectorCubeSideLength),
+                insideSectorPosition.Z + (sectorZ * sectorCubeSideLength)
             );
         }
         public Vector3 ToVector3()
         {
             return new Vector3(
-                (float)(insideSectorPosition.X + sectorX * sectorCubeSideLength),
-                (float)(insideSectorPosition.Y + sectorY * sectorCubeSideLength),
-                (float)(insideSectorPosition.Z + sectorZ * sectorCubeSideLength)
+                (float)(insideSectorPosition.X + (sectorX * sectorCubeSideLength)),
+                (float)(insideSectorPosition.Y + (sectorY * sectorCubeSideLength)),
+                (float)(insideSectorPosition.Z + (sectorZ * sectorCubeSideLength))
             );
         }
 
@@ -107,10 +113,10 @@ namespace MyEngine
         {
             var ret = new WorldPos();
             ret.insideSectorPosition = this.insideSectorPosition - other.insideSectorPosition;
-            ret.MoveSectorIfNeeded();
             ret.sectorX = this.sectorX - other.sectorX;
             ret.sectorY = this.sectorY - other.sectorY;
             ret.sectorZ = this.sectorZ - other.sectorZ;
+            ret.MoveSectorIfNeeded();
             return ret;
         }
 
@@ -118,10 +124,10 @@ namespace MyEngine
         {
             var ret = new WorldPos();
             ret.insideSectorPosition = this.insideSectorPosition + other.insideSectorPosition;
-            ret.MoveSectorIfNeeded();
             ret.sectorX = this.sectorX + other.sectorX;
             ret.sectorY = this.sectorY + other.sectorY;
             ret.sectorZ = this.sectorZ + other.sectorZ;
+            ret.MoveSectorIfNeeded();
             return ret;
         }
 
@@ -154,6 +160,15 @@ namespace MyEngine
             return left + right.ToVector3d();
         }
 
+
+        public static WorldPos operator +(Vector3d left, WorldPos right)
+        {
+            return right + left;
+        }
+        public static WorldPos operator +(Vector3 left, WorldPos right)
+        {
+            return right + left;
+        }
         //
         // Summary:
         //     Subtracts two instances.
@@ -181,7 +196,6 @@ namespace MyEngine
         {
             return left - right.ToVector3d();
         }
-
 
         //
         // Summary:

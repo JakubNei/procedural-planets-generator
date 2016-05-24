@@ -236,6 +236,7 @@ namespace MyEngine
                     {
                         if (renderable.ForcePassFrustumCulling || GeometryUtility.TestPlanesAABB(frustrumPlanes, renderable.GetBounds(camera.Transform.Position)))
                         {
+                            if (renderable == null) continue;
                             newToRender.Add(renderable);
                             if (renderable.ForcePassFrustumCulling) renderable.SetCameraRenderStatus(camera, RenderStatus.RenderedForced);
                             else renderable.SetCameraRenderStatus(camera, RenderStatus.RenderedAndVisible);
@@ -248,7 +249,7 @@ namespace MyEngine
                 }
             }
             var comparer = new RenderableDistanceComparer(camera.ViewPointPosition);
-            newToRender.Sort(comparer);
+            //newToRender.Sort(comparer);
             this.toRender = newToRender;
         }
 
@@ -263,6 +264,9 @@ namespace MyEngine
             }
             public int Compare(IRenderable x, IRenderable y)
             {
+                if (ReferenceEquals(y, x)) return 0;
+                if (ReferenceEquals(x, null)) return -1;
+                if (ReferenceEquals(y, null)) return 1;
                 var distX = x.GetBounds(viewPointPosition).Center.DistanceSqr(viewPointPosition_vec3);
                 var distY = y.GetBounds(viewPointPosition).Center.DistanceSqr(viewPointPosition_vec3);
                 if (distX == distY) return 0;

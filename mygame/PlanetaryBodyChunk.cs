@@ -217,7 +217,7 @@ namespace MyGame
         int numbetOfChunksGenerated = 0;
         bool isGenerated = false;
 
-        static Dictionary<int, List<int>> numberOfVerticesOnEdge_To_oneTimeGeneratedIndicies = new Dictionary<int, List<int>>();
+        static Dictionary<int, List<int>> numberOfVerticesOnEdge_To_oneTimeGeneratedIndicies;
         static void GetIndiciesList(int numberOfVerticesOnEdge, out List<int> newIndicies)
         {
 
@@ -232,6 +232,7 @@ namespace MyGame
 
             */
             List<int> oneTimeGeneratedIndicies;
+            if (numberOfVerticesOnEdge_To_oneTimeGeneratedIndicies == null) numberOfVerticesOnEdge_To_oneTimeGeneratedIndicies = new Dictionary<int, List<int>>();
             if (numberOfVerticesOnEdge_To_oneTimeGeneratedIndicies.TryGetValue(numberOfVerticesOnEdge, out oneTimeGeneratedIndicies) == false)
             {
                 oneTimeGeneratedIndicies = new List<int>();
@@ -647,6 +648,43 @@ namespace MyGame
             meshGenerationService.DoesNotNeedMeshGeneration(this);
         }
 
+        public double GetWeight(Camera cam)
+        {
+            var myPos = realVisibleRange.ToBoundingSphere().center + planetaryBody.Transform.Position;
+            var dirToCamera = myPos.Towards(cam.ViewPointPosition).ToVector3d();
+
+            // 1 looking at it from top, 0 looking at it from side, -1 looking at it from behind
+            var angleToCamera = realVisibleRange.Normal.Dot(dirToCamera);
+
+            var distanceToCamera = myPos.Distance(cam.ViewPointPosition);
+            
+            double radiusCameraSpace;
+            {
+                // this is world space, doesnt take into consideration rotation, not good
+                var sphere = noElevationRange.ToBoundingSphere();
+                var radiusWorldSpace = sphere.radius;
+                var fov = cam.fieldOfView;
+                radiusCameraSpace = radiusWorldSpace * MyMath.Cot(fov / 2) / distanceToCamera;
+            }
+
+            {
+                var a = cam.WorldToScreenPos(realVisibleRange.a + planetaryBody.Transform.Position);
+                var b = cam.WorldToScreenPos(realVisibleRange.b + planetaryBody.Transform.Position);
+                var c = cam.WorldToScreenPos(realVisibleRange.c + planetaryBody.Transform.Position);
+                a.Z = 0;
+                b.Z = 0;
+                c.Z = 0;
+                var aab = new Bounds();
+                aab.Encapsulate(a);
+                aab.Encapsulate(b);
+                aab.Encapsulate(c);
+                radiusCameraSpace = aab.Size.Length;
+            }
+
+
+
+            return radiusCameraSpace;
+        }
 
         public void RequestMeshGeneration()
         {
@@ -654,7 +692,10 @@ namespace MyGame
 
             var cam = planetaryBody.Entity.Scene.mainCamera;
 
+            meshGenerationService.RequestGenerationOfMesh(this, GetWeight(planetaryBody.Scene.mainCamera));
+
             // help from http://stackoverflow.com/questions/3717226/radius-of-projected-sphere
+            /*
             var sphere = noElevationRange.ToBoundingSphere();
             var radiusWorldSpace = sphere.radius;
             var sphereDistanceToCameraWorldSpace = cam.Transform.Position.Distance(planetaryBody.Transform.Position + sphere.center.ToVector3());
@@ -662,6 +703,8 @@ namespace MyGame
             var radiusCameraSpace = radiusWorldSpace * MyMath.Cot(fov / 2) / sphereDistanceToCameraWorldSpace;
             var priority = sphereDistanceToCameraWorldSpace / radiusCameraSpace;
             if (priority < 0) priority *= -1;
+            meshGenerationService.RequestGenerationOfMesh(this, priority);
+            */
 
             /*
             if (parentChunk != null && parentChunk.renderer != null)
@@ -671,9 +714,9 @@ namespace MyGame
             }
             */
 
-            // smaller priority is more important
-            meshGenerationService.RequestGenerationOfMesh(this, priority);
+
         }
+
 
 
         static MeshGenerationService meshGenerationService = new MeshGenerationService();
@@ -687,7 +730,7 @@ namespace MyGame
             HashSet<PlanetaryBodyChunk> chunkIsBeingGenerated = new HashSet<PlanetaryBodyChunk>();
 
             //ReaderWriterLock chunkToPriority_mutex = new ReaderWriterLock();
-            Dictionary<PlanetaryBodyChunk, double> chunkToPriority = new Dictionary<PlanetaryBodyChunk, double>();
+            Dictionary<PlanetaryBodyChunk, double> chunkToWeight = new Dictionary<PlanetaryBodyChunk, double>();
 
             List<Thread> threads = new List<Thread>();
 
@@ -701,7 +744,7 @@ namespace MyGame
             void Start()
             {
                 generationThreadMiliSecondsSleep = 1;
-                chunkToPriority.Clear();
+                chunkToWeight.Clear();
                 doRun = true;
                 int numThreads = Environment.ProcessorCount;
 #if DEBUG
@@ -727,16 +770,16 @@ namespace MyGame
 
                     PlanetaryBodyChunk chunk = null;
 
-                    lock (chunkToPriority)
+                    lock (chunkToWeight)
                     {
-                        if (chunkToPriority.Count > 0)
+                        if (chunkToWeight.Count > 0)
                         {
-                            var priority = double.MaxValue;
-                            foreach (var kvp in chunkToPriority)
+                            double weight = -1;
+                            foreach (var kvp in chunkToWeight)
                             {
-                                if (kvp.Value < priority)
+                                if (kvp.Value > weight)
                                 {
-                                    priority = kvp.Value;
+                                    weight = kvp.Value;
                                     chunk = kvp.Key;
                                 }
                             }
@@ -751,7 +794,7 @@ namespace MyGame
                                     else
                                     {
                                         chunkIsBeingGenerated.Add(chunk);
-                                        chunkToPriority.Remove(chunk);
+                                        chunkToWeight.Remove(chunk);
                                     }
                                 }
                             }
@@ -773,7 +816,7 @@ namespace MyGame
 
                     if (threadIndex == 0)
                     {
-                        Debug.AddValue("chunksToGenerateQueued", chunkToPriority.Count.ToString());
+                        Debug.AddValue("chunksToGenerateQueued", chunkToWeight.Count.ToString());
 
 
                         //if (fps < 55) generationThreadMiliSecondsSleep *= 2;
@@ -786,7 +829,12 @@ namespace MyGame
                 }
             }
 
-            public void RequestGenerationOfMesh(PlanetaryBodyChunk chunk, double priorityAdd)
+            /// <summary>
+            /// Smaller priority is more important.
+            /// </summary>
+            /// <param name="chunk"></param>
+            /// <param name="weight"></param>
+            public void RequestGenerationOfMesh(PlanetaryBodyChunk chunk, double weight)
             {
                 if (chunk.renderer != null) return;
 
@@ -804,7 +852,7 @@ namespace MyGame
 
                 if (chunk.renderer != null) return;
 
-                lock (chunkToPriority)
+                lock (chunkToWeight)
                 {
                     /*
                     var found = chunkToPriority.ContainsKey(chunk);
@@ -813,16 +861,16 @@ namespace MyGame
                         chunkToPriority[chunk] = 0;
                     }
                     */
-                    chunkToPriority[chunk] = priorityAdd;
+                    chunkToWeight[chunk] = weight;
                 }
             }
 
 
             public void DoesNotNeedMeshGeneration(PlanetaryBodyChunk chunk)
             {
-                lock (chunkToPriority)
+                lock (chunkToWeight)
                 {
-                    chunkToPriority.Remove(chunk);
+                    chunkToWeight.Remove(chunk);
                 }
             }
         }

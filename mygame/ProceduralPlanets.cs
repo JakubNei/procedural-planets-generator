@@ -49,11 +49,11 @@ namespace MyGame
             
             {
                 var random = new Random();
-                var ra = 2000f;
                 for (int i = 0; i < 1000; i++)
                 {
                     var e = scene.AddEntity("start dust #" + i);
-                    e.Transform.Position = new WorldPos(random.Next(-ra, ra), random.Next(-ra, ra), random.Next(-ra, ra));
+                    var vec = new Vector3d(random.Next(-1.0, 1.0), random.Next(-1.0, 1.0), random.Next(-1.0, 1.0));
+                    e.Transform.Position = new WorldPos(vec.Normalized() * (2000.0 + random.Next(0, 2000)));
                     e.Transform.Scale *= 1f;
                     var r = e.AddComponent<MeshRenderer>();
                     r.Mesh = Factory.GetMesh("sphere.obj");
@@ -96,7 +96,7 @@ namespace MyGame
             planet.chunkNumberOfVerticesOnEdge = 20;
             planet.subdivisionMaxRecurisonDepth = 11;
             planet.startingRadiusSubdivisionModifier = 2f;
-            planet.subdivisionSphereRadiusModifier = 0.5f;
+            planet.subdivisionSphereRadiusModifier = 2f;
             planet.Transform.Position = new WorldPos(1000, -100, 1000);
             planet.Start();
             planet.planetMaterial = planetMaterial;

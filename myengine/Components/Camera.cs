@@ -63,7 +63,7 @@ namespace MyEngine.Components
                 Matrix4.CreateFromQuaternion(Quaternion.Invert(Transform.Rotation));
         }
 
-        public Vector3 GetScreenPos(WorldPos worldPos)
+        public Vector3 WorldToScreenPos(WorldPos worldPos)
         {
             var mp = GetRotationMatrix() * GetProjectionMat();
             var p = Vector4.Transform(new Vector4(this.Transform.Position.Towards(worldPos).ToVector3(), 1), mp);

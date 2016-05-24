@@ -11,6 +11,7 @@ namespace MyEngine
     {
         private Vector3 m_Center;
         private Vector3 m_Extents;
+
         public Vector3 Center
         {
             get

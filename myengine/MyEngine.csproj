@@ -93,7 +93,7 @@
       <DependentUpon>DebugValuesTable.cs</DependentUpon>
     </Compile>
     <Compile Include="GameSystems\RenderManager.cs" />
-    <Compile Include="System\DeferredSynchronizeInvoke.cs" />
+    <Compile Include="Tier1\DeferredSynchronizeInvoke.cs" />
     <Compile Include="enums.cs" />
     <Compile Include="Events\IEvent.cs" />
     <Compile Include="Events\EventSystem.cs" />
@@ -115,7 +115,7 @@
     <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="Extensions\SystemDrawingExtensions.cs" />
     <Compile Include="Extensions\TypeExtensions.cs" />
-    <Compile Include="System\FileChangedWatcher.cs" />
+    <Compile Include="Tier1\FileChangedWatcher.cs" />
     <Compile Include="GameSystems\Asset.cs" />
     <Compile Include="GameSystems\AssetFolder.cs" />
     <Compile Include="GameSystems\AssetSystem.cs" />
@@ -162,18 +162,18 @@
     <Compile Include="Panels\TimeGraph.Designer.cs">
       <DependentUpon>TimeGraph.cs</DependentUpon>
     </Compile>
-    <Compile Include="System\BiDictionary.cs" />
-    <Compile Include="System\DeferredCollection.cs" />
-    <Compile Include="System\Int2.cs" />
-    <Compile Include="System\Int3.cs" />
-    <Compile Include="System\MyWeakReference.cs" />
-    <Compile Include="System\PropertyDescriptors.cs" />
-    <Compile Include="System\ReadOnlyDictionary.cs" />
-    <Compile Include="System\ThreadSpecific.cs" />
-    <Compile Include="System\TimeoutList.cs" />
-    <Compile Include="System\TwoKeyDictionary.cs" />
-    <Compile Include="System\ValueChanged.cs" />
-    <Compile Include="System\VirtualBrain.cs" />
+    <Compile Include="Tier1\BiDictionary.cs" />
+    <Compile Include="Tier1\DeferredCollection.cs" />
+    <Compile Include="Tier1\Int2.cs" />
+    <Compile Include="Tier1\Int3.cs" />
+    <Compile Include="Tier1\MyWeakReference.cs" />
+    <Compile Include="Tier1\PropertyDescriptors.cs" />
+    <Compile Include="Tier1\ReadOnlyDictionary.cs" />
+    <Compile Include="Tier1\ThreadSpecific.cs" />
+    <Compile Include="Tier1\TimeoutList.cs" />
+    <Compile Include="Tier1\TwoKeyDictionary.cs" />
+    <Compile Include="Tier1\ValueChanged.cs" />
+    <Compile Include="Tier1\VirtualBrain.cs" />
     <Compile Include="Texture.cs" />
     <Compile Include="Texture2D.cs" />
     <Compile Include="Components\Transform.cs" />

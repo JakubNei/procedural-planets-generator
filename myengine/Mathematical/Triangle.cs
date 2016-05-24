@@ -14,11 +14,24 @@ namespace MyEngine
         public Vector3d b;
         public Vector3d c;
 
+
+
         public Vector3d CenterPos
         {
             get
             {
                 return (a + b + c) / 3.0f;
+            }
+        }
+
+        public Vector3d Normal
+        {
+            get
+            {
+                return Vector3d.Normalize(Vector3d.Cross(
+                    b - a,
+                    c - a
+                ));
             }
         }
 
