@@ -22,15 +22,14 @@ namespace MyGame
         public int subdivisionMaxRecurisonDepth = 10;
         public volatile Material planetMaterial;
         public double subdivisionSphereRadiusModifier { get; set; } = 1f;
-        double subdivisionSphereRadiusModifier_debugModified
+        public double startingRadiusSubdivisionModifier = 1;
+        double debugWeight
         {
             get
             {
-                return subdivisionSphereRadiusModifier * (1.0f + DebugKeys.keyIK);
+                return DebugKeys.keyIK*2 - 0.8;
             }
         }
-        public double startingRadiusSubdivisionModifier = 1;
-
         const bool debugSameHeightEverywhere = false; // DEBUG
 
         PerlinD perlin;
@@ -246,13 +245,12 @@ namespace MyGame
         void TrySubdivideToLevel_Generation(PlanetaryBodyChunk chunk, double tresholdWeight, int recursionDepth)
         {
             var cam = Entity.Scene.mainCamera;
-            var weight = chunk.GetWeight(cam);
+            var weight = chunk.GetWeight(cam) + debugWeight + 0.1;
             if (recursionDepth > 0 && weight > tresholdWeight)
             //if (recursionDepth > 0 && GeometryUtility.Intersects(chunk.realVisibleRange, sphere))
             {
                 chunk.SubDivide();
                 chunk.StopMeshGeneration();
-                tresholdWeight *= subdivisionSphereRadiusModifier_debugModified;
                 lock (chunk.childs)
                 {
                     foreach (var child in chunk.childs)
@@ -289,14 +287,13 @@ namespace MyGame
         bool TrySubdivideToLevel_Visibility(PlanetaryBodyChunk chunk, double tresholdWeight, int recursionDepth)
         {
             var cam = Entity.Scene.mainCamera;
-            var weight = chunk.GetWeight(cam);
+            var weight = chunk.GetWeight(cam) + debugWeight;
 
             //if (recursionDepth > 0 && GeometryUtility.Intersects(chunk.realVisibleRange, sphere))
             if (recursionDepth > 0 && weight > tresholdWeight)
             {
                 var areChildrenFullyVisible = true;
                 chunk.SubDivide();
-                tresholdWeight *= subdivisionSphereRadiusModifier_debugModified;
                 lock (chunk.childs)
                 {
                     foreach (var child in chunk.childs)
@@ -332,7 +329,7 @@ namespace MyGame
                     var e1 = e0 * subdivisionSphereRadiusModifier_debugModified;
                     var w = MyMath.SmoothStep(e0, e1, d);
                     */
-                    var w = 1;
+                    var w = MyMath.Clamp01(weight / tresholdWeight);
                     chunk.renderer.Material.Uniforms.Set("param_finalPosWeight", (float)w);
                 }
 
