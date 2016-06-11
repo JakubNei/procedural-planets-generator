@@ -231,49 +231,52 @@ namespace MyGame
             /\/\/\/\/\/\ bottom line
 
             */
-            List<int> oneTimeGeneratedIndicies;
-            if (numberOfVerticesOnEdge_To_oneTimeGeneratedIndicies.TryGetValue(numberOfVerticesOnEdge, out oneTimeGeneratedIndicies) == false)
-            {
-                oneTimeGeneratedIndicies = new List<int>();
-                numberOfVerticesOnEdge_To_oneTimeGeneratedIndicies[numberOfVerticesOnEdge] = oneTimeGeneratedIndicies;
-                // make triangles indicies list
-                {
-                    int lineStartIndex = 0;
-                    int nextLineStartIndex = 1;
-                    oneTimeGeneratedIndicies.Add(0);
-                    oneTimeGeneratedIndicies.Add(1);
-                    oneTimeGeneratedIndicies.Add(2);
+			lock(numberOfVerticesOnEdge_To_oneTimeGeneratedIndicies)
+			{
+				List<int> oneTimeGeneratedIndicies;
+				if (numberOfVerticesOnEdge_To_oneTimeGeneratedIndicies.TryGetValue(numberOfVerticesOnEdge, out oneTimeGeneratedIndicies) == false)
+				{
+					oneTimeGeneratedIndicies = new List<int>();
+					numberOfVerticesOnEdge_To_oneTimeGeneratedIndicies[numberOfVerticesOnEdge] = oneTimeGeneratedIndicies;
+					// make triangles indicies list
+					{
+						int lineStartIndex = 0;
+						int nextLineStartIndex = 1;
+						oneTimeGeneratedIndicies.Add(0);
+						oneTimeGeneratedIndicies.Add(1);
+						oneTimeGeneratedIndicies.Add(2);
 
-                    int numberOfVerticesInBetween = 0;
-                    // we skip first triangle as it was done manually
-                    // we skip last row of vertices as there are no triangles under it
-                    for (int y = 1; y < numberOfVerticesOnEdge - 1; y++)
-                    {
+						int numberOfVerticesInBetween = 0;
+						// we skip first triangle as it was done manually
+						// we skip last row of vertices as there are no triangles under it
+						for (int y = 1; y < numberOfVerticesOnEdge - 1; y++)
+						{
 
-                        lineStartIndex = nextLineStartIndex;
-                        nextLineStartIndex = lineStartIndex + numberOfVerticesInBetween + 2;
+							lineStartIndex = nextLineStartIndex;
+							nextLineStartIndex = lineStartIndex + numberOfVerticesInBetween + 2;
 
-                        for (int x = 0; x <= numberOfVerticesInBetween + 1; x++)
-                        {
+							for (int x = 0; x <= numberOfVerticesInBetween + 1; x++)
+							{
 
-                            oneTimeGeneratedIndicies.Add(lineStartIndex + x);
-                            oneTimeGeneratedIndicies.Add(nextLineStartIndex + x);
-                            oneTimeGeneratedIndicies.Add(nextLineStartIndex + x + 1);
+								oneTimeGeneratedIndicies.Add(lineStartIndex + x);
+								oneTimeGeneratedIndicies.Add(nextLineStartIndex + x);
+								oneTimeGeneratedIndicies.Add(nextLineStartIndex + x + 1);
 
-                            if (x <= numberOfVerticesInBetween) // not a last triangle in line
-                            {
-                                oneTimeGeneratedIndicies.Add(lineStartIndex + x);
-                                oneTimeGeneratedIndicies.Add(nextLineStartIndex + x + 1);
-                                oneTimeGeneratedIndicies.Add(lineStartIndex + x + 1);
-                            }
-                        }
+								if (x <= numberOfVerticesInBetween) // not a last triangle in line
+								{
+									oneTimeGeneratedIndicies.Add(lineStartIndex + x);
+									oneTimeGeneratedIndicies.Add(nextLineStartIndex + x + 1);
+									oneTimeGeneratedIndicies.Add(lineStartIndex + x + 1);
+								}
+							}
 
-                        numberOfVerticesInBetween++;
-                    }
-                }
-            }
+							numberOfVerticesInBetween++;
+						}
+					}
+				}
 
-            newIndicies = oneTimeGeneratedIndicies;//.ToList();
+				newIndicies = oneTimeGeneratedIndicies;//.ToList();
+			}
         }
 
         void CreateRendererAndGenerateMesh()
@@ -299,26 +302,6 @@ namespace MyGame
 
             const bool useSkirts = false;
             //const bool useSkirts = true;
-
-            if (useSkirts)
-            {
-                var s = noElevationRange.a.Distance(noElevationRange.b) / (numberOfVerticesOnEdge - 1);
-                var o = (float)Math.Sqrt(s * s + s * s);
-
-                var d = noElevationRange.a.Distance(noElevationRange.CenterPos);
-
-                var ratio = d / (d - o);
-                //ratio *= 1.06f;
-                //ratio *= 1.12f;
-                //ratio = 0.9f; // debug
-
-                var c = realRange.CenterPos;
-                realRange.a = c + Vector3d.Multiply(realRange.a - c, ratio);
-                realRange.b = c + Vector3d.Multiply(realRange.b - c, ratio);
-                realRange.c = c + Vector3d.Multiply(realRange.c - c, ratio);
-            }
-
-
 
 
             //uint numberOfVerticesOnEdge = 4; // must be over 4, if under or 4 skirts will move all of it

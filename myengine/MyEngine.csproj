@@ -62,6 +62,7 @@
     <Compile Include="Constants.cs" />
     <Compile Include="DataAccessibleList.cs" />
     <Compile Include="DataBinder.cs" />
+    <Compile Include="DeltaTimeManager.cs" />
     <Compile Include="Extensions\OpenTK\Vector3Extensions_other.cs" />
     <Compile Include="Extensions\OpenTK\Vector3Extensions_template.cs">
       <AutoGen>True</AutoGen>
@@ -119,8 +120,6 @@
     <Compile Include="GameSystems\Asset.cs" />
     <Compile Include="GameSystems\AssetFolder.cs" />
     <Compile Include="GameSystems\AssetSystem.cs" />
-    <Compile Include="GameSystems\Unit.cs" />
-    <Compile Include="GameSystems\UnitSystem.cs" />
     <Compile Include="ITest1.cs" />
     <Compile Include="Mathematical\MyMath.cs">
       <LastGenOutput>MyMath1.cs</LastGenOutput>

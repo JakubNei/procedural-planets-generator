@@ -19,7 +19,7 @@ namespace MyGame
         public DebugKeys(SceneSystem scene)
         {
             this.scene = scene;
-            scene.EventSystem.Register((MyEngine.Events.InputUpdate e) => OnGraphicsUpdate(e.DeltaTimeNow));
+            scene.EventSystem.Register((MyEngine.Events.EventThreadUpdate e) => Update(e.DeltaTimeNow));
         }
 
 
@@ -29,7 +29,7 @@ namespace MyGame
         public static float keyIK = 0;
         public static float keyOL = 0;
 
-        void OnGraphicsUpdate(double dt)
+        void Update(double dt)
         {
             float s = 0.3f;
 

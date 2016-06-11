@@ -6,26 +6,45 @@ using System.Threading.Tasks;
 
 namespace MyEngine.Events
 {
-    public class InputUpdate : IEvent
-    {
-        public double DeltaTimeNow { get; }
-        public double DeltaTimeOver1Second { get; }
-        public double DeltaTimeOver10Seconds { get; }
-        public InputUpdate(double deltaTimeNow, double deltaTimeOver1Second, double deltaTimeOver10Seconds)
-        {
-            this.DeltaTimeNow = deltaTimeNow;
-            this.DeltaTimeOver1Second = deltaTimeOver1Second;
-            this.DeltaTimeOver10Seconds = deltaTimeOver10Seconds;
-        }
-    }
-    public class WindowResized : IEvent
-    {
-        public int NewPixelWidth { get; private set; }
-        public int NewPixelHeight { get; private set; }
-        public WindowResized(int width, int height)
-        {
-            this.NewPixelWidth = width;
-            this.NewPixelHeight = height;
-        }
-    }
+	public class EventThreadUpdate : DeltaTimeEvent
+	{
+		public EventThreadUpdate(DeltaTimeManager deltaTimeManager) : base(deltaTimeManager)
+		{
+
+		}
+	}
+	public class RenderUpdate : DeltaTimeEvent
+	{
+		public RenderUpdate(DeltaTimeManager deltaTimeManager) : base(deltaTimeManager)
+		{
+
+		}
+	}
+
+	public class DeltaTimeEvent : IEvent
+	{
+		public double DeltaTimeNow { get; }
+		public double DeltaTimeOver1Second { get; }
+		public double DeltaTimeOver10Seconds { get; }
+
+		public virtual bool AllowMultiThreading => true;
+
+		public DeltaTimeEvent(DeltaTimeManager deltaTimeManager)
+		{
+			this.DeltaTimeNow = deltaTimeManager.DeltaTimeNow;
+			this.DeltaTimeOver1Second = deltaTimeManager.DeltaTime1Second;
+			this.DeltaTimeOver10Seconds = deltaTimeManager.DeltaTime10Seconds;
+		}
+	}
+	public class WindowResized : IEvent
+	{
+		public int NewPixelWidth { get; private set; }
+		public int NewPixelHeight { get; private set; }
+		public bool AllowMultiThreading => false;
+		public WindowResized(int width, int height)
+		{
+			this.NewPixelWidth = width;
+			this.NewPixelHeight = height;
+		}
+	}
 }

@@ -16,276 +16,260 @@ namespace MyEngine
 {
 
 
-    public class EngineMain : GameWindow
-    {
+	public class EngineMain : GameWindow
+	{
 
 
-        public InputSystem Input { get; private set; }
-        public AssetSystem Asset { get; private set; }
-        List<SceneSystem> scenes = new List<SceneSystem>();
+		public InputSystem Input { get; private set; }
+		public AssetSystem Asset { get; private set; }
+		List<SceneSystem> scenes = new List<SceneSystem>();
 
-        public EngineMain() : base(
-            1400,
-            900,
-            new GraphicsMode(),
-            "MyEngine",
-            GameWindowFlags.Default,
-            DisplayDevice.Default,
-            4,
-            0,
-            GraphicsContextFlags.ForwardCompatible
-        )
-        {
-            Debug.Info("START"); // to have debug initialized before anything else
+		public EngineMain() : base(
+			1400,
+			900,
+			new GraphicsMode(),
+			"MyEngine",
+			GameWindowFlags.Default,
+			DisplayDevice.Default,
+			4,
+			0,
+			GraphicsContextFlags.ForwardCompatible
+		)
+		{
+			Debug.Info("START"); // to have debug initialized before anything else
 
-            System.Diagnostics.Process.GetCurrentProcess().PriorityClass = System.Diagnostics.ProcessPriorityClass.AboveNormal;
+			System.Diagnostics.Process.GetCurrentProcess().PriorityClass = System.Diagnostics.ProcessPriorityClass.AboveNormal;
 
-            VSync = VSyncMode.Off;
-            TargetRenderFrequency = 0;
+			VSync = VSyncMode.Off;
+			TargetRenderFrequency = 0;
 
-            //Texture2D.InitTexture2D();
-            ubo = new UniformBlock();
-            //new PhysicsUsage.PhysicsManager();
-            Asset = new AssetSystem();
-            Input = new InputSystem(this);
+			//Texture2D.InitTexture2D();
+			ubo = new UniformBlock();
+			//new PhysicsUsage.PhysicsManager();
+			Asset = new AssetSystem();
+			Input = new InputSystem(this);
 
-            stopwatchSinceStart.Restart();
+			stopwatchSinceStart.Restart();
 
 
-            //{
-            //    var winForm = new Panels.DebugValuesTable();
-            //    winForm.Show();
-            //}
-            renderManager = new RenderManager(eventSystem);
+			//{
+			//    var winForm = new Panels.DebugValuesTable();
+			//    winForm.Show();
+			//}
+			renderManager = new RenderManager(eventSystem);
 
-            RenderFrame += (sender, evt) =>
-            {
-                TryStartSecondary();
-                RenderMain();
+			RenderFrame += (sender, evt) =>
+			{
+				TryStartSecondary();
+				RenderMain();
 
-                /*
+				/*
                 var task1 = Task.Factory.StartNew(BuildRenderListMain);
                 var task2 = Task.Factory.StartNew(EventThreadMain);
                 var continuationTask = Task.Factory.ContinueWhenAll(new[] { task1, task2 }, task => Task.Factory.StartNew(RenderMain));
                 continuationTask.Wait();
                 */
-            };
-        }
-        RenderManager renderManager;
-        Events.EventSystem eventSystem = new Events.EventSystem();
+			};
+		}
+		RenderManager renderManager;
+		Events.EventSystem eventSystem = new Events.EventSystem();
 
-        System.Diagnostics.Stopwatch stopwatchSinceStart = new System.Diagnostics.Stopwatch();
-
-
-        internal static UniformBlock ubo;
-        Shader finalDrawShader;
-
-        public SceneSystem AddScene()
-        {
-            var s = new SceneSystem(this);
-            AddScene(s);
-            return s;
-        }
+		System.Diagnostics.Stopwatch stopwatchSinceStart = new System.Diagnostics.Stopwatch();
 
 
-        protected override void OnLoad(System.EventArgs e)
-        {
-            finalDrawShader = Factory.GetShader("internal/finalDraw.glsl");
+		internal static UniformBlock ubo;
+		Shader finalDrawShader;
 
-            foreach (StringName r in System.Enum.GetValues(typeof(StringName)))
-            {
-                if (r == StringName.Extensions) break;
-                Debug.Info(r.ToString() + ": " + GL.GetString(r));
-            }
-            //Debug.Info(StringName.Extensions.ToString() + ": " + GL.GetString(StringName.Extensions));
-
-
-            this.VSync = VSyncMode.Off;
-
-            // Other state
-            GL.Enable(EnableCap.Texture2D);
-            GL.Hint(HintTarget.PerspectiveCorrectionHint, HintMode.Nicest);
-            GL.Enable(EnableCap.Multisample);
+		public SceneSystem AddScene()
+		{
+			var s = new SceneSystem(this);
+			AddScene(s);
+			return s;
+		}
 
 
-            //GL.ClearColor(System.Drawing.Color.MidnightBlue);
-            GL.ClearColor(System.Drawing.Color.Black);
+		protected override void OnLoad(System.EventArgs e)
+		{
+			finalDrawShader = Factory.GetShader("internal/finalDraw.glsl");
 
-        }
+			foreach (StringName r in System.Enum.GetValues(typeof(StringName)))
+			{
+				if (r == StringName.Extensions) break;
+				Debug.Info(r.ToString() + ": " + GL.GetString(r));
+			}
+			//Debug.Info(StringName.Extensions.ToString() + ": " + GL.GetString(StringName.Extensions));
 
 
+			this.VSync = VSyncMode.Off;
 
-        protected override void OnUnload(EventArgs e)
-        {
+			// Other state
+			GL.Enable(EnableCap.Texture2D);
+			GL.Hint(HintTarget.PerspectiveCorrectionHint, HintMode.Nicest);
+			GL.Enable(EnableCap.Multisample);
 
-        }
 
-        protected override void OnResize(EventArgs e)
-        {
-            var resizeEvent = new Events.WindowResized(Width, Height);
-            eventSystem.Raise(resizeEvent);
-            Debug.Info("Window resized to: width:" + resizeEvent.NewPixelWidth + " height:" + resizeEvent.NewPixelHeight);
-        }
+			//GL.ClearColor(System.Drawing.Color.MidnightBlue);
+			GL.ClearColor(System.Drawing.Color.Black);
 
-        public void AddScene(SceneSystem scene)
-        {
-            eventSystem.PassEventsTo(scene.EventSystem);
-            scenes.Add(scene);
-        }
-
-        public override void Exit()
-        {
-            if (IsDisposed) return;
-            if (IsExiting) return;
-            base.Exit();
-        }
-
-        bool autoBuildRenderList = true;
-        bool secondaryAlreadyStarted = false;
-        void TryStartSecondary()
-        {
-            if (secondaryAlreadyStarted) return;
-            secondaryAlreadyStarted = true;
-
-            eventThreadTime.Restart();
-
-            StartSecondaryThread(EventThreadMain);
-            StartSecondaryThread(BuildRenderListMain);
-        }
-
-        void StartSecondaryThread(Action action)
-        {
-            var t = new Thread(() =>
-            {
-                while (this.IsDisposed == false && this.IsExiting == false)
-                {
-                    action();
-                }
-            });
-
-            t.Priority = ThreadPriority.Highest;
-            t.IsBackground = true;
-            t.Start();
-        }
+		}
 
 
 
-        void BuildRenderListMain()
-        {
-            if (Input.GetKeyDown(OpenTK.Input.Key.F4)) autoBuildRenderList = !autoBuildRenderList;
-            if (autoBuildRenderList)
-            {
-                if (scenes.Count > 0)
-                {
-                    Debug.Tick("buildRender");
-                    foreach (var scene in scenes)
-                    {
-                        var camera = scene.mainCamera;
-                        var dataToRender = scene.DataToRender;
-                        if (camera != null && dataToRender != null)
-                        {
-                            renderManager.BuildRenderList(dataToRender.Renderers, camera);
-                        }
-                    }
-                }
-            }
-        }
+		protected override void OnUnload(EventArgs e)
+		{
 
-        System.Diagnostics.Stopwatch eventThreadTime = new System.Diagnostics.Stopwatch();
-        ManualResetEvent onRenderGameWaitHandle = new ManualResetEvent(false);
-        Queue<DateTime> frameTimes1sec = new Queue<DateTime>();
-        Queue<DateTime> frameTimes10sec = new Queue<DateTime>();
-        void EventThreadMain()
-        {
-            Debug.Tick("event");
+		}
 
-            var now = DateTime.Now;
+		protected override void OnResize(EventArgs e)
+		{
+			var resizeEvent = new Events.WindowResized(Width, Height);
+			eventSystem.Raise(resizeEvent);
+			Debug.Info("Window resized to: width:" + resizeEvent.NewPixelWidth + " height:" + resizeEvent.NewPixelHeight);
+		}
 
-            frameTimes1sec.Enqueue(now);
-            while ((now - frameTimes1sec.Peek()).TotalMilliseconds > 1000) frameTimes1sec.Dequeue();
-            var deltaTime1Second = 1.0 / (double)frameTimes1sec.Count;
+		public void AddScene(SceneSystem scene)
+		{
+			eventSystem.PassEventsTo(scene.EventSystem);
+			scenes.Add(scene);
+		}
 
+		public override void Exit()
+		{
+			if (IsDisposed) return;
+			if (IsExiting) return;
+			base.Exit();
+		}
 
-            frameTimes10sec.Enqueue(now);
-            while ((now - frameTimes10sec.Peek()).TotalMilliseconds > 10000) frameTimes10sec.Dequeue();
-            var deltaTime10Seconds = 10.0 / (double)frameTimes10sec.Count;
+		bool autoBuildRenderList = true;
+		bool secondaryAlreadyStarted = false;
+		void TryStartSecondary()
+		{
+			if (secondaryAlreadyStarted) return;
+			secondaryAlreadyStarted = true;
 
-            var deltaTimeNow = eventThreadTime.ElapsedMilliseconds / 1000.0;
-            eventThreadTime.Restart();
+			StartSecondaryThread(EventThreadMain);
+			StartSecondaryThread(BuildRenderListMain);
+		}
 
+		void StartSecondaryThread(Action action)
+		{
+			var t = new Thread(() =>
+			{
+				while (this.IsDisposed == false && this.IsExiting == false)
+				{
+					action();
+				}
+			});
 
-            if (this.Focused) Input.Update();
-
-
-            if (Input.GetKeyDown(OpenTK.Input.Key.F5)) Factory.ReloadAllShaders();
-            if (Input.GetKeyDown(OpenTK.Input.Key.F6)) Debug.Value("shadowsDisabled").Bool = !Debug.Value("shadowsDisabled").Bool;
-            if (Input.GetKeyDown(OpenTK.Input.Key.F7)) Debug.Value("drawDebugBounds").Bool = !Debug.Value("drawDebugBounds").Bool;
-            if (Input.GetKeyDown(OpenTK.Input.Key.F8)) Debug.Value("enablePostProcessEffects").Bool = !Debug.Value("enablePostProcessEffects").Bool;
-            if (Input.GetKeyDown(OpenTK.Input.Key.F9)) Debug.Value("debugDrawGBufferContents").Bool = !Debug.Value("debugDrawGBufferContents").Bool;
-            if (Input.GetKeyDown(OpenTK.Input.Key.F10)) Debug.Value("debugDrawNormalBufferContents").Bool = !Debug.Value("debugDrawNormalBufferContents").Bool;
-            if (Input.GetKeyDown(OpenTK.Input.Key.F11)) Debug.Value("debugRenderWithLines").Bool = !Debug.Value("debugRenderWithLines").Bool;
-
-
-            eventSystem.Raise(
-                new MyEngine.Events.InputUpdate(
-                    deltaTimeNow: deltaTimeNow,
-                    deltaTimeOver1Second: deltaTime1Second,
-                    deltaTimeOver10Seconds: deltaTime10Seconds
-                )
-            );
-
-            Thread.Sleep(5);
-
-        }
-
-        void RenderMain()
-        {
-            Debug.Tick("render");
-
-            this.Title = string.Join("\t  ", Debug.stringValues.OrderBy(kvp => kvp.Key).Select(kvp => kvp.Key + ":" + kvp.Value).ToArray());
+			t.Priority = ThreadPriority.Highest;
+			t.IsBackground = true;
+			t.Start();
+		}
 
 
 
-            ubo.engine.totalElapsedSecondsSinceEngineStart = (float)stopwatchSinceStart.Elapsed.TotalSeconds;
-            ubo.engine.gammaCorrectionTextureRead = 2.2f;
-            ubo.engine.gammaCorrectionFinalColor = 1 / 2.2f;
+		void BuildRenderListMain()
+		{
+			if (autoBuildRenderList)
+			{
+				if (scenes.Count > 0)
+				{
+					Debug.Tick("buildRender");
+					foreach (var scene in scenes)
+					{
+						var camera = scene.mainCamera;
+						var dataToRender = scene.DataToRender;
+						if (camera != null && dataToRender != null)
+						{
+							renderManager.BuildRenderList(dataToRender.Renderers, camera);
+						}
+					}
+				}
+			}
+		}
 
 
-            //GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-
-            var countMeshesRendered = 0;
-
-            {
-                var scene = scenes[0];
-                var camera = scene.mainCamera;
-                var dataToRender = scene.DataToRender;
-
-                renderManager.SkyboxCubeMap = scene.skyBox;
-                renderManager.RenderAll(ubo, camera, dataToRender.Lights, camera.postProcessEffects);
-            }
 
 
-            var gBuffer = renderManager.GBuffer;
+		DeltaTimeManager eventThreadTime = new DeltaTimeManager();
+		void EventThreadMain()
+		{
+			Debug.Tick("event");
+			eventThreadTime.Tick();
 
-            // FINAL DRAW TO SCREEN
-            {
-                //DebugDrawTexture(gBuffer.finalTextureToRead);
+			eventSystem.Raise(new MyEngine.Events.EventThreadUpdate(eventThreadTime));
 
-                GL.Disable(EnableCap.DepthTest);
-                GL.Disable(EnableCap.CullFace);
-                GL.Disable(EnableCap.Blend);
+			Thread.Sleep(5);
 
-                GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, 0);
-                GL.Viewport(0, 0, Width, Height);
-                //GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit);
+		}
 
-                finalDrawShader.Uniforms.Set("finalDrawTexture", gBuffer.finalTextureToRead);
-                finalDrawShader.Bind();
 
-                Mesh.Quad.Draw();
-            }
+		DeltaTimeManager renderThreadTime = new DeltaTimeManager();
+		void RenderMain()
+		{
+			Debug.Tick("render");
+			renderThreadTime.Tick();
 
-            /*if(debugBounds)
+
+			this.Title = string.Join("\t  ", Debug.stringValues.OrderBy(kvp => kvp.Key).Select(kvp => kvp.Key + ":" + kvp.Value).ToArray());
+
+
+			if (this.Focused) Input.Update();
+
+
+			if (Input.GetKeyDown(OpenTK.Input.Key.F4)) autoBuildRenderList = !autoBuildRenderList;
+			if (Input.GetKeyDown(OpenTK.Input.Key.F5)) Factory.ReloadAllShaders();
+			if (Input.GetKeyDown(OpenTK.Input.Key.F6)) Debug.Value("shadowsDisabled").Bool = !Debug.Value("shadowsDisabled").Bool;
+			if (Input.GetKeyDown(OpenTK.Input.Key.F7)) Debug.Value("drawDebugBounds").Bool = !Debug.Value("drawDebugBounds").Bool;
+			if (Input.GetKeyDown(OpenTK.Input.Key.F8)) Debug.Value("enablePostProcessEffects").Bool = !Debug.Value("enablePostProcessEffects").Bool;
+			if (Input.GetKeyDown(OpenTK.Input.Key.F9)) Debug.Value("debugDrawGBufferContents").Bool = !Debug.Value("debugDrawGBufferContents").Bool;
+			if (Input.GetKeyDown(OpenTK.Input.Key.F10)) Debug.Value("debugDrawNormalBufferContents").Bool = !Debug.Value("debugDrawNormalBufferContents").Bool;
+			if (Input.GetKeyDown(OpenTK.Input.Key.F11)) Debug.Value("debugRenderWithLines").Bool = !Debug.Value("debugRenderWithLines").Bool;
+
+
+			eventSystem.Raise(new MyEngine.Events.RenderUpdate(renderThreadTime));
+
+
+			ubo.engine.totalElapsedSecondsSinceEngineStart = (float)stopwatchSinceStart.Elapsed.TotalSeconds;
+			ubo.engine.gammaCorrectionTextureRead = 2.2f;
+			ubo.engine.gammaCorrectionFinalColor = 1 / 2.2f;
+
+
+			//GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+
+			var countMeshesRendered = 0;
+
+			{
+				var scene = scenes[0];
+				var camera = scene.mainCamera;
+				var dataToRender = scene.DataToRender;
+
+				renderManager.SkyboxCubeMap = scene.skyBox;
+				renderManager.RenderAll(ubo, camera, dataToRender.Lights, camera.postProcessEffects);
+			}
+
+
+			var gBuffer = renderManager.GBuffer;
+
+			// FINAL DRAW TO SCREEN
+			{
+				//DebugDrawTexture(gBuffer.finalTextureToRead);
+
+				GL.Disable(EnableCap.DepthTest);
+				GL.Disable(EnableCap.CullFace);
+				GL.Disable(EnableCap.Blend);
+
+				GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, 0);
+				GL.Viewport(0, 0, Width, Height);
+				//GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit);
+
+				finalDrawShader.Uniforms.Set("finalDrawTexture", gBuffer.finalTextureToRead);
+				finalDrawShader.Bind();
+
+				Mesh.Quad.Draw();
+			}
+
+			/*if(debugBounds)
             {
                 var allColiders = new List<BoxCollider>();
                 foreach (var go in Factory.allEntitys)
@@ -308,12 +292,12 @@ namespace MyEngine
                     skyboxMesh.Draw();
                 }
             }*/
-            if (Debug.Value("debugDrawNormalBufferContents").Bool) gBuffer.DebugDrawNormal();
-            if (Debug.Value("debugDrawGBufferContents").Bool) gBuffer.DebugDrawContents();
-            //if (drawShadowMapContents) DebugDrawTexture(shadowMap.depthMap, new Vector4(0.5f, 0.5f, 1, 1), new Vector4(0.5f,0.5f,0,1), 1, 0);
+			if (Debug.Value("debugDrawNormalBufferContents").Bool) gBuffer.DebugDrawNormal();
+			if (Debug.Value("debugDrawGBufferContents").Bool) gBuffer.DebugDrawContents();
+			//if (drawShadowMapContents) DebugDrawTexture(shadowMap.depthMap, new Vector4(0.5f, 0.5f, 1, 1), new Vector4(0.5f,0.5f,0,1), 1, 0);
 
 
-            /*
+			/*
             {
                 var shader = Factory.GetShader("internal/forward.allLights.shader");
                 gBuffer.BindForWriting();
@@ -341,11 +325,11 @@ namespace MyEngine
             }*/
 
 
-            SwapBuffers();
+			SwapBuffers();
 
-            Debug.AddValue("countMeshesRendered", countMeshesRendered + "/" + renderManager.CountRenderablesRendered);
+			Debug.AddValue("countMeshesRendered", countMeshesRendered + "/" + renderManager.CountRenderablesRendered);
 
-        }
+		}
 
-    }
+	}
 }

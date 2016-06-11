@@ -19,7 +19,7 @@ namespace MyGame
 
         public VisualizePosition(Entity entity) : base(entity)
         {
-            Entity.EventSystem.Register<InputUpdate>(e => Update(e.DeltaTimeNow));
+            Entity.EventSystem.Register<EventThreadUpdate>(e => Update(e.DeltaTimeNow));
         }
 
         public static void Create(Entity entity, Vector3 targetsLocalPosition)

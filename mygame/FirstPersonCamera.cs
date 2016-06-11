@@ -37,7 +37,7 @@ namespace MyGame
 
             Input.LockCursor = disabledInput;
 
-            Entity.EventSystem.Register<InputUpdate>(e => Update(e.DeltaTimeOver1Second));
+            Entity.EventSystem.Register<RenderUpdate>(e => Update(e.DeltaTimeOver1Second));
 
         }
 

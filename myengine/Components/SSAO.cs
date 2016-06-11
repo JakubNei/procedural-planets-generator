@@ -24,7 +24,7 @@ namespace MyEngine.Components
             //shader.Uniform.Set("testColor", new Vector3(0, 1, 0));
 
             //Camera.main.AddPostProcessEffect(shader);
-            Entity.EventSystem.Register<InputUpdate>(e => Update(e.DeltaTimeNow));
+            Entity.EventSystem.Register<EventThreadUpdate>(e => Update(e.DeltaTimeNow));
         }
 
         void Update(double deltaTime)
