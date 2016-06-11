@@ -61,6 +61,7 @@
     <Compile Include="Components\Tonemapping.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="DataAccessibleList.cs" />
+    <Compile Include="DataBinder.cs" />
     <Compile Include="Extensions\OpenTK\Vector3Extensions_other.cs" />
     <Compile Include="Extensions\OpenTK\Vector3Extensions_template.cs">
       <AutoGen>True</AutoGen>
@@ -95,7 +96,6 @@
     <Compile Include="GameSystems\RenderManager.cs" />
     <Compile Include="Tier1\DeferredSynchronizeInvoke.cs" />
     <Compile Include="enums.cs" />
-    <Compile Include="Events\IEvent.cs" />
     <Compile Include="Events\EventSystem.cs" />
     <Compile Include="Events\Events.cs" />
     <Compile Include="Extensions\ActionExtensions.cs" />

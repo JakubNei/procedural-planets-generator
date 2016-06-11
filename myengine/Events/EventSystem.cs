@@ -6,6 +6,14 @@ using System.Threading.Tasks;
 
 namespace MyEngine.Events
 {
+    public enum EventHandling
+    {
+        StopPropagation,
+        ContinuePropagation,
+    }
+    public interface IEvent
+    {
+    }
     // TODO: add WeakReference (weak event pattern) probably WeakEventManager https://msdn.microsoft.com/en-us/library/system.windows.weakeventmanager(v=vs.100).aspx
     public class EventSystem 
     {
@@ -31,6 +39,17 @@ namespace MyEngine.Events
             passEventsTo.Add(eventSystem);
         }
 
+        public void Register<T>(Func<T, EventHandling> callback) where T : IEvent
+        {
+
+        }
+
+        /// <summary>
+        /// Will be called always if event occurs.
+        /// Register to event with implicit EventHandling.ContinuePropagation.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="callback"></param>
         public void Register<T>(Action<T> callback) where T : IEvent
         {
             lock(allDelegates)

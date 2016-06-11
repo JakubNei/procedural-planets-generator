@@ -16,6 +16,8 @@ namespace MyEngine
         long sectorZ;
 
         const double sectorCubeSideLength = 100;
+        //const double offset = 0.5;
+
 
         public static readonly WorldPos Zero = new WorldPos();
 
@@ -37,19 +39,18 @@ namespace MyEngine
 
         void MoveSectorIfNeeded()
         {
-            const double c = 0.5f;
-
+            
             long sector_add;
 
-            sector_add = (long)Math.Floor(insideSectorPosition.X / sectorCubeSideLength + c);
+            sector_add = (long)Math.Floor(insideSectorPosition.X / sectorCubeSideLength);
             insideSectorPosition.X -= sectorCubeSideLength * sector_add;
             sectorX += sector_add;
 
-            sector_add = (long)Math.Floor(insideSectorPosition.Y / sectorCubeSideLength + c);
+            sector_add = (long)Math.Floor(insideSectorPosition.Y / sectorCubeSideLength);
             insideSectorPosition.Y -= sectorCubeSideLength * sector_add;
             sectorY += sector_add;
 
-            sector_add = (long)Math.Floor(insideSectorPosition.Z / sectorCubeSideLength + c);
+            sector_add = (long)Math.Floor(insideSectorPosition.Z / sectorCubeSideLength);
             insideSectorPosition.Z -= sectorCubeSideLength * sector_add;
             sectorZ += sector_add;
         }

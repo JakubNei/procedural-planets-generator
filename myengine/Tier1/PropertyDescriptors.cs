@@ -77,7 +77,7 @@ namespace MyEngine
                 return fieldInfo.FieldType + " " + fieldInfo.DeclaringType.FullName + "." + fieldInfo.Name;
             }
         }
-   
+
 
         class PropertyDescriptor : IPropertyDescriptor
         {
@@ -135,6 +135,7 @@ namespace MyEngine
             BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.GetProperty | BindingFlags.SetProperty
         )
         {
+            if (type == null) throw new NullReferenceException("type is null");
             var f = type.GetField(name, bindingFlags);
             if (f != null)
             {
@@ -148,6 +149,7 @@ namespace MyEngine
                     return (new PropertyDescriptor(p)) as IPropertyDescriptor;
                 }
             }
+            throw new NullReferenceException(type + " no field or property of name:" + name + " found");
             return null;
         }
 
@@ -156,6 +158,7 @@ namespace MyEngine
             BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.GetProperty | BindingFlags.SetProperty
         )
         {
+            if (type == null) throw new NullReferenceException("type is null");
             return
                 type.GetFields(bindingFlags).Select(f => (new FieldDescriptor(f)) as IPropertyDescriptor)
                 .Concat(
