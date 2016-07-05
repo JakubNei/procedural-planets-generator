@@ -20,6 +20,13 @@ namespace MyEngine.Events
 
 		}
 	}
+	public class InputUpdate : DeltaTimeEvent
+	{
+		public InputUpdate(DeltaTimeManager deltaTimeManager) : base(deltaTimeManager)
+		{
+
+		}
+	}
 
 	public class DeltaTimeEvent : IEvent
 	{

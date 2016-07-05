@@ -46,7 +46,7 @@ namespace MyGame
 
                         var gr = entity.AddComponent<GodRays>();
                         gr.lightWorldRadius = 1000;
-                        entity.EventSystem.Register((MyEngine.Events.EventThreadUpdate e) =>
+                        entity.EventSystem.Register((MyEngine.Events.RenderUpdate e) =>
                         {
                             gr.lightScreenPos = cam.WorldToScreenPos(sunEntity.Transform.Position);
                             gr.lightWorldPos = cam.Transform.Position.Towards(sunEntity.Transform.Position).ToVector3();

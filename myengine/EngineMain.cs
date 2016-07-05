@@ -227,6 +227,7 @@ namespace MyEngine
 			if (Input.GetKeyDown(OpenTK.Input.Key.F11)) Debug.Value("debugRenderWithLines").Bool = !Debug.Value("debugRenderWithLines").Bool;
 
 
+			eventSystem.Raise(new MyEngine.Events.InputUpdate(renderThreadTime));
 			eventSystem.Raise(new MyEngine.Events.RenderUpdate(renderThreadTime));
 
 
