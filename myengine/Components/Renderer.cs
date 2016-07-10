@@ -33,16 +33,10 @@ namespace MyEngine.Components
     {
         Material Material { get; }
         bool ForcePassFrustumCulling { get; }
-        bool ShouldRender(object renderContext);
-        Bounds GetBounds(WorldPos viewPointPos);
+        bool ShouldRenderInContext(object renderContext);
+        Bounds GetCameraSpaceBounds(WorldPos viewPointPos);
         void UploadUBOandDraw(Camera camera, UniformBlock ubo);
-        void SetCameraRenderStatus(Camera camera, RenderStatus renderStatus);
-
-        /*
-        bool ShouldRenderGeometry { get; }
-        bool ShouldCastShadows { get; }
-        Material Material { get; }
-        */
+        void CameraRenderStatusFeedback(Camera camera, RenderStatus renderStatus);
     }
 
     public abstract class Renderer : Component, IRenderable, IDisposable
@@ -64,13 +58,13 @@ namespace MyEngine.Components
             dataToRender = new MyWeakReference<RenderableData>(Entity.Scene.DataToRender);
             dataToRender.Target?.Add(this);
         }
-        public abstract Bounds GetBounds(WorldPos viewPointPos);
+        public abstract Bounds GetCameraSpaceBounds(WorldPos viewPointPos);
 
         public virtual void UploadUBOandDraw(Camera camera, UniformBlock ubo)
         {
         }
 
-        public virtual void SetCameraRenderStatus(Camera camera, RenderStatus renderStatus)
+        public virtual void CameraRenderStatusFeedback(Camera camera, RenderStatus renderStatus)
         {
             cameraToRenderStatus[camera] = renderStatus;
         }
@@ -79,7 +73,7 @@ namespace MyEngine.Components
             return cameraToRenderStatus.GetValue(camera, RenderStatus.Unknown);
         }
 
-        public virtual bool ShouldRender(object renderContext)
+        public virtual bool ShouldRenderInContext(object renderContext)
         {
             if (renderContext == RenderContext.Geometry && RenderingMode.HasFlag(RenderingMode.RenderGeometry)) return true;
             if (renderContext == RenderContext.Shadows && RenderingMode.HasFlag(RenderingMode.CastShadows)) return true;

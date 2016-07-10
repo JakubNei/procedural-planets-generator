@@ -9,9 +9,9 @@ using OpenTK;
 using MyEngine;
 using MyEngine.Components;
 
-namespace MyGame
+namespace MyGame.PlanetaryBody
 {
-    public class PlanetaryBody : ComponentWithShortcuts
+    public class Root : ComponentWithShortcuts
     {
         public double radius;
         public double radiusVariation = 20;
@@ -35,11 +35,11 @@ namespace MyGame
         PerlinD perlin;
         WorleyD worley;
 
-        List<PlanetaryBodyChunk> rootChunks = new List<PlanetaryBodyChunk>();
+        List<Chunk> rootChunks = new List<Chunk>();
 
 
 
-        public PlanetaryBody(Entity entity) : base(entity)
+        public Root(Entity entity) : base(entity)
         {
             perlin = new PerlinD(5646);
             worley = new WorleyD(894984, WorleyD.DistanceFunction.Euclidian);
@@ -148,7 +148,7 @@ namespace MyGame
         void FACE(int A, int B, int C)
         {
 
-            var child = new PlanetaryBodyChunk(this, null);
+            var child = new Chunk(this, null);
             child.noElevationRange.a = vertices[A];
             child.noElevationRange.b = vertices[B];
             child.noElevationRange.c = vertices[C];
@@ -228,7 +228,7 @@ namespace MyGame
 
 
 
-        void StopMeshGenerationInChilds(PlanetaryBodyChunk chunk)
+        void StopMeshGenerationInChilds(Chunk chunk)
         {
             lock (chunk.childs)
             {
@@ -242,7 +242,7 @@ namespace MyGame
 
 
 
-        void TrySubdivideToLevel_Generation(PlanetaryBodyChunk chunk, double tresholdWeight, int recursionDepth)
+        void TrySubdivideToLevel_Generation(Chunk chunk, double tresholdWeight, int recursionDepth)
         {
             var cam = Entity.Scene.mainCamera;
             var weight = chunk.GetWeight(cam) + debugWeight + 0.1;
@@ -270,7 +270,7 @@ namespace MyGame
 
         }
 
-        void HideInChilds(PlanetaryBodyChunk chunk)
+        void HideInChilds(Chunk chunk)
         {
             lock (chunk.childs)
             {
@@ -284,7 +284,7 @@ namespace MyGame
 
 
         // return true if all childs are visible
-        bool TrySubdivideToLevel_Visibility(PlanetaryBodyChunk chunk, double tresholdWeight, int recursionDepth)
+        bool TrySubdivideToLevel_Visibility(Chunk chunk, double tresholdWeight, int recursionDepth)
         {
             var cam = Entity.Scene.mainCamera;
             var weight = chunk.GetWeight(cam) + debugWeight;
@@ -344,7 +344,7 @@ namespace MyGame
         public void TrySubdivideOver(WorldPos pos)
         {
             var sphere = new Sphere((pos - Transform.Position).ToVector3d(), this.radius * startingRadiusSubdivisionModifier);
-            foreach (PlanetaryBodyChunk rootChunk in this.rootChunks)
+            foreach (Chunk rootChunk in this.rootChunks)
             {
                 TrySubdivideToLevel_Generation(rootChunk, startingRadiusSubdivisionModifier, this.subdivisionMaxRecurisonDepth);
                 TrySubdivideToLevel_Visibility(rootChunk, startingRadiusSubdivisionModifier, this.subdivisionMaxRecurisonDepth);

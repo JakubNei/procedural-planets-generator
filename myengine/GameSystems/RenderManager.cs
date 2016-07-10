@@ -232,18 +232,18 @@ namespace MyEngine
             {
                 foreach (var renderable in possibleRenderables)
                 {
-                    if (renderable.ShouldRender(RenderContext))
+                    if (renderable.ShouldRenderInContext(RenderContext))
                     {
-                        if (renderable.ForcePassFrustumCulling || GeometryUtility.TestPlanesAABB(frustrumPlanes, renderable.GetBounds(camera.Transform.Position)))
+                        if (renderable.ForcePassFrustumCulling || GeometryUtility.TestPlanesAABB(frustrumPlanes, renderable.GetCameraSpaceBounds(camera.Transform.Position)))
                         {
                             if (renderable == null) continue;
                             newToRender.Add(renderable);
-                            if (renderable.ForcePassFrustumCulling) renderable.SetCameraRenderStatus(camera, RenderStatus.RenderedForced);
-                            else renderable.SetCameraRenderStatus(camera, RenderStatus.RenderedAndVisible);
+                            if (renderable.ForcePassFrustumCulling) renderable.CameraRenderStatusFeedback(camera, RenderStatus.RenderedForced);
+                            else renderable.CameraRenderStatusFeedback(camera, RenderStatus.RenderedAndVisible);
                         }
                         else
                         {
-                            renderable.SetCameraRenderStatus(camera, RenderStatus.NotRendered);
+                            renderable.CameraRenderStatusFeedback(camera, RenderStatus.NotRendered);
                         }
                     }
                 }
@@ -270,8 +270,8 @@ namespace MyEngine
                 if (ReferenceEquals(y, x)) return 0;
                 if (ReferenceEquals(x, null)) return -1;
                 if (ReferenceEquals(y, null)) return 1;
-                var distX = x.GetBounds(viewPointPosition).Center.DistanceSqr(viewPointPosition_vec3);
-                var distY = y.GetBounds(viewPointPosition).Center.DistanceSqr(viewPointPosition_vec3);
+                var distX = x.GetCameraSpaceBounds(viewPointPosition).Center.DistanceSqr(viewPointPosition_vec3);
+                var distY = y.GetCameraSpaceBounds(viewPointPosition).Center.DistanceSqr(viewPointPosition_vec3);
                 if (distX == distY) return 0;
                 if (distX > distY) return 1;
                 else return -1;

@@ -50,8 +50,9 @@
     <Compile Include="DrawBounds.cs" />
     <Compile Include="GameTimeController.cs" />
     <Compile Include="MoveWithArrowKeys.cs" />
-    <Compile Include="PlanetaryBody.cs" />
-    <Compile Include="PlanetaryBodyChunk.cs" />
+    <Compile Include="PlanetaryBody\Chunk.MeshGeneration.cs" />
+    <Compile Include="PlanetaryBody\Root.cs" />
+    <Compile Include="PlanetaryBody\Chunk.cs" />
     <Compile Include="ProceduralPlanets.cs" />
     <Compile Include="ProceduralSpaceSkybox.cs" />
     <Compile Include="Program.cs" />
@@ -69,6 +70,8 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
+    <Compile Include="PlanetaryBody\Chunk.MeshGenerationService.cs" />
+    <Compile Include="PlanetaryBody\Chunk.ParentIndiciesEnumerator.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

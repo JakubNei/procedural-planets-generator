@@ -16,7 +16,7 @@ namespace MyGame
     public class ProceduralPlanets
     {
 
-        public List<PlanetaryBody> planets = new List<PlanetaryBody>();
+        public List<PlanetaryBody.Root> planets = new List<PlanetaryBody.Root>();
         SceneSystem scene;
 
         bool clampCameraToSurface = true;
@@ -75,10 +75,10 @@ namespace MyGame
                     m.albedo = new Vector4(10);
                 }
             }
-            
 
 
-            PlanetaryBody planet;
+
+			PlanetaryBody.Root planet;
 
             /*
             planet = scene.AddEntity().AddComponent<PlanetaryBody>();
@@ -98,7 +98,7 @@ namespace MyGame
             planets.Add(planet);
             */
 
-            planet = scene.AddEntity().AddComponent<PlanetaryBody>();
+            planet = scene.AddEntity().AddComponent<PlanetaryBody.Root>();
             planets.Add(planet);
             planet.radius = 2000; // 6371000 earth radius
             planet.radius = 300; // 6371000 earth radius

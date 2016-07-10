@@ -65,7 +65,7 @@ namespace MyEngine.Components
         }
 
 
-        public override Bounds GetBounds(WorldPos viewPointPos)
+        public override Bounds GetCameraSpaceBounds(WorldPos viewPointPos)
         {
             var relativePos = viewPointPos.Towards(Entity.Transform.Position).ToVector3();
             if (Mesh == null)
@@ -101,9 +101,9 @@ namespace MyEngine.Components
             OnMashDataChanged.Raise();
         }
 
-        public override bool ShouldRender(object renderContext)
+        public override bool ShouldRenderInContext(object renderContext)
         {
-            return Mesh != null && Mesh.IsRenderable && Material != null && Material.DepthGrabShader != null && base.ShouldRender(renderContext);
+            return Mesh != null && Mesh.IsRenderable && Material != null && Material.DepthGrabShader != null && base.ShouldRenderInContext(renderContext);
         }
 
     }
