@@ -45,18 +45,18 @@ namespace MyEngine
     */
 
 
-    public class Mesh : IDisposable
+    public partial class Mesh : IDisposable
     {
-        static Mesh m_SkyBox;
+        static Mesh skyBox;
         public static Mesh SkyBox
         {
             get
             {
-                if(m_SkyBox == null)
+                if (skyBox == null)
                 {
-                    m_SkyBox = Factory.GetMesh("internal/skybox.obj");
+                    skyBox = Factory.GetMesh("internal/skybox.obj");
                 }
-                return m_SkyBox;
+                return skyBox;
             }
         }
 
@@ -65,13 +65,13 @@ namespace MyEngine
         {
             get
             {
-                if(m_Quad == null)
+                if (m_Quad == null)
                 {
                     m_Quad = Factory.GetMesh("internal/quad.obj");
                 }
                 return m_Quad;
             }
-        }        
+        }
 
         public enum ChangedFlags
         {
@@ -80,10 +80,10 @@ namespace MyEngine
         }
 
         public VertexBufferObject<Vector3> Vertices { get; private set; }
-        public VertexBufferObject<Vector3> normals { get; private set; }
-        public VertexBufferObject<Vector3> tangents { get; private set; }
-        public VertexBufferObject<Vector2> uvs { get; private set; }
-        public VertexBufferObject<int> triangleIndicies { get; private set; }
+        public VertexBufferObject<Vector3> Normals { get; private set; }
+        public VertexBufferObject<Vector3> Tangents { get; private set; }
+        public VertexBufferObject<Vector2> Uvs { get; private set; }
+        public VertexBufferObject<int> TriangleIndicies { get; private set; }
 
         public Asset asset;
 
@@ -99,7 +99,7 @@ namespace MyEngine
         /// <summary>
         /// Local space bounds of the mesh.
         /// </summary>
-        public Bounds bounds
+        public Bounds Bounds
         {
             get
             {
@@ -108,24 +108,24 @@ namespace MyEngine
                     recalculateBounds = false;
                     if (Vertices.Count > 0)
                     {
-                        _bounds = new Bounds(Vertices[0], Vector3.Zero);
+                        bounds = new Bounds(Vertices[0], Vector3.Zero);
                         foreach (var point in Vertices)
                         {
-                            _bounds.Encapsulate(point);
+                            bounds.Encapsulate(point);
                         }
                         RaiseOnChanged(ChangedFlags.Bounds);
                     }
                     else
                     {
-                        _bounds = new Bounds(Vector3.Zero, Vector3.Zero);
+                        bounds = new Bounds(Vector3.Zero, Vector3.Zero);
                         RaiseOnChanged(ChangedFlags.Bounds);
                     }
                 }
 
-                return _bounds;
+                return bounds;
             }
         }
-        Bounds _bounds;
+        Bounds bounds;
 
 
 
@@ -149,22 +149,22 @@ namespace MyEngine
                 ElementType = typeof(float),
                 DataStrideInElementsNumber = 3,
             };
-            normals = new VertexBufferObject<Vector3>()
+            Normals = new VertexBufferObject<Vector3>()
             {
                 ElementType = typeof(float),
                 DataStrideInElementsNumber = 3,
             };
-            tangents = new VertexBufferObject<Vector3>()
+            Tangents = new VertexBufferObject<Vector3>()
             {
                 ElementType = typeof(float),
                 DataStrideInElementsNumber = 3,
             };
-            uvs = new VertexBufferObject<Vector2>()
+            Uvs = new VertexBufferObject<Vector2>()
             {
                 ElementType = typeof(float),
                 DataStrideInElementsNumber = 2,
             };
-            triangleIndicies = new VertexBufferObject<int>()
+            TriangleIndicies = new VertexBufferObject<int>()
             {
                 Target = BufTarget.ControlElementArray,
                 ElementType = typeof(int),
@@ -173,10 +173,10 @@ namespace MyEngine
 
             VertexArrayObj = new VertexArrayObject();
             VertexArrayObj.AddVertexBufferObject("vertices", Vertices);
-            VertexArrayObj.AddVertexBufferObject("normals", normals);
-            VertexArrayObj.AddVertexBufferObject("tangents", tangents);
-            VertexArrayObj.AddVertexBufferObject("uvs", uvs);
-            VertexArrayObj.AddVertexBufferObject("triangleIndicies", triangleIndicies);
+            VertexArrayObj.AddVertexBufferObject("normals", Normals);
+            VertexArrayObj.AddVertexBufferObject("tangents", Tangents);
+            VertexArrayObj.AddVertexBufferObject("uvs", Uvs);
+            VertexArrayObj.AddVertexBufferObject("triangleIndicies", TriangleIndicies);
             VertexArrayObj.OnChanged += () => { isOnGPU = false; };
         }
 
@@ -192,7 +192,7 @@ namespace MyEngine
                 UploadDataToGpu();
             }
             GL.BindVertexArray(VertexArrayObj.handle);
-            GL.DrawElements(PrimitiveType.Triangles, triangleIndicies.Count, DrawElementsType.UnsignedInt, IntPtr.Zero);
+            GL.DrawElements(PrimitiveType.Triangles, TriangleIndicies.Count, DrawElementsType.UnsignedInt, IntPtr.Zero);
             GL.BindVertexArray(0);
         }
 
@@ -217,131 +217,15 @@ namespace MyEngine
 
         public bool HasTangents()
         {
-            return tangents != null && Vertices.Count == tangents.Count;
+            return Tangents != null && Vertices.Count == Tangents.Count;
         }
         public bool HasNormals()
         {
-            return normals != null && Vertices.Count == normals.Count;
+            return Normals != null && Vertices.Count == Normals.Count;
         }
         public bool HasUVs()
         {
-            return uvs != null && Vertices.Count == uvs.Count;
-        }
-
-
-        public static void CalculateNormals(IList<int> inTriangleIndicies, IList<Vector3> inPositions, IList<Vector3> outNormals)
-        {
-            int verticesNum = inPositions.Count;
-            int indiciesNum = inTriangleIndicies.Count;
-
-
-            int[] counts = new int[verticesNum];
-
-            outNormals.Clear();
-            if (outNormals is List<Vector3>)
-            {
-                (outNormals as List<Vector3>).Capacity = verticesNum;
-            }
-
-            for (int i = 0; i < verticesNum; i++)
-            {
-                outNormals.Add(Vector3.Zero);
-            }
-
-            for (int i = 0; i <= indiciesNum - 3; i += 3)
-            {
-
-                int ai = inTriangleIndicies[i];
-                int bi = inTriangleIndicies[i + 1];
-                int ci = inTriangleIndicies[i + 2];
-
-                if (ai < verticesNum && bi < verticesNum && ci < verticesNum)
-                {
-                    Vector3 av = inPositions[ai];
-                    Vector3 n = Vector3.Normalize(Vector3.Cross(
-                        inPositions[bi] - av,
-                        inPositions[ci] - av
-                    ));
-
-                    outNormals[ai] += n;
-                    outNormals[bi] += n;
-                    outNormals[ci] += n;
-
-                    counts[ai]++;
-                    counts[bi]++;
-                    counts[ci]++;
-                }
-            }
-
-            for (int i = 0; i < verticesNum; i++)
-            {
-                outNormals[i] /= counts[i];
-            }
-
-
-        }
-        public void RecalculateNormals()
-        {
-            CalculateNormals(triangleIndicies, Vertices, normals);
-        }
-
-        public void RecalculateTangents()
-        {
-            if (HasUVs() == false) uvs.Resize(Vertices.Count);
-
-            //partialy stolen from http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-13-normal-mapping/
-
-            int verticesNum = Vertices.Count;
-            int indiciesNum = triangleIndicies.Count;
-
-            int[] counts = new int[verticesNum];
-
-            tangents.Clear();
-            tangents.Capacity = verticesNum;
-
-            for (int i = 0; i < verticesNum; i++)
-            {
-                counts[i] = 0;
-                tangents.Add(Vector3.Zero);
-            }
-
-            for (int i = 0; i <= indiciesNum - 3; i += 3)
-            {
-
-                int ai = triangleIndicies[i];
-                int bi = triangleIndicies[i + 1];
-                int ci = triangleIndicies[i + 2];
-
-                if (ai < verticesNum && bi < verticesNum && ci < verticesNum)
-                {
-                    Vector3 av = Vertices[ai];
-                    Vector3 deltaPos1 = Vertices[bi] - av;
-                    Vector3 deltaPos2 = Vertices[ci] - av;
-
-                    Vector2 auv = uvs[ai];
-                    Vector2 deltaUV1 = uvs[bi] - auv;
-                    Vector2 deltaUV2 = uvs[ci] - auv;
-
-                    float r = 1.0f / (deltaUV1.X * deltaUV2.Y - deltaUV1.Y * deltaUV2.X);
-                    Vector3 t = (deltaPos1 * deltaUV2.Y - deltaPos2 * deltaUV1.Y) * r;
-
-
-                    tangents[ai] += t;
-                    tangents[bi] += t;
-                    tangents[ci] += t;
-
-                    counts[ai]++;
-                    counts[bi]++;
-                    counts[ci]++;
-                }
-            }
-
-            for (int i = 0; i < verticesNum; i++)
-            {
-                tangents[i] /= counts[i];
-            }
-
-
+            return Uvs != null && Vertices.Count == Uvs.Count;
         }
 
 

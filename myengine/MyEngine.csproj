@@ -88,6 +88,7 @@
     <Compile Include="Mathematical\SoftwareOcclusionCuller.cs" />
     <Compile Include="Mathematical\WorldPos.cs" />
     <Compile Include="Mathematical\WorleyD.cs" />
+    <Compile Include="Mesh.Utils.cs" />
     <Compile Include="Panels\DebugValuesTable.cs">
       <SubType>Form</SubType>
     </Compile>

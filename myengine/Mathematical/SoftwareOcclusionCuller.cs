@@ -33,7 +33,7 @@ namespace MyEngine.Mathematical
 
         public void Add(Mesh mesh)
         {
-            var indicies = mesh.triangleIndicies;
+            var indicies = mesh.TriangleIndicies;
             var vertices = mesh.Vertices;
 
             for(int i=0; i<indicies.Count; i+=3)

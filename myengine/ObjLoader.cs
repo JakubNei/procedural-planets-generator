@@ -145,13 +145,13 @@ namespace MyEngine
             var mesh = new Mesh();
 
             mesh.Vertices.SetData(verticesMesh);
-            mesh.uvs.SetData(uvsMesh);
-            mesh.triangleIndicies.SetData(triangleIndiciesMesh);
+            mesh.Uvs.SetData(uvsMesh);
+            mesh.TriangleIndicies.SetData(triangleIndiciesMesh);
 
             if (failedParse > 0) Debug.Warning("Failed to parse data " + failedParse + " times");
             failedParse = 0;
 
-            if (gotNormal) mesh.normals.SetData(normalsMesh);
+            if (gotNormal) mesh.Normals.SetData(normalsMesh);
             else mesh.RecalculateNormals();
 
             return mesh;

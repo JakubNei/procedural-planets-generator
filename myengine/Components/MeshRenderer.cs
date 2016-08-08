@@ -73,8 +73,8 @@ namespace MyEngine.Components
                 return new Bounds(relativePos, Vector3.Zero);
             }
 
-            var boundsCenter = relativePos + (Mesh.bounds.Center * Entity.Transform.Scale).RotateBy(Entity.Transform.Rotation);
-            var boundsExtents = (Mesh.bounds.Extents * Entity.Transform.Scale).RotateBy(Entity.Transform.Rotation);
+            var boundsCenter = relativePos + (Mesh.Bounds.Center * Entity.Transform.Scale).RotateBy(Entity.Transform.Rotation);
+            var boundsExtents = (Mesh.Bounds.Extents * Entity.Transform.Scale).RotateBy(Entity.Transform.Rotation);
 
             var bounds = new Bounds(boundsCenter, Vector3.Zero);
             for (int i = 0; i < 8; i++)

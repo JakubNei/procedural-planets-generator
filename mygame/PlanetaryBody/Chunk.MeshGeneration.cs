@@ -49,7 +49,7 @@ namespace MyGame.PlanetaryBody
 
 			// generate evenly spaced vertices, then we make triangles out of them
 			var positionsFinal = new List<Vector3>();
-			var normalsFinal = mesh.normals;
+			var normalsFinal = mesh.Normals;
 
 
 			// the planetary chunk vertices blend from positonsInitial to positionsFinal
@@ -183,7 +183,7 @@ namespace MyGame.PlanetaryBody
 
 
 			mesh.Vertices.SetData(positionsFinal);
-			mesh.triangleIndicies.SetData(indicies);
+			mesh.TriangleIndicies.SetData(indicies);
 			mesh.RecalculateNormals();
 
 			// fill in initial positions, every odd positon is average of the two neighbouring final positions
@@ -205,7 +205,7 @@ namespace MyGame.PlanetaryBody
 					}
 					else
 					{
-						parentNormals = parentChunk.renderer.Mesh.normals;
+						parentNormals = parentChunk.renderer.Mesh.Normals;
 						normalsInitial[i] = parentNormals[parentIndicies.Current];
 						parentIndicies.MoveNext();
 					}

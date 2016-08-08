@@ -31,10 +31,10 @@ namespace MyGame
             var r = drawForThisTransform.Entity.GetComponent<MeshRenderer>();
             if (r != null)
             {
-                Entity.Transform.Scale = r.Mesh.bounds.Extents;
+                Entity.Transform.Scale = r.Mesh.Bounds.Extents;
 
                 Entity.Transform.Rotation = drawForThisTransform.Rotation;
-                Entity.Transform.Position = drawForThisTransform.Position + r.Mesh.bounds.Center.RotateBy(Entity.Transform.Rotation);                
+                Entity.Transform.Position = drawForThisTransform.Position + r.Mesh.Bounds.Center.RotateBy(Entity.Transform.Rotation);                
             }
             else
             {
