@@ -49,10 +49,9 @@ namespace MyGame.PlanetaryBody
 				childs.Clear();
 			}
 		}
-		
+
 		void MAKE_CHILD(Vector3d A, Vector3d B, Vector3d C, ChildPosition cp)
 		{
-
 			var child = new Chunk(planetaryBody, this, cp);
 			childs.Add(child);
 			child.subdivisionDepth = subdivisionDepth + 1;

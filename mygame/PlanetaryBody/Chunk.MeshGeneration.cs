@@ -18,6 +18,36 @@ namespace MyGame.PlanetaryBody
 	public partial class Chunk
 	{
 
+		int NumberOfVerticesOnEdge => planetaryBody.chunkNumberOfVerticesOnEdge;
+
+		List<Mesh.VertexIndex> GetEdgeVertices()
+		{
+			var skirtIndicies = new List<Mesh.VertexIndex>();
+			// gather the edge vertices indicies
+			{
+				int lineStartIndex = 0;
+				int nextLineStartIndex = 1;
+				int numberOfVerticesInBetween = 0;
+				skirtIndicies.Add(0); // first line
+									  // top and all middle lines
+				for (int i = 1; i < NumberOfVerticesOnEdge - 1; i++)
+				{
+					lineStartIndex = nextLineStartIndex;
+					nextLineStartIndex = lineStartIndex + numberOfVerticesInBetween + 2;
+					skirtIndicies.Add(lineStartIndex);
+					skirtIndicies.Add((lineStartIndex + numberOfVerticesInBetween + 1));
+					numberOfVerticesInBetween++;
+				}
+				// bottom line
+				lineStartIndex = nextLineStartIndex;
+				for (int i = 0; i < NumberOfVerticesOnEdge; i++)
+				{
+					skirtIndicies.Add((lineStartIndex + i));
+				}
+			}
+			return skirtIndicies;
+		}
+
 		void CreateRendererAndGenerateMesh()
 		{
 			if (parentChunk != null && parentChunk.renderer == null)
@@ -31,7 +61,7 @@ namespace MyGame.PlanetaryBody
 				isGenerated = true;
 			}
 
-			int numberOfVerticesOnEdge = planetaryBody.chunkNumberOfVerticesOnEdge;
+
 
 
 			var mesh = new Mesh();// "PlanetaryBodyChunk depth:" + subdivisionDepth + " #" + numbetOfChunksGenerated);
@@ -39,8 +69,8 @@ namespace MyGame.PlanetaryBody
 
 			var realRange = noElevationRange;
 
-			const bool useSkirts = false;
-			//const bool useSkirts = true;
+			bool useSkirts = false;
+			useSkirts = true;
 
 
 			//uint numberOfVerticesOnEdge = 4; // must be over 4, if under or 4 skirts will move all of it
@@ -67,7 +97,7 @@ namespace MyGame.PlanetaryBody
 			};
 
 			List<int> indicies;
-			GetIndiciesList(numberOfVerticesOnEdge, out indicies);
+			GetIndiciesList(NumberOfVerticesOnEdge, out indicies);
 
 			// generate all of our vertices
 			if (childPosition == ChildPosition.NoneNoParent)
@@ -79,9 +109,9 @@ namespace MyGame.PlanetaryBody
 				// add positions, line by line
 				{
 					int numberOfVerticesInBetween = 0;
-					for (uint y = 1; y < numberOfVerticesOnEdge; y++)
+					for (uint y = 1; y < NumberOfVerticesOnEdge; y++)
 					{
-						var percent = y / (float)(numberOfVerticesOnEdge - 1);
+						var percent = y / (float)(NumberOfVerticesOnEdge - 1);
 						var start = MyMath.Slerp(noElevationRange.a, noElevationRange.b, percent);
 						var end = MyMath.Slerp(noElevationRange.a, noElevationRange.c, percent);
 						//positionsFinal.Add(start.ToVector3());
@@ -122,7 +152,7 @@ namespace MyGame.PlanetaryBody
 
 					// copy position from parent
 					int numberOfVerticesOnLine = 2;
-					for (int y = 1; y < numberOfVerticesOnEdge; y++)
+					for (int y = 1; y < NumberOfVerticesOnEdge; y++)
 					{
 						for (int x = 0; x < numberOfVerticesOnLine; x++)
 						{
@@ -142,7 +172,7 @@ namespace MyGame.PlanetaryBody
 					// fill in positions in between
 					i = 1;
 					numberOfVerticesOnLine = 2;
-					for (int y = 1; y < numberOfVerticesOnEdge; y++)
+					for (int y = 1; y < NumberOfVerticesOnEdge; y++)
 					{
 						for (int x = 0; x < numberOfVerticesOnLine; x++)
 						{
@@ -211,7 +241,7 @@ namespace MyGame.PlanetaryBody
 					}
 					i++;
 					numberOfVerticesOnLine = 2;
-					for (int y = 1; y < numberOfVerticesOnEdge; y++)
+					for (int y = 1; y < NumberOfVerticesOnEdge; y++)
 					{
 						for (int x = 0; x < numberOfVerticesOnLine; x++)
 						{
@@ -244,7 +274,7 @@ namespace MyGame.PlanetaryBody
 				i++;
 
 				numberOfVerticesOnLine = 2;
-				for (int y = 1; y < numberOfVerticesOnEdge; y++)
+				for (int y = 1; y < NumberOfVerticesOnEdge; y++)
 				{
 					for (int x = 0; x < numberOfVerticesOnLine; x++)
 					{
@@ -298,61 +328,17 @@ namespace MyGame.PlanetaryBody
 
 			//Mesh.CalculateNormals(mesh.triangleIndicies, positionsInitial, normalsInitial);
 
-			// make skirts
-			if (useSkirts)
-			{
-				// duplicate edge vertices / triangles
-
-				var skirtIndicies = new List<int>();
-				// gather the edge vertices indicies
-				{
-					int lineStartIndex = 0;
-					int nextLineStartIndex = 1;
-					int numberOfVerticesInBetween = 0;
-					skirtIndicies.Add(0); // first line
-										  // top and all middle lines
-					for (int i = 1; i < numberOfVerticesOnEdge - 1; i++)
-					{
-						lineStartIndex = nextLineStartIndex;
-						nextLineStartIndex = lineStartIndex + numberOfVerticesInBetween + 2;
-						skirtIndicies.Add(lineStartIndex);
-						skirtIndicies.Add((lineStartIndex + numberOfVerticesInBetween + 1));
-						numberOfVerticesInBetween++;
-					}
-					// bottom line
-					lineStartIndex = nextLineStartIndex;
-					for (int i = 0; i < numberOfVerticesOnEdge; i++)
-					{
-						skirtIndicies.Add((lineStartIndex + i));
-					}
-				}
-
-				// the deeper chunk it the less the multiplier should be
-				var skirtMultiplier = 0.99f + 0.01f * subdivisionDepth / (planetaryBody.subdivisionMaxRecurisonDepth + 2);
-				skirtMultiplier = MyMath.Clamp(skirtMultiplier, 0.95f, 1.0f);
-
-				var chunkCenter = realRange.CenterPos.ToVector3();
-				foreach (var index in skirtIndicies)
-				{
-					// lower the skirts towards middle
-					// move chunks towards triangle center
-					{
-						var v = mesh.Vertices[index];
-						v *= skirtMultiplier;
-						v = chunkCenter + (v - chunkCenter) * skirtMultiplier;
-						mesh.Vertices[index] = v;
-					}
-					{
-						var v = positionsInitial[index];
-						v *= skirtMultiplier;
-						v = chunkCenter + (v - chunkCenter) * skirtMultiplier;
-						positionsInitial[index] = v;
-					}
-				}
-			}
-
 			mesh.VertexArrayObj.AddVertexBufferObject("positionsInitial", positionsInitial);
 			mesh.VertexArrayObj.AddVertexBufferObject("normalsInitial", normalsInitial);
+
+
+
+			if (useSkirts)
+			{
+				var skirtVertices = mesh.Extrude(this.GetEdgeVertices().ToArray(), mesh.Vertices, mesh.Normals, positionsInitial, normalsInitial);
+				var moveAmount = this.realVisibleRange.ToBoundingSphere().radius / 1000;
+				mesh.MoveVertexes(skirtVertices, this.realVisibleRange.CenterPos.Towards(Vector3d.Zero).ToVector3() * (float)moveAmount, mesh.Vertices, positionsInitial);
+			}
 
 			mesh.RecalculateBounds();
 

@@ -313,6 +313,11 @@ namespace MyEngine
             void SendDataToGpu(string myName);
             void BindBufferToVAO();
             void DeleteBuffer();
+			/// <summary>
+			/// Takes one data at index and adds them again at the end.
+			/// </summary>
+			/// <param name="index"></param>
+			void Duplicate(VertexIndex index);
         }
         public enum BufTarget
         {
@@ -422,7 +427,12 @@ namespace MyEngine
                 this.AddRange(data);
                 OnChanged.Raise();
             }
-        }
+
+			public void Duplicate(VertexIndex index)
+			{
+				Add(this[index.vertexIndex]);
+			}
+		}
 
 
 
