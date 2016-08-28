@@ -19,7 +19,7 @@ namespace MyGame
         public List<PlanetaryBody.Root> planets = new List<PlanetaryBody.Root>();
         SceneSystem scene;
 
-        bool clampCameraToSurface = false;
+        bool clampCameraToSurface = true;
         bool moveCameraToSurfaceOnStart = true;
 
         Camera Cam { get { return scene.mainCamera; } }

@@ -331,9 +331,14 @@ namespace MyGame.PlanetaryBody
 			var edgeVertices = this.GetEdgeVertices().ToArray();
 
 			var smoothEdgeNormals = true;
+			smoothEdgeNormals = false;
 			if (smoothEdgeNormals)
 			{
-				
+				var v = mesh.Vertices;
+				for (int i = 0; i < edgeVertices.Length; i++)
+				{
+					var evi = edgeVertices[i];					
+				}
 			}
 
 			if (useSkirts)

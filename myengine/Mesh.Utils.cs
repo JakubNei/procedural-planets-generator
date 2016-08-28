@@ -189,6 +189,25 @@ namespace MyEngine
 			return FindNeighbours(a).Contains(b);
 		}
 
+
+		public void Delete(VertexIndex[] removeVertices)
+		{
+			Delete(removeVertices, Vertices, Normals, Tangents);
+		}
+		public void Delete(VertexIndex[] removeVertices, params IVertexBufferObject[] removeFromVbos)
+		{
+			for (int i = 0; i < removeVertices.Length; i++)
+			{
+				foreach (var vbo in removeFromVbos)
+				{
+					throw new NotImplementedException();
+					//vbo.RemoveAt(removeVertices[i]);
+				}
+
+			}
+		}
+
+
 		public VertexIndex[] Duplicate(VertexIndex[] duplicateVertices)
 		{
 			return Duplicate(duplicateVertices, Vertices, Normals, Tangents);
