@@ -65,17 +65,13 @@ namespace MyGame.PlanetaryBody
 
 
 			var mesh = new Mesh();// "PlanetaryBodyChunk depth:" + subdivisionDepth + " #" + numbetOfChunksGenerated);
-			numbetOfChunksGenerated++;
+			numberOfChunksGenerated++;
 
-			var realRange = noElevationRange;
 
 			bool useSkirts = false;
 			useSkirts = true;
 
 
-			//uint numberOfVerticesOnEdge = 4; // must be over 4, if under or 4 skirts will move all of it
-
-			// realRange triangle is assumed to have all sides the same length
 
 			// generate evenly spaced vertices, then we make triangles out of them
 			var positionsFinal = new List<Vector3>();
@@ -83,7 +79,7 @@ namespace MyGame.PlanetaryBody
 
 
 			// the planetary chunk vertices blend from positonsInitial to positionsFinal
-			// to nicely blend in more detail
+			// to smoothly blend in more detail as camera closes in
 			// var positionsInitial = new List<Vector3>(); 
 			var positionsInitial = new Mesh.VertexBufferObject<Vector3>()
 			{
@@ -95,9 +91,6 @@ namespace MyGame.PlanetaryBody
 				ElementType = typeof(float),
 				DataStrideInElementsNumber = 3,
 			};
-
-			List<int> indicies;
-			GetIndiciesList(NumberOfVerticesOnEdge, out indicies);
 
 			// generate all of our vertices
 			if (childPosition == ChildPosition.NoneNoParent)
@@ -212,6 +205,10 @@ namespace MyGame.PlanetaryBody
 			}
 
 
+
+			List<int> indicies;
+			GetIndiciesList(NumberOfVerticesOnEdge, out indicies);
+			
 			mesh.Vertices.SetData(positionsFinal);
 			mesh.TriangleIndicies.SetData(indicies);
 			mesh.RecalculateNormals();
@@ -331,14 +328,20 @@ namespace MyGame.PlanetaryBody
 			mesh.VertexArrayObj.AddVertexBufferObject("positionsInitial", positionsInitial);
 			mesh.VertexArrayObj.AddVertexBufferObject("normalsInitial", normalsInitial);
 
+			var edgeVertices = this.GetEdgeVertices().ToArray();
 
+			var smoothEdgeNormals = true;
+			if (smoothEdgeNormals)
+			{
+				
+			}
 
 			if (useSkirts)
 			{
-				var skirtVertices = mesh.Extrude(this.GetEdgeVertices().ToArray(), mesh.Vertices, mesh.Normals, positionsInitial, normalsInitial);
+				var skirtVertices = mesh.Duplicate(edgeVertices, mesh.Vertices, mesh.Normals, positionsInitial, normalsInitial);
 				var moveAmount = this.realVisibleRange.ToBoundingSphere().radius / 1000;
-				mesh.MoveVertexes(skirtVertices, this.realVisibleRange.CenterPos.Towards(Vector3d.Zero).ToVector3() * (float)moveAmount, mesh.Vertices, positionsInitial);
-			}
+				mesh.MoveVertices(skirtVertices, this.realVisibleRange.CenterPos.Towards(Vector3d.Zero).ToVector3() * (float)moveAmount, mesh.Vertices, positionsInitial);
+			}		
 
 			mesh.RecalculateBounds();
 

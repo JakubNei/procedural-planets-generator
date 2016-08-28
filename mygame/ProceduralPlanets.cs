@@ -19,10 +19,10 @@ namespace MyGame
         public List<PlanetaryBody.Root> planets = new List<PlanetaryBody.Root>();
         SceneSystem scene;
 
-        bool clampCameraToSurface = true;
+        bool clampCameraToSurface = false;
         bool moveCameraToSurfaceOnStart = true;
 
-        Camera cam { get { return scene.mainCamera; } }
+        Camera Cam { get { return scene.mainCamera; } }
 
         public ProceduralPlanets(SceneSystem scene)
         {
@@ -111,7 +111,7 @@ namespace MyGame
 
             if (moveCameraToSurfaceOnStart)
             {
-                cam.Transform.Position = new WorldPos((float)-planet.radius, 0, 0) + planet.Transform.Position;
+                Cam.Transform.Position = new WorldPos((float)-planet.radius, 0, 0) + planet.Transform.Position;
             }
 
         }
@@ -122,20 +122,20 @@ namespace MyGame
             if (scene.Input.GetKeyDown(Key.P)) freezeUpdate = !freezeUpdate;
             if (freezeUpdate) return;
 
-            var camPos = cam.Transform.Position;
+            var camPos = Cam.Transform.Position;
 
             var planet = planets.OrderBy(p => p.Transform.Position.Distance(camPos) - p.radius).First();
 
             // make cam on top of the planet
             if (clampCameraToSurface)
             {
-                var p = (cam.Transform.Position - planet.Transform.Position).ToVector3d();
+                var p = (Cam.Transform.Position - planet.Transform.Position).ToVector3d();
                 var camPosS = planet.CalestialToSpherical(p);
                 var h = 1 + planet.GetHeight(p);
                 if (camPosS.altitude < h)
                 {
                     camPosS.altitude = h;
-                    cam.Transform.Position = planet.Transform.Position + planet.SphericalToCalestial(camPosS).ToVector3();
+                    Cam.Transform.Position = planet.Transform.Position + planet.SphericalToCalestial(camPosS).ToVector3();
                 }
             }
 

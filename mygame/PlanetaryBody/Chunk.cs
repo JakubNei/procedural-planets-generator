@@ -89,7 +89,7 @@ namespace MyGame.PlanetaryBody
 		}
 
 
-		int numbetOfChunksGenerated = 0;
+		int numberOfChunksGenerated = 0;
 		bool isGenerated = false;
 
 		static Dictionary<int, List<int>> numberOfVerticesOnEdge_To_oneTimeGeneratedIndicies = new Dictionary<int, List<int>>();

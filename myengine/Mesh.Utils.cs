@@ -189,22 +189,22 @@ namespace MyEngine
 			return FindNeighbours(a).Contains(b);
 		}
 
-		public VertexIndex[] Extrude(VertexIndex[] extrudeVertices)
+		public VertexIndex[] Duplicate(VertexIndex[] duplicateVertices)
 		{
-			return Extrude(extrudeVertices, Vertices, Normals, Tangents);
+			return Duplicate(duplicateVertices, Vertices, Normals, Tangents);
 		}
-		public VertexIndex[] Extrude(VertexIndex[] extrudeVertices, params IVertexBufferObject[] extrudeVBOs)
+		public VertexIndex[] Duplicate(VertexIndex[] duplicateVertices, params IVertexBufferObject[] duplicateVbos)
 		{
-			var newExtrudedVertices = new VertexIndex[extrudeVertices.Length];
+			var newExtrudedVertices = new VertexIndex[duplicateVertices.Length];
 
 			// duplicate selected vertexes
-			for (int i = 0; i < extrudeVertices.Length; i++)
+			for (int i = 0; i < duplicateVertices.Length; i++)
 			{
 				newExtrudedVertices[i] = new VertexIndex(Vertices.Count);
 
-				foreach (var vbo in extrudeVBOs)
+				foreach (var vbo in duplicateVbos)
 				{
-					vbo.Duplicate(extrudeVertices[i]);
+					vbo.Duplicate(duplicateVertices[i]);
 				}
 			}
 
@@ -213,10 +213,19 @@ namespace MyEngine
 			{
 				for (int b = a; b < newExtrudedVertices.Length; b++)
 				{
-					if (IsNeighbouring(extrudeVertices[a], extrudeVertices[b]))
+					if (IsNeighbouring(duplicateVertices[a], duplicateVertices[b]))
 					{
-						AddTriangle(extrudeVertices[a], extrudeVertices[b], newExtrudedVertices[b]);
-						AddTriangle(extrudeVertices[a], newExtrudedVertices[b], newExtrudedVertices[a]);
+						//OVERKILL: to make sure skirts are visible we make both CW and CCW triangles
+
+						//CW vs CCW might actually depend on the order of array duplicateVertices
+
+						//CCW
+						AddTriangle(duplicateVertices[a], duplicateVertices[b], newExtrudedVertices[b]);
+						AddTriangle(duplicateVertices[a], newExtrudedVertices[b], newExtrudedVertices[a]);
+
+						//CW
+						AddTriangle(duplicateVertices[b], duplicateVertices[a], newExtrudedVertices[b]);
+						AddTriangle(duplicateVertices[a], newExtrudedVertices[a], newExtrudedVertices[b]);
 					}
 				}
 			}
@@ -224,18 +233,86 @@ namespace MyEngine
 			return newExtrudedVertices;
 		}
 
-		public void MoveVertexes(VertexIndex[] moveVertices, Vector3 addVector)
+		public void MoveVertices(VertexIndex[] moveVertices, Vector3 addVector)
 		{
-			MoveVertexes(moveVertices, addVector, Vertices);
+			MoveVertices(moveVertices, addVector, Vertices);
 		}
 
-		public void MoveVertexes(VertexIndex[] moveVertices, Vector3 addVector, params VertexBufferObject<Vector3>[] extrudeVBOs)
+		public void MoveVertices(VertexIndex[] moveVertices, Vector3 addVector, params VertexBufferObject<Vector3>[] moveVbos)
 		{
-			foreach (var vbo in extrudeVBOs)
+			foreach (var vbo in moveVbos)
 			{
 				for (int i = 0; i < moveVertices.Length; i++)
 				{
 					vbo[moveVertices[i].vertexIndex] += addVector;
+				}
+			}
+		}
+
+
+
+
+
+
+
+		/// <summary>
+		/// If this mesh has vertices that are at the same position as <paramref name="neigbours"/>, it merges (averages) their normals.
+		/// </summary>
+		/// <param name="neigbours"></param>
+		/*
+		public void SmootNormalsWith(params Mesh[] neigbours)
+		{
+			foreach (var other in neigbours)
+			{
+				for (int thisIndex = 0; thisIndex < this.Vertices.Count; thisIndex++)
+				{
+					for (int otherIndex = 0; otherIndex < other.Vertices.Count; otherIndex++)
+					{
+						if (this.Vertices[thisIndex] == other.Vertices[otherIndex])
+						{
+							var averageNormal = (this.Normals[thisIndex] + other.Normals[otherIndex]) / 2;
+							this.Normals[thisIndex] = other.Normals[otherIndex] = averageNormal;
+						}
+					}
+				}
+			}
+		}
+		*/
+
+
+		public class SmoothNormals
+		{
+			public float minDistance;
+
+			public VertexBufferObject<Vector3> myPositions;
+			public VertexBufferObject<Vector3> myNormals;
+
+			List<Tuple<VertexBufferObject<Vector3>, VertexBufferObject<Vector3>>> neigbours = new List<Tuple<VertexBufferObject<Vector3>, VertexBufferObject<Vector3>>>();
+
+			public SmoothNormals AddNeighbour(VertexBufferObject<Vector3> neighbourPositions, VertexBufferObject<Vector3> neighbourNormals)
+			{
+				neigbours.Add(Tuple.Create(neighbourPositions, neighbourNormals));
+				return this;
+			}
+
+			public void Execute()
+			{
+				var minDistanceSqr = minDistance * minDistance;
+				foreach (var other in neigbours)
+				{
+					var otherPositions = other.Item1;
+					var otherNormals = other.Item2;
+					for (int thisIndex = 0; thisIndex < myPositions.Count; thisIndex++)
+					{
+						for (int otherIndex = 0; otherIndex < otherPositions.Count; otherIndex++)
+						{
+							if (myPositions[thisIndex].DistanceSqr(otherPositions[otherIndex]) < minDistanceSqr)
+							{
+								var averageNormal = (myNormals[thisIndex] + otherNormals[otherIndex]) / 2;
+								myNormals[thisIndex] = otherNormals[otherIndex] = averageNormal;
+							}
+						}
+					}
 				}
 			}
 		}

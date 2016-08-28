@@ -28,9 +28,6 @@ namespace MyGame
 
                 new DebugKeys(scene);
 
-
-
-
                 {
 
                     var entity = scene.AddEntity();
