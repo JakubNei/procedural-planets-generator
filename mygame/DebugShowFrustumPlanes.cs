@@ -27,11 +27,12 @@ namespace MyGame
                 e.Transform.Scale = new Vector3(10, 10, 1);
             }
 
-            Entity.EventSystem.Register<EventThreadUpdate>(e => Update(e.DeltaTimeNow));
+            //Entity.EventSystem.Register<EventThreadUpdate>(e => Update(e.DeltaTimeNow));
         }
+		/*
         void Update(double deltaTime)
         {
-            var p = Entity.GetComponent<Camera>().GetFrustumPlanes();
+            var p = Entity.GetComponent<Camera>().GetFrustum();
 
             for (int i = 0; i < 6; i++)
             {
@@ -40,6 +41,7 @@ namespace MyGame
                 gos[i].Transform.Rotation = QuaternionUtility.LookRotation(p[i].normal);
             }
         }
+		*/
     }
 }
 

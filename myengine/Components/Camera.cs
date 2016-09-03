@@ -18,7 +18,7 @@ namespace MyEngine.Components
 
         public float aspect = 0.8f;
         public float fieldOfView = 45.0f;
-        public float nearClipPlane = 0.1f;
+        public float nearClipPlane = 0.5f;
         public float farClipPlane = 5000;
         public bool orthographic = false;
         public float orthographicSize = 5;
@@ -93,49 +93,11 @@ namespace MyEngine.Components
         /// Returns frustum planes of rotation and projection matrix
         /// </summary>
         /// <returns></returns>
-        public Plane[] GetFrustumPlanes()
+        public Frustum GetFrustum()
         {
-            var p = new Plane[6];
-            var m = GetRotationMatrix() * GetProjectionMat();
-
-            const int FRUSTUM_RIGHT = 0;
-            const int FRUSTUM_LEFT = 1;
-            const int FRUSTUM_DOWN = 2;
-            const int FRUSTUM_UP = 3;
-            const int FRUSTUM_FAR = 4;
-            const int FRUSTUM_NEAR = 5;
-
-            p[FRUSTUM_RIGHT].normal.X = m[0, 3] - m[0, 0];
-            p[FRUSTUM_RIGHT].normal.Y = m[1, 3] - m[1, 0];
-            p[FRUSTUM_RIGHT].normal.Z = m[2, 3] - m[2, 0];
-            p[FRUSTUM_RIGHT].distance = m[3, 3] - m[3, 0];
-
-            p[FRUSTUM_LEFT].normal.X = m[0, 3] + m[0, 0];
-            p[FRUSTUM_LEFT].normal.Y = m[1, 3] + m[1, 0];
-            p[FRUSTUM_LEFT].normal.Z = m[2, 3] + m[2, 0];
-            p[FRUSTUM_LEFT].distance = m[3, 3] + m[3, 0];
-
-            p[FRUSTUM_DOWN].normal.X = m[0, 3] + m[0, 1];
-            p[FRUSTUM_DOWN].normal.Y = m[1, 3] + m[1, 1];
-            p[FRUSTUM_DOWN].normal.Z = m[2, 3] + m[2, 1];
-            p[FRUSTUM_DOWN].distance = m[3, 3] + m[3, 1];
-
-            p[FRUSTUM_UP].normal.X = m[0, 3] - m[0, 1];
-            p[FRUSTUM_UP].normal.Y = m[1, 3] - m[1, 1];
-            p[FRUSTUM_UP].normal.Z = m[2, 3] - m[2, 1];
-            p[FRUSTUM_UP].distance = m[3, 3] - m[3, 1];
-
-            p[FRUSTUM_FAR].normal.X = m[0, 3] - m[0, 2];
-            p[FRUSTUM_FAR].normal.Y = m[1, 3] - m[1, 2];
-            p[FRUSTUM_FAR].normal.Z = m[2, 3] - m[2, 2];
-            p[FRUSTUM_FAR].distance = m[3, 3] - m[3, 2];
-
-            p[FRUSTUM_NEAR].normal.X = m[0, 3] + m[0, 2];
-            p[FRUSTUM_NEAR].normal.Y = m[1, 3] + m[1, 2];
-            p[FRUSTUM_NEAR].normal.Z = m[2, 3] + m[2, 2];
-            p[FRUSTUM_NEAR].distance = m[3, 3] + m[3, 2];
-
-            return p;
+			var frustum = new Frustum();
+			frustum.CalculateFrustum(GetProjectionMat(), GetRotationMatrix());
+			return frustum;
         }
     }
 }

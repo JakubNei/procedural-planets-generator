@@ -7,19 +7,19 @@ using System.Reflection;
 
 namespace MyEngine
 {
-    class DataBinder
+    public class DataBinder
     {
         public string targetPropertyName;
         public object targetObject;
         public string sourcePropertyName;
         public object sourceObject;
 
-        IPropertyDescriptor targetProperty;
-        IPropertyDescriptor sourceProperty;
+		public IPropertyDescriptor targetProperty;
+		public IPropertyDescriptor sourceProperty;
 
-        bool canUpdate;
+		public bool canUpdate;
 
-        void Start()
+		public void Start()
         {
             sourceProperty = PropertyDescriptorUtils.GetOne(sourceObject.GetType(), sourcePropertyName);
             targetProperty = PropertyDescriptorUtils.GetOne(targetObject.GetType(), targetPropertyName);
@@ -27,7 +27,7 @@ namespace MyEngine
             canUpdate = sourceProperty != null && targetProperty != null && sourceProperty.Type == targetProperty.Type;
         }
 
-        void Update()
+		public void Update()
         {
             if (canUpdate)
             {

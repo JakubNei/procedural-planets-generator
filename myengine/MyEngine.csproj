@@ -79,6 +79,7 @@
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>MyMath_template.cs</LastGenOutput>
     </Content>
+    <Compile Include="Mathematical\Frustum.cs" />
     <Compile Include="Mathematical\MyMath_template.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -129,7 +130,7 @@
     <Compile Include="Mathematical\QuaternionUtility.cs" />
     <Compile Include="Mathematical\GeometryUtility.cs" />
     <Compile Include="GameSystems\ResourceFolder.cs" />
-    <Compile Include="Mathematical\LocalBounds.cs" />
+    <Compile Include="Mathematical\Bounds.cs" />
     <Compile Include="Components\Camera.cs" />
     <Compile Include="Components\Component.cs" />
     <Compile Include="Cubemap.cs" />

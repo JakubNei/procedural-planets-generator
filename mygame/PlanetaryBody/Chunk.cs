@@ -177,7 +177,7 @@ namespace MyGame.PlanetaryBody
 				distanceToCamera = renderer.Mesh.Vertices.FindClosest((v) => v.DistanceSqr(localCamPos)).Distance(localCamPos);
 
 				{
-					isVisible = GeometryUtility.TestPlanesAABB(cam.GetFrustumPlanes(), renderer.GetCameraSpaceBounds(cam.ViewPointPosition));
+					isVisible = renderer.GetCameraRenderStatus(cam).HasFlag(RenderStatus.Rendered);
 				}
 
 			}

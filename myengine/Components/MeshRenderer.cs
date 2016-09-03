@@ -72,17 +72,20 @@ namespace MyEngine.Components
 			var relativePos = (viewPointPos - Offset).Towards(Entity.Transform.Position).ToVector3();
 			if (Mesh == null)
 			{
-				return new Bounds(relativePos, Vector3.Zero);
+				return new Bounds(relativePos);
 			}
+		
+			
+			// without rotation and scale
+			var boundsCenter = relativePos + Mesh.Bounds.Center;
+			var bounds = new Bounds(boundsCenter);
 
-			var boundsCenter = relativePos + (Mesh.Bounds.Center * Entity.Transform.Scale).RotateBy(Entity.Transform.Rotation);
 			var boundsExtents = (Mesh.Bounds.Extents * Entity.Transform.Scale).RotateBy(Entity.Transform.Rotation);
-
-			var bounds = new Bounds(boundsCenter, Vector3.Zero);
 			for (int i = 0; i < 8; i++)
 			{
 				bounds.Encapsulate(boundsCenter + boundsExtents.CompomentWiseMult(extentsTransformsToEdges[i]));
 			}
+			
 			return bounds;
 		}
 

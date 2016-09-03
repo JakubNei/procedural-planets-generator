@@ -29,10 +29,10 @@ namespace MyEngine
 
         List<IRenderable> toRender = new List<IRenderable>();
 
-        public bool drawLines { get { return Debug.Value("debugRenderWithLines").Bool; } }
-        public bool enablePostProcessEffects { get { return Debug.Value("enablePostProcessEffects").Bool; } }
-        public bool debugBounds { get { return Debug.Value("disablePostProcessEffects").Bool; } }
-        public bool shadowsEnabled { get { return Debug.Value("shadowsDisabled").Bool == false; } }
+        public bool drawLines { get { return Debug.CVar("debugRenderWithLines").Bool; } }
+        public bool enablePostProcessEffects { get { return Debug.CVar("enablePostProcessEffects").Bool; } }
+        public bool debugBounds { get { return Debug.CVar("debugBounds").Bool; } }
+        public bool shadowsEnabled { get { return Debug.CVar("shadowsDisabled").Bool == false; } }
 
         public RenderManager(Events.EventSystem eventSystem)
         {
@@ -227,29 +227,42 @@ namespace MyEngine
         public void BuildRenderList(IEnumerable<IRenderable> possibleRenderables, Camera camera)
         {
             var newToRender = new List<IRenderable>();
-            var frustrumPlanes = camera.GetFrustumPlanes();
+            var frustum = camera.GetFrustum();
             lock (possibleRenderables)
             {
                 foreach (var renderable in possibleRenderables)
                 {
                     if (renderable.ShouldRenderInContext(RenderContext))
                     {
-                        if (renderable.ForcePassFrustumCulling || GeometryUtility.TestPlanesAABB(frustrumPlanes, renderable.GetCameraSpaceBounds(camera.Transform.Position)))
+                        if (renderable.ForcePassFrustumCulling)
                         {
-                            if (renderable == null) continue;
-                            newToRender.Add(renderable);
-                            if (renderable.ForcePassFrustumCulling) renderable.CameraRenderStatusFeedback(camera, RenderStatus.RenderedForced);
-                            else renderable.CameraRenderStatusFeedback(camera, RenderStatus.RenderedAndVisible);
+                            renderable.CameraRenderStatusFeedback(camera, RenderStatus.RenderedForced);
+							newToRender.Add(renderable);                            
                         }
                         else
                         {
-                            renderable.CameraRenderStatusFeedback(camera, RenderStatus.NotRendered);
+							var bounds = renderable.GetCameraSpaceBounds(camera.Transform.Position);
+
+							if (
+								frustum.SphereVsFrustum(bounds.Center, bounds.Extents.Length)
+								&& frustum.VolumeVsFrustum(bounds)
+							)
+							{
+								renderable.CameraRenderStatusFeedback(camera, RenderStatus.RenderedAndVisible);
+								newToRender.Add(renderable);
+							} else {
+								renderable.CameraRenderStatusFeedback(camera, RenderStatus.NotRendered);
+							}
                         }
                     }
                 }
             }
-            var comparer = new RenderableDistanceComparer(camera.ViewPointPosition);
-            newToRender.Sort(comparer);
+
+			if (Debug.CVar("sortRenderers").Bool)
+			{
+				var comparer = new RenderableDistanceComparer(camera.ViewPointPosition);
+				newToRender.Sort(comparer);
+			}
             lock (this)
             {
                 this.toRender = newToRender;
@@ -268,12 +281,10 @@ namespace MyEngine
             public int Compare(IRenderable x, IRenderable y)
             {
                 if (ReferenceEquals(y, x)) return 0;
-                if (ReferenceEquals(x, null)) return -1;
-                if (ReferenceEquals(y, null)) return 1;
                 var distX = x.GetCameraSpaceBounds(viewPointPosition).Center.DistanceSqr(viewPointPosition_vec3);
                 var distY = y.GetCameraSpaceBounds(viewPointPosition).Center.DistanceSqr(viewPointPosition_vec3);
                 if (distX == distY) return 0;
-                if (distX > distY) return 1;
+                if (distX > distY) return +1;
                 else return -1;
             }
         }

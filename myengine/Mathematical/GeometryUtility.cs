@@ -18,7 +18,7 @@ namespace MyEngine
         /// <returns></returns>
         public static bool TestPlanesAABB(Plane[] planes, Bounds bounds)
         {
-            for (uint i = 0; i < 6; i++)
+            for (uint i = 0; i < planes.Length; i++)
             {
                 //if (planes[i].GetDistanceToPoint(bounds.Center) < -bounds.Extents.Length) // this one is right
                 if (planes[i].GetDistanceToPoint(bounds.Center) < -bounds.Size.Length) // but works better, TODO

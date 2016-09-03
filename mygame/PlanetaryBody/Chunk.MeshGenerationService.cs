@@ -44,10 +44,12 @@ namespace MyGame.PlanetaryBody
 				generationThreadMiliSecondsSleep = 1;
 				chunkToWeight.Clear();
 				doRun = true;
-				int numThreads = Environment.ProcessorCount;
+				int numThreads = Environment.ProcessorCount - 2;
 #if DEBUG
 				//numThreads = 1;
 #endif
+				if (numThreads < 1) numThreads = 1;
+
 				for (int i = 0; i < numThreads; i++)
 				{
 					var threadIndex = i;
