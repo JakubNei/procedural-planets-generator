@@ -357,8 +357,6 @@ namespace MyEngine
 
 			SwapBuffers();
 
-			Debug.AddValue("countMeshesRendered", countMeshesRendered + "/" + renderManagerFront.CountRenderablesRendered);
-
 		}
 
 	}

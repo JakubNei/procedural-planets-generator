@@ -6,6 +6,7 @@ using System.Diagnostics;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
+using System.Runtime.CompilerServices;
 
 namespace MyEngine.Components
 {
@@ -66,7 +67,7 @@ namespace MyEngine.Components
 			RenderingMode = RenderingMode.RenderGeometryAndCastShadows;
 		}
 
-
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public override Bounds GetCameraSpaceBounds(WorldPos viewPointPos)
 		{
 			var relativePos = (viewPointPos - Offset).Towards(Entity.Transform.Position).ToVector3();
@@ -89,7 +90,7 @@ namespace MyEngine.Components
 			return bounds;
 		}
 
-
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public override void UploadUBOandDraw(Camera camera, UniformBlock ubo)
 		{
 			var modelMat = this.Entity.Transform.GetLocalToWorldMatrix(camera.Transform.Position - Offset);
@@ -105,7 +106,7 @@ namespace MyEngine.Components
 		{
 			OnMashDataChanged?.Invoke();
 		}
-
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public override bool ShouldRenderInContext(object renderContext)
 		{
 			return Mesh != null && Mesh.IsRenderable && Material != null && Material.DepthGrabShader != null && base.ShouldRenderInContext(renderContext);

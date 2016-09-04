@@ -88,8 +88,11 @@ namespace MyEngine
 				}
 				set
 				{
-					if (_bool != value) OnChanged?.Invoke(this);
-					_bool = value;
+					if (_bool != value)
+					{
+						_bool = value;
+						OnChanged?.Invoke(this);
+					}
 				}
 			}
 			public OpenTK.Input.Key toogleKey = OpenTK.Input.Key.Unknown;

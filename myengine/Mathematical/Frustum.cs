@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -30,6 +31,7 @@ namespace MyEngine
 			Front = 5
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private void NormalizePlane(float[,] frustum, int side)
 		{
 			float magnitude = (float)Math.Sqrt((frustum[side, 0] * frustum[side, 0]) + (frustum[side, 1] * frustum[side, 1])
@@ -40,6 +42,7 @@ namespace MyEngine
 			frustum[side, 3] /= magnitude;
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public bool PointVsFrustum(float x, float y, float z)
 		{
 			for (int i = 0; i < 6; i++)
@@ -52,6 +55,7 @@ namespace MyEngine
 			return true;
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public bool PointVsFrustum(Vector3 location)
 		{
 			for (int i = 0; i < 6; i++)
@@ -64,6 +68,7 @@ namespace MyEngine
 			return true;
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public bool SphereVsFrustum(float x, float y, float z, float radius)
 		{
 			for (int p = 0; p < 6; p++)
@@ -77,6 +82,7 @@ namespace MyEngine
 			return true;
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public bool SphereVsFrustum(Vector3 location, float radius)
 		{
 			for (int p = 0; p < 6; p++)
@@ -90,6 +96,7 @@ namespace MyEngine
 			return true;
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public bool VolumeVsFrustum(float x, float y, float z, float width, float height, float length)
 		{
 			for (int i = 0; i < 6; i++)
@@ -115,6 +122,7 @@ namespace MyEngine
 			return true;
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public bool VolumeVsFrustum(Bounds volume)
 		{
 			for (int i = 0; i < 6; i++)
@@ -140,6 +148,7 @@ namespace MyEngine
 			return true;
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public bool VolumeVsFrustum(Vector3 location, float width, float height, float length)
 		{
 			for (int i = 0; i < 6; i++)
@@ -165,6 +174,7 @@ namespace MyEngine
 			return true;
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public bool CubeVsFrustum(float x, float y, float z, float size)
 		{
 			for (int i = 0; i < 6; i++)
@@ -190,7 +200,7 @@ namespace MyEngine
 			return true;
 		}
 
-
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void CalculateFrustum(Matrix4 projectionMatrix, Matrix4 modelViewMatrix)
 		{
 			_clipMatrix[0] = (modelViewMatrix.M11 * projectionMatrix.M11) + (modelViewMatrix.M12 * projectionMatrix.M21) + (modelViewMatrix.M13 * projectionMatrix.M31) + (modelViewMatrix.M14 * projectionMatrix.M41);

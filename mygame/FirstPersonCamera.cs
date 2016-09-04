@@ -32,6 +32,8 @@ namespace MyGame
 		int scrollWheelValue;
 		Vector3 currentVelocity;
 
+		bool WalkOnPlanet => Debug.CVar("walkOnPlanet").Bool;
+
 		public FirstPersonCamera(Entity entity) : base(entity)
 		{
 
@@ -39,6 +41,7 @@ namespace MyGame
 
 			Entity.EventSystem.Register<InputUpdate>(e => Update(e.DeltaTimeNow));
 
+			Debug.CVar("walkOnPlanet").ToogledByKey(Key.G);
 		}
 
 		void Update(double deltaTime)
