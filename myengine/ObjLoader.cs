@@ -3,6 +3,8 @@ using System.IO;
 using System.Collections.Generic;
 using OpenTK;
 
+using Neitri;
+
 using MyEngine.Components;
 
 namespace MyEngine

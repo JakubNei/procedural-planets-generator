@@ -31,8 +31,8 @@ namespace MyEngine.Events
             {
                 delegat.DynamicInvoke(evt);
             }
-            if (OnAnyEventCalled != null) OnAnyEventCalled(evt);
-            foreach (var e in passEventsTo) e.Raise(evt);
+			OnAnyEventCalled?.Invoke(evt);
+			foreach (var e in passEventsTo) e.Raise(evt);
         }
         public void PassEventsTo(EventSystem eventSystem)
         {
@@ -142,12 +142,12 @@ namespace MyEngine.Events
 			{
 				foreach (var c in callbacks)
 				{
-					(c as Action<T>).Raise(evt);
+					(c as Action<T>)?.Invoke(evt);
 				}
 			}
 
 			if (OnAnyEventCalled != null) OnAnyEventCalled(evt);
-			foreach (var e in passEventsTo) e.Raise(evt);
+			foreach (var e in passEventsTo) e?.Invoke(evt);
 		}
 		public void PassEventsTo(EventSystem eventSystem)
 		{

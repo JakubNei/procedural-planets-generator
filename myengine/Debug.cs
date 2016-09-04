@@ -79,9 +79,22 @@ namespace MyEngine
 		{
 			//public dynamic Value { get; set; }
 			public string name;
-			public bool Bool { get; set; }
+			bool _bool;
+			public bool Bool
+			{
+				get
+				{
+					return _bool;
+				}
+				set
+				{
+					if (_bool != value) OnChanged?.Invoke(this);
+					_bool = value;
+				}
+			}
 			public OpenTK.Input.Key toogleKey = OpenTK.Input.Key.Unknown;
 			public bool hasDefaultValue = false;
+			public event Action<ConVar> OnChanged;
 			public ConVar ToogledByKey(OpenTK.Input.Key key)
 			{
 				Debug.Info($"{key} to toggled {name}");

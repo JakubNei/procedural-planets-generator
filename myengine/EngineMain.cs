@@ -78,6 +78,16 @@ namespace MyEngine
 			};
 
 			debug.Start();
+
+
+			Debug.CVar("fullscreen").ToogledByKey(OpenTK.Input.Key.F).OnChanged += (cvar) =>
+			{
+				if (cvar.Bool && WindowState != WindowState.Fullscreen)
+					WindowState = WindowState.Fullscreen;
+				else
+					WindowState = WindowState.Normal;
+			};
+
 		}
 
 		Events.EventSystem eventSystem = new Events.EventSystem();
@@ -239,7 +249,7 @@ namespace MyEngine
 				reloadAllShaders.Bool = false;
 			}
 
-			this.Title = string.Join("\t  ", Debug.stringValues.OrderBy(kvp => kvp.Key).Select(kvp => kvp.Key + ":" + kvp.Value).ToArray());		
+			this.Title = string.Join("\t  ", Debug.stringValues.OrderBy(kvp => kvp.Key).Select(kvp => kvp.Key + ":" + kvp.Value).ToArray());
 
 			if (this.Focused) Input.Update();
 			debug.Update();

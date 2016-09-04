@@ -6,6 +6,8 @@ using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 
+using Neitri;
+
 using MyEngine.Events;
 using MyEngine.Components;
 

@@ -22,6 +22,7 @@
 			line = line.Replace("(" + convertTypes[i] + ")", "(" + convertTypes[i +1] + ")");
 			line = line.Replace("" + convertTypes[i] + " ", "" + convertTypes[i + 1] + " ");
 			line = line.Replace("" + convertTypes[i] + ".", "" + convertTypes[i + 1] + ".");
+			line = line.Replace("." + convertTypes[i] + "", "." + convertTypes[i + 1] + "");
 			line = line.Replace("new " + convertTypes[i] + "(", "new " + convertTypes[i + 1] + "(");
 			line = line.Replace("__" + convertTypes[i] + "", "__" + convertTypes[i + 1] + "");
 			line = line.Replace("" + convertTypes[i] + "__", "" + convertTypes[i + 1] + "__");

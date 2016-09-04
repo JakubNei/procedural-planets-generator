@@ -8,6 +8,8 @@ using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 using System.Collections;
 
+using Neitri;
+
 namespace MyEngine
 {
     /*
@@ -257,8 +259,8 @@ namespace MyEngine
                     nextLayoutIndex++;
                 }
                 vboNamesToBind.Add(name);
-                vbo.OnChanged += () => { OnChanged.Raise(); };
-                OnChanged.Raise();
+                vbo.OnChanged += () => { OnChanged?.Invoke(); };
+                OnChanged?.Invoke();
             }
             public void CreateBufferAndBindVBOs()
             {
@@ -413,19 +415,19 @@ namespace MyEngine
             {
                 this.Clear();
                 this.AddRange(data);
-                OnChanged.Raise();
+                OnChanged?.Invoke();
             }
             public void SetData(T[] data)
             {
                 this.Clear();
                 this.AddRange(data);
-                OnChanged.Raise();
+                OnChanged?.Invoke();
             }
             public void SetData(IEnumerable<T> data)
             {
                 this.Clear();
                 this.AddRange(data);
-                OnChanged.Raise();
+                OnChanged?.Invoke();
             }
 
 			public void Duplicate(VertexIndex index)

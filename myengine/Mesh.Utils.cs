@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Text;
 using System.Collections.ObjectModel;
 
+using Neitri;
+
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;

@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Neitri;
+
 using OpenTK;
 using OpenTK.Input;
 
@@ -64,7 +66,7 @@ namespace MyGame
                 for (int i = 0; i < 1000; i++)
                 {
                     var e = scene.AddEntity("start dust #" + i);
-                    var vec = new Vector3d(random.Next(-1.0, 1.0), random.Next(-1.0, 1.0), random.Next(-1.0, 1.0));
+                    var vec = new Vector3d(random.Next(-1, 1), random.Next(-1.0, 1.0), random.Next(-1.0, 1.0));
                     e.Transform.Position = new WorldPos(vec.Normalized() * (2000.0 + random.Next(0, 2000)));
                     e.Transform.Scale *= 1f;
                     var r = e.AddComponent<MeshRenderer>();

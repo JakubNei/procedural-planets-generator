@@ -48,6 +48,7 @@
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
   </ItemGroup>
@@ -63,15 +64,55 @@
     <Compile Include="DataAccessibleList.cs" />
     <Compile Include="DataBinder.cs" />
     <Compile Include="DeltaTimeManager.cs" />
-    <Compile Include="Extensions\OpenTK\Vector3Extensions_other.cs" />
-    <Compile Include="Extensions\OpenTK\Vector3Extensions_template.cs">
+    <Compile Include="Neitri.Base.v1\DependencyInjection\DependencyManager.cs" />
+    <Compile Include="Neitri.Base.v1\DependencyInjection\IOnDependencyResolved.cs" />
+    <Compile Include="Neitri.Base.v1\Extensions\ActionExtensions.cs" />
+    <Compile Include="Neitri.Base.v1\Extensions\ArrayExtensions.cs" />
+    <Compile Include="Neitri.Base.v1\Extensions\AssemblyExtensions.cs" />
+    <Compile Include="Neitri.Base.v1\Extensions\BoolExtensions.cs" />
+    <Compile Include="Neitri.Base.v1\Extensions\ByteExtensions.cs" />
+    <Compile Include="Neitri.Base.v1\Extensions\DoubleExtensions.cs" />
+    <Compile Include="Neitri.Base.v1\Extensions\EnumerableExtensions.cs" />
+    <Compile Include="Neitri.Base.v1\Extensions\EnumExtensions.cs" />
+    <Compile Include="Neitri.Base.v1\Extensions\FloatExtensions.cs" />
+    <Compile Include="Neitri.Base.v1\Extensions\ICollectionExtensions.cs" />
+    <Compile Include="Neitri.Base.v1\Extensions\IDictionaryExtensions.cs" />
+    <Compile Include="Neitri.Base.v1\Extensions\IListExtensions.cs" />
+    <Compile Include="Neitri.Base.v1\Extensions\IntExtensions.cs" />
+    <Compile Include="Neitri.Base.v1\Extensions\JaggedArrayExtensions.cs" />
+    <Compile Include="Neitri.Base.v1\Extensions\RandomExtensions.cs" />
+    <Compile Include="Neitri.Base.v1\Extensions\StringExtensions.cs" />
+    <Compile Include="Neitri.Base.v1\Extensions\TypeExtensions.cs" />
+    <Compile Include="Neitri.Base.v1\IBinarySerializer.cs" />
+    <Compile Include="Neitri.Base.v1\IDependencyManager.cs" />
+    <Compile Include="Neitri.Base.v1\ILogging.cs" />
+    <Compile Include="Neitri.Base.v1\Logging\LogAggregator.cs" />
+    <Compile Include="Neitri.Base.v1\Logging\LogConsole.cs" />
+    <Compile Include="Neitri.Base.v1\Logging\LogFile.cs" />
+    <Compile Include="Neitri.Base.v1\NotNullAttribute.cs" />
+    <Compile Include="Neitri.Base.v1\Utils\ArrayUtil.cs" />
+    <Compile Include="Neitri.Base.v1\Utils\BiDictionary.cs" />
+    <Compile Include="Neitri.Base.v1\Utils\DeferredCollection.cs" />
+    <Compile Include="Neitri.Base.v1\Utils\DeferredSynchronizeInvoke.cs" />
+    <Compile Include="Neitri.Base.v1\Utils\FileChangedWatcher.cs" />
+    <Compile Include="Neitri.Base.v1\Utils\FormatUtils.cs" />
+    <Compile Include="Neitri.Base.v1\Utils\MemberName.cs" />
+    <Compile Include="Neitri.Base.v1\Utils\MyWeakReference.cs" />
+    <Compile Include="Neitri.Base.v1\Utils\other.cs" />
+    <Compile Include="Neitri.Base.v1\Utils\PropertyDescriptors.cs" />
+    <Compile Include="Neitri.Base.v1\Utils\ReadOnlyDictionary.cs" />
+    <Compile Include="Neitri.Base.v1\Utils\Require.cs" />
+    <Compile Include="Neitri.Base.v1\Utils\TraceUtil.cs" />
+    <Compile Include="Neitri.Base.v1\Utils\TwoKeyDictionary.cs" />
+    <Compile Include="Neitri.Base.v1\Utils\ValueChanged.cs" />
+    <Compile Include="OpenTK extensions\Vector3Extensions_other.cs" />
+    <Compile Include="OpenTK extensions\Vector3Extensions_template.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Vector3Extensions_template.tt</DependentUpon>
     </Compile>
-    <Compile Include="Extensions\RandomExtensions.cs" />
     <Compile Include="GameSystems\RenderableData.cs" />
-    <Content Include="Extensions\OpenTK\Vector3Extensions_template.tt">
+    <Content Include="OpenTK extensions\Vector3Extensions_template.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>Vector3Extensions_template.cs</LastGenOutput>
     </Content>
@@ -101,23 +142,6 @@
     <Compile Include="enums.cs" />
     <Compile Include="Events\EventSystem.cs" />
     <Compile Include="Events\Events.cs" />
-    <Compile Include="Extensions\ActionExtensions.cs" />
-    <Compile Include="Extensions\ArrayExtensions.cs" />
-    <Compile Include="Extensions\AssemblyExtensions.cs" />
-    <Compile Include="Extensions\BoolExtensions.cs" />
-    <Compile Include="Extensions\ByteExtensions.cs" />
-    <Compile Include="Extensions\DoubleExtensions.cs" />
-    <Compile Include="Extensions\EnumerableExtensions.cs" />
-    <Compile Include="Extensions\EnumExtensions.cs" />
-    <Compile Include="Extensions\FloatExtensions.cs" />
-    <Compile Include="Extensions\ICollectionExtensions.cs" />
-    <Compile Include="Extensions\IDictionaryExtensions.cs" />
-    <Compile Include="Extensions\IListExtensions.cs" />
-    <Compile Include="Extensions\IntExtensions.cs" />
-    <Compile Include="Extensions\JaggedArrayExtensions.cs" />
-    <Compile Include="Extensions\StringExtensions.cs" />
-    <Compile Include="Extensions\SystemDrawingExtensions.cs" />
-    <Compile Include="Extensions\TypeExtensions.cs" />
     <Compile Include="Tier1\FileChangedWatcher.cs" />
     <Compile Include="GameSystems\Asset.cs" />
     <Compile Include="GameSystems\AssetFolder.cs" />
@@ -183,7 +207,7 @@
     <Compile Include="Mathematical\Triangle.cs" />
     <Compile Include="UniformBlock.cs" />
     <Compile Include="UniformsManager.cs" />
-    <Compile Include="Extensions\OpenTK\Vector3Extensions.cs" />
+    <Compile Include="OpenTK extensions\Vector3Extensions.cs" />
     <Compile Include="Utils\ArrayUtil.cs" />
     <Compile Include="Utils\DiagnosticsUtil.cs" />
     <Compile Include="Utils\FormatUtils.cs" />

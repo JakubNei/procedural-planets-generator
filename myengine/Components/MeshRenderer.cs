@@ -34,7 +34,7 @@ namespace MyEngine.Components
 				if (m_mesh != value)
 				{
 					if (m_mesh != null) m_mesh.OnDataChanged -= OnMeshDataHasChanged;
-					OnMashChanged.Raise(new ValueChanged<Mesh>(m_mesh, value));
+					OnMashChanged?.Invoke(new ValueChanged<Mesh>(m_mesh, value));
 					m_mesh = value;
 					if (m_mesh != null) m_mesh.OnDataChanged += OnMeshDataHasChanged;
 				}
@@ -103,7 +103,7 @@ namespace MyEngine.Components
 
 		void OnMeshDataHasChanged(Mesh.ChangedFlags flags)
 		{
-			OnMashDataChanged.Raise();
+			OnMashDataChanged?.Invoke();
 		}
 
 		public override bool ShouldRenderInContext(object renderContext)

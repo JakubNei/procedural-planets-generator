@@ -82,14 +82,6 @@ namespace MyGame
 				}
 			}
 
-			if (Input.GetKeyDown(Key.F))
-			{
-				if (Scene.Engine.WindowState != WindowState.Fullscreen)
-					Scene.Engine.WindowState = WindowState.Fullscreen;
-				else
-					Scene.Engine.WindowState = WindowState.Normal;
-			}
-
 
 			if (Input.LockCursor == false) return;
 
