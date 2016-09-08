@@ -97,7 +97,9 @@ namespace MyEngine
 							renderable.Material.GBufferShader.Bind();
 							renderable.UploadUBOandDraw(camera, ubo);
 						}
+						
 					}
+					// GL.MultiDrawElementsIndirect
 				}
 
 				GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
@@ -271,7 +273,7 @@ namespace MyEngine
 			if (Debug.CVar("sortRenderers").Bool)
 			{
 				var comparer = new RenderableDistanceComparer(camera.ViewPointPosition);
-				//newToRender.Sort(comparer);
+				newToRender.Sort(comparer);
 			}
 			lock (this)
 			{
@@ -294,8 +296,8 @@ namespace MyEngine
 				var distX = x.GetCameraSpaceBounds(viewPointPosition).Center.DistanceSqr(viewPointPosition_vec3);
 				var distY = y.GetCameraSpaceBounds(viewPointPosition).Center.DistanceSqr(viewPointPosition_vec3);
 				if (distX == distY) return 0;
-				if (distX > distY) return +1;
-				else return -1;
+				if (distX > distY) return -1;
+				return +1;
 			}
 		}
 	}

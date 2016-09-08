@@ -58,17 +58,17 @@ namespace MyEngine
         const int NP = 12;   /* 2^N */
         const int NM = 0xfff;
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        
         double s_curve(ref double t)
         {
             return (t * t * (3.0f - 2.0f * t));
         }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        
         double lerp(ref double t, ref double a, ref double b)
         {
             return (a + t * (b - a));
         }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        
         void setup(ref double i, out int b0, out int b1, out double r0, out double r1, out double t)
         {
             t = i + N;
@@ -97,7 +97,7 @@ namespace MyEngine
         }
 
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        
         double at2(ref double rx, ref double ry, ref int index)
         {
             return (rx * g2[index] + ry * g2[index + 1]);
@@ -136,7 +136,7 @@ namespace MyEngine
 
 
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        
         double at3(ref double rx, ref double ry, ref double rz, int index)
         {
             return (rx * g3[index + 0] + ry * g3[index + 1] + rz * g3[index + 2]);
@@ -188,7 +188,7 @@ namespace MyEngine
         }
 
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        
         void Normalize2DVec(double[] v, int index)
         {
             double s;
@@ -197,7 +197,7 @@ namespace MyEngine
             v[index + 0] = v[index + 0] * s;
             v[index + 1] = v[index + 1] * s;
         }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        
         void Normalize3DVec(double[] v, int index)
         {
             double s;
@@ -214,12 +214,12 @@ namespace MyEngine
 
         // simulate C srand() and rand()
         Random random;
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        
         void srand(int seed)
         {
             random = new Random(seed);
         }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        
         int rand()
         {
             return random.Next();

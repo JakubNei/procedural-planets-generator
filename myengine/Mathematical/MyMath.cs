@@ -12,13 +12,13 @@ namespace MyEngine
     public static partial class MyMath
     {
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        
         public static float Cot(float x)
         {
             //#define cot(V) 1.0/tan(V)
             return (float)(1.0 / Math.Tan(x));
         }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        
         public static float SmoothStep(float edge0, float edge1, float x)
         {
             var tmp = (x - edge0) / (edge1 - edge0);
@@ -26,7 +26,7 @@ namespace MyEngine
             return tmp * tmp * (3.0f - 2.0f * tmp);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        
         public static float Lerp(float edge0, float edge1, float x)
         {
             return edge0 * x + edge1 * (1 - x);
@@ -92,7 +92,7 @@ namespace MyEngine
 
 
         // https://www.opengl.org/sdk/docs/man/html/smoothstep.xhtml
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        
         public static float Clamp(float x, float min, float max)
         {
             if (x > max) return max;
@@ -100,13 +100,13 @@ namespace MyEngine
             return x;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        
         public static void Clamp01(ref float x)
         {
             if (x > 1) x = 1;
             if (x < 0) x = 0;
         }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        
         public static float Clamp01(float x)
         {
             if (x > 1) return 1;
@@ -115,20 +115,20 @@ namespace MyEngine
         }
 
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        
         public static void Clamp01(ref int x)
         {
             if (x > 1) x = 1;
             if (x < 0) x = 0;
         }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        
         public static int Clamp(int x, int min, int max)
         {
             if (x > max) return max;
             if (x < min) return min;
             return x;
         }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        
         public static float Sqrt(float x)
         {
             return (float)Math.Sqrt(x);
@@ -137,22 +137,22 @@ namespace MyEngine
 
 
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        
         public static float Cos(float x)
         {
             return (float)System.Math.Cos(x);
         }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        
         public static float Acos(float x)
         {
             return (float)System.Math.Acos(x);
         }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        
         public static float Sin(float x)
         {
             return (float)System.Math.Sin(x);
         }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        
         public static float Asin(float x)
         {
             return (float)System.Math.Asin(x);
@@ -162,7 +162,7 @@ namespace MyEngine
         const float float__isqrt2 = (float)0.70710676908493042;
 
         // http://stackoverflow.com/questions/2656899/mapping-a-sphere-to-a-cube        
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        
         static Vector3 Cubify(Vector3 s)
         {
             float xx2 = s.X * s.X * 2.0f;
@@ -186,7 +186,7 @@ namespace MyEngine
         /// </summary>
         /// <param name="sphere"></param>
         /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        
         public static Vector3 Sphere2Cube(Vector3 sphere)
         {
 

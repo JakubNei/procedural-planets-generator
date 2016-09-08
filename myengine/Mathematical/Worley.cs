@@ -149,7 +149,7 @@ namespace MyEngine
         /// <param name="value">a uniformly distributed random number</param>
         /// <returns>The number of feature points in a cube.</returns>
         // Generated using mathmatica with "AccountingForm[N[Table[CDF[PoissonDistribution[4], i], {i, 1, 9}], 20]*2^32]"
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        
         uint probLookup(uint value)
         {
             if (value < 393325350) return 1;
@@ -170,7 +170,7 @@ namespace MyEngine
         /// </summary>
         /// <param name="arr">The array to insert the value into.</param>
         /// <param name="value">The value to insert into the array.</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        
         void insert(float[] arr, int arrSize, float value)
         {
             float temp;
@@ -185,7 +185,7 @@ namespace MyEngine
 
 
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        
         float Distance(Vector2 p1, Vector2 p2, DistanceFunction distanceFunction)
         {
             if (distanceFunction == DistanceFunction.Euclidian)
@@ -205,7 +205,7 @@ namespace MyEngine
         }
 
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        
         float Distance(Vector3 p1, Vector3 p2, DistanceFunction distanceFunction)
         {
             if (distanceFunction == DistanceFunction.Euclidian)

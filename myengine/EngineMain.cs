@@ -357,6 +357,8 @@ namespace MyEngine
 
 			SwapBuffers();
 
+			GC.Collect();
+
 		}
 
 	}

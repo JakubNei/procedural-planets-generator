@@ -62,23 +62,22 @@ namespace MyEngine.Components
 			dataToRender = new MyWeakReference<RenderableData>(Entity.Scene.DataToRender);
 			dataToRender.Target?.Add(this);
 		}
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		
 		public abstract Bounds GetCameraSpaceBounds(WorldPos viewPointPos);
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		
 		public virtual void UploadUBOandDraw(Camera camera, UniformBlock ubo)
 		{
 		}
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		
 		public virtual void CameraRenderStatusFeedback(Camera camera, RenderStatus renderStatus)
 		{
 			cameraToRenderStatus[camera] = renderStatus;
 		}
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public virtual RenderStatus GetCameraRenderStatus(Camera camera)
 		{
 			return cameraToRenderStatus.GetValue(camera, RenderStatus.Unknown);
 		}
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+
 		public virtual bool ShouldRenderInContext(object renderContext)
 		{
 			if (renderContext == RenderContext.Geometry && RenderingMode.HasFlag(RenderingMode.RenderGeometry)) return true;

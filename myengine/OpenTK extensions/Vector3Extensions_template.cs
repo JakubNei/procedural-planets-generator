@@ -10,7 +10,7 @@ namespace MyEngine
 {
     public static partial class Vector3Extensions
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        
         public static Vector3d RotateBy(this Vector3d vector, Quaterniond rotation)
         {
             Matrix4d rot = Matrix4d.CreateFromQuaternion(rotation);
@@ -18,40 +18,40 @@ namespace MyEngine
             Vector3d.TransformVector(ref vector, ref rot, out newDirection);
             return newDirection;
         }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        
         public static Vector3d CompomentWiseMult(this Vector3d a, Vector3d b)
         {
             return new Vector3d(a.X * b.X, a.Y * b.Y, a.Z * b.Z);
         }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        
         public static double Distance(this Vector3d a, Vector3d b)
         {
             return (a - b).Length;
         }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        
         public static double DistanceSqr(this Vector3d a, Vector3d b)
         {
             return (a - b).LengthSquared;
         }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        
         public static Vector3d Cross(this Vector3d a, Vector3d b)
         {
             return Vector3d.Cross(a, b);
 
         }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        
         public static double Dot(this Vector3d a, Vector3d b)
         {
             double result;
             Vector3d.Dot(ref a, ref b, out result);
             return result;
         }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        
         public static Vector3d Multiply(this Vector3d a, double scale)
         {
             return Vector3d.Multiply(a, scale);
         }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        
         public static Vector3d Divide(this Vector3d a, double scale)
         {
             Vector3d.Divide(ref a, scale, out a);
@@ -64,7 +64,7 @@ namespace MyEngine
         /// </summary>
         /// <param name="a"></param>
         /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        
         public static Vector3d Sign(this Vector3d a)
         {
             var ret = new Vector3d(0, 0, 0);
@@ -81,7 +81,7 @@ namespace MyEngine
             return ret;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        
         public static Vector3d Abs(this Vector3d a)
         {
             if (a.X < 0) a.X *= -1;
@@ -90,7 +90,7 @@ namespace MyEngine
             return a;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        
         public static Vector3d Towards(this Vector3d from, Vector3d to)
         {
             return to-from;
