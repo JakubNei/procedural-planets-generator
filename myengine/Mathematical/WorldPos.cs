@@ -39,7 +39,6 @@ namespace MyEngine
 
 		void MoveSectorIfNeeded()
 		{
-
 			long sector_add;
 
 			sector_add = (long)Math.Floor(insideSectorPosition.X / sectorCubeSideLength);

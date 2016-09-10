@@ -10,8 +10,14 @@ namespace MyGame
 
     public struct SpehricalCoord
     {
-        public double longitude; // east to west
-        public double latitude; // top 0 bottom
+		/// <summary>
+		/// east to west
+		/// </summary>
+		public double longitude;
+		/// <summary>
+		/// top 0 bottom
+		/// </summary>
+		public double latitude;
         public double altitude;
         public SpehricalCoord(double longitude, double latitude, double altitude)
         {

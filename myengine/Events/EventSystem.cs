@@ -34,6 +34,37 @@ namespace MyEngine.Events
 			OnAnyEventCalled?.Invoke(evt);
 			foreach (var e in passEventsTo) e.Raise(evt);
         }
+
+		/*
+		public Task Raise(IEvent evt)
+		{
+			var tasks = new List<Task>();
+
+			Delegate delegat;
+			var type = evt.GetType();
+			if (typeToCallbacks.TryGetValue(type, out delegat) == true)
+			{
+				tasks.Add(Task.Run(() =>
+				{
+					delegat.DynamicInvoke(evt);
+				}));
+			}
+			tasks.Add(Task.Run(() =>
+			{
+				OnAnyEventCalled?.Invoke(evt);
+			}));
+			foreach (var e in passEventsTo)
+			{
+				tasks.Add(Task.Run(() =>
+				{
+					e.Raise(evt);
+				}));
+			}
+			return Task.Run(() =>
+			{
+				Task.WaitAll(tasks.ToArray());
+			});
+		}*/
         public void PassEventsTo(EventSystem eventSystem)
         {
             passEventsTo.Add(eventSystem);
@@ -45,13 +76,13 @@ namespace MyEngine.Events
         }
 		*/
 
-        /// <summary>
-        /// Will be called always if event occurs.
-        /// Register to event with implicit EventHandling.ContinuePropagation.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="callback"></param>
-        public void Register<T>(Action<T> callback) where T : IEvent
+		/// <summary>
+		/// Will be called always if event occurs.
+		/// Register to event with implicit EventHandling.ContinuePropagation.
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <param name="callback"></param>
+		public void Register<T>(Action<T> callback) where T : IEvent
         {
             lock(allDelegates)
             {

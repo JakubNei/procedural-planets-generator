@@ -105,6 +105,7 @@
     <Compile Include="Neitri.Base.v1\Utils\TraceUtil.cs" />
     <Compile Include="Neitri.Base.v1\Utils\TwoKeyDictionary.cs" />
     <Compile Include="Neitri.Base.v1\Utils\ValueChanged.cs" />
+    <Compile Include="OpenTK extensions\QuaternionExtensions.cs" />
     <Compile Include="OpenTK extensions\Vector3Extensions_other.cs" />
     <Compile Include="OpenTK extensions\Vector3Extensions_template.cs">
       <AutoGen>True</AutoGen>

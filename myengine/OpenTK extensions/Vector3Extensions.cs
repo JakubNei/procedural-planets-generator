@@ -11,11 +11,11 @@ namespace MyEngine
     public static partial class Vector3Extensions
     {
         
-        public static Vector3 RotateBy(this Vector3 vector, Quaternion rotation)
+        public static Vector3 RotateBy(this Vector3 direction, Quaternion rotation)
         {
-            Matrix4 rot = Matrix4.CreateFromQuaternion(rotation);
+            var rot = Matrix4.CreateFromQuaternion(rotation);
             Vector3 newDirection;
-            Vector3.TransformVector(ref vector, ref rot, out newDirection);
+            Vector3.Transform(ref direction, ref rot, out newDirection);
             return newDirection;
         }
         
@@ -37,8 +37,12 @@ namespace MyEngine
         public static Vector3 Cross(this Vector3 a, Vector3 b)
         {
             return Vector3.Cross(a, b);
-
         }
+
+		public static float Angle(this Vector3 a, Vector3 b)
+		{
+			return Vector3.CalculateAngle(a, b);
+		}
         
         public static float Dot(this Vector3 a, Vector3 b)
         {
@@ -96,11 +100,19 @@ namespace MyEngine
             return to-from;
         }
 
+
+		public static Quaternion LookRot(this Vector3 fwd, Vector3 up)
+		{
+			return Matrix4.LookAt(Vector3.Zero, fwd, up).ExtractRotation();
+		}
+
         // http://stackoverflow.com/questions/12435671/quaternion-lookat-function
         // http://gamedev.stackexchange.com/questions/15070/orienting-a-model-to-face-a-target
         public static Quaternion LookRot(this Vector3 dir)
         {
-            var up = Constants.Vector3Up;
+			//return LookRot(dir, Constants.Vector3Up);
+			
+			var up = Constants.Vector3Up;
             var fwd = Constants.Vector3Forward;
             dir.Normalize();
             float dot = Vector3.Dot(fwd, dir);
@@ -120,6 +132,12 @@ namespace MyEngine
             return Quaternion.FromAxisAngle(rotAxis, rotAngle);
         }
 
+		public static Vector3 LerpTo(this Vector3 a, Vector3 b, float t)
+		{
+			return Vector3.Lerp(a, b, t);
+		}
 
-    }
+
+
+	}
 }

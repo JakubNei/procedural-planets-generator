@@ -32,15 +32,19 @@ namespace MyGame.PlanetaryBody
         }
         const bool debugSameHeightEverywhere = false; // DEBUG
 
+		public WorldPos Center => Transform.Position;
+
         PerlinD perlin;
         WorleyD worley;
 
         List<Chunk> rootChunks = new List<Chunk>();
 
 
+		public static Root instance;
 
         public Root(Entity entity) : base(entity)
         {
+			instance = this;
             perlin = new PerlinD(5646);
             worley = new WorleyD(894984, WorleyD.DistanceFunction.Euclidian);
         }

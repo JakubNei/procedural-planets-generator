@@ -23,9 +23,9 @@ namespace MyEngine
 
 		public static ConcurrentDictionary<string, string> stringValues = new ConcurrentDictionary<string, string>();
 
-		public static void AddValue(string key, string value)
+		public static void AddValue(string key, object value)
 		{
-			stringValues[key] = value;
+			stringValues[key] = value.ToString();
 		}
 
 		class TickStats

@@ -33,5 +33,9 @@ namespace MyEngine
 			DeltaTimeNow = eventThreadTime.ElapsedMilliseconds / 1000.0;
 			eventThreadTime.Restart();
 		}
+		public void SleepForTargetFps(float fps)
+		{
+			
+		}
 	}
 }
