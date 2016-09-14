@@ -22,6 +22,7 @@ namespace MyGame
 		public bool disabledInput = false;
 
 		Quaternion rotation;
+		WorldPos position;
 
 		float cameraSpeed = 10.0f;
 		Point lastMousePos;
@@ -211,27 +212,30 @@ namespace MyGame
 			}
 
 
+
 			Entity.Transform.Rotation = rotation;
 
 			targetVelocity = targetVelocity.RotateBy(Transform.Rotation);
 			currentVelocity = Vector3.Lerp(currentVelocity, targetVelocity, velocityChangeSpeed * (float)deltaTime);
 
-			Transform.Position += currentVelocity * (float)deltaTime;
+			position += currentVelocity * (float)deltaTime;
 
 			var clampCameraToSurface = true;
 			// make cam on top of the planet
 			if (clampCameraToSurface)
 			{
-				var p = (Transform.Position - planet.Transform.Position).ToVector3d();
+				var p = (position - planet.Transform.Position).ToVector3d();
 				var camPosS = planet.CalestialToSpherical(p);
 				var h = 1 + planet.GetHeight(p);
 				if (camPosS.altitude < h || WalkOnPlanet)
 				{
 					camPosS.altitude = h;
-					Transform.Position = planet.Transform.Position + planet.SphericalToCalestial(camPosS).ToVector3();
+					position = planet.Transform.Position + planet.SphericalToCalestial(camPosS).ToVector3();
 				}
 			}
 
+
+			Entity.Transform.Position += Entity.Transform.Position.Towards(position).ToVector3d() * deltaTime * 10;
 
 			//Debug.Info(entity.transform.position);
 

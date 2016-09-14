@@ -265,8 +265,6 @@ namespace MyEngine
 
 			//GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
-			var countMeshesRendered = 0;
-
 			{
 				var scene = scenes[0];
 				var camera = scene.mainCamera;
@@ -325,34 +323,6 @@ namespace MyEngine
 			if (Debug.CVar("debugDrawGBufferContents").Bool) gBuffer.DebugDrawContents();
 			//if (drawShadowMapContents) DebugDrawTexture(shadowMap.depthMap, new Vector4(0.5f, 0.5f, 1, 1), new Vector4(0.5f,0.5f,0,1), 1, 0);
 
-
-			// old forward pass
-			/*
-            {
-                var shader = Factory.GetShader("internal/forward.allLights.shader");
-                gBuffer.BindForWriting();
-
-                // transparent pass, must enable blending
-                GL.Enable(EnableCap.DepthTest);
-                GL.DepthMask(false);
-                GL.Disable(EnableCap.CullFace);
-                GL.Enable(EnableCap.Blend);
-                GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
-
-
-                shader.Bind();
-                //shader.SetParam(Shader.screenSizeLocationName, new Vector2(Width, Height));
-                camera.BindUniforms(shader);
-                //Light.BindAll(shader);
-
-                foreach (var go in Factory.allEntitys)
-                {
-                    foreach (var renderer in go.GetComponents<Renderer>())
-                    {
-                        renderer.Draw(shader, camera);
-                    }
-                }
-            }*/
 
 
 			SwapBuffers();

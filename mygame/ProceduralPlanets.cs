@@ -21,7 +21,6 @@ namespace MyGame
 		public List<PlanetaryBody.Root> planets = new List<PlanetaryBody.Root>();
 		SceneSystem scene;
 
-		bool clampCameraToSurface = false;
 		bool moveCameraToSurfaceOnStart = false;
 
 		Camera Cam { get { return scene.mainCamera; } }
@@ -35,8 +34,8 @@ namespace MyGame
 			{
 				while (scene.Engine.IsExiting == false)
 				{
-					Debug.Tick("planets");
 					OnGraphicsUpdate();
+					Thread.Sleep(100);
 				}
 			});
 			t.Priority = ThreadPriority.Highest;
@@ -124,22 +123,11 @@ namespace MyGame
 			if (scene.Input.GetKeyDown(Key.P)) freezeUpdate = !freezeUpdate;
 			if (freezeUpdate) return;
 
+			Debug.Tick("updatePlanets");
+
 			var camPos = Cam.Transform.Position;
 
 			var planet = planets.OrderBy(p => p.Transform.Position.Distance(camPos) - p.radius).First();
-
-			// make cam on top of the planet
-			if (clampCameraToSurface)
-			{
-				var p = (Cam.Transform.Position - planet.Transform.Position).ToVector3d();
-				var camPosS = planet.CalestialToSpherical(p);
-				var h = 1 + planet.GetHeight(p);
-				if (camPosS.altitude < h)
-				{
-					camPosS.altitude = h;
-					Cam.Transform.Position = planet.Transform.Position + planet.SphericalToCalestial(camPosS).ToVector3();
-				}
-			}
 
 			foreach (var p in planets)
 			{

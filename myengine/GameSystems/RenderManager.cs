@@ -22,7 +22,8 @@ namespace MyEngine
 
 		public Cubemap SkyboxCubeMap { get; set; }
 
-		IEnumerable<IRenderable> toRender;
+		int toRenderCount = 0;
+		IRenderable[] toRender = new IRenderable[1000];
 
 		public bool drawLines { get { return Debug.CVar("debugRenderWithLines").Bool; } }
 		public bool enablePostProcessEffects { get { return Debug.CVar("enablePostProcessEffects").Bool; } }
@@ -88,16 +89,13 @@ namespace MyEngine
 					GL.Enable(EnableCap.CullFace);
 					GL.Disable(EnableCap.Blend);
 					GL.CullFace(CullFaceMode.Back);
-					lock (this)
+					for (int i = 0; i < toRenderCount; i++)
 					{
-						foreach (var renderable in toRender)
-						{
-							renderable.Material.BeforeBindCallback();
-							renderable.Material.Uniforms.SendAllUniformsTo(renderable.Material.GBufferShader.Uniforms);
-							renderable.Material.GBufferShader.Bind();
-							renderable.UploadUBOandDraw(camera, ubo);
-						}
-						
+						var renderable = toRender[i];
+						renderable.Material.BeforeBindCallback();
+						renderable.Material.Uniforms.SendAllUniformsTo(renderable.Material.GBufferShader.Uniforms);
+						renderable.Material.GBufferShader.Bind();
+						renderable.UploadUBOandDraw(camera, ubo);
 					}
 					// GL.MultiDrawElementsIndirect
 				}
@@ -122,39 +120,39 @@ namespace MyEngine
 
 					#region SHADOW MAAPING
 					/*
-                    if (shadowsEnabled && light.HasShadows)
-                    {
+					if (shadowsEnabled && light.HasShadows)
+					{
 
-                        //GL.Enable(EnableCap.CullFace);
-                        //GL.CullFace(CullFaceMode.Back);
+						//GL.Enable(EnableCap.CullFace);
+						//GL.CullFace(CullFaceMode.Back);
 
-                        shadowMap.FrameBufferForWriting();
+						shadowMap.FrameBufferForWriting();
 
-                        GL.Enable(EnableCap.DepthTest);
-                        GL.DepthMask(true);
+						GL.Enable(EnableCap.DepthTest);
+						GL.DepthMask(true);
 
-                        shadowMap.Clear();
-
-
-
-                        shadowMap.shadowViewCamera.UploadDataToUBO(ubo);
+						shadowMap.Clear();
 
 
-                        for (int i = 0; i < allRenderers.Count; i++)
-                        {
-                            var renderer = allRenderers[i];
-                            if (renderer == null) continue;
 
-                            //if (renderer.CanBeFrustumCulled == false || GeometryUtility.TestPlanesAABB(frustrumPlanes, renderer.bounds)) 
-                            {
-                                renderer.Material.BeforeBindCallback();
-                                renderer.Material.Uniforms.SendAllUniformsTo(renderer.Material.DepthGrabShader.Uniforms);
-                                renderer.Material.DepthGrabShader.Bind();
-                                renderer.UploadUBOandDraw(shadowMap.shadowViewCamera, ubo);
-                            }
-                        }
+						shadowMap.shadowViewCamera.UploadDataToUBO(ubo);
 
-                    }*/
+
+						for (int i = 0; i < allRenderers.Count; i++)
+						{
+							var renderer = allRenderers[i];
+							if (renderer == null) continue;
+
+							//if (renderer.CanBeFrustumCulled == false || GeometryUtility.TestPlanesAABB(frustrumPlanes, renderer.bounds)) 
+							{
+								renderer.Material.BeforeBindCallback();
+								renderer.Material.Uniforms.SendAllUniformsTo(renderer.Material.DepthGrabShader.Uniforms);
+								renderer.Material.DepthGrabShader.Bind();
+								renderer.UploadUBOandDraw(shadowMap.shadowViewCamera, ubo);
+							}
+						}
+
+					}*/
 					#endregion
 
 
@@ -229,9 +227,9 @@ namespace MyEngine
 
 			var frustum = camera.GetFrustum();
 			int totalPossible = possibleRenderables.Count;
-			var newToRender = new List<IRenderable>(totalPossible);
-			int totalPassed = 0;
-			lock (possibleRenderables)
+
+			toRenderCount = 0;
+			//lock (possibleRenderables)
 			{
 				Parallel.ForEach(possibleRenderables, (renderable) =>
 					{
@@ -240,10 +238,8 @@ namespace MyEngine
 							if (renderable.ForcePassFrustumCulling)
 							{
 								renderable.CameraRenderStatusFeedback(camera, RenderStatus.RenderedForced);
-								lock (newToRender)
-								{
-									newToRender.Add(renderable);
-								}
+								var newIndex = Interlocked.Increment(ref toRenderCount);
+								toRender[newIndex - 1] = renderable;
 							}
 							else
 							{
@@ -254,10 +250,8 @@ namespace MyEngine
 								)
 								{
 									renderable.CameraRenderStatusFeedback(camera, RenderStatus.RenderedAndVisible);
-									lock (newToRender)
-									{
-										newToRender.Add(renderable);
-									}
+									var newIndex = Interlocked.Increment(ref toRenderCount);
+									toRender[newIndex - 1] = renderable;
 								}
 								else
 								{
@@ -268,17 +262,14 @@ namespace MyEngine
 					}
 				);
 			}
-			totalPassed = newToRender.Count;
-			Debug.AddValue("countMeshesRendered", totalPassed + "/" + totalPossible);
+			Debug.AddValue("countMeshesRendered", toRenderCount + "/" + totalPossible);
+			/*
 			if (Debug.CVar("sortRenderers").Bool)
 			{
 				var comparer = new RenderableDistanceComparer(camera.ViewPointPosition);
-				newToRender.Sort(comparer);
+				toRender.Sort(comparer);
 			}
-			lock (this)
-			{
-				this.toRender = newToRender;
-			}
+			*/
 		}
 
 		class RenderableDistanceComparer : IComparer<IRenderable>
