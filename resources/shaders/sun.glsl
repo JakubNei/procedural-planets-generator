@@ -26,14 +26,18 @@ out data {
 
 void main()
 {
-	
-	gl_Position = model.modelViewProjectionMatrix * vec4(in_position,1);
-
-	vec4 p = (model.modelMatrix * vec4(in_position, 1));
-	o.worldPos = p.xyz / p.w;
-	//o.position = in_position;
-
 	o.uv = in_uv;
+
+	float t = texture2D(param_turbulenceMap, in_normal.xy + in_normal.yz + in_normal.zx + engine.totalElapsedSecondsSinceEngineStart*0.002).r;
+
+	vec3 modelPos = in_position;
+	modelPos *= 1-t*0.03;
+
+	gl_Position = model.modelViewProjectionMatrix * vec4(modelPos,1);
+	vec4 p = (model.modelMatrix * vec4(modelPos, 1));
+	o.worldPos = p.xyz / p.w;
+
+
 
 	o.normal = normalize((model.modelMatrix * vec4(in_normal,0)).xyz);
 	//o.normal = in_normal;
