@@ -31,6 +31,8 @@ namespace MyEngine
 		[Dependency]
 		Factory factory;
 
+		Shader FinalDrawShader => factory.GetShader("internal/finalDraw.glsl");
+
 		public bool drawLines { get { return debug.CVar("debugRenderWithLines").Bool; } }
 		public bool enablePostProcessEffects { get { return debug.CVar("enablePostProcessEffects").Bool; } }
 		public bool debugBounds { get { return debug.CVar("debugBounds").Bool; } }
@@ -54,6 +56,50 @@ namespace MyEngine
 			RenderLights(ubo, camera, allLights);
 			if (drawLines) GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
 			RenderPostProcessEffects(ubo, postProcessEffect);
+
+			// FINAL DRAW TO SCREEN
+			{
+				//DebugDrawTexture(gBuffer.finalTextureToRead);
+				GL.Disable(EnableCap.DepthTest);
+				GL.Disable(EnableCap.CullFace);
+				GL.Disable(EnableCap.Blend);
+
+				GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, 0);
+				GL.Viewport(0, 0, camera.pixelWidth, camera.pixelHeight);
+
+				FinalDrawShader.Uniforms.Set("finalDrawTexture", GBuffer.finalTextureToRead);
+				FinalDrawShader.Bind();
+
+				factory.QuadMesh.Draw();
+			}
+
+			/*if(debugBounds)
+            {
+                var allColiders = new List<BoxCollider>();
+                foreach (var go in Factory.allEntitys)
+                {
+                    allColiders.AddRange(go.GetComponents<BoxCollider>());
+                }
+                GL.DepthMask(false);
+                GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
+                GL.Disable(EnableCap.DepthTest);
+                GL.Disable(EnableCap.CullFace);
+                GL.Disable(EnableCap.Blend);
+                foreach (var c in allColiders)
+                {
+                    var modelMat = c.entity.transform.GetScalePosRotMatrix();
+                    var modelViewMat = modelMat * camera.GetViewMat();
+                    ubo.model.modelMatrix = modelMat;
+                    ubo.model.modelViewMatrix = modelViewMat;
+                    ubo.model.modelViewProjectionMatrix = modelViewMat * camera.GetProjectionMat();
+                    ubo.modelUBO.UploadData();
+                    skyboxMesh.Draw();
+                }
+            }*/
+
+			if (debug.CVar("debugDrawNormalBufferContents").Bool) GBuffer.DebugDrawNormal();
+			if (debug.CVar("debugDrawGBufferContents").Bool) GBuffer.DebugDrawContents();
+			//if (drawShadowMapContents) DebugDrawTexture(shadowMap.depthMap, new Vector4(0.5f, 0.5f, 1, 1), new Vector4(0.5f,0.5f,0,1), 1, 0);
 		}
 
 		public void RenderGBuffer(UniformBlock ubo, Camera camera)
@@ -64,9 +110,10 @@ namespace MyEngine
 
 				GL.Enable(EnableCap.DepthTest);
 				GL.DepthMask(true);
-				GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit);
+				GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit);
 
 				// SKYBOX PASS
+
 				if (SkyboxCubeMap != null)
 				{
 					GL.DepthRange(0.999, 1);
@@ -167,6 +214,9 @@ namespace MyEngine
 
 						var shader = factory.GetShader("internal/deferred.oneLight.shader");
 						GBuffer.BindForLightPass(shader);
+
+						if (lightIndex == 0) GL.Clear(ClearBufferMask.ColorBufferBit);
+
 						if (shadowsEnabled && light.HasShadows)
 						{
 							shadowMap.BindUniforms(shader);
@@ -174,7 +224,7 @@ namespace MyEngine
 
 						shader.Bind();
 
-						GL.Enable(EnableCap.Blend);
+						//GL.Enable(EnableCap.Blend);
 						//GL.BlendEquationSeparate(BlendEquationMode.FuncAdd, BlendEquationMode.FuncAdd);
 						//GL.BlendFunc(BlendingFactorSrc.SrcColor, BlendingFactorDest.SrcColor);
 						GL.BlendEquation(BlendEquationMode.FuncAdd);

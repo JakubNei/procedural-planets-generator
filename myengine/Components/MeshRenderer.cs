@@ -106,7 +106,7 @@ namespace MyEngine.Components
 
 		public override bool ShouldRenderInContext(object renderContext)
 		{
-			return Mesh != null && Mesh.IsRenderable && Material != null && Material.DepthGrabShader != null && base.ShouldRenderInContext(renderContext);
+			return Mesh != null && Material != null && Material.DepthGrabShader != null && base.ShouldRenderInContext(renderContext);
 		}
 	}
 }

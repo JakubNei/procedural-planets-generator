@@ -94,8 +94,7 @@ namespace MyEngine
 
 		System.Diagnostics.Stopwatch stopwatchSinceStart = new System.Diagnostics.Stopwatch();
 
-		internal static UniformBlock ubo;
-		Shader finalDrawShader;
+		public static UniformBlock ubo;
 
 		public SceneSystem AddScene()
 		{
@@ -106,8 +105,6 @@ namespace MyEngine
 
 		protected override void OnLoad(System.EventArgs e)
 		{
-			finalDrawShader = Factory.GetShader("internal/finalDraw.glsl");
-
 			foreach (StringName r in System.Enum.GetValues(typeof(StringName)))
 			{
 				if (r == StringName.Extensions) break;
@@ -261,54 +258,6 @@ namespace MyEngine
 				renderManagerFront.SkyboxCubeMap = scene.skyBox;
 				renderManagerFront.RenderAll(ubo, camera, dataToRender.Lights, camera.postProcessEffects);
 			}
-
-			var gBuffer = renderManagerFront.GBuffer;
-
-			// FINAL DRAW TO SCREEN
-			{
-				//DebugDrawTexture(gBuffer.finalTextureToRead);
-
-				GL.Disable(EnableCap.DepthTest);
-				GL.Disable(EnableCap.CullFace);
-				GL.Disable(EnableCap.Blend);
-
-				GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, 0);
-				GL.Viewport(0, 0, Width, Height);
-				//GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit);
-
-				finalDrawShader.Uniforms.Set("finalDrawTexture", gBuffer.finalTextureToRead);
-				finalDrawShader.Bind();
-
-				Factory.QuadMesh.Draw();
-			}
-
-			/*if(debugBounds)
-            {
-                var allColiders = new List<BoxCollider>();
-                foreach (var go in Factory.allEntitys)
-                {
-                    allColiders.AddRange(go.GetComponents<BoxCollider>());
-                }
-                GL.DepthMask(false);
-                GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
-                GL.Disable(EnableCap.DepthTest);
-                GL.Disable(EnableCap.CullFace);
-                GL.Disable(EnableCap.Blend);
-                foreach (var c in allColiders)
-                {
-                    var modelMat = c.entity.transform.GetScalePosRotMatrix();
-                    var modelViewMat = modelMat * camera.GetViewMat();
-                    ubo.model.modelMatrix = modelMat;
-                    ubo.model.modelViewMatrix = modelViewMat;
-                    ubo.model.modelViewProjectionMatrix = modelViewMat * camera.GetProjectionMat();
-                    ubo.modelUBO.UploadData();
-                    skyboxMesh.Draw();
-                }
-            }*/
-
-			if (Debug.CVar("debugDrawNormalBufferContents").Bool) gBuffer.DebugDrawNormal();
-			if (Debug.CVar("debugDrawGBufferContents").Bool) gBuffer.DebugDrawContents();
-			//if (drawShadowMapContents) DebugDrawTexture(shadowMap.depthMap, new Vector4(0.5f, 0.5f, 1, 1), new Vector4(0.5f,0.5f,0,1), 1, 0);
 
 			SwapBuffers();
 

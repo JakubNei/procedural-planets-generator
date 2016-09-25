@@ -28,7 +28,7 @@ namespace MyEngine
 					string line;
 					while ((line = textReader.ReadLine()) != null)
 					{
-						line = line.Trim(trimCharacters);
+						line = line.Trim();
 						line = line.Replace("  ", " ");
 
 						string[] parameters = line.Split(splitCharacters);

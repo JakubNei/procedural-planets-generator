@@ -98,14 +98,6 @@ namespace MyEngine
 
 		Bounds bounds;
 
-		public bool IsRenderable
-		{
-			get
-			{
-				return true;
-			}
-		}
-
 		bool isOnGPU = false;
 
 		public VertexArrayObject VertexArrayObj { get; private set; }

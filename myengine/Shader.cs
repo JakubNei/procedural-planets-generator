@@ -93,6 +93,7 @@ namespace MyEngine
 				Uniforms.MarkAllUniformsAsChanged();
 				shouldReload = false;
 			}
+
 			if (lastBindedShader != this)
 			{
 				GL.UseProgram(shaderProgramHandle);
