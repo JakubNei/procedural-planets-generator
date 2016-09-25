@@ -1,26 +1,22 @@
-﻿using System;
-using System.Linq;
-using System.Collections.Generic;
-using System.Text;
-using System.Collections.ObjectModel;
-
-using Neitri;
-
+﻿using Neitri;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
+using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Text;
 
 namespace MyEngine
 {
 	public partial class Mesh
 	{
-
 		public static void CalculateNormals(IList<int> inTriangleIndicies, IList<Vector3> inPositions, IList<Vector3> outNormals)
 		{
 			int verticesNum = inPositions.Count;
 			int indiciesNum = inTriangleIndicies.Count;
-
 
 			int[] counts = new int[verticesNum];
 
@@ -37,7 +33,6 @@ namespace MyEngine
 
 			for (int i = 0; i <= indiciesNum - 3; i += 3)
 			{
-
 				int ai = inTriangleIndicies[i];
 				int bi = inTriangleIndicies[i + 1];
 				int ci = inTriangleIndicies[i + 2];
@@ -64,9 +59,8 @@ namespace MyEngine
 			{
 				outNormals[i] /= counts[i];
 			}
-
-
 		}
+
 		public void RecalculateNormals()
 		{
 			CalculateNormals(TriangleIndicies, Vertices, Normals);
@@ -94,7 +88,6 @@ namespace MyEngine
 
 			for (int i = 0; i <= indiciesNum - 3; i += 3)
 			{
-
 				int ai = TriangleIndicies[i];
 				int bi = TriangleIndicies[i + 1];
 				int ci = TriangleIndicies[i + 2];
@@ -112,7 +105,6 @@ namespace MyEngine
 					float r = 1.0f / (deltaUV1.X * deltaUV2.Y - deltaUV1.Y * deltaUV2.X);
 					Vector3 t = (deltaPos1 * deltaUV2.Y - deltaPos2 * deltaUV1.Y) * r;
 
-
 					Tangents[ai] += t;
 					Tangents[bi] += t;
 					Tangents[ci] += t;
@@ -127,10 +119,7 @@ namespace MyEngine
 			{
 				Tangents[i] /= counts[i];
 			}
-
-
 		}
-
 
 		public struct VertexIndex : IEquatable<VertexIndex>
 		{
@@ -140,26 +129,32 @@ namespace MyEngine
 			{
 				this.vertexIndex = vertexIndex;
 			}
+
 			public override bool Equals(object obj)
 			{
 				return Equals((VertexIndex)obj);
 			}
+
 			public bool Equals(VertexIndex other)
 			{
 				return other.vertexIndex == this.vertexIndex;
 			}
+
 			public override int GetHashCode()
 			{
 				return vertexIndex.GetHashCode();
 			}
+
 			public static implicit operator int(VertexIndex me)
 			{
 				return me.vertexIndex;
 			}
+
 			public static implicit operator VertexIndex(int other)
 			{
 				return new VertexIndex(other);
 			}
+
 			public override string ToString()
 			{
 				return vertexIndex.ToString();
@@ -191,11 +186,11 @@ namespace MyEngine
 			return FindNeighbours(a).Contains(b);
 		}
 
-
 		public void Delete(VertexIndex[] removeVertices)
 		{
 			Delete(removeVertices, Vertices, Normals, Tangents);
 		}
+
 		public void Delete(VertexIndex[] removeVertices, params IVertexBufferObject[] removeFromVbos)
 		{
 			for (int i = 0; i < removeVertices.Length; i++)
@@ -205,15 +200,14 @@ namespace MyEngine
 					throw new NotImplementedException();
 					//vbo.RemoveAt(removeVertices[i]);
 				}
-
 			}
 		}
-
 
 		public VertexIndex[] Duplicate(VertexIndex[] duplicateVertices)
 		{
 			return Duplicate(duplicateVertices, Vertices, Normals, Tangents);
 		}
+
 		public VertexIndex[] Duplicate(VertexIndex[] duplicateVertices, params IVertexBufferObject[] duplicateVbos)
 		{
 			var newExtrudedVertices = new VertexIndex[duplicateVertices.Length];
@@ -270,12 +264,6 @@ namespace MyEngine
 			}
 		}
 
-
-
-
-
-
-
 		/// <summary>
 		/// If this mesh has vertices that are at the same position as <paramref name="neigbours"/>, it merges (averages) their normals.
 		/// </summary>
@@ -300,7 +288,7 @@ namespace MyEngine
 		}
 		*/
 
-
+		/*
 		public class SmoothNormals
 		{
 			public float minDistance;
@@ -337,6 +325,6 @@ namespace MyEngine
 				}
 			}
 		}
-
+		*/
 	}
 }

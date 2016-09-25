@@ -47,7 +47,6 @@
     <Compile Include="DebugKeys.cs" />
     <Compile Include="DebugShowFrustumPlanes.cs" />
     <Compile Include="FirstPersonCamera.cs" />
-    <Compile Include="DrawBounds.cs" />
     <Compile Include="GameTimeController.cs" />
     <Compile Include="MoveWithArrowKeys.cs" />
     <Compile Include="PlanetaryBody\Chunk.MeshGeneration.cs" />

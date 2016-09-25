@@ -1,25 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using MyEngine;
+using MyEngine.Components;
+using Neitri;
+using OpenTK;
+using System;
+using System.Collections;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Threading;
-
-using Neitri;
-
-using OpenTK;
-
-using MyEngine;
-using MyEngine.Components;
-using System.Collections;
-
+using System.Threading.Tasks;
 
 namespace MyGame.PlanetaryBody
 {
 	public partial class Chunk
 	{
-
 		int NumberOfVerticesOnEdge => planetaryBody.chunkNumberOfVerticesOnEdge;
 
 		List<Mesh.VertexIndex> GetEdgeVertices()
@@ -63,26 +58,19 @@ namespace MyGame.PlanetaryBody
 				isGenerated = true;
 			}
 
-
-
-
 			var mesh = new Mesh();// "PlanetaryBodyChunk depth:" + subdivisionDepth + " #" + numbetOfChunksGenerated);
 			numberOfChunksGenerated++;
 
-
 			bool useSkirts = false;
 			useSkirts = true;
-
-
 
 			// generate evenly spaced vertices, then we make triangles out of them
 			var positionsFinal = new List<Vector3>();
 			var normalsFinal = mesh.Normals;
 
-
 			// the planetary chunk vertices blend from positonsInitial to positionsFinal
 			// to smoothly blend in more detail as camera closes in
-			// var positionsInitial = new List<Vector3>(); 
+			// var positionsInitial = new List<Vector3>();
 			var positionsInitial = new Mesh.VertexBufferObject<Vector3>()
 			{
 				ElementType = typeof(float),
@@ -97,7 +85,6 @@ namespace MyGame.PlanetaryBody
 			// generate all of our vertices
 			if (childPosition == ChildPosition.NoneNoParent)
 			{
-
 				//positionsFinal.Add(noElevationRange.a.ToVector3());
 				positionsFinal.Add(planetaryBody.GetFinalPos(noElevationRange.a).ToVector3());
 
@@ -126,7 +113,6 @@ namespace MyGame.PlanetaryBody
 						numberOfVerticesInBetween++;
 					}
 				}
-
 			}
 			else
 			{
@@ -202,15 +188,12 @@ namespace MyGame.PlanetaryBody
 						}
 						numberOfVerticesOnLine++;
 					}
-
 				}
 			}
 
-
-
 			List<int> indicies;
 			GetIndiciesList(NumberOfVerticesOnEdge, out indicies);
-			
+
 			mesh.Vertices.SetData(positionsFinal);
 			mesh.TriangleIndicies.SetData(indicies);
 			mesh.RecalculateNormals();
@@ -219,7 +202,6 @@ namespace MyGame.PlanetaryBody
 			{
 				positionsInitial.Resize(positionsFinal.Count);
 				normalsInitial.Resize(positionsFinal.Count);
-
 
 				int numberOfVerticesOnLine;
 				int i;
@@ -264,8 +246,6 @@ namespace MyGame.PlanetaryBody
 						numberOfVerticesOnLine++;
 					}
 				}
-
-
 
 				i = 0;
 				positionsInitial[i] = positionsFinal[i];
@@ -339,7 +319,7 @@ namespace MyGame.PlanetaryBody
 				var v = mesh.Vertices;
 				for (int i = 0; i < edgeVertices.Length; i++)
 				{
-					var evi = edgeVertices[i];					
+					var evi = edgeVertices[i];
 				}
 			}
 
@@ -348,7 +328,7 @@ namespace MyGame.PlanetaryBody
 				var skirtVertices = mesh.Duplicate(edgeVertices, mesh.Vertices, mesh.Normals, positionsInitial, normalsInitial);
 				var moveAmount = this.realVisibleRange.ToBoundingSphere().radius / 1000;
 				mesh.MoveVertices(skirtVertices, this.realVisibleRange.CenterPos.Towards(Vector3d.Zero).ToVector3() * (float)moveAmount, mesh.Vertices, positionsInitial);
-			}		
+			}
 
 			mesh.RecalculateBounds();
 
@@ -359,8 +339,6 @@ namespace MyGame.PlanetaryBody
 			if (planetaryBody.planetMaterial != null) renderer.Material = planetaryBody.planetMaterial.CloneTyped();
 			renderer.RenderingMode = RenderingMode.DontRender;
 			this.visibility = 0;
-
 		}
-
 	}
 }

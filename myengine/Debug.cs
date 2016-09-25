@@ -1,29 +1,26 @@
-﻿using System;
-using System.Linq;
-using System.Collections.Generic;
+﻿using Neitri;
+using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Text;
 
 namespace MyEngine
 {
 	public class Debug
 	{
-		static List<string> alreadyShown = new List<string>();
+		List<string> alreadyShown = new List<string>();
 
-		public static Debug instance;
-
-
+		[Dependency]
 		public InputSystem Input { get; private set; }
 
-		public Debug(InputSystem input)
-		{
-			this.Input = input;
-		}
+		[Dependency]
+		IDependencyManager dependency;
 
-		public static ConcurrentDictionary<string, string> stringValues = new ConcurrentDictionary<string, string>();
+		public ConcurrentDictionary<string, string> stringValues = new ConcurrentDictionary<string, string>();
 
-		public static void AddValue(string key, object value)
+		public void AddValue(string key, object value)
 		{
 			stringValues[key] = value.ToString();
 		}
@@ -31,6 +28,7 @@ namespace MyEngine
 		class TickStats
 		{
 			public string name;
+
 			public float FpsPer1Sec
 			{
 				get
@@ -52,7 +50,7 @@ namespace MyEngine
 
 			//DateTime lastNow;
 
-			public void Update()
+			public void Update(Debug debug)
 			{
 				var now = DateTime.Now;
 
@@ -64,22 +62,26 @@ namespace MyEngine
 				while ((now - frameTimes1sec.Peek()).TotalSeconds > 1) frameTimes1sec.Dequeue();
 				while ((now - frameTimes10sec.Peek()).TotalSeconds > 10) frameTimes10sec.Dequeue();
 
-				Debug.AddValue(name, $"(FPS 1s:{FpsPer1Sec.ToString("0.")} 10s:{FpsPer10Sec.ToString("0.")})");
+				debug.AddValue(name, $"(FPS 1s:{FpsPer1Sec.ToString("0.")} 10s:{FpsPer10Sec.ToString("0.")})");
 				//Debug.AddValue(name, $"(FPS now:{nowFps.ToString("0.")} 1s:{FpsPer1Sec.ToString("0.")} 10s:{FpsPer10Sec.ToString("0.")})");
 
 				//lastNow = now;
 			}
 		}
 
-		static Dictionary<string, TickStats> nameToTickStat = new Dictionary<string, TickStats>();
+		Dictionary<string, TickStats> nameToTickStat = new Dictionary<string, TickStats>();
 
-		static Dictionary<string, ConVar> nameToCVar = new Dictionary<string, ConVar>();
+		Dictionary<string, ConVar> nameToCVar = new Dictionary<string, ConVar>();
 
 		public class ConVar
 		{
 			//public dynamic Value { get; set; }
 			public string name;
+
 			bool _bool;
+
+			Debug debug;
+
 			public bool Bool
 			{
 				get
@@ -95,23 +97,31 @@ namespace MyEngine
 					}
 				}
 			}
+
 			public OpenTK.Input.Key toogleKey = OpenTK.Input.Key.Unknown;
 			public bool hasDefaultValue = false;
+
 			public event Action<ConVar> OnChanged;
+
+			public ConVar(Debug debug)
+			{
+				this.debug = debug;
+			}
+
 			public ConVar ToogledByKey(OpenTK.Input.Key key)
 			{
-				Debug.Info($"{key} to toggled {name}");
+				debug.Info($"{key} to toggled {name}");
 				toogleKey = key;
 				return this;
 			}
 		}
 
-		public static ConVar CVar(string name, bool defaultValue = false)
+		public ConVar CVar(string name, bool defaultValue = false)
 		{
 			ConVar result;
 			if (!nameToCVar.TryGetValue(name, out result))
 			{
-				result = new ConVar();
+				result = new ConVar(this);
 				result.name = name;
 				nameToCVar[name] = result;
 			}
@@ -122,19 +132,20 @@ namespace MyEngine
 			}
 			return result;
 		}
-		public static ConVar CVar(string name)
+
+		public ConVar CVar(string name)
 		{
 			ConVar result;
 			if (!nameToCVar.TryGetValue(name, out result))
 			{
-				result = new ConVar();
+				result = new ConVar(this);
 				result.name = name;
 				nameToCVar[name] = result;
 			}
 			return result;
 		}
 
-		public static void Tick(string name)
+		public void Tick(string name)
 		{
 			TickStats t;
 			if (nameToTickStat.TryGetValue(name, out t) == false)
@@ -143,21 +154,27 @@ namespace MyEngine
 				t.name = name;
 				nameToTickStat[name] = t;
 			}
-			t.Update();
+			t.Update(this);
 		}
 
-		public void Start()
+		public Debug()
 		{
-			Debug.CVar("autoBuildRenderList").ToogledByKey(OpenTK.Input.Key.F4);
-			Debug.CVar("reloadAllShaders").ToogledByKey(OpenTK.Input.Key.F5);
-			Debug.CVar("shadowsDisabled").ToogledByKey(OpenTK.Input.Key.F6);
-			Debug.CVar("drawDebugBounds").ToogledByKey(OpenTK.Input.Key.F7);
-			Debug.CVar("enablePostProcessEffects").ToogledByKey(OpenTK.Input.Key.F8);
-			Debug.CVar("debugDrawGBufferContents").ToogledByKey(OpenTK.Input.Key.F9);
-			Debug.CVar("debugDrawNormalBufferContents").ToogledByKey(OpenTK.Input.Key.F10);
-			Debug.CVar("debugRenderWithLines").ToogledByKey(OpenTK.Input.Key.F11);
-			Debug.CVar("sortRenderers").ToogledByKey(OpenTK.Input.Key.F12);
+			AddCommonCvars();
 		}
+
+		void AddCommonCvars()
+		{
+			CVar("autoBuildRenderList").ToogledByKey(OpenTK.Input.Key.F4);
+			CVar("reloadAllShaders").ToogledByKey(OpenTK.Input.Key.F5);
+			CVar("shadowsDisabled").ToogledByKey(OpenTK.Input.Key.F6);
+			CVar("drawDebugBounds").ToogledByKey(OpenTK.Input.Key.F7);
+			CVar("enablePostProcessEffects").ToogledByKey(OpenTK.Input.Key.F8);
+			CVar("debugDrawGBufferContents").ToogledByKey(OpenTK.Input.Key.F9);
+			CVar("debugDrawNormalBufferContents").ToogledByKey(OpenTK.Input.Key.F10);
+			CVar("debugRenderWithLines").ToogledByKey(OpenTK.Input.Key.F11);
+			CVar("sortRenderers").ToogledByKey(OpenTK.Input.Key.F12);
+		}
+
 		public void Update()
 		{
 			foreach (var cvar in nameToCVar.Values)
@@ -167,13 +184,13 @@ namespace MyEngine
 					if (Input.GetKeyDown(cvar.toogleKey))
 					{
 						cvar.Bool = !cvar.Bool;
-						Debug.Info($"{cvar.name} toogled to {cvar.Bool}");
+						Info($"{cvar.name} toogled to {cvar.Bool}");
 					}
 				}
 			}
 		}
 
-		static void Log(object obj, bool canRepeat)
+		void Log(object obj, bool canRepeat)
 		{
 			var s = obj.ToString();
 			if (canRepeat || !alreadyShown.Contains(s))
@@ -187,7 +204,7 @@ namespace MyEngine
 			}
 		}
 
-		public static void Info(object obj, bool canRepeat = true, bool pause = false)
+		public void Info(object obj, bool canRepeat = true, bool pause = false)
 		{
 			Console.ForegroundColor = ConsoleColor.Gray;
 			Console.BackgroundColor = ConsoleColor.Black;
@@ -195,27 +212,28 @@ namespace MyEngine
 			if (pause) Pause();
 		}
 
-		public static void Warning(object obj, bool canRepeat = true, bool pause = false)
+		public void Warning(object obj, bool canRepeat = true, bool pause = false)
 		{
 			Console.ForegroundColor = ConsoleColor.Yellow;
 			Console.BackgroundColor = ConsoleColor.Black;
 			Log(obj, canRepeat);
 			if (pause) Pause();
 		}
-		public static void Error(object obj, bool canRepeat = true, bool pause = false)
+
+		public void Error(object obj, bool canRepeat = true, bool pause = false)
 		{
 			Console.ForegroundColor = ConsoleColor.Red;
 			Console.BackgroundColor = ConsoleColor.Black;
 			Log(obj, canRepeat);
 			if (pause) Pause();
 		}
-		public static void Pause()
+
+		public void Pause()
 		{
 			Console.ForegroundColor = ConsoleColor.Gray;
 			Console.BackgroundColor = ConsoleColor.Black;
 			Console.WriteLine("Press any key to continue ...");
 			Console.ReadKey();
 		}
-
 	}
 }

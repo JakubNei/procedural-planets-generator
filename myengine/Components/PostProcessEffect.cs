@@ -6,38 +6,38 @@ using System.Threading.Tasks;
 
 namespace MyEngine.Components
 {
-    public interface IPostProcessEffect
-    {
-        Shader Shader { get; set; }
-        bool IsEnabled { get; set; }
-        bool RequiresGBufferMipMaps { get; set; }
-        void BeforeBindCallBack();
-    }
+	public interface IPostProcessEffect
+	{
+		Shader Shader { get; set; }
+		bool IsEnabled { get; set; }
+		bool RequiresGBufferMipMaps { get; set; }
 
-    public class PostProcessEffect : Component, IPostProcessEffect
-    {
-        public Camera Camera
-        {
-            get
-            {
-                return Entity.GetComponent<Camera>();
-            }
-        }
+		void BeforeBindCallBack();
+	}
 
-        public bool IsEnabled { get; set; }
-        public Shader Shader { get; set; }
-        public bool RequiresGBufferMipMaps { get; set; }
+	public class PostProcessEffect : ComponentWithShortcuts, IPostProcessEffect
+	{
+		public Camera Camera
+		{
+			get
+			{
+				return Entity.GetComponent<Camera>();
+			}
+		}
 
-        public PostProcessEffect(Entity entity) : base(entity)
-        {
-            IsEnabled = true;
-            RequiresGBufferMipMaps = true;
-            Camera.AddPostProcessEffect(this);
-        }
+		public bool IsEnabled { get; set; }
+		public Shader Shader { get; set; }
+		public bool RequiresGBufferMipMaps { get; set; }
 
-        public virtual void BeforeBindCallBack()
-        {
-            
-        }
-    }
+		public PostProcessEffect(Entity entity) : base(entity)
+		{
+			IsEnabled = true;
+			RequiresGBufferMipMaps = true;
+			Camera.AddPostProcessEffect(this);
+		}
+
+		public virtual void BeforeBindCallBack()
+		{
+		}
+	}
 }

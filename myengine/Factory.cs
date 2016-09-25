@@ -1,83 +1,98 @@
-﻿using System;
+﻿using Neitri;
+using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Linq;
+using System.Text;
 
 namespace MyEngine
 {
-    public class Factory
-    {
+	public class Factory
+	{
+		public Shader DefaultGBufferShader => GetShader("internal/deferred.gBuffer.PBR.shader");
+		public Shader DefaultDepthGrabShader => GetShader("internal/depthGrab.default.shader");
 
+		public Mesh SkyBoxMesh => GetMesh("internal/skybox.obj");
+		public Mesh QuadMesh => GetMesh("internal/quad.obj");
 
-        static internal Dictionary<string, Shader> allShaders = new Dictionary<string, Shader>();
-        public static Shader GetShader(string asset)
-        {
-            Shader s;
-            if (!allShaders.TryGetValue(asset, out s))
-            {
-                s = new Shader(AssetSystem.Instance.FindAsset(asset));
-                allShaders[asset] = s;
-            }
-            return s;
-        }
+		public Texture2D whiteTexture => GetTexture2D("internal/white.png");
+		public Texture2D greyTexture => GetTexture2D("internal/grey.png");
+		public Texture2D blackTexture => GetTexture2D("internal/black.png");
 
-        public static void ReloadAllShaders()
-        {
-            foreach (var s in allShaders)
-            {
-                s.Value.shouldReload = true;
-            }
-        }
+		[Dependency]
+		public IDependencyManager Dependency { get; private set; }
 
+		Dictionary<string, Shader> allShaders = new Dictionary<string, Shader>();
 
+		public Shader GetShader(string asset)
+		{
+			Shader s;
+			if (!allShaders.TryGetValue(asset, out s))
+			{
+				s = Dependency.Create<Shader>(assetSystem.FindAsset(asset));
+				allShaders[asset] = s;
+			}
+			return s;
+		}
 
+		public void ReloadAllShaders()
+		{
+			foreach (var s in allShaders)
+			{
+				s.Value.shouldReload = true;
+			}
+		}
 
+		public Material NewMaterial()
+		{
+			return Dependency.Create<Material>();
+		}
 
-        internal static Dictionary<string, Mesh> allMeshes = new Dictionary<string, Mesh>();
-        public static Mesh GetMesh(string asset, bool allowDuplicates=false)
-        {
-            //if (!resource.originalPath.EndsWith(".obj")) throw new System.Exception("Resource path does not end with .obj");
+		[Dependency(Register = true)]
+		ObjLoader objLoader;
 
-            Mesh s;
-            if (allowDuplicates || !allMeshes.TryGetValue(asset, out s))
-            {
-                s = ObjLoader.Load(AssetSystem.Instance.FindAsset(asset));
-                allMeshes[asset] = s;
-            }
-            return s;
-        }
+		[Dependency]
+		AssetSystem assetSystem;
 
+		Dictionary<string, Mesh> allMeshes = new Dictionary<string, Mesh>();
 
+		public Mesh GetMesh(string asset, bool allowDuplicates = false)
+		{
+			//if (!resource.originalPath.EndsWith(".obj")) throw new System.Exception("Resource path does not end with .obj");
 
-        internal static Dictionary<string, Texture2D> allTexture2Ds = new Dictionary<string, Texture2D>();
+			Mesh s;
+			if (allowDuplicates || !allMeshes.TryGetValue(asset, out s))
+			{
+				s = objLoader.Load(this.assetSystem.FindAsset(asset));
+				allMeshes[asset] = s;
+			}
+			return s;
+		}
 
-        public static Texture2D GetTexture2D(string asset)
-        {
-            Texture2D s;
-            if (!allTexture2Ds.TryGetValue(asset, out s))
-            {
-                s = new Texture2D(AssetSystem.Instance.FindAsset(asset));
-                allTexture2Ds[asset] = s;
-            }
-            return s;
-        }
+		internal Dictionary<string, Texture2D> allTexture2Ds = new Dictionary<string, Texture2D>();
 
-        internal static Dictionary<string, Cubemap> allCubeMaps = new Dictionary<string, Cubemap>();
+		public Texture2D GetTexture2D(string asset)
+		{
+			Texture2D s;
+			if (!allTexture2Ds.TryGetValue(asset, out s))
+			{
+				s = new Texture2D(this.assetSystem.FindAsset(asset));
+				allTexture2Ds[asset] = s;
+			}
+			return s;
+		}
 
-        public static Cubemap GetCubeMap(string[] assets)
-        {
-            Cubemap s;
-            var key = string.Join("###", assets.Select((x)=>x.ToString()));
-            if (!allCubeMaps.TryGetValue(key, out s))
-            {
-                s = new Cubemap(AssetSystem.Instance.FindAssets(assets).ToArray());
-                allCubeMaps[key] = s;
-            }
-            return s;
-        }
+		internal Dictionary<string, Cubemap> allCubeMaps = new Dictionary<string, Cubemap>();
 
-
-
-
-    }
+		public Cubemap GetCubeMap(string[] assets)
+		{
+			Cubemap s;
+			var key = string.Join("###", assets.Select((x) => x.ToString()));
+			if (!allCubeMaps.TryGetValue(key, out s))
+			{
+				s = new Cubemap(assetSystem.FindAssets(assets).ToArray());
+				allCubeMaps[key] = s;
+			}
+			return s;
+		}
+	}
 }

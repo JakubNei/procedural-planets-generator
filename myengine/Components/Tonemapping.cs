@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace MyEngine.Components
 {
-    public class Tonemapping : PostProcessEffect
-    {
-        public Tonemapping(Entity entity) : base(entity)
-        {
-            Shader = Factory.GetShader("postProcessEffects/tonemapping.glsl");
-        }
-    }
+	public class Tonemapping : PostProcessEffect
+	{
+		public Tonemapping(Entity entity) : base(entity)
+		{
+			Shader = Factory.GetShader("postProcessEffects/tonemapping.glsl");
+		}
+	}
 }

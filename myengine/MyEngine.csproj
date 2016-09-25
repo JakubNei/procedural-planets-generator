@@ -64,47 +64,50 @@
     <Compile Include="DataAccessibleList.cs" />
     <Compile Include="DataBinder.cs" />
     <Compile Include="DeltaTimeManager.cs" />
-    <Compile Include="Neitri.Base.v1\DependencyInjection\DependencyManager.cs" />
-    <Compile Include="Neitri.Base.v1\DependencyInjection\IOnDependencyResolved.cs" />
-    <Compile Include="Neitri.Base.v1\Extensions\ActionExtensions.cs" />
-    <Compile Include="Neitri.Base.v1\Extensions\ArrayExtensions.cs" />
-    <Compile Include="Neitri.Base.v1\Extensions\AssemblyExtensions.cs" />
-    <Compile Include="Neitri.Base.v1\Extensions\BoolExtensions.cs" />
-    <Compile Include="Neitri.Base.v1\Extensions\ByteExtensions.cs" />
-    <Compile Include="Neitri.Base.v1\Extensions\DoubleExtensions.cs" />
-    <Compile Include="Neitri.Base.v1\Extensions\EnumerableExtensions.cs" />
-    <Compile Include="Neitri.Base.v1\Extensions\EnumExtensions.cs" />
-    <Compile Include="Neitri.Base.v1\Extensions\FloatExtensions.cs" />
-    <Compile Include="Neitri.Base.v1\Extensions\ICollectionExtensions.cs" />
-    <Compile Include="Neitri.Base.v1\Extensions\IDictionaryExtensions.cs" />
-    <Compile Include="Neitri.Base.v1\Extensions\IListExtensions.cs" />
-    <Compile Include="Neitri.Base.v1\Extensions\IntExtensions.cs" />
-    <Compile Include="Neitri.Base.v1\Extensions\JaggedArrayExtensions.cs" />
-    <Compile Include="Neitri.Base.v1\Extensions\RandomExtensions.cs" />
-    <Compile Include="Neitri.Base.v1\Extensions\StringExtensions.cs" />
-    <Compile Include="Neitri.Base.v1\Extensions\TypeExtensions.cs" />
-    <Compile Include="Neitri.Base.v1\IBinarySerializer.cs" />
-    <Compile Include="Neitri.Base.v1\IDependencyManager.cs" />
-    <Compile Include="Neitri.Base.v1\ILogging.cs" />
-    <Compile Include="Neitri.Base.v1\Logging\LogAggregator.cs" />
-    <Compile Include="Neitri.Base.v1\Logging\LogConsole.cs" />
-    <Compile Include="Neitri.Base.v1\Logging\LogFile.cs" />
-    <Compile Include="Neitri.Base.v1\NotNullAttribute.cs" />
-    <Compile Include="Neitri.Base.v1\Utils\ArrayUtil.cs" />
-    <Compile Include="Neitri.Base.v1\Utils\BiDictionary.cs" />
-    <Compile Include="Neitri.Base.v1\Utils\DeferredCollection.cs" />
-    <Compile Include="Neitri.Base.v1\Utils\DeferredSynchronizeInvoke.cs" />
-    <Compile Include="Neitri.Base.v1\Utils\FileChangedWatcher.cs" />
-    <Compile Include="Neitri.Base.v1\Utils\FormatUtils.cs" />
-    <Compile Include="Neitri.Base.v1\Utils\MemberName.cs" />
-    <Compile Include="Neitri.Base.v1\Utils\MyWeakReference.cs" />
-    <Compile Include="Neitri.Base.v1\Utils\other.cs" />
-    <Compile Include="Neitri.Base.v1\Utils\PropertyDescriptors.cs" />
-    <Compile Include="Neitri.Base.v1\Utils\ReadOnlyDictionary.cs" />
-    <Compile Include="Neitri.Base.v1\Utils\Require.cs" />
-    <Compile Include="Neitri.Base.v1\Utils\TraceUtil.cs" />
-    <Compile Include="Neitri.Base.v1\Utils\TwoKeyDictionary.cs" />
-    <Compile Include="Neitri.Base.v1\Utils\ValueChanged.cs" />
+    <Compile Include="Neitri\DependencyInjection\DependencyManager.cs" />
+    <Compile Include="Neitri\DependencyInjection\IOnDependencyResolved.cs" />
+    <Compile Include="Neitri\Extensions\ActionExtensions.cs" />
+    <Compile Include="Neitri\Extensions\ArrayExtensions.cs" />
+    <Compile Include="Neitri\Extensions\AssemblyExtensions.cs" />
+    <Compile Include="Neitri\Extensions\BoolExtensions.cs" />
+    <Compile Include="Neitri\Extensions\ByteExtensions.cs" />
+    <Compile Include="Neitri\Extensions\DoubleExtensions.cs" />
+    <Compile Include="Neitri\Extensions\EnumerableExtensions.cs" />
+    <Compile Include="Neitri\Extensions\EnumExtensions.cs" />
+    <Compile Include="Neitri\Extensions\FloatExtensions.cs" />
+    <Compile Include="Neitri\Extensions\ICollectionExtensions.cs" />
+    <Compile Include="Neitri\Extensions\IDictionaryExtensions.cs" />
+    <Compile Include="Neitri\Extensions\IListExtensions.cs" />
+    <Compile Include="Neitri\Extensions\IntExtensions.cs" />
+    <Compile Include="Neitri\Extensions\JaggedArrayExtensions.cs" />
+    <Compile Include="Neitri\Extensions\RandomExtensions.cs" />
+    <Compile Include="Neitri\Extensions\StreamExtensions.cs" />
+    <Compile Include="Neitri\Extensions\StringExtensions.cs" />
+    <Compile Include="Neitri\Extensions\TypeExtensions.cs" />
+    <Compile Include="Neitri\IBinarySerializer.cs" />
+    <Compile Include="Neitri\IDependencyManager.cs" />
+    <Compile Include="Neitri\ILogging.cs" />
+    <Compile Include="Neitri\Logging\LogAggregator.cs" />
+    <Compile Include="Neitri\Logging\LogConsole.cs" />
+    <Compile Include="Neitri\Logging\LogFile.cs" />
+    <Compile Include="Neitri\NotNullAttribute.cs" />
+    <Compile Include="Neitri\Utils\ArrayUtil.cs" />
+    <Compile Include="Neitri\Utils\BiDictionary.cs" />
+    <Compile Include="Neitri\Utils\DeferredCollection.cs" />
+    <Compile Include="Neitri\Utils\DeferredSynchronizeInvoke.cs" />
+    <Compile Include="Neitri\Utils\FileChangedWatcher.cs" />
+    <Compile Include="Neitri\Utils\FileSystem.cs" />
+    <Compile Include="Neitri\Utils\FormatUtils.cs" />
+    <Compile Include="Neitri\Utils\MemberName.cs" />
+    <Compile Include="Neitri\Utils\MyWeakReference.cs" />
+    <Compile Include="Neitri\Utils\other.cs" />
+    <Compile Include="Neitri\Utils\PropertyDescriptors.cs" />
+    <Compile Include="Neitri\Utils\ReadOnlyDictionary.cs" />
+    <Compile Include="Neitri\Utils\Require.cs" />
+    <Compile Include="Neitri\Utils\TraceUtil.cs" />
+    <Compile Include="Neitri\Utils\Tuple.cs" />
+    <Compile Include="Neitri\Utils\TwoKeyDictionary.cs" />
+    <Compile Include="Neitri\Utils\ValueChanged.cs" />
     <Compile Include="OpenTK extensions\QuaternionExtensions.cs" />
     <Compile Include="OpenTK extensions\Vector3Extensions_other.cs" />
     <Compile Include="OpenTK extensions\Vector3Extensions_template.cs">
@@ -132,12 +135,6 @@
     <Compile Include="Mathematical\WorldPos.cs" />
     <Compile Include="Mathematical\WorleyD.cs" />
     <Compile Include="Mesh.Utils.cs" />
-    <Compile Include="Panels\DebugValuesTable.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Panels\DebugValuesTable.Designer.cs">
-      <DependentUpon>DebugValuesTable.cs</DependentUpon>
-    </Compile>
     <Compile Include="GameSystems\RenderManager.cs" />
     <Compile Include="Tier1\DeferredSynchronizeInvoke.cs" />
     <Compile Include="enums.cs" />
@@ -154,7 +151,6 @@
     <Compile Include="Mathematical\Perlin.cs" />
     <Compile Include="Mathematical\QuaternionUtility.cs" />
     <Compile Include="Mathematical\GeometryUtility.cs" />
-    <Compile Include="GameSystems\ResourceFolder.cs" />
     <Compile Include="Mathematical\Bounds.cs" />
     <Compile Include="Components\Camera.cs" />
     <Compile Include="Components\Component.cs" />
@@ -182,12 +178,6 @@
     <Compile Include="SparseList.cs" />
     <Compile Include="SparseValueList.cs" />
     <Compile Include="Mathematical\Sphere.cs" />
-    <Compile Include="Panels\TimeGraph.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Panels\TimeGraph.Designer.cs">
-      <DependentUpon>TimeGraph.cs</DependentUpon>
-    </Compile>
     <Compile Include="Tier1\BiDictionary.cs" />
     <Compile Include="Tier1\DeferredCollection.cs" />
     <Compile Include="Tier1\Int2.cs" />
@@ -221,18 +211,14 @@
     <None Include="app.config" />
     <Compile Include="ObjLoader.MaterialLibrary.cs" />
     <None Include="packages.config" />
-    <Compile Include="Shader.Builder.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Panels\DebugValuesTable.resx">
-      <DependentUpon>DebugValuesTable.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Panels\TimeGraph.resx">
-      <DependentUpon>TimeGraph.cs</DependentUpon>
-    </EmbeddedResource>
+    <Compile Include="ShaderBuilder.cs" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Neitri\_Version_2\" />
+    <Folder Include="Panels\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -1,18 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using MyEngine;
+using MyEngine.Components;
+using Neitri;
+using OpenTK;
+using System;
+using System.Collections;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Threading;
-
-using Neitri;
-
-using OpenTK;
-
-using MyEngine;
-using MyEngine.Components;
-using System.Collections;
+using System.Threading.Tasks;
 
 namespace MyGame.PlanetaryBody
 {
@@ -29,6 +26,9 @@ namespace MyGame.PlanetaryBody
 
 		int subdivisionDepth;
 		Root planetaryBody;
+
+		MeshGenerationService GenerationService => planetaryBody.MeshGenerationService;
+
 		Chunk parentChunk;
 		ChildPosition childPosition;
 
@@ -90,14 +90,13 @@ namespace MyGame.PlanetaryBody
 			}
 		}
 
-
 		int numberOfChunksGenerated = 0;
 		bool isGenerated = false;
 
 		static Dictionary<int, List<int>> numberOfVerticesOnEdge_To_oneTimeGeneratedIndicies = new Dictionary<int, List<int>>();
+
 		static void GetIndiciesList(int numberOfVerticesOnEdge, out List<int> newIndicies)
 		{
-
 			/*
 
                  /\  top line
@@ -128,13 +127,11 @@ namespace MyGame.PlanetaryBody
 						// we skip last row of vertices as there are no triangles under it
 						for (int y = 1; y < numberOfVerticesOnEdge - 1; y++)
 						{
-
 							lineStartIndex = nextLineStartIndex;
 							nextLineStartIndex = lineStartIndex + numberOfVerticesInBetween + 2;
 
 							for (int x = 0; x <= numberOfVerticesInBetween + 1; x++)
 							{
-
 								oneTimeGeneratedIndicies.Add(lineStartIndex + x);
 								oneTimeGeneratedIndicies.Add(nextLineStartIndex + x);
 								oneTimeGeneratedIndicies.Add(nextLineStartIndex + x + 1);
@@ -158,13 +155,12 @@ namespace MyGame.PlanetaryBody
 
 		public void StopMeshGeneration()
 		{
-			meshGenerationService.DoesNotNeedMeshGeneration(this);
+			GenerationService.DoesNotNeedMeshGeneration(this);
 		}
 
 		public double GetWeight(Camera cam)
 		{
 			bool isVisible = true;
-
 
 			var myPos = realVisibleRange.CenterPos + planetaryBody.Transform.Position;
 			var dirToCamera = myPos.Towards(cam.ViewPointPosition).ToVector3d();
@@ -181,7 +177,6 @@ namespace MyGame.PlanetaryBody
 				{
 					isVisible = renderer.GetCameraRenderStatus(cam).HasFlag(RenderStatus.Rendered);
 				}
-
 			}
 
 			double radiusCameraSpace;
@@ -209,7 +204,6 @@ namespace MyGame.PlanetaryBody
             }
             */
 
-
 			var weight = radiusCameraSpace * MyMath.SmoothStep(2, 1, MyMath.Clamp01(dotToCamera));
 			if (isVisible == false) weight *= 0.3f;
 			return weight;
@@ -221,7 +215,7 @@ namespace MyGame.PlanetaryBody
 
 			var cam = planetaryBody.Entity.Scene.mainCamera;
 
-			meshGenerationService.RequestGenerationOfMesh(this, GetWeight(planetaryBody.Scene.mainCamera));
+			GenerationService.RequestGenerationOfMesh(this, GetWeight(planetaryBody.Scene.mainCamera));
 
 			// help from http://stackoverflow.com/questions/3717226/radius-of-projected-sphere
 			/*
@@ -242,11 +236,6 @@ namespace MyGame.PlanetaryBody
                 if (cameraStatus.HasFlag(Renderer.RenderStatus.Visible)) priority *= 0.3f;
             }
             */
-
-
 		}
-
-
-
 	}
 }

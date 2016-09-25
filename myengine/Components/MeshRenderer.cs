@@ -1,16 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Diagnostics;
-
+﻿using Neitri;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Text;
 
 namespace MyEngine.Components
 {
-
 	[Flags]
 	public enum RenderingMode
 	{
@@ -28,6 +27,7 @@ namespace MyEngine.Components
 		public WorldPos Offset { get; set; }
 
 		Mesh m_mesh;
+
 		public Mesh Mesh
 		{
 			set
@@ -47,8 +47,8 @@ namespace MyEngine.Components
 		}
 
 		public event Action<ValueChanged<Mesh>> OnMashChanged;
-		public event Action OnMashDataChanged;
 
+		public event Action OnMashDataChanged;
 
 		static readonly Vector3[] extentsTransformsToEdges = {
 																 new Vector3( 1, 1, 1),
@@ -63,11 +63,10 @@ namespace MyEngine.Components
 
 		public MeshRenderer(Entity entity) : base(entity)
 		{
-			Material = new Material();
+			Material = Dependency.Create<Material>();
 			RenderingMode = RenderingMode.RenderGeometryAndCastShadows;
 		}
 
-		
 		public override Bounds GetCameraSpaceBounds(WorldPos viewPointPos)
 		{
 			var relativePos = (viewPointPos - Offset).Towards(Entity.Transform.Position).ToVector3();
@@ -75,8 +74,7 @@ namespace MyEngine.Components
 			{
 				return new Bounds(relativePos);
 			}
-		
-			
+
 			// without rotation and scale
 			var boundsCenter = relativePos + Mesh.Bounds.Center;
 			var bounds = new Bounds(boundsCenter);
@@ -86,11 +84,10 @@ namespace MyEngine.Components
 			{
 				bounds.Encapsulate(boundsCenter + boundsExtents.CompomentWiseMult(extentsTransformsToEdges[i]));
 			}
-			
+
 			return bounds;
 		}
 
-		
 		public override void UploadUBOandDraw(Camera camera, UniformBlock ubo)
 		{
 			var modelMat = this.Entity.Transform.GetLocalToWorldMatrix(camera.Transform.Position - Offset);
@@ -106,11 +103,10 @@ namespace MyEngine.Components
 		{
 			OnMashDataChanged?.Invoke();
 		}
-		
+
 		public override bool ShouldRenderInContext(object renderContext)
 		{
 			return Mesh != null && Mesh.IsRenderable && Material != null && Material.DepthGrabShader != null && base.ShouldRenderInContext(renderContext);
 		}
-
 	}
 }

@@ -1,27 +1,24 @@
-﻿using System;
+﻿using MyEngine;
+using MyEngine.Components;
+using MyEngine.Events;
+using OpenTK;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
-using MyEngine;
-using MyEngine.Events;
-using MyEngine.Components;
-
-using OpenTK;
-
 namespace MyGame
 {
-    public class VisualizePosition : ComponentWithShortcuts
-    {
+	public class VisualizePosition : ComponentWithShortcuts
+	{
+		Entity target;
+		Vector3 targetsLocalPosition;
 
+		public VisualizePosition(Entity entity) : base(entity)
+		{
+			Entity.EventSystem.Register<EventThreadUpdate>(e => Update(e.DeltaTimeNow));
+		}
 
-        Entity target;
-        Vector3 targetsLocalPosition;
-
-        public VisualizePosition(Entity entity) : base(entity)
-        {
-            Entity.EventSystem.Register<EventThreadUpdate>(e => Update(e.DeltaTimeNow));
-        }
-
+		/*
         public static void Create(Entity entity, Vector3 targetsLocalPosition)
         {
             var go = entity.Scene.AddEntity();
@@ -32,12 +29,12 @@ namespace MyGame
             var vp=go.AddComponent<VisualizePosition>();
             vp.target = entity;
             vp.targetsLocalPosition = targetsLocalPosition;
-
         }
+		*/
 
-        void Update(double deltaTime)
-        {
-            Entity.Transform.Position = target.Transform.Position + targetsLocalPosition.RotateBy(target.Transform.Rotation);
-        }
-    }
+		void Update(double deltaTime)
+		{
+			Entity.Transform.Position = target.Transform.Position + targetsLocalPosition.RotateBy(target.Transform.Rotation);
+		}
+	}
 }

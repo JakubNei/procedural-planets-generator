@@ -1,177 +1,149 @@
-﻿using System;
+﻿using MyEngine;
+using OpenTK;
+using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Threading;
-using System.Drawing;
-
-using OpenTK;
-
-using MyEngine;
+using System.Threading.Tasks;
 
 namespace MyGame
 {
-    public class ProceduralSpaceSkybox
-    {
-        public class Result
-        {
-            public Cubemap[] cubemaps;
-        }
+	public class ProceduralSpaceSkybox
+	{
+		public class Result
+		{
+			public Cubemap[] cubemaps;
+		}
 
+		int w = 1024;
+		int h = 1024;
 
-        int w = 1024;
-        int h = 1024;
+		SceneSystem scene;
+		Factory Factory => scene.Factory;
+		Debug Debug => scene.Debug;
 
-        public Cubemap cubemap { get; private set; }
+		public Cubemap cubemap { get; private set; }
 
-        public ProceduralSpaceSkybox()
-        {
-            cubemap = new Cubemap(w, h);
+		public ProceduralSpaceSkybox(SceneSystem scene)
+		{
+			this.scene = scene;
 
-            var r = new Random();
-            for (int i = 0; i < 1000; i++)
-            {
+			cubemap = new Cubemap(w, h);
 
-                AddStar(
-                    new Vector3(
-                        (float)r.NextDouble() * 2 - 1,
-                        (float)r.NextDouble() * 2 - 1,
-                        (float)r.NextDouble() * 2 - 1
-                    ),
-                    Color.White,
-                    0.5f + (float)r.NextDouble()
-                );
-            }
+			var r = new Random();
+			for (int i = 0; i < 1000; i++)
+			{
+				AddStar(
+					new Vector3(
+						(float)r.NextDouble() * 2 - 1,
+						(float)r.NextDouble() * 2 - 1,
+						(float)r.NextDouble() * 2 - 1
+					),
+					Color.White,
+					0.5f + (float)r.NextDouble()
+				);
+			}
 
-            var t = new Thread(Render);
-            //t.Start();
-            Render();
-        }
+			var t = new Thread(Render);
+			//t.Start();
+			Render();
+		}
 
-        public void AddStar(Vector3 direction, Color color, float size)
-        {
-            stars.Add(new Star()
-            {
-                dir = direction.Normalized(),
-                color = color,
-                size = size,
-                checkDistanceRadius = size / (float)w / (float)h,
-            });
-        }
+		public void AddStar(Vector3 direction, Color color, float size)
+		{
+			stars.Add(new Star()
+			{
+				dir = direction.Normalized(),
+				color = color,
+				size = size,
+				checkDistanceRadius = size / (float)w / (float)h,
+			});
+		}
 
-        struct Star
-        {
-            public Vector3 dir;
-            public Color color;
-            public float size;
-            public float checkDistanceRadius;
-        }
+		struct Star
+		{
+			public Vector3 dir;
+			public Color color;
+			public float size;
+			public float checkDistanceRadius;
+		}
 
-        List<Star> stars = new List<Star>();
+		List<Star> stars = new List<Star>();
 
-        void Render()
-        {
+		void Render()
+		{
+			//var projection = Matrix4.CreatePerspectiveFieldOfView(60, 1, 0, 100);
+			var time = new System.Diagnostics.Stopwatch();
+			time.Start();
+			Debug.Info("start");
 
+			var faces = new[] {
+				new {
+					face = Cubemap.Face.PositiveX,
+					getPos = (Func<float, float, Vector3>)((float x, float y) => { return new Vector3(+1, x, y); }),
+				},
+				new {
+					face = Cubemap.Face.NegativeX,
+					getPos = (Func<float, float, Vector3>)((float x, float y) => { return new Vector3(-1, x, y); }),
+				},
+				new {
+					face = Cubemap.Face.PositiveY,
+					getPos = (Func<float, float, Vector3>)((float x, float y) => { return new Vector3(x, +1, y); }),
+				},
+				new {
+					face = Cubemap.Face.NegativeY,
+					getPos = (Func<float, float, Vector3>)((float x, float y) => { return new Vector3(x, -1, y); }),
+				},
+				 new {
+					face = Cubemap.Face.PositiveZ,
+					getPos = (Func<float, float, Vector3>)((float x, float y) => { return new Vector3(x, y, +1); }),
+				},
+				new {
+					face = Cubemap.Face.NegativeZ,
+					getPos = (Func<float, float, Vector3>)((float x, float y) => { return new Vector3(x, y, -1); }),
+				},
+			};
 
-            //var projection = Matrix4.CreatePerspectiveFieldOfView(60, 1, 0, 100);
-            var time = new System.Diagnostics.Stopwatch();
-            time.Start();
-            Debug.Info("start");
+			var r = new Random();
 
-            var faces = new[] {
-                new {
-                    face = Cubemap.Face.PositiveX,
-                    getPos = (Func<float, float, Vector3>)((float x, float y) => { return new Vector3(+1, x, y); }),
-                },
-                new {
-                    face = Cubemap.Face.NegativeX,
-                    getPos = (Func<float, float, Vector3>)((float x, float y) => { return new Vector3(-1, x, y); }),
-                },
-                new {
-                    face = Cubemap.Face.PositiveY,
-                    getPos = (Func<float, float, Vector3>)((float x, float y) => { return new Vector3(x, +1, y); }),
-                },
-                new {
-                    face = Cubemap.Face.NegativeY,
-                    getPos = (Func<float, float, Vector3>)((float x, float y) => { return new Vector3(x, -1, y); }),
-                },
-                 new {
-                    face = Cubemap.Face.PositiveZ,
-                    getPos = (Func<float, float, Vector3>)((float x, float y) => { return new Vector3(x, y, +1); }),
-                },
-                new {
-                    face = Cubemap.Face.NegativeZ,
-                    getPos = (Func<float, float, Vector3>)((float x, float y) => { return new Vector3(x, y, -1); }),
-                },
-            };
+			for (int x = 0; x < w; x++)
+			{
+				for (int y = 0; y < h; y++)
+				{
+					var fx = x / (float)w;
+					var fy = y / (float)h;
 
-            var r = new Random();
+					for (int f = 0; f < 6; f++)
+					{
+						var pos = faces[f].getPos(fx, fy);
+						pos.Normalize();
 
-            for (int x = 0; x < w; x++)
-            {
-                for (int y = 0; y < h; y++)
-                {
+						var face = faces[f].face;
 
-                    var fx = x / (float)w;
-                    var fy = y / (float)h;
+						for (int i = 0; i < stars.Count; i++)
+						{
+							var d = stars[i].dir.DistanceSqr(pos);
+							if (d > stars[i].checkDistanceRadius) continue;
 
-                    for (int f = 0; f < 6; f++)
-                    {
-                        var pos = faces[f].getPos(fx, fy);
-                        pos.Normalize();
+							d = 1.0f - MyMath.Clamp(d * w * h / stars[i].size, 0.0f, 1.0f);
 
-                        var face = faces[f].face;
+							//var c = cubemap.GetPixel(face, x, y);
+							var s = stars[i].color;
+							s = Color.FromArgb((int)(d * 255), s.R, s.G, s.B);
+							//c = c.Blend(s);
 
-                        for (int i = 0; i < stars.Count; i++)
-                        {
-                            var d = stars[i].dir.DistanceSqr(pos);
-                            if (d > stars[i].checkDistanceRadius) continue;
+							cubemap.SetPixel(face, x, y, s);
+							//cubemap.SetPixel(face, x, y, Color.Red);
+						}
 
-                            d = 1.0f - MyMath.Clamp(d * w * h / stars[i].size, 0.0f, 1.0f);
+						//cubemap.SetPixel(face, x, y, Color.Red);
+					}
+				}
+			}
 
-                            //var c = cubemap.GetPixel(face, x, y);
-                            var s = stars[i].color;
-                            s = Color.FromArgb((int)(d * 255), s.R, s.G, s.B);
-                            //c = c.Blend(s);
-
-                            cubemap.SetPixel(face, x, y, s);
-                            //cubemap.SetPixel(face, x, y, Color.Red);
-                        }
-
-                        //cubemap.SetPixel(face, x, y, Color.Red);
-                    }
-                }
-            }
-
-
-            Debug.Info("done in " + time.Elapsed.TotalSeconds + " seconds");
-
-        }
-
-
-
-
-
-    }
-
-
-    public class UnitSystem
-    {
-        public readonly int chunkBoxSize = 100;
-
-        public struct Unit
-        {
-            public UnitSystem system;
-            public int chunkX;
-            public int chunkY;
-            public int chunkZ;
-            public Vector3 inChunkPosition;
-        }
-
-        public Unit CreateUnit(float x, float y)
-        {
-            return new Unit();
-        }
-    }
+			Debug.Info("done in " + time.Elapsed.TotalSeconds + " seconds");
+		}
+	}
 }

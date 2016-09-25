@@ -1,75 +1,80 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Diagnostics;
+﻿using Neitri;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Text;
 
 namespace MyEngine
 {
 	public class MaterialInstance : Material
 	{
 		public Material parentMaterial;
+
+		public MaterialInstance(Factory factory) : base(factory)
+		{
+		}
 	}
 
 	public class Material : ICloneable
 	{
-		Shader m_gBufferShader;
+		Factory factory;
+
+		Shader gBufferShader;
+
 		public virtual Shader GBufferShader
 		{
 			get
 			{
-				return m_gBufferShader;
+				return gBufferShader ?? (gBufferShader = factory.DefaultGBufferShader);
 			}
 			set
 			{
-				//if (value == null) throw new NullReferenceException("can not set " + MemberName.For(() => GBufferShader) + " to null");
-				m_gBufferShader = value;
+				if (value == null) throw new NullReferenceException("can not set " + MemberName.For(() => GBufferShader) + " to null");
+				gBufferShader = value;
 			}
 		}
-		Shader m_depthGrabShader;
+
+		Shader depthGrabShader;
+
 		public virtual Shader DepthGrabShader
 		{
 			get
 			{
-				return m_depthGrabShader;
+				return depthGrabShader ?? (depthGrabShader = factory.DefaultDepthGrabShader);
 			}
 			set
 			{
 				if (value == null) throw new NullReferenceException("can not set " + MemberName.For(() => DepthGrabShader) + " to null");
-				m_depthGrabShader = value;
+				depthGrabShader = value;
 			}
 		}
 
 		public virtual UniformsManager Uniforms { get; private set; }
 
-		public Material()
+		public Material(Factory factory)
 		{
-			//BUG: if you uncoment this line planet chunks materials will suddenly delayed randomly be assigned the shader
-			// it was bad multithreading, two threads did exactly the same thing, one created new Material and before it assigned GBufferShader
-			// other did touch the Material and thus has seen default GBufferShader there
-			if (GBufferShader == null) GBufferShader = Shader.DefaultGBufferShader;
-			if (DepthGrabShader == null) DepthGrabShader = Shader.DefaultDepthGrabShader;
-			this.Uniforms = new UniformsManager();
+			Require.NotNull(() => factory);
+			this.factory = factory;
+			Uniforms = new UniformsManager();
 		}
 
 		public virtual void BeforeBindCallback()
 		{
-
 		}
 
 		public virtual MaterialInstance MakeInstance()
 		{
-			return new MaterialInstance()
-			{
-				parentMaterial = this,
-			};
+			var ret = new MaterialInstance(factory);
+			ret.parentMaterial = this;
+			return ret;
 		}
 
 		public virtual Material CloneTyped()
 		{
-			var m = new Material()
+			var m = new Material(factory)
 			{
 				GBufferShader = GBufferShader,
 				DepthGrabShader = DepthGrabShader,

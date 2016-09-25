@@ -1,16 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Diagnostics;
+﻿using MyEngine;
+using MyEngine.Components;
+using Neitri;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
-
-using MyEngine;
-using MyEngine.Components;
-using System.Threading.Tasks;
+using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace MyEngine
 {
@@ -25,10 +25,16 @@ namespace MyEngine
 		int toRenderCount = 0;
 		IRenderable[] toRender = new IRenderable[1000];
 
-		public bool drawLines { get { return Debug.CVar("debugRenderWithLines").Bool; } }
-		public bool enablePostProcessEffects { get { return Debug.CVar("enablePostProcessEffects").Bool; } }
-		public bool debugBounds { get { return Debug.CVar("debugBounds").Bool; } }
-		public bool shadowsEnabled { get { return Debug.CVar("shadowsDisabled").Bool == false; } }
+		[Dependency]
+		Debug debug;
+
+		[Dependency]
+		Factory factory;
+
+		public bool drawLines { get { return debug.CVar("debugRenderWithLines").Bool; } }
+		public bool enablePostProcessEffects { get { return debug.CVar("enablePostProcessEffects").Bool; } }
+		public bool debugBounds { get { return debug.CVar("debugBounds").Bool; } }
+		public bool shadowsEnabled { get { return debug.CVar("shadowsDisabled").Bool == false; } }
 
 		public RenderManager(Events.EventSystem eventSystem)
 		{
@@ -50,14 +56,11 @@ namespace MyEngine
 			RenderPostProcessEffects(ubo, postProcessEffect);
 		}
 
-
 		public void RenderGBuffer(UniformBlock ubo, Camera camera)
 		{
-
 			// G BUFFER GRAB PASS
 			{
 				GBuffer.BindAllFrameBuffersForDrawing();
-
 
 				GL.Enable(EnableCap.DepthTest);
 				GL.DepthMask(true);
@@ -69,15 +72,13 @@ namespace MyEngine
 					GL.DepthRange(0.999, 1);
 					GL.DepthMask(false);
 
-					var shader = Factory.GetShader("internal/deferred.skybox.shader");
+					var shader = factory.GetShader("internal/deferred.skybox.shader");
 					shader.Uniforms.Set("skyboxCubeMap", SkyboxCubeMap);
 					shader.Bind();
 
-					Mesh.SkyBox.Draw();
+					factory.SkyBoxMesh.Draw();
 					GL.DepthRange(0, 1);
 				}
-
-
 
 				if (drawLines) GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
 				else GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
@@ -101,14 +102,13 @@ namespace MyEngine
 				}
 
 				GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
-
 			}
 		}
 
 		public void RenderLights(UniformBlock ubo, Camera camera, IList<ILight> allLights)
 		{
-
 			#region Lights rendering
+
 			lock (allLights)
 			{
 				for (int lightIndex = 0; lightIndex < allLights.Count; lightIndex++)
@@ -119,10 +119,10 @@ namespace MyEngine
 					var shadowMap = light.ShadowMap;
 
 					#region SHADOW MAAPING
+
 					/*
 					if (shadowsEnabled && light.HasShadows)
 					{
-
 						//GL.Enable(EnableCap.CullFace);
 						//GL.CullFace(CullFaceMode.Back);
 
@@ -133,17 +133,14 @@ namespace MyEngine
 
 						shadowMap.Clear();
 
-
-
 						shadowMap.shadowViewCamera.UploadDataToUBO(ubo);
-
 
 						for (int i = 0; i < allRenderers.Count; i++)
 						{
 							var renderer = allRenderers[i];
 							if (renderer == null) continue;
 
-							//if (renderer.CanBeFrustumCulled == false || GeometryUtility.TestPlanesAABB(frustrumPlanes, renderer.bounds)) 
+							//if (renderer.CanBeFrustumCulled == false || GeometryUtility.TestPlanesAABB(frustrumPlanes, renderer.bounds))
 							{
 								renderer.Material.BeforeBindCallback();
 								renderer.Material.Uniforms.SendAllUniformsTo(renderer.Material.DepthGrabShader.Uniforms);
@@ -151,10 +148,9 @@ namespace MyEngine
 								renderer.UploadUBOandDraw(shadowMap.shadowViewCamera, ubo);
 							}
 						}
-
 					}*/
-					#endregion
 
+					#endregion SHADOW MAAPING
 
 					camera.UploadDataToUBO(ubo); // bind camera view params
 
@@ -167,10 +163,9 @@ namespace MyEngine
 						GL.Disable(EnableCap.DepthTest);
 						GL.DepthMask(false);
 
-
 						light.UploadUBOdata(camera, ubo, lightIndex);
 
-						var shader = Factory.GetShader("internal/deferred.oneLight.shader");
+						var shader = factory.GetShader("internal/deferred.oneLight.shader");
 						GBuffer.BindForLightPass(shader);
 						if (shadowsEnabled && light.HasShadows)
 						{
@@ -181,19 +176,16 @@ namespace MyEngine
 
 						GL.Enable(EnableCap.Blend);
 						//GL.BlendEquationSeparate(BlendEquationMode.FuncAdd, BlendEquationMode.FuncAdd);
-						//GL.BlendFunc(BlendingFactorSrc.SrcColor, BlendingFactorDest.SrcColor);                    
+						//GL.BlendFunc(BlendingFactorSrc.SrcColor, BlendingFactorDest.SrcColor);
 						GL.BlendEquation(BlendEquationMode.FuncAdd);
 						GL.BlendFunc(BlendingFactorSrc.One, BlendingFactorDest.One);
-						Mesh.Quad.Draw();
+						factory.QuadMesh.Draw();
 						GL.Disable(EnableCap.Blend);
-
 					}
-
 				}
-
 			}
 
-			#endregion
+			#endregion Lights rendering
 		}
 
 		public void RenderPostProcessEffects(UniformBlock ubo, IEnumerable<IPostProcessEffect> postProcessEffects)
@@ -214,10 +206,11 @@ namespace MyEngine
 					pe.BeforeBindCallBack();
 					GBuffer.BindForPostProcessEffects(pe);
 					pe.Shader.Bind();
-					Mesh.Quad.Draw();
+					factory.QuadMesh.Draw();
 				}
 			}
 		}
+
 		public void BuildRenderList(IList<IRenderable> possibleRenderables, Camera camera)
 		{
 			// without Parallel.ForEach = 130 fps
@@ -262,7 +255,7 @@ namespace MyEngine
 					}
 				);
 			}
-			Debug.AddValue("countMeshesRendered", toRenderCount + "/" + totalPossible);
+			debug.AddValue("countMeshesRendered", toRenderCount + "/" + totalPossible);
 			/*
 			if (Debug.CVar("sortRenderers").Bool)
 			{
@@ -276,11 +269,13 @@ namespace MyEngine
 		{
 			WorldPos viewPointPosition;
 			Vector3 viewPointPosition_vec3;
+
 			public RenderableDistanceComparer(WorldPos viewPointPosition)
 			{
 				this.viewPointPosition = viewPointPosition;
 				this.viewPointPosition_vec3 = viewPointPosition.ToVector3();
 			}
+
 			public int Compare(IRenderable x, IRenderable y)
 			{
 				if (ReferenceEquals(y, x)) return 0;

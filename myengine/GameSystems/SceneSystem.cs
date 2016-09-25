@@ -1,92 +1,95 @@
-﻿using System;
+﻿using MyEngine;
+using MyEngine.Components;
+using MyEngine.Events;
+using Neitri;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.ComponentModel;
-
-using MyEngine;
-using MyEngine.Components;
-using MyEngine.Events;
 
 namespace MyEngine
 {
-    public class SceneSystem : GameSystemBase
-    {
-        public SparseList<Entity> Entities
-        {
-            get
-            {
-                return entities;
-            }
-        }
+	public class SceneSystem : GameSystemBase
+	{
+		public Debug Debug => Engine.Debug;
+		public Factory Factory => Engine.Factory;
+		public IDependencyManager Dependency => Engine.Dependency;
 
-        public Cubemap skyBox;
-        public RenderableData DataToRender { get; private set; }
+		public SparseList<Entity> Entities
+		{
+			get
+			{
+				return entities;
+			}
+		}
 
-        //public ISynchronizeInvoke SynchronizeInvoke { get; private set; }
-        //DeferredSynchronizeInvoke.Owner deferredSynchronizeInvokeOwner;
+		public Cubemap skyBox;
+		public RenderableData DataToRender { get; private set; }
 
-        public EventSystem EventSystem { get; private set; }
-        public EngineMain Engine { get; private set; }
-        public InputSystem Input
-        {
-            get
-            {
-                return Engine.Input;
-            }
-        }
+		//public ISynchronizeInvoke SynchronizeInvoke { get; private set; }
+		//DeferredSynchronizeInvoke.Owner deferredSynchronizeInvokeOwner;
 
-        public Camera mainCamera;
+		public EventSystem EventSystem { get; private set; }
+		public EngineMain Engine { get; private set; }
 
+		public InputSystem Input
+		{
+			get
+			{
+				return Engine.Input;
+			}
+		}
 
+		public Camera mainCamera;
 
-        SparseList<Entity> entities = new SparseList<Entity>(1000);
-        
-        public SceneSystem(EngineMain engine)
-        {
-            this.Engine = engine;
-            this.EventSystem = new EventSystem();
-            this.DataToRender = new RenderableData();
-            this.EventSystem.OnAnyEventCalled += (IEvent evt) =>
-            {
-                foreach(var e in entities)
-                {
-                    e.EventSystem.Raise(evt);
-                }
-            };
+		SparseList<Entity> entities = new SparseList<Entity>(1000);
 
-            //deferredSynchronizeInvokeOwner = new DeferredSynchronizeInvoke.Owner();
-            /*
+		public SceneSystem(EngineMain engine)
+		{
+			this.Engine = engine;
+			this.EventSystem = new EventSystem();
+			this.DataToRender = new RenderableData();
+			this.EventSystem.OnAnyEventCalled += (IEvent evt) =>
+			{
+				foreach (var e in entities)
+				{
+					e.EventSystem.Raise(evt);
+				}
+			};
+
+			//deferredSynchronizeInvokeOwner = new DeferredSynchronizeInvoke.Owner();
+			/*
             SynchronizeInvoke = new DeferredSynchronizeInvoke(deferredSynchronizeInvokeOwner);
             EventSystem.Register((Events.GraphicsUpdate evt) =>
             {
                 deferredSynchronizeInvokeOwner.ProcessQueue();
             });
             */
-        }
+		}
 
-        public Entity AddEntity(string name = "unnamed entity")
-        {
-            var e = new Entity(this, name);
-            entities.Add(e);
-            return e;
-        }
+		public Entity AddEntity(string name = "unnamed entity")
+		{
+			var e = new Entity(this, name);
+			entities.Add(e);
+			return e;
+		}
 
-        public void Add(Entity entity)
-        {
-            lock(entities)
-            {
-                entities.Add(entity);
-            }
-        }
-        public void Remove(Entity entity)
-        {
-            lock(entities)
-            {
-                entities.Remove(entity);
-            }
-        }
+		public void Add(Entity entity)
+		{
+			lock (entities)
+			{
+				entities.Add(entity);
+			}
+		}
 
-    }
+		public void Remove(Entity entity)
+		{
+			lock (entities)
+			{
+				entities.Remove(entity);
+			}
+		}
+	}
 }

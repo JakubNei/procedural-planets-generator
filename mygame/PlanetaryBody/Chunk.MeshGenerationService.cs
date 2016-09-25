@@ -1,29 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using MyEngine;
+using MyEngine.Components;
+using OpenTK;
+using System;
+using System.Collections;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Threading;
-
-using OpenTK;
-
-using MyEngine;
-using MyEngine.Components;
-using System.Collections;
+using System.Threading.Tasks;
 
 namespace MyGame.PlanetaryBody
 {
-    public partial class Chunk
-    {
-	
-		static MeshGenerationService meshGenerationService = new MeshGenerationService();
-		class MeshGenerationService
+	public partial class Chunk
+	{
+		public class MeshGenerationService
 		{
-
-
 			int generationThreadMiliSecondsSleep;
-
 
 			HashSet<Chunk> chunkIsBeingGenerated = new HashSet<Chunk>();
 
@@ -33,9 +26,11 @@ namespace MyGame.PlanetaryBody
 			List<Thread> threads = new List<Thread>();
 
 			bool doRun;
+			Debug debug;
 
-			public MeshGenerationService()
+			public MeshGenerationService(Debug debug)
 			{
+				this.debug = debug;
 				Start();
 			}
 
@@ -67,7 +62,6 @@ namespace MyGame.PlanetaryBody
 			{
 				while (doRun)
 				{
-
 					Chunk chunk = null;
 
 					lock (chunkToWeight)
@@ -101,11 +95,9 @@ namespace MyGame.PlanetaryBody
 						}
 					}
 
-
 					// this takes alot of time
 					if (chunk != null)
 					{
-
 						chunk.CreateRendererAndGenerateMesh();
 
 						lock (chunkIsBeingGenerated)
@@ -116,8 +108,7 @@ namespace MyGame.PlanetaryBody
 
 					if (threadIndex == 0)
 					{
-						Debug.AddValue("chunksToGenerateQueued", chunkToWeight.Count.ToString());
-
+						debug.AddValue("chunksToGenerateQueued", chunkToWeight.Count.ToString());
 
 						//if (fps < 55) generationThreadMiliSecondsSleep *= 2;
 						//else generationThreadMiliSecondsSleep /= 2;
@@ -125,7 +116,6 @@ namespace MyGame.PlanetaryBody
 						generationThreadMiliSecondsSleep = MyMath.Clamp(generationThreadMiliSecondsSleep, 10, 200);
 					}
 					Thread.Sleep(generationThreadMiliSecondsSleep);
-
 				}
 			}
 
@@ -165,7 +155,6 @@ namespace MyGame.PlanetaryBody
 				}
 			}
 
-
 			public void DoesNotNeedMeshGeneration(Chunk chunk)
 			{
 				lock (chunkToWeight)
@@ -174,6 +163,5 @@ namespace MyGame.PlanetaryBody
 				}
 			}
 		}
-
-    }
+	}
 }
