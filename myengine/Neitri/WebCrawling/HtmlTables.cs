@@ -1,5 +1,6 @@
 ﻿using HtmlAgilityPack;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace Neitri.WebCrawling
@@ -11,6 +12,7 @@ namespace Neitri.WebCrawling
 		/// </summary>
 		public HtmlTable(HtmlNode tableNode)
 		{
+			if (tableNode == null) Debugger.Break();
 			foreach (var tr in tableNode.SelectNodes("./tr"))
 			{
 				var trData = new List<HtmlNode>();

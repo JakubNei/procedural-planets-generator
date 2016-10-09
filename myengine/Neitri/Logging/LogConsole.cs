@@ -1,47 +1,82 @@
 ﻿using System;
+using System.Collections.Concurrent;
+using System.Threading;
 
 namespace Neitri.Logging
 {
-	public class LogConsole : ILogging
+	public class LogConsole : ILogEnd
 	{
-		void Log<T>(string level, T value)
+		ConcurrentQueue<Entry> entries = new ConcurrentQueue<Entry>();
+		Thread thread;
+		ManualResetEvent doLog = new ManualResetEvent(false);
+
+		public LogConsole()
 		{
-			Console.WriteLine(string.Format("[{0}][{1}] {2}", DateTime.Now.ToString("HH:mm:ss.fff"), level, value));
+			thread = new Thread(() =>
+			{
+				while (true)
+				{
+					doLog.WaitOne();
+
+					Entry entry;
+					while (entries.TryDequeue(out entry))
+					{
+						Console.ForegroundColor = entry.color;
+						Console.WriteLine(entry.message);
+					}
+
+					doLog.Reset();
+				}
+			});
+			thread.IsBackground = true;
+			thread.Start();
 		}
 
-		public void Error<T>(T value)
+		class Entry
 		{
-			Console.ForegroundColor = ConsoleColor.Magenta;
-			Console.BackgroundColor = ConsoleColor.Black;
-			Log("E", value);
+			public ConsoleColor color;
+			public string message;
 		}
 
-		public void Fatal<T>(T value)
+		public void Log(LogEntry logEntry)
 		{
-			Console.ForegroundColor = ConsoleColor.Red;
-			Console.BackgroundColor = ConsoleColor.Black;
-			Log("F", value);
-		}
+			var color = ConsoleColor.Gray;
+			switch (logEntry.Type)
+			{
+				default:
+				case LogEntry.LogType.Info:
+					color = ConsoleColor.Gray;
+					break;
 
-		public void Info<T>(T value)
-		{
-			Console.ForegroundColor = ConsoleColor.Gray;
-			Console.BackgroundColor = ConsoleColor.Black;
-			Log("I", value);
-		}
+				case LogEntry.LogType.Trace:
+				case LogEntry.LogType.Debug:
+					color = ConsoleColor.Cyan;
+					break;
 
-		public void Trace<T>(T value)
-		{
-			Console.ForegroundColor = ConsoleColor.Cyan;
-			Console.BackgroundColor = ConsoleColor.Black;
-			Log("T", value);
-		}
+				case LogEntry.LogType.Warn:
+					color = ConsoleColor.Yellow;
+					break;
 
-		public void Warn<T>(T value)
-		{
-			Console.ForegroundColor = ConsoleColor.Yellow;
-			Console.BackgroundColor = ConsoleColor.Black;
-			Log("W", value);
+				case LogEntry.LogType.Error:
+					color = ConsoleColor.Red;
+					break;
+
+				case LogEntry.LogType.Fatal:
+					color = ConsoleColor.Magenta;
+					break;
+			}
+
+			entries.Enqueue(new Entry()
+			{
+				color = color,
+				message = string.Format("[{0}][{1}] {2}",
+					DateTime.Now.ToString("HH:mm:ss.fff"),
+					logEntry.Type.ToString().Substring(0, 1),
+					logEntry.Message
+				)
+			});
+
+			doLog.Set();
 		}
 	}
 }

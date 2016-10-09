@@ -5,26 +5,35 @@ using System.Linq;
 
 namespace Neitri
 {
-	public class PathBase
+	public abstract class PathBase : IEquatable<PathBase>
 	{
-		public FileSystem FileSystem
+		public DirectoryPath RootDirectory
 		{
 			get; set;
 		}
 
+		/// <summary>
+		/// Relative path parts.
+		/// </summary>
 		public string[] PathParts
 		{
 			get; set;
 		}
 
+		/// <summary>
+		/// Gets full expanded absolute poth.
+		/// </summary>
 		public string FullPath
 		{
 			get
 			{
-				return GetFullPath(Combine(PathParts));
+				return GetFullPath(MakePath(PathParts));
 			}
 		}
 
+		/// <summary>
+		/// Last part of <see cref="PathParts"/>.
+		/// </summary>
 		public string Name
 		{
 			get
@@ -41,52 +50,104 @@ namespace Neitri
 		{
 			get
 			{
-				return new DirectoryPath(FileSystem, PathParts.Take(PathParts.Length - 2).ToArray());
+				var dir = new DirectoryPath(FullPath, "..");
+				dir.RootDirectory = RootDirectory;
+				return dir;
 			}
 		}
 
-		public PathBase(FileSystem fs, string[] pathParts)
+		public PathBase(params string[] pathParts)
 		{
-			this.FileSystem = fs;
 			// makes sure there are no white characters around / or \
 			// input: D:\SSD_GAMES\steamapps\common\Arma 3\@taw_div_core/addons\task_force_radio_items.pbo
 			// output: D:\SSD_GAMES\steamapps\common\Arma 3\@taw_div_core / addons\task_force_radio_items.pbo
-			this.PathParts = Split(Combine(pathParts));
+			this.PathParts = Split(MakePath(pathParts));
 		}
 
 		string GetFullPath(params string[] pathParts)
 		{
-			if (pathParts.First().Contains(":"))
+			if (pathParts.First().Contains(":")) // a non relative path e.g.: C:/Windows
 			{
-				return Path.GetFullPath(Combine(pathParts));
+				return Path.GetFullPath(MakePath(pathParts));
 			}
 			else
 			{
-				return Path.GetFullPath(
-					Combine(
-						Combine(FileSystem.BaseDirectory.PathParts),
-						Combine(pathParts)
-					)
-				);
+				if (RootDirectory == null)
+				{
+					// no root directory, lets use default
+					return Path.GetFullPath(
+						MakePath(pathParts)
+					);
+				}
+				else
+				{
+					return Path.GetFullPath(
+						MakePath(
+							MakePath(RootDirectory.FullPath),
+							MakePath(pathParts)
+						)
+					);
+				}
 			}
+		}
+
+		public override int GetHashCode()
+		{
+			return FullPath.GetHashCode();
+		}
+
+		public bool Equals(PathBase other)
+		{
+			if (other == null) return false;
+			if (ReferenceEquals(this, other)) return true;
+			return other.FullPath == this.FullPath;
+		}
+
+		public override bool Equals(object obj)
+		{
+			var other = obj as PathBase;
+			if (other == null) return false;
+			return Equals(other);
+		}
+
+		public static bool operator ==(PathBase a, PathBase b)
+		{
+			if (ReferenceEquals(a, b)) return true;
+			if (ReferenceEquals(a, null)) return false;
+			return a.Equals(b);
+		}
+
+		public static bool operator !=(PathBase a, PathBase b)
+		{
+			return !(a == b);
 		}
 
 		public override string ToString()
 		{
-			return Combine(PathParts);
+			return MakePath(PathParts);
 		}
 
-		protected string Combine(params string[] pathParts)
+		/// <summary>
+		/// Path parts into path.
+		/// </summary>
+		/// <param name="pathParts"></param>
+		/// <returns></returns>
+		protected string MakePath(params string[] pathParts)
 		{
 			return string.Join("/", pathParts);
 		}
 
+		/// <summary>
+		/// Path into path parts.
+		/// </summary>
+		/// <param name="path"></param>
+		/// <returns></returns>
 		protected string[] Split(string path)
 		{
 			return path.Split(new[] { '/', '\\' }, StringSplitOptions.RemoveEmptyEntries).Select(p => p.Trim()).ToArray();
 		}
 
-		protected string[] ArrayAdd(string[] arr, string add)
+		string[] ArrayAdd(string[] arr, string add)
 		{
 			var ret = new string[arr.Length + 1];
 			Array.Copy(arr, ret, arr.Length);
@@ -94,7 +155,15 @@ namespace Neitri
 			return ret;
 		}
 
-		protected string[] ArrayAdd(string[] arr1, string[] arr2)
+		protected string[] CombinePathParts(string[] arr1, params string[] arr2)
+		{
+			return ArrayAdd(
+				arr1.SelectMany(p => Split(p)).ToArray(),
+				arr2.SelectMany(p => Split(p)).ToArray()
+			);
+		}
+
+		string[] ArrayAdd(string[] arr1, string[] arr2)
 		{
 			var ret = new string[arr1.Length + arr2.Length];
 			Array.Copy(arr1, ret, arr1.Length);
@@ -113,9 +182,15 @@ namespace Neitri
 			}
 		}
 
-		public bool Exists => DirectoryExists();
+		public bool Exists
+		{
+			get
+			{
+				return DirectoryExists();
+			}
+		}
 
-		public DirectoryPath(FileSystem fs, string[] pathParts) : base(fs, pathParts)
+		public DirectoryPath(params string[] pathParts) : base(pathParts)
 		{
 		}
 
@@ -160,24 +235,23 @@ namespace Neitri
 			return this;
 		}
 
-		public FilePath GetFile(params string[] path)
+		public FilePath GetFile(params string[] pathParts)
 		{
-			return new FilePath(FileSystem, ArrayAdd(PathParts, path));
+			var file = new FilePath(CombinePathParts(PathParts, pathParts));
+			file.RootDirectory = this.RootDirectory;
+			return file;
 		}
 
 		public IEnumerable<FilePath> FindFiles(string searchPattern)
 		{
-			return Directory.GetFiles(this.FullPath, searchPattern).Select(f => new FilePath(FileSystem, Split(f)));
-		}
-
-		public DirectoryPath GetDirectory(string path)
-		{
-			return new DirectoryPath(FileSystem, ArrayAdd(this.PathParts, Split(path)));
+			return Directory.GetFiles(this.FullPath, searchPattern).Select(f => GetFile(f));
 		}
 
 		public DirectoryPath GetDirectory(params string[] pathParts)
 		{
-			return new DirectoryPath(FileSystem, ArrayAdd(this.PathParts, pathParts));
+			var dir = new DirectoryPath(CombinePathParts(this.PathParts, pathParts));
+			dir.RootDirectory = this.RootDirectory;
+			return dir;
 		}
 
 		public override string ToString()
@@ -201,9 +275,15 @@ namespace Neitri
 			}
 		}
 
-		public bool Exists => FileExists();
+		public bool Exists
+		{
+			get
+			{
+				return FileExists();
+			}
+		}
 
-		public FilePath(FileSystem fs, string[] pathParts) : base(fs, pathParts)
+		public FilePath(string[] pathParts) : base(pathParts)
 		{
 		}
 
@@ -256,27 +336,15 @@ namespace Neitri
 		}
 	}
 
-	public class FileSystem
+	public class FileSystem : DirectoryPath
 	{
-		public DirectoryPath BaseDirectory { get; set; }
-
-		public FileSystem()
+		public FileSystem() : base(new string[] { })
 		{
-			BaseDirectory = GetDirectory(AppDomain.CurrentDomain.BaseDirectory);
+			RootDirectory = new DirectoryPath(AppDomain.CurrentDomain.BaseDirectory);
 #if DEBUG
-			BaseDirectory = BaseDirectory.GetDirectory("..").GetDirectory("release");
+			RootDirectory = new DirectoryPath("..", "release");
 #endif
-			BaseDirectory.ExceptionIfNotExists();
-		}
-
-		public DirectoryPath GetDirectory(params string[] pathParts)
-		{
-			return new DirectoryPath(this, pathParts);
-		}
-
-		public FilePath GetFile(params string[] pathParts)
-		{
-			return new FilePath(this, pathParts);
+			RootDirectory.ExceptionIfNotExists();
 		}
 	}
 }

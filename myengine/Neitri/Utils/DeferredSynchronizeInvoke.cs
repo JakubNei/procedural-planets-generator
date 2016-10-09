@@ -7,8 +7,7 @@
     help from: http://www.codeproject.com/Articles/12082/A-DelegateQueue-Class
     example usage: https://gist.github.com/aeroson/90bf21be3fdc4829e631
 
-    license: WTFPL (http://www.wtfpl.net/)
-    contact: aeroson (theaeroson @gmail.com)
+    contact: aeroson (theaeroson at gmail.com)
 */
 
 using System;

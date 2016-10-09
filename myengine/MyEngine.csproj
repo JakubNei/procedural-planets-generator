@@ -39,11 +39,13 @@
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="OpenTK">
-      <HintPath>..\packages\OpenTK.1.1.1589.5942\lib\NET40\OpenTK.dll</HintPath>
+    <Reference Include="OpenTK, Version=2.0.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
+      <HintPath>..\packages\OpenTK.2.0.0\lib\net20\OpenTK.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="OpenTK.GLControl">
-      <HintPath>..\packages\OpenTK.GLControl.1.1.1589.5942\lib\NET40\OpenTK.GLControl.dll</HintPath>
+    <Reference Include="OpenTK.GLControl, Version=1.1.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
+      <HintPath>..\packages\OpenTK.GLControl.1.1.2349.61993\lib\NET40\OpenTK.GLControl.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -65,7 +67,6 @@
     <Compile Include="DataBinder.cs" />
     <Compile Include="DeltaTimeManager.cs" />
     <Compile Include="Neitri\DependencyInjection\DependencyManager.cs" />
-    <Compile Include="Neitri\DependencyInjection\IOnDependencyResolved.cs" />
     <Compile Include="Neitri\Extensions\ActionExtensions.cs" />
     <Compile Include="Neitri\Extensions\ArrayExtensions.cs" />
     <Compile Include="Neitri\Extensions\AssemblyExtensions.cs" />
@@ -87,12 +88,14 @@
     <Compile Include="Neitri\IBinarySerializer.cs" />
     <Compile Include="Neitri\IDependencyManager.cs" />
     <Compile Include="Neitri\ILogging.cs" />
+    <Compile Include="Neitri\IOnDependencyResolved.cs" />
     <Compile Include="Neitri\Logging\LogAggregator.cs" />
     <Compile Include="Neitri\Logging\LogConsole.cs" />
     <Compile Include="Neitri\Logging\LogFile.cs" />
     <Compile Include="Neitri\NotNullAttribute.cs" />
     <Compile Include="Neitri\Utils\ArrayUtil.cs" />
     <Compile Include="Neitri\Utils\BiDictionary.cs" />
+    <Compile Include="Neitri\Utils\CsvReader.cs" />
     <Compile Include="Neitri\Utils\DeferredCollection.cs" />
     <Compile Include="Neitri\Utils\DeferredSynchronizeInvoke.cs" />
     <Compile Include="Neitri\Utils\FileChangedWatcher.cs" />
@@ -100,7 +103,6 @@
     <Compile Include="Neitri\Utils\FormatUtils.cs" />
     <Compile Include="Neitri\Utils\MemberName.cs" />
     <Compile Include="Neitri\Utils\MyWeakReference.cs" />
-    <Compile Include="Neitri\Utils\other.cs" />
     <Compile Include="Neitri\Utils\PropertyDescriptors.cs" />
     <Compile Include="Neitri\Utils\ReadOnlyDictionary.cs" />
     <Compile Include="Neitri\Utils\Require.cs" />
@@ -210,14 +212,18 @@
   <ItemGroup>
     <None Include="app.config" />
     <Compile Include="ObjLoader.MaterialLibrary.cs" />
-    <None Include="packages.config" />
+    <None Include="Neitri\readme.md" />
+    <None Include="OpenTK.dll.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
     <Compile Include="ShaderBuilder.cs" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Neitri\_Version_2\" />
+    <Folder Include="Neitri\_Version_4\" />
     <Folder Include="Panels\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

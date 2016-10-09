@@ -1,10 +1,40 @@
 ﻿using System;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Neitri
 {
 	public static class StringExtensions
 	{
+		// from: http://stackoverflow.com/a/39696868/782022
+		public static string Replace(this string str, string oldValue, string newValue, StringComparison comparison)
+		{
+			if (oldValue == null)
+				throw new ArgumentNullException("oldValue");
+			if (oldValue.Length == 0)
+				throw new ArgumentException("String cannot be of zero length.", "oldValue");
+
+			StringBuilder sb = null;
+
+			int startIndex = 0;
+			int foundIndex = str.IndexOf(oldValue, comparison);
+			while (foundIndex != -1)
+			{
+				if (sb == null)
+					sb = new StringBuilder(str.Length + (newValue != null ? Math.Max(0, 5 * (newValue.Length - oldValue.Length)) : 0));
+				sb.Append(str, startIndex, foundIndex - startIndex);
+				sb.Append(newValue);
+
+				startIndex = foundIndex + oldValue.Length;
+				foundIndex = str.IndexOf(oldValue, startIndex, comparison);
+			}
+
+			if (startIndex == 0)
+				return str;
+			sb.Append(str, startIndex, str.Length - startIndex);
+			return sb.ToString();
+		}
+
 		public static string RemoveFromEnd(this string s, int count)
 		{
 			return s.Substring(0, s.Length - count);
@@ -71,6 +101,20 @@ namespace Neitri
 			if (startIndex == -1) throw new Exception("start string:'" + start + "' was not found in:'" + str + "'");
 			startIndex += start.Length;
 			return str.RemoveFromBegin(startIndex);
+		}
+
+		public static string TakeStringBefore(this string str, string end, StringComparison comparison = StringComparison.InvariantCulture)
+		{
+			var endIndex = str.IndexOf(end, comparison);
+			if (endIndex == -1) throw new Exception("end string:'" + end + "' was not found in:'" + str + "'");
+			return str.Substring(0, endIndex);
+		}
+
+		public static string TakeStringBeforeLast(this string str, string end, StringComparison comparison = StringComparison.InvariantCulture)
+		{
+			var endIndex = str.LastIndexOf(end, comparison);
+			if (endIndex == -1) throw new Exception("end string:'" + end + "' was not found in:'" + str + "'");
+			return str.Substring(0, endIndex);
 		}
 
 		// from http://stackoverflow.com/questions/623104/byte-to-hex-string

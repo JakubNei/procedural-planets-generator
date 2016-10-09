@@ -1,39 +1,20 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Neitri.Logging
 {
-	public class LogAgregator : ILogging
+	public class LogAgregator : ILogEnd
 	{
-		List<ILogging> loggers = new List<ILogging>();
+		List<ILogEnd> loggers = new List<ILogEnd>();
 
-		public void AddLogger(ILogging log)
+		public void AddLogger(ILogEnd logEnd)
 		{
-			loggers.Add(log);
+			loggers.Add(logEnd);
 		}
 
-		public void Error<T>(T value)
+		public void Log(LogEntry logEntry)
 		{
-			for (int i = 0; i < loggers.Count; i++) loggers[i].Error(value);
-		}
-
-		public void Fatal<T>(T value)
-		{
-			for (int i = 0; i < loggers.Count; i++) loggers[i].Fatal(value);
-		}
-
-		public void Info<T>(T value)
-		{
-			for (int i = 0; i < loggers.Count; i++) loggers[i].Info(value);
-		}
-
-		public void Trace<T>(T value)
-		{
-			for (int i = 0; i < loggers.Count; i++) loggers[i].Trace(value);
-		}
-
-		public void Warn<T>(T value)
-		{
-			for (int i = 0; i < loggers.Count; i++) loggers[i].Warn(value);
+			for (int i = 0; i < loggers.Count; i++) loggers[i].Log(logEntry);
 		}
 	}
 }

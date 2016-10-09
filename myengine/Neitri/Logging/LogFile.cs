@@ -1,45 +1,47 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.IO;
+using System.Threading;
 
 namespace Neitri.Logging
 {
-	public class LogFile : ILogging
+	public class LogFile : ILogEnd
 	{
 		StreamWriter streamWriter;
+		ConcurrentQueue<string> entries = new ConcurrentQueue<string>();
+		Thread thread;
+		ManualResetEvent doLog = new ManualResetEvent(false);
 
 		public LogFile(StreamWriter sw)
 		{
 			this.streamWriter = sw;
+			thread = new Thread(() =>
+			{
+				while (true)
+				{
+					doLog.WaitOne();
+
+					string msg;
+					while (entries.TryDequeue(out msg))
+						streamWriter.WriteLine(msg);
+
+					doLog.Reset();
+				}
+			});
+			thread.IsBackground = true;
+			thread.Start();
 		}
 
-		void Log<T>(string level, T value)
+		public void Log(LogEntry logEntry)
 		{
-			streamWriter.WriteLine(string.Format("[{0}][{1}] {2}", DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss.fff"), level, value));
-		}
-
-		public void Error<T>(T value)
-		{
-			Log("E", value);
-		}
-
-		public void Fatal<T>(T value)
-		{
-			Log("F", value);
-		}
-
-		public void Info<T>(T value)
-		{
-			Log("I", value);
-		}
-
-		public void Trace<T>(T value)
-		{
-			Log("T", value);
-		}
-
-		public void Warn<T>(T value)
-		{
-			Log("W", value);
+			entries.Enqueue(
+				string.Format("[{0}][{1}] {2}",
+						DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss.fff"),
+						logEntry.Type.ToString().Substring(0, 1),
+						logEntry.Message
+				)
+			);
+			doLog.Set();
 		}
 	}
 }

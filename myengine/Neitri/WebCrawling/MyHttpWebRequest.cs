@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Net;
 using System.Net.Security;
+using System.Threading.Tasks;
 
 namespace Neitri.WebCrawling
 {
@@ -81,6 +82,12 @@ namespace Neitri.WebCrawling
 		public MyHttpWebResponse GetResponse()
 		{
 			return new MyHttpWebResponse((HttpWebResponse)httpWebRequest.GetResponse());
+		}
+
+		public async Task<MyHttpWebResponse> GetResponseAsync()
+		{
+			var r = await httpWebRequest.GetResponseAsync();
+			return new MyHttpWebResponse((HttpWebResponse)r);
 		}
 
 		public Stream GetRequestStream()

@@ -1,4 +1,4 @@
-﻿namespace Neitri.DependencyInjection
+﻿namespace Neitri
 {
 	public interface IOnDependenciesResolved
 	{
