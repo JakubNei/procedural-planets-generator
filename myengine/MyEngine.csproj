@@ -107,7 +107,6 @@
     <Compile Include="Neitri\Utils\ReadOnlyDictionary.cs" />
     <Compile Include="Neitri\Utils\Require.cs" />
     <Compile Include="Neitri\Utils\TraceUtil.cs" />
-    <Compile Include="Neitri\Utils\Tuple.cs" />
     <Compile Include="Neitri\Utils\TwoKeyDictionary.cs" />
     <Compile Include="Neitri\Utils\ValueChanged.cs" />
     <Compile Include="OpenTK extensions\QuaternionExtensions.cs" />

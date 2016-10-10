@@ -328,6 +328,19 @@ namespace MyGame.PlanetaryBody
 
 		public void TrySubdivideOver(WorldPos pos)
 		{
+			if (Input.GetKey(OpenTK.Input.Key.K))
+			{
+				Console.WriteLine("STARTING SMOOTH");
+				foreach (Chunk a in this.rootChunks)
+				{
+					foreach (Chunk b in this.rootChunks)
+					{
+						if (a == b) continue;
+						a.SmoothEdgeNormalsWith(b);
+					}
+				}
+			}
+
 			var sphere = new Sphere((pos - Transform.Position).ToVector3d(), this.radius * startingRadiusSubdivisionModifier);
 			foreach (Chunk rootChunk in this.rootChunks)
 			{

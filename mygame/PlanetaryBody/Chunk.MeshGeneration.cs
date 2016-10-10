@@ -15,6 +15,8 @@ namespace MyGame.PlanetaryBody
 {
 	public partial class Chunk
 	{
+		Mesh.VertexIndex[] edgeVerticesIndexes;
+
 		int NumberOfVerticesOnEdge => planetaryBody.chunkNumberOfVerticesOnEdge;
 
 		List<Mesh.VertexIndex> GetEdgeVertices()
@@ -310,22 +312,18 @@ namespace MyGame.PlanetaryBody
 			mesh.VertexArrayObj.AddVertexBufferObject("positionsInitial", positionsInitial);
 			mesh.VertexArrayObj.AddVertexBufferObject("normalsInitial", normalsInitial);
 
-			var edgeVertices = this.GetEdgeVertices().ToArray();
+			edgeVerticesIndexes = this.GetEdgeVertices().ToArray();
 
 			var smoothEdgeNormals = true;
 			smoothEdgeNormals = false;
 			if (smoothEdgeNormals)
 			{
-				var v = mesh.Vertices;
-				for (int i = 0; i < edgeVertices.Length; i++)
-				{
-					var evi = edgeVertices[i];
-				}
 			}
 
+			//useSkirts = false;
 			if (useSkirts)
 			{
-				var skirtVertices = mesh.Duplicate(edgeVertices, mesh.Vertices, mesh.Normals, positionsInitial, normalsInitial);
+				var skirtVertices = mesh.Duplicate(edgeVerticesIndexes, mesh.Vertices, mesh.Normals, positionsInitial, normalsInitial);
 				var moveAmount = this.realVisibleRange.ToBoundingSphere().radius / 1000;
 				mesh.MoveVertices(skirtVertices, this.realVisibleRange.CenterPos.Towards(Vector3d.Zero).ToVector3() * (float)moveAmount, mesh.Vertices, positionsInitial);
 			}
@@ -339,6 +337,60 @@ namespace MyGame.PlanetaryBody
 			if (planetaryBody.planetMaterial != null) renderer.Material = planetaryBody.planetMaterial.CloneTyped();
 			renderer.RenderingMode = RenderingMode.DontRender;
 			this.visibility = 0;
+		}
+
+		public void SmoothEdgeNormalsWith(Chunk otherChunk)
+		{
+			// my index, other index
+			var toAverageIndexes = new List<Tuple<Mesh.VertexIndex, Mesh.VertexIndex>>();
+
+			var myMesh = this.renderer.Mesh;
+			var otherMesh = otherChunk.renderer.Mesh;
+
+			foreach (var otherIndex in otherChunk.edgeVerticesIndexes)
+			{
+				var otherVertice = otherMesh.Vertices[otherIndex];
+				foreach (var myIndex in this.edgeVerticesIndexes)
+				{
+					var myVertice = myMesh.Vertices[myIndex];
+					if (myVertice.DistanceSqr(otherVertice) < 0.1f)
+					{
+						toAverageIndexes.Add(Tuple.Create(myIndex, otherIndex));
+					}
+				}
+			}
+
+			var myNormals = myMesh.Normals;
+			var otherNormals = otherMesh.Normals;
+
+			var myNormalsInitial = myMesh.VertexArrayObj.GetVertexArrayBufferObject("normalsInitial") as Mesh.VertexBufferObject<Vector3>;
+			var otherNormalsInitial = otherMesh.VertexArrayObj.GetVertexArrayBufferObject("normalsInitial") as Mesh.VertexBufferObject<Vector3>;
+
+			foreach (var toAverageIndex in toAverageIndexes)
+			{
+				{
+					var myNormal = myNormals[toAverageIndex.Item1];
+					var otherNormal = otherNormals[toAverageIndex.Item2];
+
+					var newNormal = (myNormal + otherNormal) / 2.0f;
+
+					myNormals[toAverageIndex.Item1] = newNormal;
+					otherNormals[toAverageIndex.Item2] = newNormal;
+				}
+
+				{
+					var myNormalInitial = myNormalsInitial[toAverageIndex.Item1];
+					var otherNormalInitial = otherNormalsInitial[toAverageIndex.Item2];
+
+					var newNormalInitial = (myNormalInitial + otherNormalInitial) / 2.0f;
+
+					myNormalsInitial[toAverageIndex.Item1] = newNormalInitial;
+					otherNormalsInitial[toAverageIndex.Item2] = newNormalInitial;
+				}
+			}
+
+			myMesh.NotifyDataChanged();
+			otherMesh.NotifyDataChanged();
 		}
 	}
 }

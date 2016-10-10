@@ -101,6 +101,7 @@ namespace MyGame
 			planet.planetMaterial = planetMaterial;
 			planets.Add(planet);
 
+			Cam.Transform.LookAt(planet.Transform.Position);
 			if (moveCameraToSurfaceOnStart)
 			{
 				Cam.Transform.Position = new WorldPos((float)-planet.radius, 0, 0) + planet.Transform.Position;

@@ -10,45 +10,8 @@ using System.Text;
 
 namespace MyEngine
 {
-	/*
-    class Test
-    {
-        int vertices_data_version;
-        DataAccessibleList<Vector3>.Data vertices_data = new DataAccessibleList<Vector3>.Data();
-        DataAccessibleList<Vector3> vertices;
-        public DataAccessibleList<Vector3> Vertices { get { return vertices; } }
-
-        int vertices_data_version;
-        DataAccessibleList<Vector3>.Data vertices_data = new DataAccessibleList<Vector3>.Data();
-        DataAccessibleList<Vector3> vertices;
-        public DataAccessibleList<Vector3> Vertices { get { return vertices; } }
-
-        int vertices_data_version;
-        DataAccessibleList<Vector3>.Data vertices_data = new DataAccessibleList<Vector3>.Data();
-        DataAccessibleList<Vector3> vertices;
-        public DataAccessibleList<Vector3> Vertices { get { return vertices; } }
-
-        int vertices_data_version;
-        DataAccessibleList<Vector3>.Data vertices_data = new DataAccessibleList<Vector3>.Data();
-        DataAccessibleList<Vector3> vertices;
-        public DataAccessibleList<Vector3> Vertices { get { return vertices; } }
-
-        bool HasChanged()
-        {
-            return
-                vertices_data._version != vertices_data_version;
-        }
-    }
-    */
-
 	public partial class Mesh : IDisposable
 	{
-		public enum ChangedFlags
-		{
-			Bounds,
-			VisualRepresentation
-		}
-
 		public VertexBufferObject<Vector3> Vertices { get; private set; }
 		public VertexBufferObject<Vector3> Normals { get; private set; }
 		public VertexBufferObject<Vector3> Tangents { get; private set; }
@@ -56,13 +19,6 @@ namespace MyEngine
 		public VertexBufferObject<int> TriangleIndicies { get; private set; }
 
 		public Asset asset;
-
-		public event Action<ChangedFlags> OnDataChanged;
-
-		void RaiseOnChanged(ChangedFlags flags)
-		{
-			if (OnDataChanged != null) OnDataChanged(flags);
-		}
 
 		bool recalculateBounds = true;
 
@@ -83,12 +39,10 @@ namespace MyEngine
 						{
 							bounds.Encapsulate(point);
 						}
-						RaiseOnChanged(ChangedFlags.Bounds);
 					}
 					else
 					{
 						bounds = new Bounds(Vector3.Zero, Vector3.Zero);
-						RaiseOnChanged(ChangedFlags.Bounds);
 					}
 				}
 
@@ -142,21 +96,35 @@ namespace MyEngine
 
 		public void RecalculateBounds()
 		{
-			recalculateBounds = true;
+			lock (this)
+			{
+				recalculateBounds = true;
+			}
+		}
+
+		public void NotifyDataChanged()
+		{
+			lock (this)
+			{
+				isOnGPU = false;
+			}
 		}
 
 		public void Draw()
 		{
-			if (isOnGPU == false)
+			lock (this)
 			{
-				UploadDataToGpu();
+				if (isOnGPU == false)
+				{
+					UploadDataToGpu();
+				}
+				GL.BindVertexArray(VertexArrayObj.handle);
+				GL.DrawElements(PrimitiveType.Triangles, TriangleIndicies.Count, DrawElementsType.UnsignedInt, IntPtr.Zero);
+				GL.BindVertexArray(0);
 			}
-			GL.BindVertexArray(VertexArrayObj.handle);
-			GL.DrawElements(PrimitiveType.Triangles, TriangleIndicies.Count, DrawElementsType.UnsignedInt, IntPtr.Zero);
-			GL.BindVertexArray(0);
 		}
 
-		public void UploadDataToGpu()
+		void UploadDataToGpu()
 		{
 			if (!HasNormals())
 			{
@@ -167,12 +135,11 @@ namespace MyEngine
 				RecalculateTangents();
 			}
 
-			VertexArrayObj.Dispose();
-			VertexArrayObj.CreateBufferAndBindVBOs();
+			//VertexArrayObj.Dispose(); // causes access violation if we try to reupload
+			if (VertexArrayObj.handle == -1) VertexArrayObj.CreateBuffer();
 			VertexArrayObj.SendDataToGpu();
 
 			isOnGPU = true;
-			RaiseOnChanged(ChangedFlags.VisualRepresentation);
 		}
 
 		public bool HasTangents()
@@ -199,7 +166,7 @@ namespace MyEngine
 		{
 			public event Action OnChanged;
 
-			public Dictionary<string, IVertexBufferObject> nameToVbo = new Dictionary<string, IVertexBufferObject>();
+			Dictionary<string, IVertexBufferObject> nameToVbo = new Dictionary<string, IVertexBufferObject>();
 			List<string> vboNamesToBind = new List<string>();
 
 			public int nextLayoutIndex = 0;
@@ -220,7 +187,12 @@ namespace MyEngine
 				OnChanged?.Invoke();
 			}
 
-			public void CreateBufferAndBindVBOs()
+			public IVertexBufferObject GetVertexArrayBufferObject(string name)
+			{
+				return nameToVbo[name];
+			}
+
+			public void CreateBuffer()
 			{
 				if (handle == -1)
 				{

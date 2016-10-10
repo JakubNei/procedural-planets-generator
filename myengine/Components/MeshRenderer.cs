@@ -34,10 +34,7 @@ namespace MyEngine.Components
 			{
 				if (m_mesh != value)
 				{
-					if (m_mesh != null) m_mesh.OnDataChanged -= OnMeshDataHasChanged;
-					OnMashChanged?.Invoke(new ValueChanged<Mesh>(m_mesh, value));
 					m_mesh = value;
-					if (m_mesh != null) m_mesh.OnDataChanged += OnMeshDataHasChanged;
 				}
 			}
 			get
@@ -45,8 +42,6 @@ namespace MyEngine.Components
 				return m_mesh;
 			}
 		}
-
-		public event Action<ValueChanged<Mesh>> OnMashChanged;
 
 		public event Action OnMashDataChanged;
 
@@ -97,11 +92,6 @@ namespace MyEngine.Components
 			ubo.model.modelViewProjectionMatrix = modelViewMat * camera.GetProjectionMat();
 			ubo.modelUBO.UploadData();
 			Mesh.Draw();
-		}
-
-		void OnMeshDataHasChanged(Mesh.ChangedFlags flags)
-		{
-			OnMashDataChanged?.Invoke();
 		}
 
 		public override bool ShouldRenderInContext(object renderContext)
