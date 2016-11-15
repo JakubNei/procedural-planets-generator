@@ -66,6 +66,10 @@
       <Project>{f11accad-6e5f-464a-b496-33ef0c6b10f4}</Project>
       <Name>MyEngine</Name>
     </ProjectReference>
+    <ProjectReference Include="..\ProceduralMath\ProceduralMath.vcxproj">
+      <Project>{9CA20FC2-2340-4D23-9245-FF8264789C98}</Project>
+      <Name>ProceduralMath</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -75,6 +79,14 @@
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PreBuildEvent>
+    </PreBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

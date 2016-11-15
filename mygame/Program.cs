@@ -15,7 +15,7 @@ namespace MyGame
 		public static Entity sunTarget = null;
 		public static FirstPersonCamera fpc;
 
-		[DllImport(@"..\..\..\x64\Release\ProceduralMath.dll", CallingConvention = CallingConvention.Cdecl)]
+		[DllImport(@"ProceduralMath.dll", CallingConvention = CallingConvention.Cdecl)]
 		public static extern int fnProceduralMath();
 
 		[STAThread]
