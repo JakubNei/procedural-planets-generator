@@ -9,7 +9,8 @@
 *.sln.docstates
 
 # some random large Visual Studio file
-/*.db
+/*VC.db
+/*VC.VC.opendb
 
 # Build results
 [Dd]ebug/

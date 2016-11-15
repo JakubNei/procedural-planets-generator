@@ -4,6 +4,7 @@ using OpenTK;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace MyGame
@@ -14,9 +15,15 @@ namespace MyGame
 		public static Entity sunTarget = null;
 		public static FirstPersonCamera fpc;
 
+		[DllImport(@"..\..\..\x64\Release\ProceduralMath.dll", CallingConvention = CallingConvention.Cdecl)]
+		public static extern int fnProceduralMath();
+
 		[STAThread]
 		public static void Main()
 		{
+			Console.WriteLine(Environment.CurrentDirectory);
+			Console.WriteLine(fnProceduralMath());
+
 			//string[] args = System.Environment.GetCommandLineArgs();
 			using (var engine = new EngineMain())
 			{
