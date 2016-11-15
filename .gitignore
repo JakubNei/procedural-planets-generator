@@ -8,8 +8,10 @@
 *.user
 *.sln.docstates
 
-# Build results
+# some random large Visual Studio file
+/*.db
 
+# Build results
 [Dd]ebug/
 [Rr]elease/
 x64/
@@ -66,7 +68,8 @@ ipch/
 *.ncb
 *.opensdf
 *.sdf
-*.cachefile
+*.cachefil
+e
 
 # Visual Studio profiler
 *.psess
