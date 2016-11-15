@@ -1,5 +1,6 @@
 ﻿using Neitri;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -21,7 +22,7 @@ namespace MyEngine
 		[Dependency]
 		public IDependencyManager Dependency { get; private set; }
 
-		Dictionary<string, Shader> allShaders = new Dictionary<string, Shader>();
+		ConcurrentDictionary<string, Shader> allShaders = new ConcurrentDictionary<string, Shader>();
 
 		public Shader GetShader(string asset)
 		{
@@ -53,7 +54,7 @@ namespace MyEngine
 		[Dependency]
 		AssetSystem assetSystem;
 
-		Dictionary<string, Mesh> allMeshes = new Dictionary<string, Mesh>();
+		ConcurrentDictionary<string, Mesh> allMeshes = new ConcurrentDictionary<string, Mesh>();
 
 		public Mesh GetMesh(string asset, bool allowDuplicates = false)
 		{
@@ -68,7 +69,7 @@ namespace MyEngine
 			return s;
 		}
 
-		internal Dictionary<string, Texture2D> allTexture2Ds = new Dictionary<string, Texture2D>();
+		ConcurrentDictionary<string, Texture2D> allTexture2Ds = new ConcurrentDictionary<string, Texture2D>();
 
 		public Texture2D GetTexture2D(string asset)
 		{
@@ -81,7 +82,7 @@ namespace MyEngine
 			return s;
 		}
 
-		internal Dictionary<string, Cubemap> allCubeMaps = new Dictionary<string, Cubemap>();
+		ConcurrentDictionary<string, Cubemap> allCubeMaps = new ConcurrentDictionary<string, Cubemap>();
 
 		public Cubemap GetCubeMap(string[] assets)
 		{

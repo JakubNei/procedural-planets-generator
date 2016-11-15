@@ -30,7 +30,7 @@ namespace MyGame
 
 			var t = new Thread(() =>
 			{
-				while (scene.Engine.IsExiting == false)
+				while (true)
 				{
 					OnGraphicsUpdate();
 					Thread.Sleep(100);

@@ -237,5 +237,27 @@ namespace MyGame.PlanetaryBody
             }
             */
 		}
+
+		public bool GetVisibleChunksWithin(List<Chunk> chunksResult, Sphere sphere)
+		{
+			if (sphere.Intersects(this.realVisibleRange))
+			{
+				if (this.renderer != null && this.renderer.RenderingMode.HasFlag(RenderingMode.RenderGeometry))
+				{
+					chunksResult.Add(this);
+					return true;
+				}
+				else
+				{
+					var anythingAdded = false;
+					foreach (var chunk in childs)
+					{
+						anythingAdded |= chunk.GetVisibleChunksWithin(chunksResult, sphere);
+					}
+					return anythingAdded;
+				}
+			}
+			return false;
+		}
 	}
 }

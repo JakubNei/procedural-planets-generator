@@ -17,6 +17,9 @@ namespace MyGame.PlanetaryBody
 	{
 		Mesh.VertexIndex[] edgeVerticesIndexes;
 
+		Vector3[] originalNormalsFinal;
+		Vector3[] originalNormalsInitial;
+
 		int NumberOfVerticesOnEdge => planetaryBody.chunkNumberOfVerticesOnEdge;
 
 		List<Mesh.VertexIndex> GetEdgeVertices()
@@ -313,14 +316,10 @@ namespace MyGame.PlanetaryBody
 			mesh.VertexArrayObj.AddVertexBufferObject("normalsInitial", normalsInitial);
 
 			edgeVerticesIndexes = this.GetEdgeVertices().ToArray();
+			originalNormalsFinal = mesh.Normals.ToArray();
+			originalNormalsInitial = (mesh.VertexArrayObj.GetVertexArrayBufferObject("normalsInitial") as Mesh.VertexBufferObject<Vector3>).ToArray();
 
-			var smoothEdgeNormals = true;
-			smoothEdgeNormals = false;
-			if (smoothEdgeNormals)
-			{
-			}
-
-			//useSkirts = false;
+			useSkirts = false;
 			if (useSkirts)
 			{
 				var skirtVertices = mesh.Duplicate(edgeVerticesIndexes, mesh.Vertices, mesh.Normals, positionsInitial, normalsInitial);
@@ -337,6 +336,57 @@ namespace MyGame.PlanetaryBody
 			if (planetaryBody.planetMaterial != null) renderer.Material = planetaryBody.planetMaterial.CloneTyped();
 			renderer.RenderingMode = RenderingMode.DontRender;
 			this.visibility = 0;
+		}
+
+		public void SmoothEdgeNormalsBasedOn(Chunk otherChunk)
+		{
+			// my index, other index
+			var toAverageIndexes = new List<Tuple<Mesh.VertexIndex, Mesh.VertexIndex>>();
+
+			var myMesh = this.renderer.Mesh;
+			var otherMesh = otherChunk.renderer.Mesh;
+
+			foreach (var otherIndex in otherChunk.edgeVerticesIndexes)
+			{
+				var otherVertice = otherMesh.Vertices[otherIndex];
+				foreach (var myIndex in this.edgeVerticesIndexes)
+				{
+					var myVertice = myMesh.Vertices[myIndex];
+					if (myVertice.DistanceSqr(otherVertice) < 0.1f)
+					{
+						toAverageIndexes.Add(Tuple.Create(myIndex, otherIndex));
+					}
+				}
+			}
+
+			var myNormalsFinal = myMesh.Normals;
+			var otherNormals = otherMesh.Normals;
+
+			var myNormalsInitial = myMesh.VertexArrayObj.GetVertexArrayBufferObject("normalsInitial") as Mesh.VertexBufferObject<Vector3>;
+			var otherNormalsInitial = otherMesh.VertexArrayObj.GetVertexArrayBufferObject("normalsInitial") as Mesh.VertexBufferObject<Vector3>;
+
+			foreach (var toAverageIndex in toAverageIndexes)
+			{
+				{
+					var myNormal = this.originalNormalsFinal[toAverageIndex.Item1];
+					var otherNormal = otherChunk.originalNormalsFinal[toAverageIndex.Item2];
+
+					var newNormal = (myNormal + otherNormal) / 2.0f;
+
+					myNormalsFinal[toAverageIndex.Item1] = newNormal;
+				}
+
+				{
+					var myNormal = this.originalNormalsInitial[toAverageIndex.Item1];
+					var otherNormal = otherChunk.originalNormalsInitial[toAverageIndex.Item2];
+
+					var newNormal = (myNormal + otherNormal) / 2.0f;
+
+					myNormalsInitial[toAverageIndex.Item1] = newNormal;
+				}
+			}
+
+			myMesh.NotifyDataChanged();
 		}
 
 		public void SmoothEdgeNormalsWith(Chunk otherChunk)

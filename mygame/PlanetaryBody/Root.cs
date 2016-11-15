@@ -258,14 +258,14 @@ namespace MyGame.PlanetaryBody
 			}
 		}
 
-		void HideInChilds(Chunk chunk)
+		void HideChilds(Chunk chunk)
 		{
 			lock (chunk.childs)
 			{
 				foreach (var child in chunk.childs)
 				{
 					if (child.renderer != null && child.renderer.RenderingMode != RenderingMode.DontRender) child.renderer.RenderingMode = RenderingMode.DontRender;
-					HideInChilds(child);
+					HideChilds(child);
 				}
 			}
 		}
@@ -304,6 +304,17 @@ namespace MyGame.PlanetaryBody
 					// is not visible
 					// show it
 					chunk.renderer.RenderingMode = RenderingMode.RenderGeometryAndCastShadows;
+
+					// averge edge normals
+					var toSmoothWith = new List<Chunk>();
+					var s = chunk.realVisibleRange.ToBoundingSphere();
+					s.radius *= 1.5f;
+					GetVisibleChunksWithin(toSmoothWith, s);
+					toSmoothWith.ForEach(c =>
+					{
+						chunk.SmoothEdgeNormalsWith(c);
+						//c.SmoothEdgeNormalsBasedOn(chunk);
+					});
 				}
 
 				// if visible, update final positions weight according to distance
@@ -320,9 +331,17 @@ namespace MyGame.PlanetaryBody
 					chunk.renderer.Material.Uniforms.Set("param_finalPosWeight", (float)w);
 				}
 
-				HideInChilds(chunk);
+				HideChilds(chunk);
 
 				return true;
+			}
+		}
+
+		public void GetVisibleChunksWithin(List<Chunk> chunksResult, Sphere sphere)
+		{
+			foreach (var rootChunk in this.rootChunks)
+			{
+				rootChunk.GetVisibleChunksWithin(chunksResult, sphere);
 			}
 		}
 
@@ -330,19 +349,24 @@ namespace MyGame.PlanetaryBody
 		{
 			if (Input.GetKey(OpenTK.Input.Key.K))
 			{
-				Console.WriteLine("STARTING SMOOTH");
-				foreach (Chunk a in this.rootChunks)
+				var all = new List<Chunk>();
+				Console.WriteLine($"SMOOTH NORMALS gather chunks");
+				GetVisibleChunksWithin(all, new Sphere(this.Center.ToVector3d(), double.MaxValue));
+				Console.WriteLine($"SMOOTH NORMALS starting on {all.Count} chunks");
+
+				foreach (var a in all)
 				{
-					foreach (Chunk b in this.rootChunks)
+					foreach (var b in all)
 					{
 						if (a == b) continue;
 						a.SmoothEdgeNormalsWith(b);
 					}
 				}
+				Console.WriteLine($"SMOOTH NORMALS end");
 			}
 
 			var sphere = new Sphere((pos - Transform.Position).ToVector3d(), this.radius * startingRadiusSubdivisionModifier);
-			foreach (Chunk rootChunk in this.rootChunks)
+			foreach (var rootChunk in this.rootChunks)
 			{
 				TrySubdivideToLevel_Generation(rootChunk, startingRadiusSubdivisionModifier, this.subdivisionMaxRecurisonDepth);
 				TrySubdivideToLevel_Visibility(rootChunk, startingRadiusSubdivisionModifier, this.subdivisionMaxRecurisonDepth);
