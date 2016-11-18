@@ -18,9 +18,14 @@ public:
 };
 */
 
+#include "Worley.h"
+#include "Perlin.h"
+
 struct MathInstance {
-	int weight;
-	double price;
+	double radius;
+	double radiusVariation;
+	Worley worley;
+	Perlin perlin;
 };
 
 
@@ -28,11 +33,19 @@ struct MathInstance {
 extern "C" {
 	PROCEDURALMATH_API MathInstance* MakeInstance()
 	{
-		return new MathInstance();
+		var instance = new MathInstance();
+		instance->perlin = Perlin(5646);
+		instance->worley = Worley(894984, Worley::DistanceFunction::Euclidian);
+		return instance;
 	}
 	PROCEDURALMATH_API void DestroyInstance(MathInstance* instance)
 	{
 		delete instance;
+	}
+	PROCEDURALMATH_API void Configure(MathInstance* instance, double radius, double radiusVariation)
+	{
+		instance->radius = radius;
+		instance->radiusVariation = radiusVariation;
 	}
 	PROCEDURALMATH_API double GetHeight(MathInstance* instance, double x, double y, double z, int detailLevel);
 }

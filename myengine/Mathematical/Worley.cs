@@ -174,13 +174,14 @@ namespace MyEngine
         void insert(float[] arr, int arrSize, float value)
         {
             float temp;
-            for (int i = arrSize - 1; i >= 0; i--)
+            for (int i = arrSize - 1; ; i--)
             {
                 if (value > arr[i]) break;
                 temp = arr[i];
                 arr[i] = value;
                 if (i + 1 < arrSize) arr[i + 1] = temp;
-            }
+				if (i == 0) break;
+			}
         }
 
 

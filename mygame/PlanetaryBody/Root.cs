@@ -11,7 +11,7 @@ namespace MyGame.PlanetaryBody
 {
 	public class Root : ComponentWithShortcuts
 	{
-		public double radius;
+		public double radius { get; set; }
 		public double radiusVariation = 20;
 
 		/// <summary>
@@ -44,14 +44,25 @@ namespace MyGame.PlanetaryBody
 		public Chunk.MeshGenerationService MeshGenerationService { get; private set; }
 
 		public static Root instance;
-
+		ProceduralMath proceduralMath;
 		public Root(Entity entity) : base(entity)
 		{
+			proceduralMath = new ProceduralMath();
+
 			instance = this;
 			perlin = new PerlinD(5646);
 			worley = new WorleyD(894984, WorleyD.DistanceFunction.Euclidian);
 
 			MeshGenerationService = new Chunk.MeshGenerationService(entity.Debug);
+		}
+
+		public void Configure(double radius, double radiusVariation)
+		{
+
+			proceduralMath.Configure(radius, radiusVariation);
+
+			this.radius = radius;
+			this.radiusVariation = radiusVariation;
 		}
 
 		// http://stackoverflow.com/questions/1185408/converting-from-longitude-latitude-to-cartesian-coordinates
@@ -84,18 +95,15 @@ namespace MyGame.PlanetaryBody
 
 		public Vector3d GetFinalPos(Vector3d calestialPos, int detailDensity = 1)
 		{
-			//return calestialPos.Normalized() * GetHeight(calestialPos, detailDensity);
-
-			var s = CalestialToSpherical(calestialPos);
-			s.altitude = GetHeight(calestialPos, detailDensity);
-			return SphericalToCalestial(s);
+			calestialPos.Normalize();
+			calestialPos *= GetHeight(calestialPos, detailDensity);
+			return calestialPos;
 		}
 
-		ProceduralMath m = new ProceduralMath();
-
+		
 		public double GetHeight(Vector3d calestialPos, int detailDensity = 1)
 		{
-			return m.GetHeight(calestialPos, detailDensity);
+			return proceduralMath.GetHeight(calestialPos, detailDensity);
 
 			if (debugSameHeightEverywhere)
 			{

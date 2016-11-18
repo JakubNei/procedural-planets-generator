@@ -91,11 +91,10 @@ namespace MyGame
             */
 
 			planet = scene.AddEntity().AddComponent<PlanetaryBody.Root>();
-			planets.Add(planet);
-			planet.radius = 2000; // 6371000 earth radius
-			planet.radius = 300; // 6371000 earth radius
-			planet.radiusVariation = 100;
-			planet.radiusVariation = 15;
+			planets.Add(planet);			
+			// 6371000 earth radius
+			planet.Configure(2000, 300);
+			planet.Configure(300, 15);
 			planet.Transform.Position = new WorldPos(1000, -100, 1000);
 			planet.Start();
 			planet.planetMaterial = planetMaterial;

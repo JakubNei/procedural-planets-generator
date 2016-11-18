@@ -28,7 +28,13 @@ namespace MyGame
 		[DllImport(@"ProceduralMath.dll", CallingConvention = CallingConvention.Cdecl)]
 		static extern double GetHeight(IntPtr instance, double x, double y, double z, int detailLevel);
 
+		[DllImport(@"ProceduralMath.dll", CallingConvention = CallingConvention.Cdecl)]
+		static extern void Configure(IntPtr instance, double radius, double radiusVariation);
 
+		public void Configure(double radius, double radiusVariation)
+		{
+			Configure(instance, radius, radiusVariation);
+		}
 		public double GetHeight(Vector3d pos, int detailLevel)
 		{
 			return GetHeight(instance, pos.X, pos.Y, pos.Z, detailLevel);

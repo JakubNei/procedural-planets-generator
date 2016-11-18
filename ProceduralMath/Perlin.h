@@ -10,7 +10,8 @@ class Perlin
 {
 public:
 
-  Perlin(int seed, int octaves=1, float freq=1.0f, float amp=1.0f, float persistance=2.0f);
+	
+  Perlin(int seed=0, int octaves=1, float freq=1.0f, float amp=1.0f, float persistance=2.0f);
 
 
   float Get2DComposeOctaves(vec2 pos);

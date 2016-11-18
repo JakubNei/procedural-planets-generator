@@ -35,12 +35,13 @@ uint probLookup(uint value)
 inline void insert(float* arr, uint arrSize, float value)
 {
     float temp;
-	for (uint i = arrSize - 1; i >= 0; i--)
+	for (uint i = arrSize - 1; ; i--)
     {
         if (value > arr[i]) break;
         temp = arr[i];
         arr[i] = value;
 		if (i + 1 < arrSize) arr[i + 1] = temp;
+		if (i == 0) break;
     }
 }
 
@@ -78,8 +79,6 @@ inline float Distance(vec3& p1, vec3& p2, Worley::DistanceFunction distanceFunct
 }
 
 
-
-
 Worley::Worley(int seed, DistanceFunction distanceFunction)
 {
 	this->seed = seed;
@@ -101,7 +100,7 @@ float* Worley::GetAt(vec2& input, uint returnArrayLen)
 
 	//Initialize values in distance array to large values
 	for (uint i = 0; i < returnArrayLen; i++)
-		distanceArray[i] = 6666;
+		distanceArray[i] = 99999;
 
 	//1. Determine which cube the evaluation point is in
 	int evalCubeX = (int)Math::Floor(input.x);
@@ -152,7 +151,7 @@ float* Worley::GetAt(vec3& input, uint returnArrayLen)
 
 	//Initialize values in distance array to large values
 	for (uint i = 0; i < returnArrayLen; i++)
-		distanceArray[i] = 6666;
+		distanceArray[i] = 99999;
 
 	//1. Determine which cube the evaluation point is in
 	int evalCubeX = (int)Math::Floor(input.x);
@@ -171,7 +170,6 @@ float* Worley::GetAt(vec3& input, uint returnArrayLen)
 
 				//2. Generate a reproducible random number generator for the cube
 				Random random(Math::FnvHash((uint)(cubeX), (uint)(cubeY), (uint)(cubeZ), seed));
-
 				//3. Determine how many feature points are in the cube
 				numberFeaturePoints = probLookup(random.GetNext());
 				//4. Randomly place the feature points in the cube
@@ -185,7 +183,6 @@ float* Worley::GetAt(vec3& input, uint returnArrayLen)
 						randomDiff.y + (float)cubeY,
 						randomDiff.z + (float)cubeZ
 					);
-
 					//5. Find the feature point closest to the evaluation point. 
 					//This is done by inserting the distances to the feature points into a sorted list
 					insert(distanceArray, returnArrayLen, Distance(input, featurePoint, distanceFunction));

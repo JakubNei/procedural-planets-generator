@@ -13,7 +13,7 @@ public:
 		Manhattan,
 		Chebyshev
 	};
-	Worley(int seed, DistanceFunction distanceFunction);
+	Worley(int seed = 0, DistanceFunction distanceFunction = DistanceFunction::Euclidian);
 	~Worley();
 	float* GetAt(vec2& input, uint returnArrayLen = 3);
 	float* GetAt(vec3& input, uint returnArrayLen = 3);
