@@ -11,6 +11,39 @@
 // Windows Header Files:
 #include <windows.h>
 
+#define _USE_MATH_DEFINES
+#include <string.h>
+#include <string>
+#include <vector>
+#include <list>
+#include <map>
+#include <stdlib.h>
+#include <time.h>
+#include <fstream>
+#include <sstream>
+#include <thread>
+#include <iostream>
+//#include <atomic>
+#include <thread>
+#include <mutex>
+#include <limits>
+#include <random>
+
+#include "Libraries\glm\glm\gtc\matrix_transform.hpp"
+#include "Libraries\glm\glm\glm.hpp"
+
+//#include <glm/glm.hpp>
+//#include <glm/gtc/matrix_transform.hpp>
+//#include <glm/gtx/quaternion.hpp>
 
 
-// TODO: reference additional headers your program requires here
+typedef unsigned char uchar;
+typedef unsigned short ushort;
+typedef unsigned char byte;
+typedef unsigned long ulong;
+//typedef unsigned int uint;
+
+
+#define foreach for
+//#define null NULL
+#define var auto

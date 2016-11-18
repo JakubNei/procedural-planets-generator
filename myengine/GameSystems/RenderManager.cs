@@ -23,7 +23,7 @@ namespace MyEngine
 		public Cubemap SkyboxCubeMap { get; set; }
 
 		int toRenderCount = 0;
-		IRenderable[] toRender = new IRenderable[1000];
+		IRenderable[] toRender = new IRenderable[100000];
 
 		[Dependency]
 		Debug debug;

@@ -18,7 +18,21 @@ public:
 };
 */
 
+struct MathInstance {
+	int weight;
+	double price;
+};
+
+
 //extern PROCEDURALMATH_API int nProceduralMath;
 extern "C" {
-	PROCEDURALMATH_API int fnProceduralMath(void);
+	PROCEDURALMATH_API MathInstance* MakeInstance()
+	{
+		return new MathInstance();
+	}
+	PROCEDURALMATH_API void DestroyInstance(MathInstance* instance)
+	{
+		delete instance;
+	}
+	PROCEDURALMATH_API double GetHeight(MathInstance* instance, double x, double y, double z, int detailLevel);
 }

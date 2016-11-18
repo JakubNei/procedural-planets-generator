@@ -91,8 +91,12 @@ namespace MyGame.PlanetaryBody
 			return SphericalToCalestial(s);
 		}
 
+		ProceduralMath m = new ProceduralMath();
+
 		public double GetHeight(Vector3d calestialPos, int detailDensity = 1)
 		{
+			return m.GetHeight(calestialPos, detailDensity);
+
 			if (debugSameHeightEverywhere)
 			{
 				return radius;

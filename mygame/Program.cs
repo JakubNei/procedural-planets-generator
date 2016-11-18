@@ -15,15 +15,10 @@ namespace MyGame
 		public static Entity sunTarget = null;
 		public static FirstPersonCamera fpc;
 
-		[DllImport(@"ProceduralMath.dll", CallingConvention = CallingConvention.Cdecl)]
-		public static extern int fnProceduralMath();
 
 		[STAThread]
 		public static void Main()
 		{
-			Console.WriteLine(Environment.CurrentDirectory);
-			Console.WriteLine(fnProceduralMath());
-
 			//string[] args = System.Environment.GetCommandLineArgs();
 			using (var engine = new EngineMain())
 			{

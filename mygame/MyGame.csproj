@@ -53,6 +53,7 @@
     <Compile Include="PlanetaryBody\Chunk.MeshGeneration.cs" />
     <Compile Include="PlanetaryBody\Root.cs" />
     <Compile Include="PlanetaryBody\Chunk.cs" />
+    <Compile Include="ProceduralMath.cs" />
     <Compile Include="ProceduralPlanets.cs" />
     <Compile Include="ProceduralSpaceSkybox.cs" />
     <Compile Include="Program.cs" />
