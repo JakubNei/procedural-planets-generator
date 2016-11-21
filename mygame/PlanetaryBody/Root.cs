@@ -3,6 +3,7 @@ using MyEngine.Components;
 using OpenTK;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -95,68 +96,95 @@ namespace MyGame.PlanetaryBody
 
 		public Vector3d GetFinalPos(Vector3d calestialPos, int detailDensity = 1)
 		{
+			var s = CalestialToSpherical(calestialPos);
+			s.altitude = GetHeight(calestialPos, detailDensity);
+			return SphericalToCalestial(s);
+
+			/*
+			// this makes camera movement jiggery
 			calestialPos.Normalize();
 			calestialPos *= GetHeight(calestialPos, detailDensity);
 			return calestialPos;
+			*/
 		}
 
-		
+		Stopwatch getHeight_sw = new Stopwatch();
+		long getHeight_counter = 0;
 		public double GetHeight(Vector3d calestialPos, int detailDensity = 1)
 		{
-			return proceduralMath.GetHeight(calestialPos, detailDensity);
 
-			if (debugSameHeightEverywhere)
+			double ret;
+#if PERF_TEXT
+			getHeight_sw.Start();
+#endif
+			if (false)
 			{
-				return radius;
+				return proceduralMath.GetHeight(calestialPos, detailDensity);
 			}
-
-			var initialPos = calestialPos.Normalized();
-			var pos = initialPos;
-
-			int octaves = 2;
-			double freq = 10;
-			double ampModifier = .05f;
-			double freqModifier = 15;
-			double result = 0.0f;
-			double amp = radiusVariation;
-			pos *= freq;
-			for (int i = 0; i < octaves; i++)
+			else
 			{
-				result += perlin.Get3D(pos) * amp;
-				pos *= freqModifier;
-				amp *= ampModifier;
-			}
+				var initialPos = calestialPos.Normalized();
+				var pos = initialPos;
 
+				int octaves = 2;
+				double freq = 10;
+				double ampModifier = .05f;
+				double freqModifier = 15;
+				double result = 0.0f;
+				double amp = radiusVariation;
+				pos *= freq;
+				for (int i = 0; i < octaves; i++)
+				{
+					result += perlin.Get3D(pos) * amp;
+					pos *= freqModifier;
+					amp *= ampModifier;
+				}
+
+				{
+					// hill tops
+					var p = perlin.Get3D(initialPos * 10.0f);
+					if (p > 0) result -= p * radiusVariation * 2;
+				}
+
+				{
+					// craters
+					var p = worley.GetAt(initialPos * 2.0f, 1);
+					result += MyMath.SmoothStep(0.0f, 0.1f, p[0]) * radiusVariation * 2;
+				}
+
+				result += radius;
+				return result;
+			}
+#if PERF_TEXT
+			getHeight_sw.Stop();
+			getHeight_counter++;
+			if (getHeight_counter <= 10)
 			{
-				// hill tops
-				var p = perlin.Get3D(initialPos * 10.0f);
-				if (p > 0) result -= p * radiusVariation * 2;
+				getHeight_sw.Reset();
 			}
-
+			else
 			{
-				// craters
-				var p = worley.GetAt(initialPos * 2.0f, 1);
-				result += MyMath.SmoothStep(0.0f, 0.1f, p[0]) * radiusVariation * 2;
+				if (getHeight_counter % 50 == 0) Console.WriteLine(getHeight_sw.ElapsedTicks / (getHeight_counter - 10));
 			}
+#endif
 
-			result += radius;
-			return result;
+			return ret;
 
 			/*
-            int octaves = 4;
-            double sum = 0.5;
-            double freq = 1.0, amp = 1.0;
-            vec2 dsum = vec2(0);
-            for (int i=0; i < octaves; i++)
-            {
-                Vector3 n = perlin.Get3D(calestialPos*freq);
-                dsum += vec2(n.y, n.z);
-                sum += amp * n.x / (1 + dot(dsum, dsum));
-                freq *= lacunarity;
-                amp *= gain;
-            }
-            return sum;
-            */
+			int octaves = 4;
+			double sum = 0.5;
+			double freq = 1.0, amp = 1.0;
+			vec2 dsum = vec2(0);
+			for (int i=0; i < octaves; i++)
+			{
+				Vector3 n = perlin.Get3D(calestialPos*freq);
+				dsum += vec2(n.y, n.z);
+				sum += amp * n.x / (1 + dot(dsum, dsum));
+				freq *= lacunarity;
+				amp *= gain;
+			}
+			return sum;
+			*/
 		}
 
 		List<Vector3d> vertices;
@@ -325,20 +353,20 @@ namespace MyGame.PlanetaryBody
 					toSmoothWith.ForEach(c =>
 					{
 						chunk.SmoothEdgeNormalsWith(c);
-						//c.SmoothEdgeNormalsBasedOn(chunk);
-					});
+					//c.SmoothEdgeNormalsBasedOn(chunk);
+				});
 				}
 
 				// if visible, update final positions weight according to distance
 				if (chunk.renderer.RenderingMode == RenderingMode.RenderGeometryAndCastShadows)
 				{
 					/*
-                    var camPos = (Scene.mainCamera.Transform.Position - this.Transform.Position).ToVector3();
-                    var d = chunk.renderer.Mesh.Vertices.FindClosest(p => p.Distance(camPos)).Distance(camPos);
-                    var e0 = sphere.radius / subdivisionSphereRadiusModifier_debugModified;
-                    var e1 = e0 * subdivisionSphereRadiusModifier_debugModified;
-                    var w = MyMath.SmoothStep(e0, e1, d);
-                    */
+					var camPos = (Scene.mainCamera.Transform.Position - this.Transform.Position).ToVector3();
+					var d = chunk.renderer.Mesh.Vertices.FindClosest(p => p.Distance(camPos)).Distance(camPos);
+					var e0 = sphere.radius / subdivisionSphereRadiusModifier_debugModified;
+					var e1 = e0 * subdivisionSphereRadiusModifier_debugModified;
+					var w = MyMath.SmoothStep(e0, e1, d);
+					*/
 					var w = MyMath.Clamp01(weight / tresholdWeight);
 					chunk.renderer.Material.Uniforms.Set("param_finalPosWeight", (float)w);
 				}

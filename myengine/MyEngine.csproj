@@ -67,24 +67,6 @@
     <Compile Include="DataBinder.cs" />
     <Compile Include="DeltaTimeManager.cs" />
     <Compile Include="Neitri\DependencyInjection\DependencyManager.cs" />
-    <Compile Include="Neitri\Extensions\ActionExtensions.cs" />
-    <Compile Include="Neitri\Extensions\ArrayExtensions.cs" />
-    <Compile Include="Neitri\Extensions\AssemblyExtensions.cs" />
-    <Compile Include="Neitri\Extensions\BoolExtensions.cs" />
-    <Compile Include="Neitri\Extensions\ByteExtensions.cs" />
-    <Compile Include="Neitri\Extensions\DoubleExtensions.cs" />
-    <Compile Include="Neitri\Extensions\EnumerableExtensions.cs" />
-    <Compile Include="Neitri\Extensions\EnumExtensions.cs" />
-    <Compile Include="Neitri\Extensions\FloatExtensions.cs" />
-    <Compile Include="Neitri\Extensions\ICollectionExtensions.cs" />
-    <Compile Include="Neitri\Extensions\IDictionaryExtensions.cs" />
-    <Compile Include="Neitri\Extensions\IListExtensions.cs" />
-    <Compile Include="Neitri\Extensions\IntExtensions.cs" />
-    <Compile Include="Neitri\Extensions\JaggedArrayExtensions.cs" />
-    <Compile Include="Neitri\Extensions\RandomExtensions.cs" />
-    <Compile Include="Neitri\Extensions\StreamExtensions.cs" />
-    <Compile Include="Neitri\Extensions\StringExtensions.cs" />
-    <Compile Include="Neitri\Extensions\TypeExtensions.cs" />
     <Compile Include="Neitri\IBinarySerializer.cs" />
     <Compile Include="Neitri\IDependencyManager.cs" />
     <Compile Include="Neitri\ILogging.cs" />
@@ -103,6 +85,7 @@
     <Compile Include="Neitri\Utils\FormatUtils.cs" />
     <Compile Include="Neitri\Utils\MemberName.cs" />
     <Compile Include="Neitri\Utils\MyWeakReference.cs" />
+    <Compile Include="Neitri\Extensions\NeitriExtensions.cs" />
     <Compile Include="Neitri\Utils\PropertyDescriptors.cs" />
     <Compile Include="Neitri\Utils\ReadOnlyDictionary.cs" />
     <Compile Include="Neitri\Utils\Require.cs" />
@@ -222,7 +205,7 @@
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Neitri\_Version_4\" />
+    <Folder Include="Neitri\_Version_5\" />
     <Folder Include="Panels\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

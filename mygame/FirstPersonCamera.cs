@@ -17,7 +17,7 @@ namespace MyGame
 	{
 
 		public float velocityChangeSpeed = 10.0f;
-
+		public float mouseSensitivty = 0.3f;
 
 		public bool disabledInput = false;
 
@@ -121,7 +121,7 @@ namespace MyGame
 			float yaw = 0;
 			float roll = 0;
 
-			float c = 0.7f * (float)deltaTime;
+			float c = mouseSensitivty * (float)deltaTime;
 			yaw += mouseDelta.X * c;
 			pitch += mouseDelta.Y * c;
 

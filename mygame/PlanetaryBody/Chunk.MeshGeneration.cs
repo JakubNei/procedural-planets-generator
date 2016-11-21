@@ -66,8 +66,6 @@ namespace MyGame.PlanetaryBody
 			var mesh = new Mesh();// "PlanetaryBodyChunk depth:" + subdivisionDepth + " #" + numbetOfChunksGenerated);
 			numberOfChunksGenerated++;
 
-			bool useSkirts = false;
-			useSkirts = true;
 
 			// generate evenly spaced vertices, then we make triangles out of them
 			var positionsFinal = new List<Vector3>();
@@ -319,7 +317,9 @@ namespace MyGame.PlanetaryBody
 			originalNormalsFinal = mesh.Normals.ToArray();
 			originalNormalsInitial = (mesh.VertexArrayObj.GetVertexArrayBufferObject("normalsInitial") as Mesh.VertexBufferObject<Vector3>).ToArray();
 
-			useSkirts = false;
+
+			bool useSkirts = false;
+			useSkirts = true;
 			if (useSkirts)
 			{
 				var skirtVertices = mesh.Duplicate(edgeVerticesIndexes, mesh.Vertices, mesh.Normals, positionsInitial, normalsInitial);

@@ -30,14 +30,14 @@ PROCEDURALMATH_API double GetHeight(MathInstance* instance, double x, double y, 
 	var pos = initialPos;
 
 	int octaves = 2;
-	double freq = 10;
-	double ampModifier = .05f;
-	double freqModifier = 15;
-	double result = instance->radius;
-	double amp = instance->radiusVariation;
+	float freq = 10;
+	float ampModifier = .05f;
+	float freqModifier = 15;
+	float result = instance->radius;
+	float amp = instance->radiusVariation;
 	pos *= freq;
 
-	
+
 	for (int i = 0; i < octaves; i++)
 	{
 		result += instance->perlin.Get3D(pos) * amp;
@@ -58,6 +58,7 @@ PROCEDURALMATH_API double GetHeight(MathInstance* instance, double x, double y, 
 		result += SmoothStep(0.0f, 0.1f, p[0]) * instance->radiusVariation * 2;
 	}
 
+
 	return result;
 }
 
@@ -65,5 +66,5 @@ PROCEDURALMATH_API double GetHeight(MathInstance* instance, double x, double y, 
 // see ProceduralMath.h for the class definition
 /*CProceduralMath::CProceduralMath()
 {
-    return;
+	return;
 }*/
