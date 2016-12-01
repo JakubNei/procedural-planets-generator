@@ -29,8 +29,9 @@ namespace MyGame
 		int scrollWheelValue;
 		Vector3 currentVelocity;
 
-		float walkOnSphere_totalYaw;
-		float walkOnSphere_totalPitch;
+		Vector3 walkOnSphere_lastVectorUp;
+		Vector3 walkOnSphere_vectorForward;
+		bool walkOnShere_start;
 
 		bool WalkOnPlanet => Debug.CVar("walkOnPlanet").Bool;
 
@@ -43,7 +44,13 @@ namespace MyGame
 
 			Entity.EventSystem.Register<InputUpdate>(e => Update((float)e.DeltaTimeNow));
 
-			Debug.CVar("walkOnPlanet").ToogledByKey(Key.G);
+			Debug.CVar("walkOnPlanet").ToogledByKey(Key.G).OnChanged += (cvar) =>
+			{
+				if (cvar.Bool)
+				{
+					walkOnShere_start = true;
+				}
+			};
 		}
 
 		void Update(float deltaTime)
@@ -117,16 +124,16 @@ namespace MyGame
 			//var pos = Matrix4.CreateTranslation(targetVelocity);
 
 
-			float pitch = 0;
-			float yaw = 0;
-			float roll = 0;
+			float pitchDelta = 0;
+			float yawDelta = 0;
+			float rollDelta = 0;
 
 			float c = mouseSensitivty * (float)deltaTime;
-			yaw += mouseDelta.X * c;
-			pitch += mouseDelta.Y * c;
+			yawDelta += mouseDelta.X * c;
+			pitchDelta += mouseDelta.Y * c;
 
-			if (Input.GetKey(Key.Q)) roll -= c;
-			if (Input.GetKey(Key.E)) roll += c;
+			if (Input.GetKey(Key.Q)) rollDelta -= c;
+			if (Input.GetKey(Key.E)) rollDelta += c;
 
 
 			var planet = PlanetaryBody.Root.instance;
@@ -134,76 +141,58 @@ namespace MyGame
 			if (WalkOnPlanet)
 			{
 
-				walkOnSphere_totalYaw += yaw;
-				walkOnSphere_totalPitch += pitch;
+				var up = planet.Center.Towards(this.Transform.Position).ToVector3().Normalized();
+				var fwd = walkOnSphere_vectorForward;
 
-				var r = (float)Math.PI / 2.0f - 0.1f;
-				if (walkOnSphere_totalPitch > r) walkOnSphere_totalPitch = r;
-				if (walkOnSphere_totalPitch < -r) walkOnSphere_totalPitch = -r;
-
-				var pointOnPlanet = planet.Center.Towards(this.Transform.Position).ToVector3d();
-				var targetUp = pointOnPlanet.Normalized().ToVector3().Normalized();
-
-				var s = planet.CalestialToSpherical(pointOnPlanet);
-				s.latitude += 0.1f;
-				var targetFwd = pointOnPlanet.Towards(planet.SphericalToCalestial(s)).Normalized().ToVector3().Normalized();
-
-				var rotUp =
-					Matrix4.LookAt(Vector3.Zero, targetFwd, targetUp).ExtractRotation().Inverted() *
-					QuaternionUtility.FromEulerAngles(0, -walkOnSphere_totalYaw, -walkOnSphere_totalPitch);
-
-				rotation = rotUp;
-
-				/*
-				 new Matrix3(
-						targetRight,
-						targetUp,
-						targetFwd
-					).ExtractRotation() *
-				 */
-
-				/*
-				var planet = PlanetaryBody.Root.instance;
-
-				var targetUp = planet.Center.Towards(this.Transform.Position).ToVector3d().Normalized().ToVector3().Normalized();
-				var currentUp = Constants.Vector3Up.RotateBy(rotation).Normalized();
-
-				Debug.AddValue("c.up", currentUp);
-				Debug.AddValue("t.up", targetUp);
-
-
-				var t = targetUp.Cross(currentUp);
-				var a = targetUp.Angle(currentUp);
-
-
+				if (walkOnShere_start)
 				{
-					// possible
-					var pot_r_delta = Quaternion.FromAxisAngle(t, a * 0.1f);
-					var pot_rot = rotation * pot_r_delta;
-					var pot_up = Constants.Vector3Up.RotateBy(pot_rot).Normalized();
-					var pot_a = targetUp.Angle(pot_up);
-					if (pot_a > a) a *= -1;
+					walkOnSphere_lastVectorUp = up;
+
+					var pointOnPlanet = planet.Center.Towards(this.Transform.Position).ToVector3d();
+					var s = planet.CalestialToSpherical(pointOnPlanet);
+					s.latitude += 0.1f;
+					var fwdToPole = pointOnPlanet.Towards(planet.SphericalToCalestial(s)).Normalized().ToVector3().Normalized();
+
+					fwd = Constants.Vector3Forward.RotateBy(rotation);
 				}
 
-				var r = Quaternion.FromAxisAngle(t, a * deltaTime);
+				if (!walkOnShere_start)
+				{
+					var upDeltaAngle = up.Angle(walkOnSphere_lastVectorUp);
+					var upDeltaRot = Quaternion.FromAxisAngle(up.Cross(walkOnSphere_lastVectorUp), upDeltaAngle).Inverted();
 
-				Debug.AddValue("a", a);
-
-				rotation = rotation * r;
-
-				*/
-				//var targetRot = QuaternionUtility.LookRotation(targetFwd, targetUp);
+					fwd = fwd.RotateBy(upDeltaRot);
+				}
 
 
-				//alignToPosition = new Vector3(1000, -100, 1000);
-				//currentUp = alignToPosition.Towards(Transform.Position).Normalized();
+
+				var right = fwd.Cross(up);
+
+				var rotDelta =
+					Quaternion.FromAxisAngle(up, -yawDelta) *
+					Quaternion.FromAxisAngle(right, -pitchDelta);
+
+
+				fwd = fwd.RotateBy(rotDelta);
+
+
+
+				fwd.Normalize();
+				up.Normalize();
+
+				rotation = QuaternionUtility.LookRotation(fwd, up);
+
+				walkOnSphere_vectorForward = fwd;
+				walkOnSphere_lastVectorUp = up;
+				walkOnShere_start = false;
+
 			}
 			else
 			{
 				var rotDelta =
-					Quaternion.FromAxisAngle(-Vector3.UnitX, pitch) *
-					Quaternion.FromAxisAngle(-Vector3.UnitY, yaw) *
-					Quaternion.FromAxisAngle(-Vector3.UnitZ, roll);
+					Quaternion.FromAxisAngle(-Vector3.UnitX, pitchDelta) *
+					Quaternion.FromAxisAngle(-Vector3.UnitY, yawDelta) *
+					Quaternion.FromAxisAngle(-Vector3.UnitZ, rollDelta);
 
 
 				rotation = rotation * rotDelta;

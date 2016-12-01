@@ -14,12 +14,12 @@ namespace MyEngine
 		{
 			var up = Vector3.UnitY;
 			if (up == forward) up = Vector3.UnitX;
-			Matrix4 rot = Matrix4.LookAt(Vector3.Zero, forward, up);
+			Matrix4 rot = Matrix4.LookAt(Vector3.Zero, forward, up).Inverted();
 			return rot.ExtractRotation();
 		}
 		public static Quaternion LookRotation(Vector3 forward, Vector3 up)
 		{
-			Matrix4 rot = Matrix4.LookAt(Vector3.Zero, forward, up);
+			Matrix4 rot = Matrix4.LookAt(Vector3.Zero, forward, up).Inverted();
 			return rot.ExtractRotation();
 		}
 
