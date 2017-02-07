@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Windows.Forms;
 
 namespace MyEngine
 {
@@ -18,7 +19,7 @@ namespace MyEngine
 		[Dependency]
 		IDependencyManager dependency;
 
-		public ConcurrentDictionary<string, string> stringValues = new ConcurrentDictionary<string, string>();
+		private ConcurrentDictionary<string, string> stringValues = new ConcurrentDictionary<string, string>();
 
 		public void AddValue(string key, object value)
 		{
@@ -72,6 +73,7 @@ namespace MyEngine
 		Dictionary<string, TickStats> nameToTickStat = new Dictionary<string, TickStats>();
 
 		Dictionary<string, ConVar> nameToCVar = new Dictionary<string, ConVar>();
+
 
 		public class ConVar
 		{
@@ -162,8 +164,43 @@ namespace MyEngine
 			AddCommonCvars();
 		}
 
+
+		DebugForm debugForm;
+		DictionaryWatcher<string, string> stringValuesWatcher;
+		DictionaryWatcher<string, ConVar, string> ckeyValuesWatcher;
+
 		void AddCommonCvars()
 		{
+			CVar("showDebugForm").ToogledByKey(OpenTK.Input.Key.F1).OnChanged += (cvar) =>
+			{
+				if (debugForm == null)
+				{
+					debugForm = new DebugForm();
+					{
+						var items = debugForm.listView1.Items;
+						stringValuesWatcher = new DictionaryWatcher<string, string>();
+						stringValuesWatcher.OnAdded += (key, value) => items.Add(new ListViewItem(new string[] { key, value }) { Tag = key });
+						stringValuesWatcher.OnUpdated += (key, value) => items.OfType<ListViewItem>().First(i => (string)i.Tag == key).SubItems[1].Text = value;
+						stringValuesWatcher.OnRemoved += (key) => items.Remove(items.OfType<ListViewItem>().First(i => (string)i.Tag == key));
+					}
+					{
+						var items = debugForm.listView2.Items;
+						ckeyValuesWatcher = new DictionaryWatcher<string, ConVar, string>();
+						ckeyValuesWatcher.comparisonValueSelector = (item) => item.Bool.ToString();
+						ckeyValuesWatcher.OnAdded += (key, item) => items.Add(new ListViewItem(new string[] { item.name, item.Bool.ToString(), item.toogleKey.ToString() }) { Tag = key });
+						ckeyValuesWatcher.OnUpdated += (key, item) =>
+						{
+							var subItems = items.OfType<ListViewItem>().First(i => (string)i.Tag == key).SubItems;
+							subItems[1].Text = item.Bool.ToString();
+							subItems[2].Text = item.toogleKey.ToString();
+						};
+						ckeyValuesWatcher.OnRemoved += (key) => items.Remove(items.OfType<ListViewItem>().First(i => (string)i.Tag == key));
+					}
+				}
+
+				if (cvar.Bool) debugForm.Show();
+				else debugForm.Hide();
+			};
 			CVar("autoBuildRenderList").ToogledByKey(OpenTK.Input.Key.F4);
 			CVar("reloadAllShaders").ToogledByKey(OpenTK.Input.Key.F5);
 			CVar("shadowsDisabled").ToogledByKey(OpenTK.Input.Key.F6);
@@ -173,6 +210,7 @@ namespace MyEngine
 			CVar("debugDrawNormalBufferContents").ToogledByKey(OpenTK.Input.Key.F10);
 			CVar("debugRenderWithLines").ToogledByKey(OpenTK.Input.Key.F11);
 			CVar("sortRenderers").ToogledByKey(OpenTK.Input.Key.F12);
+
 		}
 
 		public void Update()
@@ -184,11 +222,78 @@ namespace MyEngine
 					if (Input.GetKeyDown(cvar.toogleKey))
 					{
 						cvar.Bool = !cvar.Bool;
-						Info($"{cvar.name} toogled to {cvar.Bool}");
+						Info($"{cvar.name} toogled to  {cvar.Bool}");
 					}
 				}
 			}
+
+			if (debugForm?.Visible == true)
+			{
+				stringValuesWatcher.UpdateBy(stringValues);
+				ckeyValuesWatcher.UpdateBy(nameToCVar);
+			}
 		}
+
+
+
+		class DictionaryWatcher<TKey, TItem> : DictionaryWatcher<TKey, TItem, TItem>
+		{
+			public DictionaryWatcher()
+			{
+				comparisonValueSelector = (item) => item;
+			}
+		}
+
+		class DictionaryWatcher<TKey, TItem, TEqualityComparisonValue>
+		{
+			public event Action<TKey, TItem> OnAdded;
+			/// <summary>
+			/// Guarantees that OnAdded was called on same TKey before.
+			/// </summary>
+			public event Action<TKey> OnRemoved;
+			/// <summary>
+			/// Guarantees that OnAdded was called on same TKey before.
+			/// </summary>
+			public event Action<TKey, TItem> OnUpdated;
+
+			public Func<TEqualityComparisonValue, TEqualityComparisonValue, bool> equalityComparer = (a, b) => a.Equals(b);
+			public Func<TItem, TEqualityComparisonValue> comparisonValueSelector;
+
+
+			Dictionary<TKey, TEqualityComparisonValue> currentValues = new Dictionary<TKey, TEqualityComparisonValue>();
+
+			public void UpdateBy(IDictionary<TKey, TItem> source)
+			{
+				foreach (var kvp in source)
+				{
+					TEqualityComparisonValue sourceValue = comparisonValueSelector(kvp.Value);
+					TEqualityComparisonValue currentValue;
+					if (currentValues.TryGetValue(kvp.Key, out currentValue))
+					{
+						if (equalityComparer(currentValue, sourceValue) == false)
+						{
+							currentValues[kvp.Key] = sourceValue;
+							OnUpdated.Raise(kvp.Key, kvp.Value);
+						}
+					}
+					else
+					{
+						currentValues[kvp.Key] = sourceValue;
+						OnAdded.Raise(kvp.Key, kvp.Value);
+					}
+				}
+
+				var keysRemoved = currentValues.Keys.Except(source.Keys).ToArray();
+				foreach (var keyRemoved in keysRemoved)
+				{
+					currentValues.Remove(keyRemoved);
+					OnRemoved.Raise(keyRemoved);
+				}
+
+			}
+
+		}
+
 
 		void Log(object obj, bool canRepeat)
 		{

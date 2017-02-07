@@ -165,16 +165,26 @@ namespace MyGame
 				}
 
 
-
-				var right = fwd.Cross(up);
+				var left = up.Cross(fwd);
 
 				var rotDelta =
 					Quaternion.FromAxisAngle(up, -yawDelta) *
-					Quaternion.FromAxisAngle(right, -pitchDelta);
+					Quaternion.FromAxisAngle(left, pitchDelta);
 
 
 				fwd = fwd.RotateBy(rotDelta);
 
+				{
+					// clamping up down rotation
+					var maxUpDownAngle = 80;
+					var minUp = MyMath.ToRadians(90 - maxUpDownAngle);
+					var maxDown = MyMath.ToRadians(90 + maxUpDownAngle);
+					var angle = fwd.Angle(up);
+					if (angle < minUp)
+						fwd = up.RotateBy(Quaternion.FromAxisAngle(left, minUp));
+					else if (angle > maxDown)
+						fwd = up.RotateBy(Quaternion.FromAxisAngle(left, maxDown));
+				}
 
 
 				fwd.Normalize();

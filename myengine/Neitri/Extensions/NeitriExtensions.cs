@@ -8,7 +8,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 
 /// <summary>
-/// Version 2
+/// Version 2017-02-07
 /// Many useful extensions I've made over the years.
 /// All in one class.
 /// </summary>
@@ -245,8 +245,26 @@ public static class NeitriExtensions
 	}
 	#endregion
 
+	#region IEnumerable extensions
+	public static int GetContentsHashCode<T>(this IEnumerable<T> enumerable)
+	{
+		int hashCode = 0;
+		foreach (var e in enumerable)
+			hashCode ^= e.GetHashCode();
+		return hashCode;
+	}
+	#endregion
+
 	#region IEnumerable<string> and IEnumerable<char> extensions
 	public static void ForEach<T>(this IEnumerable<T> enumerable, Action<T> action)
+	{
+		foreach (var item in enumerable)
+		{
+			action(item);
+		}
+	}
+
+	public static void ForEach<TIn, TRet>(this IEnumerable<TIn> enumerable, Func<TIn, TRet> action)
 	{
 		foreach (var item in enumerable)
 		{
@@ -314,20 +332,24 @@ public static class NeitriExtensions
 	{
 		return (float)System.Math.Round(a);
 	}
+	public static float RoundToInt(this float a)
+	{
+		return (int)System.Math.Round(a);
+	}
 
 	public static float Ceil(this float a)
 	{
 		return (float)System.Math.Ceiling(a);
 	}
 
-	public static float Floor(this float a)
-	{
-		return (float)System.Math.Floor(a);
-	}
-
 	public static int CeilToInt(this float a)
 	{
 		return (int)System.Math.Ceiling(a);
+	}
+
+	public static float Floor(this float a)
+	{
+		return (float)System.Math.Floor(a);
 	}
 
 	public static int FloorToInt(this float a)
@@ -344,6 +366,7 @@ public static class NeitriExtensions
 	{
 		return (long)System.Math.Floor(a);
 	}
+
 
 	public static float Lerp(this float me, float towards, float t)
 	{
@@ -363,6 +386,14 @@ public static class NeitriExtensions
 			if (me < towards) me = towards;
 		}
 		return me;
+	}
+	public static int ToInt(this float a)
+	{
+		return (int)a;
+	}
+	public static long ToLong(this float a)
+	{
+		return (long)a;
 	}
 	#endregion
 
@@ -390,6 +421,14 @@ public static class NeitriExtensions
 	public static double Floor(this double a)
 	{
 		return (double)System.Math.Floor(a);
+	}
+	public static int ToInt(this double a)
+	{
+		return (int)a;
+	}
+	public static long ToLong(this double a)
+	{
+		return (long)a;
 	}
 	#endregion
 
@@ -606,6 +645,13 @@ public static class NeitriExtensions
 	}
 	#endregion
 
+	#region char extensions
+	public static bool IsWhiteSpace(this char c)
+	{
+		return oneOrMoreWhiteSpaces.IsMatch(c.ToString());
+	}
+	#endregion
+
 	#region Type extensions
 	/// <summary>
 	/// Returns first custom attribute from type. Returns null if not found.
@@ -692,6 +738,95 @@ public static class NeitriExtensions
 	{
 		foreach (T item in target)
 			yield return item;
+	}
+	#endregion
+
+	#region DateTime extensions
+	public struct DateTimeHandler
+	{
+		DateTime dateTime;
+		public DateTimeHandler(DateTime dateTime)
+		{
+			this.dateTime = dateTime;
+		}
+		public bool InPastComparedTo(DateTime other)
+		{
+			return dateTime < other;
+		}
+		public bool InFutureComparedTo(DateTime other)
+		{
+			return dateTime > other;
+		}
+	}
+	public static DateTimeHandler IsOver(this DateTime dateTime, int days = 0, int hours = 0, int minutes = 0, int seconds = 0, int milliseconds = 0)
+	{
+		return new DateTimeHandler(dateTime + new TimeSpan(days, hours, minutes, seconds, milliseconds));
+	}
+	public static DateTimeHandler IsUnder(this DateTime dateTime, int days = 0, int hours = 0, int minutes = 0, int seconds = 0, int milliseconds = 0)
+	{
+		return new DateTimeHandler(dateTime - new TimeSpan(days, hours, minutes, seconds, milliseconds));
+	}
+	public static bool IsInPastComparedTo(this DateTime dateTime, DateTime other)
+	{
+		return dateTime < other;
+	}
+	public static bool IsInFutureComparedTo(this DateTime dateTime, DateTime other)
+	{
+		return dateTime > other;
+	}
+	#endregion
+
+	#region byte[] extensions
+	// from http://stackoverflow.com/questions/623104/byte-to-hex-string
+	/// <summary>
+	/// Returns hex representation of byte array, {1, 2, 4, 8, 16, 32} would return 010204081020.
+	/// </summary>
+	/// <param name="bytes"></param>
+	/// <returns></returns>
+	public static string ToHexString(this byte[] bytes)
+	{
+		char[] c = new char[bytes.Length * 2];
+
+		byte b;
+
+		for (int bx = 0, cx = 0; bx < bytes.Length; ++bx, ++cx)
+		{
+			b = ((byte)(bytes[bx] >> 4));
+			c[cx] = (char)(b > 9 ? b + 0x37 + 0x20 : b + 0x30);
+
+			b = ((byte)(bytes[bx] & 0x0F));
+			c[++cx] = (char)(b > 9 ? b + 0x37 + 0x20 : b + 0x30);
+		}
+
+		return new string(c);
+	}
+
+	// from http://stackoverflow.com/questions/16340/how-do-i-generate-a-hashcode-from-a-byte-array-in-c
+	public static int ComputeHashCodeSlow(this byte[] data)
+	{
+		unchecked
+		{
+			const int p = 16777619;
+			int hash = (int)2166136261;
+
+			for (int i = 0; i < data.Length; i++)
+				hash = (hash ^ data[i]) * p;
+
+			hash += hash << 13;
+			hash ^= hash >> 7;
+			hash += hash << 3;
+			hash ^= hash >> 17;
+			hash += hash << 5;
+			return hash;
+		}
+	}
+
+
+	public static int ComputeHashCodeFast(this byte[] byteArray)
+	{
+		// http://stackoverflow.com/questions/16340/how-do-i-generate-a-hashcode-from-a-byte-array-in-c
+		var str = Convert.ToBase64String(byteArray);
+		return str.GetHashCode();
 	}
 	#endregion
 }

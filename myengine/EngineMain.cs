@@ -216,6 +216,8 @@ namespace MyEngine
 
 		DeltaTimeManager renderThreadTime = new DeltaTimeManager();
 
+		ulong frameCounter;
+
 		void RenderMain()
 		{
 			renderManagerBackReady.Wait();
@@ -224,6 +226,8 @@ namespace MyEngine
 			renderManagerFront = renderManagerBack;
 			renderManagerBack = tmp;
 			renderManagerPrepareNext.Set();
+
+			frameCounter++;
 
 			Debug.Tick("render");
 			renderThreadTime.Tick();
@@ -234,8 +238,6 @@ namespace MyEngine
 				Factory.ReloadAllShaders();
 				reloadAllShaders.Bool = false;
 			}
-
-			this.Title = string.Join("\t  ", Debug.stringValues.OrderBy(kvp => kvp.Key).Select(kvp => kvp.Key + ":" + kvp.Value).ToArray());
 
 			if (this.Focused) Input.Update();
 			Debug.Update();
