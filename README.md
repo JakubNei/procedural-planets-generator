@@ -14,12 +14,12 @@ http://www.neilblevins.com/cg_education/procedural_noise/procedural_noise.html
 http://www-cs-students.stanford.edu/~amitp/game-programming/polygon-map-generation/
 http://www.decarpentier.nl/scape-procedural-basics
 
-# Nice examples
+# Nice examples & other
 http://squall-digital.com/ProceduralGeneration.html
 http://orbit.medphys.ucl.ac.uk/news.html
-
-# Other
+https://smcameron.github.io/space-nerds-in-space/
 https://www.gamedev.net/topic/643870-what-terrain-rendering-technique-does-the-outerra-engine-use/
 http://outerra.blogspot.cz/2012/11/maximizing-depth-buffer-range-and.html
 http://www.planetside.co.uk/forums/index.php?topic=20752.0
+https://dip.felk.cvut.cz/browse/pdfcache/lindao1_2007bach.pdf
 
