@@ -1,7 +1,7 @@
 [include internal/prependAll.shader]
 
+uniform sampler2D param_biomesMap;
 uniform sampler2D param_rock;
-uniform sampler2D param_moon;
 uniform sampler2D param_snow;
 
 uniform float param_finalPosWeight;
@@ -126,16 +126,6 @@ float rand(vec2 co){
 
 vec3 getColor(float distance) {
 
-	/*
-	vec3 c;
-	vec3 c1 = triPlanar(param_rock, i.worldPos, i.normal, 0.5);  
-	vec3 c2 = triPlanar(param_moon, i.worldPos, i.normal, 0.5);  
-	c = mix(
-		c1,
-		c2,
-		clamp(snoise(i.worldPos/100, 10)*2, 0, 1)
-	);
-	*/
 	vec3 pos = engine.cameraPosition + i.worldPos;
 
 	vec3 c = 

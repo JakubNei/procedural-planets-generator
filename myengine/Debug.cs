@@ -187,12 +187,12 @@ namespace MyEngine
 						var items = debugForm.listView2.Items;
 						ckeyValuesWatcher = new DictionaryWatcher<string, ConVar, string>();
 						ckeyValuesWatcher.comparisonValueSelector = (item) => item.Bool.ToString();
-						ckeyValuesWatcher.OnAdded += (key, item) => items.Add(new ListViewItem(new string[] { item.name, item.Bool.ToString(), item.toogleKey.ToString() }) { Tag = key });
+						ckeyValuesWatcher.OnAdded += (key, item) => items.Add(new ListViewItem(new string[] { item.toogleKey.ToString(), item.name, item.Bool.ToString() }) { Tag = key });
 						ckeyValuesWatcher.OnUpdated += (key, item) =>
 						{
 							var subItems = items.OfType<ListViewItem>().First(i => (string)i.Tag == key).SubItems;
-							subItems[1].Text = item.Bool.ToString();
-							subItems[2].Text = item.toogleKey.ToString();
+							subItems[0].Text = item.toogleKey.ToString();
+							subItems[2].Text = item.Bool.ToString();
 						};
 						ckeyValuesWatcher.OnRemoved += (key) => items.Remove(items.OfType<ListViewItem>().First(i => (string)i.Tag == key));
 					}

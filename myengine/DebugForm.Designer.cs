@@ -44,7 +44,7 @@
             this.columnValue});
 			this.listView1.Location = new System.Drawing.Point(12, 22);
 			this.listView1.Name = "listView1";
-			this.listView1.Size = new System.Drawing.Size(363, 229);
+			this.listView1.Size = new System.Drawing.Size(363, 309);
 			this.listView1.TabIndex = 0;
 			this.listView1.UseCompatibleStateImageBehavior = false;
 			this.listView1.View = System.Windows.Forms.View.Details;
@@ -64,33 +64,33 @@
             this.columnHeader1,
             this.columnHeader2,
             this.columnHeader3});
-			this.listView2.Location = new System.Drawing.Point(12, 303);
+			this.listView2.Location = new System.Drawing.Point(12, 347);
 			this.listView2.Name = "listView2";
-			this.listView2.Size = new System.Drawing.Size(458, 229);
+			this.listView2.Size = new System.Drawing.Size(458, 346);
 			this.listView2.TabIndex = 1;
 			this.listView2.UseCompatibleStateImageBehavior = false;
 			this.listView2.View = System.Windows.Forms.View.Details;
 			// 
 			// columnHeader1
 			// 
-			this.columnHeader1.Text = "Name";
-			this.columnHeader1.Width = 151;
+			this.columnHeader1.Text = "Key";
+			this.columnHeader1.Width = 71;
 			// 
 			// columnHeader2
 			// 
-			this.columnHeader2.Text = "Value";
+			this.columnHeader2.Text = "Name";
 			this.columnHeader2.Width = 158;
 			// 
 			// columnHeader3
 			// 
-			this.columnHeader3.Text = "Key";
-			this.columnHeader3.Width = 135;
+			this.columnHeader3.Text = "Value";
+			this.columnHeader3.Width = 145;
 			// 
 			// DebugForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(642, 637);
+			this.ClientSize = new System.Drawing.Size(487, 709);
 			this.Controls.Add(this.listView2);
 			this.Controls.Add(this.listView1);
 			this.Name = "DebugForm";
@@ -98,7 +98,7 @@
 			this.ResumeLayout(false);
 
 		}
-
+		 
 		#endregion
 
 		public System.Windows.Forms.ListView listView1;
