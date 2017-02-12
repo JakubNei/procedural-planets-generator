@@ -159,7 +159,7 @@ namespace MyEngine
 				var mesh = new Mesh();
 
 				mesh.Vertices.SetData(verticesMesh);
-				mesh.Uvs.SetData(uvsMesh);
+				mesh.UVs.SetData(uvsMesh);
 				mesh.TriangleIndicies.SetData(triangleIndiciesMesh);
 
 				if (failedParse > 0) debug.Warning("Failed to parse data " + failedParse + " times");

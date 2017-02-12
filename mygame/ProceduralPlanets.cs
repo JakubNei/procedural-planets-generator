@@ -48,9 +48,9 @@ namespace MyGame
 			var planetShader = Factory.GetShader("shaders/planet.shader");
 			planetMaterial = new Material(Factory);
 			planetMaterial.GBufferShader = planetShader;
-			planetMaterial.Uniforms.Set("param_moon", Factory.GetTexture2D("textures/moon1.jpg"));
 			planetMaterial.Uniforms.Set("param_rock", Factory.GetTexture2D("textures/rock.jpg"));
 			planetMaterial.Uniforms.Set("param_snow", Factory.GetTexture2D("textures/snow.jpg"));
+			planetMaterial.Uniforms.Set("param_biomesSplatMap", Factory.GetTexture2D("textures/biomesSplatMap.png"));
 			planetMaterial.Uniforms.Set("param_perlinNoise", Factory.GetTexture2D("textures/perlin_noise.png"));
 
 			{

@@ -68,7 +68,7 @@ namespace MyEngine
 
 		public void RecalculateTangents()
 		{
-			if (HasUVs() == false) Uvs.Resize(Vertices.Count);
+			if (HasUVs() == false) UVs.Resize(Vertices.Count);
 
 			//partialy stolen from http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-13-normal-mapping/
 
@@ -98,9 +98,9 @@ namespace MyEngine
 					Vector3 deltaPos1 = Vertices[bi] - av;
 					Vector3 deltaPos2 = Vertices[ci] - av;
 
-					Vector2 auv = Uvs[ai];
-					Vector2 deltaUV1 = Uvs[bi] - auv;
-					Vector2 deltaUV2 = Uvs[ci] - auv;
+					Vector2 auv = UVs[ai];
+					Vector2 deltaUV1 = UVs[bi] - auv;
+					Vector2 deltaUV2 = UVs[ci] - auv;
 
 					float r = 1.0f / (deltaUV1.X * deltaUV2.Y - deltaUV1.Y * deltaUV2.X);
 					Vector3 t = (deltaPos1 * deltaUV2.Y - deltaPos2 * deltaUV1.Y) * r;

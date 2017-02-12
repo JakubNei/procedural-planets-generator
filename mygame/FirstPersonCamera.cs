@@ -33,7 +33,7 @@ namespace MyGame
 		Vector3 walkOnSphere_vectorForward;
 		bool walkOnShere_start;
 
-		bool WalkOnPlanet => Debug.CVar("walkOnPlanet").Bool;
+		CVar WalkOnPlanet => Debug.GetCVar("walkOnPlanet");
 
 		public FirstPersonCamera(Entity entity) : base(entity)
 		{
@@ -44,7 +44,7 @@ namespace MyGame
 
 			Entity.EventSystem.Register<InputUpdate>(e => Update((float)e.DeltaTimeNow));
 
-			Debug.CVar("walkOnPlanet").ToogledByKey(Key.G).OnChanged += (cvar) =>
+			WalkOnPlanet.ToogledByKey(Key.G).OnChanged += (cvar) =>
 			{
 				if (cvar.Bool)
 				{
@@ -56,8 +56,8 @@ namespace MyGame
 		void Update(float deltaTime)
 		{
 
-			//Debug.AddValue("cameraSpeed", cameraSpeed.ToString());
-			//Debug.AddValue("cameraPos", Transform.Position.ToString());
+			Debug.AddValue("camera / speed", cameraSpeed.ToString());
+			Debug.AddValue("camera / position", Transform.Position.ToString());
 
 			var mouse = Mouse.GetState();
 
@@ -138,7 +138,7 @@ namespace MyGame
 
 			var planet = PlanetaryBody.Root.instance;
 
-			if (WalkOnPlanet)
+			if (WalkOnPlanet.Bool)
 			{
 
 				var up = planet.Center.Towards(this.Transform.Position).ToVector3().Normalized();
@@ -226,7 +226,7 @@ namespace MyGame
 				var p = (position - planet.Transform.Position).ToVector3d();
 				var camPosS = planet.CalestialToSpherical(p);
 				var h = 1 + planet.GetHeight(p);
-				if (camPosS.altitude < h || WalkOnPlanet)
+				if (camPosS.altitude < h || WalkOnPlanet.Bool)
 				{
 					camPosS.altitude = h;
 					position = planet.Transform.Position + planet.SphericalToCalestial(camPosS).ToVector3();

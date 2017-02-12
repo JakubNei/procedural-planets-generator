@@ -58,9 +58,6 @@ namespace MyEngine.Components
 
 		public virtual bool ForcePassFrustumCulling { get; set; }
 
-		bool last_ShouldRenderGeometry = false;
-		bool last_ShouldCastShadows = false;
-
 		MyWeakReference<RenderableData> dataToRender;
 
 		public Renderer(Entity entity) : base(entity)

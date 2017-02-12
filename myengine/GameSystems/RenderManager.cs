@@ -23,7 +23,7 @@ namespace MyEngine
 		public Cubemap SkyboxCubeMap { get; set; }
 
 		int toRenderCount = 0;
-		IRenderable[] toRender = new IRenderable[100000];
+		IRenderable[] toRender = new IRenderable[10000];
 
 		[Dependency]
 		Debug debug;
@@ -33,10 +33,10 @@ namespace MyEngine
 
 		Shader FinalDrawShader => factory.GetShader("internal/finalDraw.glsl");
 
-		public bool drawLines { get { return debug.CVar("debugRenderWithLines").Bool; } }
-		public bool enablePostProcessEffects { get { return debug.CVar("enablePostProcessEffects").Bool; } }
-		public bool debugBounds { get { return debug.CVar("debugBounds").Bool; } }
-		public bool shadowsEnabled { get { return debug.CVar("shadowsDisabled").Bool == false; } }
+		public bool drawLines { get { return debug.CommonCVars.DebugRenderWithLines().Bool; } }
+		public bool enablePostProcessEffects { get { return debug.CommonCVars.EnablePostProcessEffects().Bool; } }
+		public bool debugBounds { get { return debug.CommonCVars.DrawDebugBounds().Bool; } }
+		public bool shadowsEnabled { get { return debug.CommonCVars.ShadowsDisabled().Bool == false; } }
 
 		public RenderManager(Events.EventSystem eventSystem)
 		{
@@ -97,8 +97,8 @@ namespace MyEngine
                 }
             }*/
 
-			if (debug.CVar("debugDrawNormalBufferContents").Bool) GBuffer.DebugDrawNormal();
-			if (debug.CVar("debugDrawGBufferContents").Bool) GBuffer.DebugDrawContents();
+			if (debug.CommonCVars.DebugDrawNormalBufferContents().Bool) GBuffer.DebugDrawNormal();
+			if (debug.CommonCVars.DebugDrawGBufferContents().Bool) GBuffer.DebugDrawContents();
 			//if (drawShadowMapContents) DebugDrawTexture(shadowMap.depthMap, new Vector4(0.5f, 0.5f, 1, 1), new Vector4(0.5f,0.5f,0,1), 1, 0);
 		}
 
@@ -305,7 +305,7 @@ namespace MyEngine
 					}
 				);
 			}
-			debug.AddValue("countMeshesRendered", toRenderCount + "/" + totalPossible);
+			debug.AddValue("rendering / meshes rendered", toRenderCount + "/" + totalPossible);
 			/*
 			if (Debug.CVar("sortRenderers").Bool)
 			{

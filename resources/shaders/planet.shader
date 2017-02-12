@@ -1,6 +1,6 @@
 [include internal/prependAll.shader]
 
-uniform sampler2D param_biomesMap;
+uniform sampler2D param_biomesSplatMap;
 uniform sampler2D param_rock;
 uniform sampler2D param_snow;
 

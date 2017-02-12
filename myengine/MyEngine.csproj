@@ -55,6 +55,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CommonCVars.cs" />
     <Compile Include="Components\Bloom.cs" />
     <Compile Include="Components\ComponentSettingAttribute.cs" />
     <Compile Include="Components\GodRays.cs" />
@@ -63,6 +64,7 @@
     <Compile Include="Components\SSAO.cs" />
     <Compile Include="Components\Tonemapping.cs" />
     <Compile Include="Constants.cs" />
+    <Compile Include="CVar.cs" />
     <Compile Include="DataAccessibleList.cs" />
     <Compile Include="DataBinder.cs" />
     <Compile Include="DebugForm.cs">
@@ -72,6 +74,7 @@
       <DependentUpon>DebugForm.cs</DependentUpon>
     </Compile>
     <Compile Include="DeltaTimeManager.cs" />
+    <Compile Include="DictionaryWatcher.cs" />
     <Compile Include="Neitri\DependencyInjection\DependencyManager.cs" />
     <Compile Include="Neitri\IBinarySerializer.cs" />
     <Compile Include="Neitri\IDependencyManager.cs" />
@@ -154,7 +157,7 @@
     <Compile Include="Mesh.cs" />
     <Compile Include="Components\ComponentWithShortcuts.cs" />
     <Compile Include="ObjLoader.cs" />
-    <Compile Include="EngineMain.cs" />
+    <Compile Include="_EngineMain.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Factory.cs" />
     <Compile Include="Components\MeshRenderer.cs" />
@@ -211,7 +214,6 @@
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Neitri\_Version_5\" />
     <Folder Include="Panels\" />
   </ItemGroup>
   <ItemGroup>

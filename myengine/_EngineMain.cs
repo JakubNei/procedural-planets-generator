@@ -57,6 +57,7 @@ namespace MyEngine
 			VSync = VSyncMode.Off;
 			TargetRenderFrequency = 0;
 
+
 			//Texture2D.InitTexture2D();
 			ubo = new UniformBlock();
 			//new PhysicsUsage.PhysicsManager();
@@ -83,13 +84,14 @@ namespace MyEngine
                 */
 			};
 
-			Debug.CVar("fullscreen").ToogledByKey(OpenTK.Input.Key.F).OnChanged += (cvar) =>
+			Debug.CommonCVars.Fullscreen().ToogledByKey(OpenTK.Input.Key.F).OnChanged += (cvar) =>
 			{
 				if (cvar.Bool && WindowState != WindowState.Fullscreen)
 					WindowState = WindowState.Fullscreen;
 				else
 					WindowState = WindowState.Normal;
 			};
+
 		}
 
 		System.Diagnostics.Stopwatch stopwatchSinceStart = new System.Diagnostics.Stopwatch();
@@ -111,8 +113,6 @@ namespace MyEngine
 				Debug.Info(r.ToString() + ": " + GL.GetString(r));
 			}
 			//Debug.Info(StringName.Extensions.ToString() + ": " + GL.GetString(StringName.Extensions));
-
-			this.VSync = VSyncMode.Off;
 
 			// Other state
 			GL.Enable(EnableCap.Texture2D);
@@ -147,7 +147,6 @@ namespace MyEngine
 			base.Exit();
 		}
 
-		bool autoBuildRenderList => Debug.CVar("autoBuildRenderList", true).Bool;
 		bool secondaryAlreadyStarted = false;
 
 		void TryStartSecondary()
@@ -183,11 +182,11 @@ namespace MyEngine
 		{
 			renderManagerPrepareNext.Wait();
 			renderManagerPrepareNext.Reset();
-			if (autoBuildRenderList)
+			if (Debug.CommonCVars.PauseRenderPrepare().Bool == false)
 			{
 				if (scenes.Count > 0)
 				{
-					Debug.Tick("buildRender");
+					Debug.Tick("rendering / render prepare");
 					foreach (var scene in scenes)
 					{
 						var camera = scene.mainCamera;
@@ -198,6 +197,10 @@ namespace MyEngine
 						}
 					}
 				}
+			}
+			else
+			{
+				Debug.AddValue("rendering / render prepare", "paused");
 			}
 			renderManagerBackReady.Set();
 		}
@@ -228,11 +231,14 @@ namespace MyEngine
 			renderManagerPrepareNext.Set();
 
 			frameCounter++;
+			Debug.AddValue("rendering / frames rendered", frameCounter);
 
-			Debug.Tick("render");
+			UpdateGPUMemoryInfo();
+
+			Debug.Tick("rendering / main render");
 			renderThreadTime.Tick();
 
-			var reloadAllShaders = Debug.CVar("reloadAllShaders");
+			var reloadAllShaders = Debug.CommonCVars.ReloadAllShaders();
 			if (reloadAllShaders.Bool)
 			{
 				Factory.ReloadAllShaders();
@@ -264,6 +270,26 @@ namespace MyEngine
 			SwapBuffers();
 
 			GC.Collect();
+		}
+
+		void UpdateGPUMemoryInfo()
+		{
+
+			// http://developer.download.nvidia.com/opengl/specs/GL_NVX_gpu_memory_info.txt
+
+			var GPU_MEMORY_INFO_DEDICATED_VIDMEM_NVX = 0x9047;
+			var GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX = 0x9048;
+			var GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX = 0x9049;
+			var GPU_MEMORY_INFO_EVICTION_COUNT_NVX = 0x904A;
+			var GPU_MEMORY_INFO_EVICTED_MEMORY_NVX = 0x904;
+
+			int totalAvailableKb, currentAvailableKb;
+			GL.GetInteger((GetPName)GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX, out totalAvailableKb);
+			GL.GetInteger((GetPName)GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, out currentAvailableKb);
+
+			int total = totalAvailableKb / 1024;
+			int used = (totalAvailableKb - currentAvailableKb) / 1024;
+			Debug.AddValue("rendering / GPU memory used", $"{used}/{total} mb");
 		}
 	}
 }

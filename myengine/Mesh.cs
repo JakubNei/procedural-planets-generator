@@ -15,7 +15,7 @@ namespace MyEngine
 		public VertexBufferObject<Vector3> Vertices { get; private set; }
 		public VertexBufferObject<Vector3> Normals { get; private set; }
 		public VertexBufferObject<Vector3> Tangents { get; private set; }
-		public VertexBufferObject<Vector2> Uvs { get; private set; }
+		public VertexBufferObject<Vector2> UVs { get; private set; }
 		public VertexBufferObject<int> TriangleIndicies { get; private set; }
 
 		public Asset asset;
@@ -54,44 +54,26 @@ namespace MyEngine
 
 		bool isOnGPU = false;
 
-		public VertexArrayObject VertexArrayObj { get; private set; }
+		public VertexArrayObject VertexArray { get; private set; }
 
 		public Mesh()
 		{
-			Vertices = new VertexBufferObject<Vector3>()
-			{
-				ElementType = typeof(float),
-				DataStrideInElementsNumber = 3,
-			};
-			Normals = new VertexBufferObject<Vector3>()
-			{
-				ElementType = typeof(float),
-				DataStrideInElementsNumber = 3,
-			};
-			Tangents = new VertexBufferObject<Vector3>()
-			{
-				ElementType = typeof(float),
-				DataStrideInElementsNumber = 3,
-			};
-			Uvs = new VertexBufferObject<Vector2>()
-			{
-				ElementType = typeof(float),
-				DataStrideInElementsNumber = 2,
-			};
-			TriangleIndicies = new VertexBufferObject<int>()
+			Vertices = new VertexBufferObjectVector3();
+			Normals = new VertexBufferObjectVector3();
+			Tangents = new VertexBufferObjectVector3();
+			UVs = new VertexBufferObjectVector2();
+			TriangleIndicies = new VertexBufferObjectInt()
 			{
 				Target = BufTarget.ControlElementArray,
-				ElementType = typeof(int),
-				DataStrideInElementsNumber = 1,
 			};
 
-			VertexArrayObj = new VertexArrayObject();
-			VertexArrayObj.AddVertexBufferObject("vertices", Vertices);
-			VertexArrayObj.AddVertexBufferObject("normals", Normals);
-			VertexArrayObj.AddVertexBufferObject("tangents", Tangents);
-			VertexArrayObj.AddVertexBufferObject("uvs", Uvs);
-			VertexArrayObj.AddVertexBufferObject("triangleIndicies", TriangleIndicies);
-			VertexArrayObj.OnChanged += () => { isOnGPU = false; };
+			VertexArray = new VertexArrayObject();
+			VertexArray.AddVertexBuffer("vertices", Vertices);
+			VertexArray.AddVertexBuffer("normals", Normals);
+			VertexArray.AddVertexBuffer("tangents", Tangents);
+			VertexArray.AddVertexBuffer("uvs", UVs);
+			VertexArray.AddVertexBuffer("triangleIndicies", TriangleIndicies);
+			VertexArray.OnChanged += () => { isOnGPU = false; };
 		}
 
 		public void RecalculateBounds()
@@ -118,7 +100,7 @@ namespace MyEngine
 				{
 					UploadDataToGpu();
 				}
-				GL.BindVertexArray(VertexArrayObj.handle);
+				GL.BindVertexArray(VertexArray.handle);
 				GL.DrawElements(PrimitiveType.Triangles, TriangleIndicies.Count, DrawElementsType.UnsignedInt, IntPtr.Zero);
 				GL.BindVertexArray(0);
 			}
@@ -136,8 +118,8 @@ namespace MyEngine
 			}
 
 			//VertexArrayObj.Dispose(); // causes access violation if we try to reupload
-			if (VertexArrayObj.handle == -1) VertexArrayObj.CreateBuffer();
-			VertexArrayObj.SendDataToGpu();
+			if (VertexArray.handle == -1) VertexArray.CreateBuffer();
+			VertexArray.SendDataToGpu();
 
 			isOnGPU = true;
 		}
@@ -154,12 +136,12 @@ namespace MyEngine
 
 		public bool HasUVs()
 		{
-			return Uvs != null && Vertices.Count == Uvs.Count;
+			return UVs != null && Vertices.Count == UVs.Count;
 		}
 
 		public void Dispose()
 		{
-			VertexArrayObj.Dispose();
+			VertexArray.Dispose();
 		}
 
 		public class VertexArrayObject : IDisposable
@@ -173,7 +155,7 @@ namespace MyEngine
 
 			public int handle = -1;
 
-			public void AddVertexBufferObject(string name, IVertexBufferObject vbo)
+			public void AddVertexBuffer(string name, IVertexBufferObject vbo)
 			{
 				if (nameToVbo.ContainsKey(name) && nameToVbo[name] == vbo) return;
 				nameToVbo[name] = vbo;
@@ -263,6 +245,33 @@ namespace MyEngine
 			Array,
 			ControlElementArray,
 		}
+
+		public class VertexBufferObjectVector3 : VertexBufferObject<Vector3>
+		{
+			public VertexBufferObjectVector3()
+			{
+				ElementType = typeof(float);
+				DataStrideInElementsNumber = 3;
+			}
+		}
+		public class VertexBufferObjectVector2 : VertexBufferObject<Vector2>
+		{
+			public VertexBufferObjectVector2()
+			{
+				ElementType = typeof(float);
+				DataStrideInElementsNumber = 2;
+			}
+		}
+		public class VertexBufferObjectInt : VertexBufferObject<int>
+		{
+			public VertexBufferObjectInt()
+			{
+				ElementType = typeof(int);
+				DataStrideInElementsNumber = 1;
+			}
+		}
+
+
 
 		public class VertexBufferObject<T> : List<T>, IVertexBufferObject where T : struct
 		{

@@ -23,6 +23,9 @@ namespace MyGame.PlanetaryBody
 			//ReaderWriterLock chunkToPriority_mutex = new ReaderWriterLock();
 			Dictionary<Chunk, double> chunkToWeight = new Dictionary<Chunk, double>();
 
+			TimeSpan timeSpentGenerating = TimeSpan.Zero;
+			ulong countChunksGenerated;
+
 			List<Thread> threads = new List<Thread>();
 
 			bool doRun;
@@ -98,7 +101,11 @@ namespace MyGame.PlanetaryBody
 					// this takes alot of time
 					if (chunk != null)
 					{
+						var stopwatch = new System.Diagnostics.Stopwatch();
+						stopwatch.Start();
 						chunk.CreateRendererAndGenerateMesh();
+						countChunksGenerated++;
+						timeSpentGenerating = timeSpentGenerating.Add(stopwatch.Elapsed);
 
 						lock (chunkIsBeingGenerated)
 						{
@@ -108,7 +115,11 @@ namespace MyGame.PlanetaryBody
 
 					if (threadIndex == 0)
 					{
-						debug.AddValue("chunksToGenerateQueued", chunkToWeight.Count.ToString());
+						debug.AddValue("generation / chunkd to generate queued", chunkToWeight.Count.ToString());
+						debug.AddValue("generation / total chunks generated", countChunksGenerated);
+						debug.AddValue("generation / total time spent generating", timeSpentGenerating.TotalSeconds + " s");
+						debug.AddValue("generation / average time spent generating", (timeSpentGenerating.TotalSeconds / (float)countChunksGenerated) + " s");
+
 
 						//if (fps < 55) generationThreadMiliSecondsSleep *= 2;
 						//else generationThreadMiliSecondsSleep /= 2;

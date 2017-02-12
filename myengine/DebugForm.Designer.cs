@@ -28,63 +28,73 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
+			System.Windows.Forms.ColumnHeader columnName;
+			System.Windows.Forms.ColumnHeader columnValue;
+			System.Windows.Forms.ColumnHeader columnHeader1;
+			System.Windows.Forms.ColumnHeader columnHeader2;
+			System.Windows.Forms.ColumnHeader columnHeader3;
 			this.listView1 = new System.Windows.Forms.ListView();
-			this.columnName = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-			this.columnValue = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
 			this.listView2 = new System.Windows.Forms.ListView();
-			this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-			this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-			this.columnHeader3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+			columnName = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+			columnValue = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+			columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+			columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+			columnHeader3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
 			this.SuspendLayout();
 			// 
 			// listView1
 			// 
 			this.listView1.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.columnName,
-            this.columnValue});
-			this.listView1.Location = new System.Drawing.Point(12, 22);
+            columnName,
+            columnValue});
+			this.listView1.GridLines = true;
+			this.listView1.Location = new System.Drawing.Point(1, 0);
 			this.listView1.Name = "listView1";
-			this.listView1.Size = new System.Drawing.Size(363, 309);
+			this.listView1.Size = new System.Drawing.Size(486, 309);
+			this.listView1.Sorting = System.Windows.Forms.SortOrder.Descending;
 			this.listView1.TabIndex = 0;
 			this.listView1.UseCompatibleStateImageBehavior = false;
 			this.listView1.View = System.Windows.Forms.View.Details;
 			// 
 			// columnName
 			// 
-			this.columnName.Text = "Name";
+			columnName.Text = "Name";
+			columnName.Width = 175;
 			// 
 			// columnValue
 			// 
-			this.columnValue.Text = "Value";
-			this.columnValue.Width = 200;
+			columnValue.Text = "Value";
+			columnValue.Width = 200;
 			// 
 			// listView2
 			// 
 			this.listView2.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.columnHeader1,
-            this.columnHeader2,
-            this.columnHeader3});
-			this.listView2.Location = new System.Drawing.Point(12, 347);
+            columnHeader1,
+            columnHeader2,
+            columnHeader3});
+			this.listView2.GridLines = true;
+			this.listView2.Location = new System.Drawing.Point(1, 305);
 			this.listView2.Name = "listView2";
-			this.listView2.Size = new System.Drawing.Size(458, 346);
+			this.listView2.Size = new System.Drawing.Size(486, 407);
+			this.listView2.Sorting = System.Windows.Forms.SortOrder.Descending;
 			this.listView2.TabIndex = 1;
 			this.listView2.UseCompatibleStateImageBehavior = false;
 			this.listView2.View = System.Windows.Forms.View.Details;
 			// 
 			// columnHeader1
 			// 
-			this.columnHeader1.Text = "Key";
-			this.columnHeader1.Width = 71;
+			columnHeader1.Text = "Key";
+			columnHeader1.Width = 71;
 			// 
 			// columnHeader2
 			// 
-			this.columnHeader2.Text = "Name";
-			this.columnHeader2.Width = 158;
+			columnHeader2.Text = "Name";
+			columnHeader2.Width = 158;
 			// 
 			// columnHeader3
 			// 
-			this.columnHeader3.Text = "Value";
-			this.columnHeader3.Width = 145;
+			columnHeader3.Text = "Value";
+			columnHeader3.Width = 145;
 			// 
 			// DebugForm
 			// 
@@ -102,11 +112,6 @@
 		#endregion
 
 		public System.Windows.Forms.ListView listView1;
-		private System.Windows.Forms.ColumnHeader columnName;
-		private System.Windows.Forms.ColumnHeader columnValue;
 		public System.Windows.Forms.ListView listView2;
-		private System.Windows.Forms.ColumnHeader columnHeader1;
-		private System.Windows.Forms.ColumnHeader columnHeader2;
-		private System.Windows.Forms.ColumnHeader columnHeader3;
 	}
 }

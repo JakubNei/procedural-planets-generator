@@ -73,17 +73,8 @@ namespace MyGame.PlanetaryBody
 
 			// the planetary chunk vertices blend from positonsInitial to positionsFinal
 			// to smoothly blend in more detail as camera closes in
-			// var positionsInitial = new List<Vector3>();
-			var positionsInitial = new Mesh.VertexBufferObject<Vector3>()
-			{
-				ElementType = typeof(float),
-				DataStrideInElementsNumber = 3,
-			};
-			var normalsInitial = new Mesh.VertexBufferObject<Vector3>()
-			{
-				ElementType = typeof(float),
-				DataStrideInElementsNumber = 3,
-			};
+			var positionsInitial = new Mesh.VertexBufferObjectVector3();
+			var normalsInitial = new Mesh.VertexBufferObjectVector3();
 
 			// generate all of our vertices
 			if (childPosition == ChildPosition.NoneNoParent)
@@ -310,12 +301,12 @@ namespace MyGame.PlanetaryBody
 
 			//Mesh.CalculateNormals(mesh.triangleIndicies, positionsInitial, normalsInitial);
 
-			mesh.VertexArrayObj.AddVertexBufferObject("positionsInitial", positionsInitial);
-			mesh.VertexArrayObj.AddVertexBufferObject("normalsInitial", normalsInitial);
+			mesh.VertexArray.AddVertexBuffer("positionsInitial", positionsInitial);
+			mesh.VertexArray.AddVertexBuffer("normalsInitial", normalsInitial);
 
 			edgeVerticesIndexes = this.GetEdgeVertices().ToArray();
 			originalNormalsFinal = mesh.Normals.ToArray();
-			originalNormalsInitial = (mesh.VertexArrayObj.GetVertexArrayBufferObject("normalsInitial") as Mesh.VertexBufferObject<Vector3>).ToArray();
+			originalNormalsInitial = (mesh.VertexArray.GetVertexArrayBufferObject("normalsInitial") as Mesh.VertexBufferObject<Vector3>).ToArray();
 
 
 			bool useSkirts = false;
@@ -362,8 +353,8 @@ namespace MyGame.PlanetaryBody
 			var myNormalsFinal = myMesh.Normals;
 			var otherNormals = otherMesh.Normals;
 
-			var myNormalsInitial = myMesh.VertexArrayObj.GetVertexArrayBufferObject("normalsInitial") as Mesh.VertexBufferObject<Vector3>;
-			var otherNormalsInitial = otherMesh.VertexArrayObj.GetVertexArrayBufferObject("normalsInitial") as Mesh.VertexBufferObject<Vector3>;
+			var myNormalsInitial = myMesh.VertexArray.GetVertexArrayBufferObject("normalsInitial") as Mesh.VertexBufferObject<Vector3>;
+			var otherNormalsInitial = otherMesh.VertexArray.GetVertexArrayBufferObject("normalsInitial") as Mesh.VertexBufferObject<Vector3>;
 
 			foreach (var toAverageIndex in toAverageIndexes)
 			{
@@ -413,8 +404,8 @@ namespace MyGame.PlanetaryBody
 			var myNormals = myMesh.Normals;
 			var otherNormals = otherMesh.Normals;
 
-			var myNormalsInitial = myMesh.VertexArrayObj.GetVertexArrayBufferObject("normalsInitial") as Mesh.VertexBufferObject<Vector3>;
-			var otherNormalsInitial = otherMesh.VertexArrayObj.GetVertexArrayBufferObject("normalsInitial") as Mesh.VertexBufferObject<Vector3>;
+			var myNormalsInitial = myMesh.VertexArray.GetVertexArrayBufferObject("normalsInitial") as Mesh.VertexBufferObject<Vector3>;
+			var otherNormalsInitial = otherMesh.VertexArray.GetVertexArrayBufferObject("normalsInitial") as Mesh.VertexBufferObject<Vector3>;
 
 			foreach (var toAverageIndex in toAverageIndexes)
 			{

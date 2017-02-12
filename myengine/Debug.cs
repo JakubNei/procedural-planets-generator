@@ -19,11 +19,16 @@ namespace MyEngine
 		[Dependency]
 		IDependencyManager dependency;
 
+
 		private ConcurrentDictionary<string, string> stringValues = new ConcurrentDictionary<string, string>();
 
-		public void AddValue(string key, object value)
+		public CommonCVars CommonCVars { get; private set; }
+
+
+		public Debug()
 		{
-			stringValues[key] = value.ToString();
+			CommonCVars = new CommonCVars(this);
+			AddCommonCvars();
 		}
 
 		class TickStats
@@ -63,67 +68,30 @@ namespace MyEngine
 				while ((now - frameTimes1sec.Peek()).TotalSeconds > 1) frameTimes1sec.Dequeue();
 				while ((now - frameTimes10sec.Peek()).TotalSeconds > 10) frameTimes10sec.Dequeue();
 
-				debug.AddValue(name, $"(FPS 1s:{FpsPer1Sec.ToString("0.")} 10s:{FpsPer10Sec.ToString("0.")})");
+				debug.AddValue(name, $"FPS:{FpsPer1Sec.ToString("0.")}, average FPS over 10s:{FpsPer10Sec.ToString("0.")}");
 				//Debug.AddValue(name, $"(FPS now:{nowFps.ToString("0.")} 1s:{FpsPer1Sec.ToString("0.")} 10s:{FpsPer10Sec.ToString("0.")})");
 
 				//lastNow = now;
 			}
 		}
 
-		Dictionary<string, TickStats> nameToTickStat = new Dictionary<string, TickStats>();
 
-		Dictionary<string, ConVar> nameToCVar = new Dictionary<string, ConVar>();
-
-
-		public class ConVar
+		public void AddValue(string key, object value)
 		{
-			//public dynamic Value { get; set; }
-			public string name;
-
-			bool _bool;
-
-			Debug debug;
-
-			public bool Bool
-			{
-				get
-				{
-					return _bool;
-				}
-				set
-				{
-					if (_bool != value)
-					{
-						_bool = value;
-						OnChanged?.Invoke(this);
-					}
-				}
-			}
-
-			public OpenTK.Input.Key toogleKey = OpenTK.Input.Key.Unknown;
-			public bool hasDefaultValue = false;
-
-			public event Action<ConVar> OnChanged;
-
-			public ConVar(Debug debug)
-			{
-				this.debug = debug;
-			}
-
-			public ConVar ToogledByKey(OpenTK.Input.Key key)
-			{
-				debug.Info($"{key} to toggled {name}");
-				toogleKey = key;
-				return this;
-			}
+			stringValues[key] = value.ToString();
 		}
 
-		public ConVar CVar(string name, bool defaultValue = false)
+
+		Dictionary<string, TickStats> nameToTickStat = new Dictionary<string, TickStats>();
+
+		Dictionary<string, CVar> nameToCVar = new Dictionary<string, CVar>();
+
+		public CVar CVar(string name, bool defaultValue = false)
 		{
-			ConVar result;
+			CVar result;
 			if (!nameToCVar.TryGetValue(name, out result))
 			{
-				result = new ConVar(this);
+				result = new CVar(this);
 				result.name = name;
 				nameToCVar[name] = result;
 			}
@@ -135,12 +103,12 @@ namespace MyEngine
 			return result;
 		}
 
-		public ConVar CVar(string name)
+		public CVar GetCVar(string name)
 		{
-			ConVar result;
+			CVar result;
 			if (!nameToCVar.TryGetValue(name, out result))
 			{
-				result = new ConVar(this);
+				result = new CVar(this);
 				result.name = name;
 				nameToCVar[name] = result;
 			}
@@ -159,19 +127,15 @@ namespace MyEngine
 			t.Update(this);
 		}
 
-		public Debug()
-		{
-			AddCommonCvars();
-		}
 
 
 		DebugForm debugForm;
 		DictionaryWatcher<string, string> stringValuesWatcher;
-		DictionaryWatcher<string, ConVar, string> ckeyValuesWatcher;
+		DictionaryWatcher<string, CVar, string> ckeyValuesWatcher;
 
 		void AddCommonCvars()
 		{
-			CVar("showDebugForm").ToogledByKey(OpenTK.Input.Key.F1).OnChanged += (cvar) =>
+			CommonCVars.ShowDebugForm().ToogledByKey(OpenTK.Input.Key.F1).OnChanged += (cvar) =>
 			{
 				if (debugForm == null)
 				{
@@ -185,7 +149,7 @@ namespace MyEngine
 					}
 					{
 						var items = debugForm.listView2.Items;
-						ckeyValuesWatcher = new DictionaryWatcher<string, ConVar, string>();
+						ckeyValuesWatcher = new DictionaryWatcher<string, CVar, string>();
 						ckeyValuesWatcher.comparisonValueSelector = (item) => item.Bool.ToString();
 						ckeyValuesWatcher.OnAdded += (key, item) => items.Add(new ListViewItem(new string[] { item.toogleKey.ToString(), item.name, item.Bool.ToString() }) { Tag = key });
 						ckeyValuesWatcher.OnUpdated += (key, item) =>
@@ -201,17 +165,18 @@ namespace MyEngine
 				if (cvar.Bool) debugForm.Show();
 				else debugForm.Hide();
 			};
-			CVar("autoBuildRenderList").ToogledByKey(OpenTK.Input.Key.F4);
-			CVar("reloadAllShaders").ToogledByKey(OpenTK.Input.Key.F5);
-			CVar("shadowsDisabled").ToogledByKey(OpenTK.Input.Key.F6);
-			CVar("drawDebugBounds").ToogledByKey(OpenTK.Input.Key.F7);
-			CVar("enablePostProcessEffects").ToogledByKey(OpenTK.Input.Key.F8);
-			CVar("debugDrawGBufferContents").ToogledByKey(OpenTK.Input.Key.F9);
-			CVar("debugDrawNormalBufferContents").ToogledByKey(OpenTK.Input.Key.F10);
-			CVar("debugRenderWithLines").ToogledByKey(OpenTK.Input.Key.F11);
-			CVar("sortRenderers").ToogledByKey(OpenTK.Input.Key.F12);
+			CommonCVars.PauseRenderPrepare().ToogledByKey(OpenTK.Input.Key.F4);
+			CommonCVars.ReloadAllShaders().ToogledByKey(OpenTK.Input.Key.F5);
+			CommonCVars.ShadowsDisabled().ToogledByKey(OpenTK.Input.Key.F6);
+			CommonCVars.DrawDebugBounds().ToogledByKey(OpenTK.Input.Key.F7);
+			CommonCVars.EnablePostProcessEffects().ToogledByKey(OpenTK.Input.Key.F8);
+			CommonCVars.DebugDrawGBufferContents().ToogledByKey(OpenTK.Input.Key.F9);
+			CommonCVars.DebugDrawNormalBufferContents().ToogledByKey(OpenTK.Input.Key.F10);
+			CommonCVars.DebugRenderWithLines().ToogledByKey(OpenTK.Input.Key.F11);
+			CommonCVars.SortRenderers().ToogledByKey(OpenTK.Input.Key.F12);
 
 		}
+
 
 		public void Update()
 		{
@@ -232,66 +197,6 @@ namespace MyEngine
 				stringValuesWatcher.UpdateBy(stringValues);
 				ckeyValuesWatcher.UpdateBy(nameToCVar);
 			}
-		}
-
-
-
-		class DictionaryWatcher<TKey, TItem> : DictionaryWatcher<TKey, TItem, TItem>
-		{
-			public DictionaryWatcher()
-			{
-				comparisonValueSelector = (item) => item;
-			}
-		}
-
-		class DictionaryWatcher<TKey, TItem, TEqualityComparisonValue>
-		{
-			public event Action<TKey, TItem> OnAdded;
-			/// <summary>
-			/// Guarantees that OnAdded was called on same TKey before.
-			/// </summary>
-			public event Action<TKey> OnRemoved;
-			/// <summary>
-			/// Guarantees that OnAdded was called on same TKey before.
-			/// </summary>
-			public event Action<TKey, TItem> OnUpdated;
-
-			public Func<TEqualityComparisonValue, TEqualityComparisonValue, bool> equalityComparer = (a, b) => a.Equals(b);
-			public Func<TItem, TEqualityComparisonValue> comparisonValueSelector;
-
-
-			Dictionary<TKey, TEqualityComparisonValue> currentValues = new Dictionary<TKey, TEqualityComparisonValue>();
-
-			public void UpdateBy(IDictionary<TKey, TItem> source)
-			{
-				foreach (var kvp in source)
-				{
-					TEqualityComparisonValue sourceValue = comparisonValueSelector(kvp.Value);
-					TEqualityComparisonValue currentValue;
-					if (currentValues.TryGetValue(kvp.Key, out currentValue))
-					{
-						if (equalityComparer(currentValue, sourceValue) == false)
-						{
-							currentValues[kvp.Key] = sourceValue;
-							OnUpdated.Raise(kvp.Key, kvp.Value);
-						}
-					}
-					else
-					{
-						currentValues[kvp.Key] = sourceValue;
-						OnAdded.Raise(kvp.Key, kvp.Value);
-					}
-				}
-
-				var keysRemoved = currentValues.Keys.Except(source.Keys).ToArray();
-				foreach (var keyRemoved in keysRemoved)
-				{
-					currentValues.Remove(keyRemoved);
-					OnRemoved.Raise(keyRemoved);
-				}
-
-			}
-
 		}
 
 
