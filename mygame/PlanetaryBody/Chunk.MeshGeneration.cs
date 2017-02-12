@@ -289,6 +289,17 @@ namespace MyGame.PlanetaryBody
 				}
 			}
 
+
+			// tell every vertex where on the planet it is, so it can query from biomes splat map
+			mesh.UVs.Clear();
+			mesh.UVs.Capacity = mesh.Vertices.Count;
+			for (int i = 0; i < mesh.Vertices.Count; i++)
+			{
+				var v = mesh.Vertices[i];
+				var s = planetaryBody.CalestialToSpherical(v);
+				mesh.UVs.Add(new Vector2((float)((s.longitude / Math.PI + 1) / 2), (float)(s.latitude / Math.PI + 0.5)));
+			}
+
 			// DEBUG
 			/*
 			for (int i = 0; i < positionsFinal.Count; i++)

@@ -32,7 +32,7 @@ namespace MyEngine
 
 		int textureHandle = -1;
 		Bitmap bmp;
-		Asset asset;
+		MyFile file;
 
 		public Texture2D(int width, int height)
 		{
@@ -45,9 +45,10 @@ namespace MyEngine
 			UpdateIsOnGpu();
 		}
 
-		public Texture2D(Asset asset)
+		public Texture2D(MyFile file)
 		{
-			this.asset = asset;
+			this.file = file;
+			file.OnFileChanged(() => WantsToBeUploadedToGpu = true);
 			WantsToBeUploadedToGpu = true;
 		}
 
@@ -99,7 +100,7 @@ namespace MyEngine
 
 		void LoadLocalCopy()
 		{
-			using (var s = asset.GetDataStream())
+			using (var s = file.GetDataStream())
 				bmp = new Bitmap(s);
 		}
 
@@ -108,24 +109,23 @@ namespace MyEngine
 			if (textureHandle == -1) textureHandle = GL.GenTexture();
 			GL.BindTexture(TextureTarget.Texture2D, textureHandle);
 
-			Stream s = null;
+			Stream stream = null;
 
 			if (bmp == null)
 			{
-				s = asset.GetDataStream();
-				bmp = new Bitmap(s);
+				stream = file.GetDataStream();
+				bmp = new Bitmap(stream);
 			}
 			lock (bmp)
 			{
-				BitmapData bmp_data = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-				GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, bmp_data.Width, bmp_data.Height, 0, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, bmp_data.Scan0);
-				bmp.UnlockBits(bmp_data);
+				BitmapData bmpData = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+				GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, bmpData.Width, bmpData.Height, 0, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, bmpData.Scan0);
+				bmp.UnlockBits(bmpData);
 			}
-			if (s != null)
-			{
-				bmp.Dispose();
-				s.Dispose();
-			}
+			bmp?.Dispose();
+			bmp = null;
+			stream?.Dispose();
+
 
 			// We will not upload mipmaps, so disable mipmapping (otherwise the texture will not appear).
 			// We can use GL.GenerateMipmaps() or GL.Ext.GenerateMipmaps() to create

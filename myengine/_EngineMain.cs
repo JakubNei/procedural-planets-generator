@@ -22,7 +22,7 @@ namespace MyEngine
 		public Debug Debug { get; private set; }
 
 		[Dependency(Register = true)]
-		public AssetSystem Asset { get; private set; }
+		public FileSystem Asset { get; private set; }
 
 		List<SceneSystem> scenes = new List<SceneSystem>();
 
@@ -182,25 +182,22 @@ namespace MyEngine
 		{
 			renderManagerPrepareNext.Wait();
 			renderManagerPrepareNext.Reset();
-			if (Debug.CommonCVars.PauseRenderPrepare().Bool == false)
+			if (Debug.CommonCVars.PauseRenderPrepare())
 			{
-				if (scenes.Count > 0)
-				{
-					Debug.Tick("rendering / render prepare");
-					foreach (var scene in scenes)
-					{
-						var camera = scene.mainCamera;
-						var dataToRender = scene.DataToRender;
-						if (camera != null && dataToRender != null)
-						{
-							renderManagerBack.BuildRenderList(dataToRender.Renderers, camera);
-						}
-					}
-				}
+				Debug.AddValue("rendering / render prepare", "paused");
 			}
 			else
 			{
-				Debug.AddValue("rendering / render prepare", "paused");
+				Debug.Tick("rendering / render prepare");
+				foreach (var scene in scenes)
+				{
+					var camera = scene.mainCamera;
+					var dataToRender = scene.DataToRender;
+					if (camera != null && dataToRender != null)
+					{
+						renderManagerBack.BuildRenderList(dataToRender.Renderers, camera);
+					}
+				}
 			}
 			renderManagerBackReady.Set();
 		}
@@ -223,12 +220,15 @@ namespace MyEngine
 
 		void RenderMain()
 		{
-			renderManagerBackReady.Wait();
-			renderManagerBackReady.Reset();
-			var tmp = renderManagerFront;
-			renderManagerFront = renderManagerBack;
-			renderManagerBack = tmp;
-			renderManagerPrepareNext.Set();
+			if (Debug.CommonCVars.PauseRenderPrepare() == false)
+			{
+				renderManagerBackReady.Wait();
+				renderManagerBackReady.Reset();
+				var tmp = renderManagerFront;
+				renderManagerFront = renderManagerBack;
+				renderManagerBack = tmp;
+				renderManagerPrepareNext.Set();
+			}
 
 			frameCounter++;
 			Debug.AddValue("rendering / frames rendered", frameCounter);

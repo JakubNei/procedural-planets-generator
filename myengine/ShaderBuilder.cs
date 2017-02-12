@@ -14,7 +14,7 @@ namespace MyEngine
 		string prependSource;
 
 		[Dependency]
-		AssetSystem assetSystem;
+		FileSystem assetSystem;
 
 		[Dependency]
 		Debug debug;
@@ -23,7 +23,7 @@ namespace MyEngine
 		{
 		}
 
-		void Prepend(Asset name)
+		void Prepend(MyFile name)
 		{
 			using (var fs = new System.IO.StreamReader(name.GetDataStream()))
 				prependSource += fs.ReadToEnd();
@@ -48,7 +48,7 @@ namespace MyEngine
 			return text;
 		}
 
-		public void Load(Asset asset)
+		public void Load(MyFile asset)
 		{
 			string source = "";
 			using (var r = asset.GetDataStream())

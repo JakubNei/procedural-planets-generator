@@ -306,13 +306,12 @@ namespace MyEngine
 				);
 			}
 			debug.AddValue("rendering / meshes rendered", toRenderCount + "/" + totalPossible);
-			/*
-			if (Debug.CVar("sortRenderers").Bool)
+			
+			if (debug.CommonCVars.SortRenderers())
 			{
 				var comparer = new RenderableDistanceComparer(camera.ViewPointPosition);
-				toRender.Sort(comparer);
+				Array.Sort(toRender, 0, toRenderCount, comparer);
 			}
-			*/
 		}
 
 		class RenderableDistanceComparer : IComparer<IRenderable>

@@ -6,7 +6,7 @@ using System.Text;
 
 namespace MyEngine
 {
-	public class AssetSystem : GameSystemBase
+	public class FileSystem : GameSystemBase
 	{
 		[Dependency]
 		Debug Debug;
@@ -20,7 +20,7 @@ namespace MyEngine
 			{"shader", typeof(Shader)},
 		};
 
-		public AssetSystem(string rootResourceFolderPath = "../../../Resources/")
+		public FileSystem(string rootResourceFolderPath = "../../../Resources/")
 		{
 			this.rootResourceFolderPath = rootResourceFolderPath;
 		}
@@ -40,19 +40,19 @@ namespace MyEngine
 		public bool AssetExists(string virtualPath)
 		{
 			var realPath = CombineDirectory(rootResourceFolderPath, virtualPath);
-			return File.Exists(realPath);
+			return System.IO.File.Exists(realPath);
 		}
 
 		public bool AssetExists(string virtualPath, AssetFolder startSearchInFolder)
 		{
 			var realPath = CombineDirectory(rootResourceFolderPath, startSearchInFolder.VirtualPath, virtualPath);
-			if (File.Exists(realPath))
+			if (System.IO.File.Exists(realPath))
 			{
 				return true;
 			}
 			else
 			{
-				if (File.Exists(realPath))
+				if (System.IO.File.Exists(realPath))
 				{
 					return true;
 				}
@@ -60,12 +60,12 @@ namespace MyEngine
 			return false;
 		}
 
-		public Asset FindAsset(string virtualPath)
+		public MyFile FindAsset(string virtualPath)
 		{
 			var realPath = CombineDirectory(rootResourceFolderPath, virtualPath);
-			if (File.Exists(realPath))
+			if (System.IO.File.Exists(realPath))
 			{
-				return new Asset(this, virtualPath, realPath);
+				return new MyFile(this, virtualPath, realPath);
 			}
 			else
 			{
@@ -75,9 +75,9 @@ namespace MyEngine
 			}
 		}
 
-		public List<Asset> FindAssets(params string[] virtualPaths)
+		public List<MyFile> FindAssets(params string[] virtualPaths)
 		{
-			var ret = new List<Asset>();
+			var ret = new List<MyFile>();
 			foreach (var p in virtualPaths)
 			{
 				ret.Add(FindAsset(p));
@@ -85,19 +85,19 @@ namespace MyEngine
 			return ret;
 		}
 
-		public Asset FindAsset(string virtualPath, AssetFolder startSearchInFolder)
+		public MyFile FindAsset(string virtualPath, AssetFolder startSearchInFolder)
 		{
 			var realPath = CombineDirectory(rootResourceFolderPath, startSearchInFolder.VirtualPath, virtualPath);
-			if (File.Exists(realPath))
+			if (System.IO.File.Exists(realPath))
 			{
-				return new Asset(this, CombineDirectory(startSearchInFolder.VirtualPath, virtualPath), realPath);
+				return new MyFile(this, CombineDirectory(startSearchInFolder.VirtualPath, virtualPath), realPath);
 			}
 			else
 			{
 				realPath = CombineDirectory(rootResourceFolderPath, virtualPath);
-				if (File.Exists(realPath))
+				if (System.IO.File.Exists(realPath))
 				{
-					return new Asset(this, virtualPath, realPath);
+					return new MyFile(this, virtualPath, realPath);
 				}
 				else
 				{
@@ -108,7 +108,7 @@ namespace MyEngine
 			}
 		}
 
-		public AssetFolder GetAssetFolder(Asset asset)
+		public AssetFolder GetAssetFolder(MyFile asset)
 		{
 			var virtualDir = Path.GetDirectoryName(asset.VirtualPath);
 			return new AssetFolder(virtualDir);

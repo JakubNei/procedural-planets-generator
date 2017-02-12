@@ -66,33 +66,10 @@ namespace MyGame.PlanetaryBody
 			this.radiusVariation = radiusVariation;
 		}
 
-		// http://stackoverflow.com/questions/1185408/converting-from-longitude-latitude-to-cartesian-coordinates
-		public SpehricalCoord CalestialToSpherical(Vector3d c)
-		{
-			var r = c.Length;
-			if (r == 0) return new SpehricalCoord(0, 0, 0);
-			return new SpehricalCoord(
-				Math.Atan2(c.Z, c.X),
-				Math.Asin(c.Y / r),
-				r
-			);
-		}
-
-		// x = left right = longitude
-		// y = top down = latitude
-		// z = radius
-		public Vector3d SphericalToCalestial(SpehricalCoord s)
-		{
-			var r = s.altitude;
-			//s.latitude = s.latitude / 180.0f * M_PI;
-			//s.longitude = s.longitude / 180.0f * M_PI;
-			//if (r == 0) r = radius;
-			return new Vector3d(
-				Math.Cos(s.latitude) * Math.Cos(s.longitude) * r,
-				Math.Sin(s.latitude) * r,
-				Math.Cos(s.latitude) * Math.Sin(s.longitude) * r
-			);
-		}
+		
+		public SpehricalCoord CalestialToSpherical(Vector3d c) => SpehricalCoord.FromCalestial(c);
+		public SpehricalCoord CalestialToSpherical(Vector3 c) => SpehricalCoord.FromCalestial(c);
+		public Vector3d SphericalToCalestial(SpehricalCoord s) => s.ToCalestial();
 
 		public Vector3d GetFinalPos(Vector3d calestialPos, int detailDensity = 1)
 		{

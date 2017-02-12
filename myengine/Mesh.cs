@@ -18,7 +18,7 @@ namespace MyEngine
 		public VertexBufferObject<Vector2> UVs { get; private set; }
 		public VertexBufferObject<int> TriangleIndicies { get; private set; }
 
-		public Asset asset;
+		public MyFile asset;
 
 		bool recalculateBounds = true;
 

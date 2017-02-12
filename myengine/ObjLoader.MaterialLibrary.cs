@@ -19,7 +19,7 @@ namespace MyEngine
 					failedParse++;
 			}
 
-			public MaterialLibrary(Asset asset, AssetSystem assetSystem, Factory factory)
+			public MaterialLibrary(MyFile asset, FileSystem assetSystem, Factory factory)
 			{
 				using (var s = asset.GetDataStream())
 				using (StreamReader textReader = new StreamReader(s))

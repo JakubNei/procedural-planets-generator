@@ -52,7 +52,7 @@ namespace MyEngine
 		ObjLoader objLoader;
 
 		[Dependency]
-		AssetSystem assetSystem;
+		FileSystem assetSystem;
 
 		ConcurrentDictionary<string, Mesh> allMeshes = new ConcurrentDictionary<string, Mesh>();
 

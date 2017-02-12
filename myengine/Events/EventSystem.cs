@@ -14,6 +14,7 @@ namespace MyEngine.Events
     public interface IEvent
     {
     }
+
     // TODO: add WeakReference (weak event pattern) probably WeakEventManager https://msdn.microsoft.com/en-us/library/system.windows.weakeventmanager(v=vs.100).aspx
     public class EventSystem 
     {

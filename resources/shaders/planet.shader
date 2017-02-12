@@ -124,15 +124,28 @@ float rand(vec2 co){
 }
 
 
-vec3 getColor(float distance) {
+vec3 getColor() {
 
+	float biomesSplatMap = texture2D(param_biomesSplatMap, i.uv).r;
+	//return vec3(i.uv.y<-0.4);
+	//return vec3(biomesSplatMap);
 	vec3 pos = engine.cameraPosition + i.worldPos;
 
-	vec3 c = 
-		triPlanar(param_rock, pos, i.normal, 0.005) * 2+
-		triPlanar(param_rock, pos, i.normal, 0.05) +
-		triPlanar(param_rock, pos, i.normal, 0.5) * 2;
-	return c/5.0;
+	vec3 snow = 
+		(
+			triPlanar(param_snow, pos, i.normal, 0.005) +
+			triPlanar(param_snow, pos, i.normal, 0.05) +
+			triPlanar(param_snow, pos, i.normal, 0.5) 
+		) / 3;
+
+	vec3 rock = 
+		(
+			triPlanar(param_rock, pos, i.normal, 0.005) +
+			triPlanar(param_rock, pos, i.normal, 0.05) +
+			triPlanar(param_rock, pos, i.normal, 0.5) 
+		) / 3;
+
+	return mix(rock, snow, biomesSplatMap);
 }
 
 
@@ -144,9 +157,9 @@ void main()
 	// }	
 
 	// BASE COLOR
-	float dist = gl_FragCoord.z/gl_FragCoord.w; //distance(EyePosition, i.worldPos);
+	//float pixelDepth = gl_FragCoord.z/gl_FragCoord.w; //distance(EyePosition, i.worldPos);
 	vec3 color = vec3(1,1,1);
-	color = getColor(dist);
+	color = getColor();
 
 
 

@@ -157,7 +157,7 @@ namespace MyEngine
             return new SparseListEnumerator(this);
         }
 
-        private class SparseListEnumerator : IEnumerator<T>
+		public class SparseListEnumerator : IEnumerator<T>
         {
             SparseList<T> list;
             int version;
@@ -215,7 +215,7 @@ namespace MyEngine
             }
         }
 
-        private class SparseListCleaningEnumerator : IEnumerator<T>
+		public class SparseListCleaningEnumerator : IEnumerator<T>
         {
             SparseList<T> list;
             int version;

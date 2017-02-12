@@ -30,7 +30,7 @@ namespace MyEngine
 
 		Dictionary<string, int> cache_uniformLocations = new Dictionary<string, int>();
 
-		Asset asset;
+		MyFile file;
 
 		List<int> shaderPartHandles = new List<int>();
 
@@ -41,9 +41,9 @@ namespace MyEngine
 		[Dependency]
 		IDependencyManager dependency;
 
-		Shader(Asset asset)
+		Shader(MyFile file)
 		{
-			this.asset = asset;
+			this.file = file;
 			this.Uniforms = new UniformsManager();
 		}
 
@@ -54,7 +54,7 @@ namespace MyEngine
 
 			var builder = dependency.Create<ShaderBuilder>();
 			var success = true;
-			builder.Load(asset);
+			builder.Load(file);
 			foreach (var r in builder.buildResults)
 			{
 				success &= AttachShader(r.shaderContents, r.shaderType, r.filePath);
@@ -62,9 +62,9 @@ namespace MyEngine
 
 			FinalizeInit();
 
-			if (success) debug.Info(typeof(Shader) + " " + asset + " loaded successfully");
+			if (success) debug.Info(typeof(Shader) + " " + file + " loaded successfully");
 
-			fileWatcher.WatchFile(asset.RealPath, (string newFilePath) =>
+			fileWatcher.WatchFile(file.RealPath, (string newFilePath) =>
 			{
 				fileWatcher.StopAllWatchers();
 				shouldReload = true;
@@ -87,7 +87,7 @@ namespace MyEngine
 			}
 			else if (shouldReload)
 			{
-				debug.Info("Reloading " + asset.VirtualPath);
+				debug.Info("Reloading " + file.VirtualPath);
 				Dispose();
 				Load();
 				Uniforms.MarkAllUniformsAsChanged();
@@ -171,7 +171,7 @@ namespace MyEngine
 			var location = GL.GetUniformBlockIndex(shaderProgramHandle, name);
 			if (location == -1)
 			{
-				debug.Warning(asset + ", uniform block index " + name + " not found ", false);
+				debug.Warning(file + ", uniform block index " + name + " not found ", false);
 				return false;
 			}
 			GL.UniformBlockBinding(shaderProgramHandle, location, uniformBufferIndex);
@@ -186,7 +186,7 @@ namespace MyEngine
 				location = GL.GetUniformLocation(shaderProgramHandle, name);
 				if (location == -1)
 				{
-					debug.Warning(asset + ", uniform " + name + " not found ", false);
+					debug.Warning(file + ", uniform " + name + " not found ", false);
 				}
 				cache_uniformLocations[name] = location;
 			}

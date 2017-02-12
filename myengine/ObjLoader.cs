@@ -12,7 +12,7 @@ namespace MyEngine
 		[Dependency]
 		IDependencyManager dependency;
 
-		public Mesh Load(Asset resource, Entity appendToEntity = null)
+		public Mesh Load(MyFile resource, Entity appendToEntity = null)
 		{
 			var loadJob = dependency.Create<LoadJob>();
 			var mesh = loadJob.Parse(resource, appendToEntity);
@@ -25,7 +25,7 @@ namespace MyEngine
 		class LoadJob
 		{
 			[Dependency]
-			AssetSystem assetSystem;
+			FileSystem assetSystem;
 
 			[Dependency]
 			Debug debug;
@@ -58,7 +58,7 @@ namespace MyEngine
 					failedParse++;
 			}
 
-			public Mesh Parse(Asset asset, Entity appendToEntity)
+			public Mesh Parse(MyFile asset, Entity appendToEntity)
 			{
 				using (StreamReader textReader = new StreamReader(asset.GetDataStream()))
 				{

@@ -48,6 +48,8 @@ namespace MyEngine
 			toogleKey = key;
 			return this;
 		}
+
+		public static implicit operator bool(CVar cvar) => cvar.Bool;
 	}
 
 }
