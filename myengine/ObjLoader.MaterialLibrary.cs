@@ -19,9 +19,9 @@ namespace MyEngine
 					failedParse++;
 			}
 
-			public MaterialLibrary(MyFile asset, FileSystem assetSystem, Factory factory)
+			public MaterialLibrary(MyFile file, FileSystem FileSystem, Factory factory)
 			{
-				using (var s = asset.GetDataStream())
+				using (var s = file.GetDataStream())
 				using (StreamReader textReader = new StreamReader(s))
 				{
 					MaterialPBR lastMat = new MaterialPBR(factory);
@@ -71,7 +71,7 @@ namespace MyEngine
 								break;
 
 							case "map_Kd":
-								lastMat.albedoTexture = new Texture2D(assetSystem.FindAsset(parameters[1], asset.AssetFolder));
+								lastMat.albedoTexture = new Texture2D(FileSystem.FindFile(parameters[1], file.Folder));
 								break;
 						}
 					}

@@ -135,7 +135,7 @@
     <Compile Include="Events\Events.cs" />
     <Compile Include="Tier1\FileChangedWatcher.cs" />
     <Compile Include="GameSystems\MyFile.cs" />
-    <Compile Include="GameSystems\MyDirectory.cs" />
+    <Compile Include="GameSystems\MyFolder.cs" />
     <Compile Include="GameSystems\FileSystem.cs" />
     <Compile Include="ITest1.cs" />
     <Compile Include="Mathematical\MyMath.cs">

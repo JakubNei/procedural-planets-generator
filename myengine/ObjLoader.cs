@@ -16,7 +16,7 @@ namespace MyEngine
 		{
 			var loadJob = dependency.Create<LoadJob>();
 			var mesh = loadJob.Parse(resource, appendToEntity);
-			mesh.asset = resource;
+			mesh.file = resource;
 			return mesh;
 		}
 
@@ -25,7 +25,7 @@ namespace MyEngine
 		class LoadJob
 		{
 			[Dependency]
-			FileSystem assetSystem;
+			FileSystem FileSystem;
 
 			[Dependency]
 			Debug debug;
@@ -58,9 +58,9 @@ namespace MyEngine
 					failedParse++;
 			}
 
-			public Mesh Parse(MyFile asset, Entity appendToEntity)
+			public Mesh Parse(MyFile file, Entity appendToEntity)
 			{
-				using (StreamReader textReader = new StreamReader(asset.GetDataStream()))
+				using (StreamReader textReader = new StreamReader(file.GetDataStream()))
 				{
 					int i1, i2, i3, i4;
 
@@ -131,9 +131,9 @@ namespace MyEngine
 								break;
 
 							case "mtllib":
-								if (assetSystem.AssetExists(parameters[1], asset.AssetFolder))
+								if (FileSystem.FileExists(parameters[1], file.Folder))
 								{
-									materialLibrary = new MaterialLibrary(assetSystem.FindAsset(parameters[1], asset.AssetFolder), assetSystem, factory);
+									materialLibrary = new MaterialLibrary(FileSystem.FindFile(parameters[1], file.Folder), FileSystem, factory);
 								}
 								break;
 
@@ -149,7 +149,7 @@ namespace MyEngine
 
 				if (appendToEntity != null) return EndObjPart(appendToEntity);
 
-				debug.Info("Loaded " + asset + " vertices:" + verticesMesh.Count + " faces:" + triangleIndiciesMesh.Count / 3);
+				debug.Info("Loaded " + file + " vertices:" + verticesMesh.Count + " faces:" + triangleIndiciesMesh.Count / 3);
 
 				return EndMesh();
 			}

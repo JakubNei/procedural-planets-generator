@@ -41,7 +41,7 @@ namespace MyEngine
 
         int textureHandle = -1;
         Bitmap[] bmps;
-        MyFile[] assets;
+        MyFile[] files;
 
         static readonly TextureTarget[] textureTargets = new TextureTarget[] {
             TextureTarget.TextureCubeMapNegativeX,
@@ -57,9 +57,9 @@ namespace MyEngine
             this.textureHandle = textureHandle;
             UpdateIsOnGpu();
         }
-        public Cubemap(MyFile[] assets)
+        public Cubemap(MyFile[] files)
         {
-            this.assets = assets;
+            this.files = files;
             bmps = new Bitmap[6];
             WantsToBeUploadedToGpu = true;
         }
@@ -123,7 +123,7 @@ namespace MyEngine
         {
             for (int i = 0; i < 6; i++)
             {
-                using (var s = assets[i].GetDataStream())
+                using (var s = files[i].GetDataStream())
                     bmps[i] = new Bitmap(s);
             }
         }
@@ -162,7 +162,7 @@ namespace MyEngine
                 var bmp = bmps[i];
                 if (bmp == null)
                 {
-                    s = assets[i].GetDataStream();
+                    s = files[i].GetDataStream();
                     bmp = new Bitmap(s);
                 }
                 lock (bmp)

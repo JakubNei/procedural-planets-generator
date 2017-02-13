@@ -24,11 +24,30 @@ namespace MyEngine
 
 		public CommonCVars CommonCVars { get; private set; }
 
+		class TraceListener : System.Diagnostics.TraceListener
+		{
+			Debug debug;
+			public TraceListener(Debug debug)
+			{
+				this.debug = debug;
+			}
+			public override void Write(string message)
+			{
+				debug.Info(message);
+			}
+
+			public override void WriteLine(string message)
+			{
+				debug.Info(message);
+			}
+		}
 
 		public Debug()
 		{
 			CommonCVars = new CommonCVars(this);
 			AddCommonCvars();
+
+			System.Diagnostics.Debug.Listeners.Add(new TraceListener(this));
 		}
 
 		class TickStats

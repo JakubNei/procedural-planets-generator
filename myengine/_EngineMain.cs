@@ -22,7 +22,7 @@ namespace MyEngine
 		public Debug Debug { get; private set; }
 
 		[Dependency(Register = true)]
-		public FileSystem Asset { get; private set; }
+		public FileSystem FileSystem { get; private set; }
 
 		List<SceneSystem> scenes = new List<SceneSystem>();
 

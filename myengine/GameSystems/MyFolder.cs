@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace MyEngine
 {
-    public class AssetFolder
+    public class MyFolder
     {
         public string VirtualPath { get; private set; }
-        public AssetFolder(string virtualPath)
+        public MyFolder(string virtualPath)
         {
             this.VirtualPath = virtualPath;
         }

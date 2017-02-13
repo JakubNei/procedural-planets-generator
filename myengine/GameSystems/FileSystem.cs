@@ -37,13 +37,13 @@ namespace MyEngine
 			return path;
 		}
 
-		public bool AssetExists(string virtualPath)
+		public bool FileExists(string virtualPath)
 		{
 			var realPath = CombineDirectory(rootResourceFolderPath, virtualPath);
 			return System.IO.File.Exists(realPath);
 		}
 
-		public bool AssetExists(string virtualPath, AssetFolder startSearchInFolder)
+		public bool FileExists(string virtualPath, MyFolder startSearchInFolder)
 		{
 			var realPath = CombineDirectory(rootResourceFolderPath, startSearchInFolder.VirtualPath, virtualPath);
 			if (System.IO.File.Exists(realPath))
@@ -60,7 +60,7 @@ namespace MyEngine
 			return false;
 		}
 
-		public MyFile FindAsset(string virtualPath)
+		public MyFile FindFile(string virtualPath)
 		{
 			var realPath = CombineDirectory(rootResourceFolderPath, virtualPath);
 			if (System.IO.File.Exists(realPath))
@@ -75,17 +75,17 @@ namespace MyEngine
 			}
 		}
 
-		public List<MyFile> FindAssets(params string[] virtualPaths)
+		public List<MyFile> Findfiles(params string[] virtualPaths)
 		{
 			var ret = new List<MyFile>();
 			foreach (var p in virtualPaths)
 			{
-				ret.Add(FindAsset(p));
+				ret.Add(FindFile(p));
 			}
 			return ret;
 		}
 
-		public MyFile FindAsset(string virtualPath, AssetFolder startSearchInFolder)
+		public MyFile FindFile(string virtualPath, MyFolder startSearchInFolder)
 		{
 			var realPath = CombineDirectory(rootResourceFolderPath, startSearchInFolder.VirtualPath, virtualPath);
 			if (System.IO.File.Exists(realPath))
@@ -108,10 +108,10 @@ namespace MyEngine
 			}
 		}
 
-		public AssetFolder GetAssetFolder(MyFile asset)
+		public MyFolder GetFolder(MyFile file)
 		{
-			var virtualDir = Path.GetDirectoryName(asset.VirtualPath);
-			return new AssetFolder(virtualDir);
+			var virtualDir = Path.GetDirectoryName(file.VirtualPath);
+			return new MyFolder(virtualDir);
 		}
 	}
 }

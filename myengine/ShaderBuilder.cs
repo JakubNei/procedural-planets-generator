@@ -14,7 +14,7 @@ namespace MyEngine
 		string prependSource;
 
 		[Dependency]
-		FileSystem assetSystem;
+		FileSystem FileSystem;
 
 		[Dependency]
 		Debug debug;
@@ -48,13 +48,13 @@ namespace MyEngine
 			return text;
 		}
 
-		public void Load(MyFile asset)
+		public void Load(MyFile file)
 		{
 			string source = "";
-			using (var r = asset.GetDataStream())
+			using (var r = file.GetDataStream())
 				source = ReadAll(r);
 
-			source = ReplaceIncludeDirectiveWithFileContents(source, assetSystem.GetAssetFolder(asset));
+			source = ReplaceIncludeDirectiveWithFileContents(source, FileSystem.GetFolder(file));
 
 			// the contents above first shader program [VertexShader] are shared amongs all parts (prepended to all parts)
 			string prependContents = "";
@@ -63,7 +63,7 @@ namespace MyEngine
 				int startOfTag = GetClosestShaderTypeTagPosition(source, 0, ref shaderType);
 				if (startOfTag == -1)
 				{
-					debug.Error("Shader part start not found " + asset.VirtualPath);
+					debug.Error("Shader part start not found " + file.VirtualPath);
 					return;
 				}
 				prependContents += source.Substring(0, startOfTag - 1);
@@ -91,7 +91,7 @@ namespace MyEngine
 						endOfShaderPart - startOfShaderPart
 					);
 
-					AttachShader(prependContents + "\n#line " + currentStartingLine + "\n" + shaderPart, shaderType, asset.VirtualPath);
+					AttachShader(prependContents + "\n#line " + currentStartingLine + "\n" + shaderPart, shaderType, file.VirtualPath);
 
 					currentStartingLine += shaderPart.Split('\n').Length;
 
@@ -102,20 +102,20 @@ namespace MyEngine
 
 		HashSet<string> f = new HashSet<string>();
 
-		string GetIncludeFileContents(string virtualPath, AssetFolder folder)
+		string GetIncludeFileContents(string virtualPath, MyFolder folder)
 		{
-			var asset = assetSystem.FindAsset(virtualPath, folder);
+			var file = FileSystem.FindFile(virtualPath, folder);
 
 			string source = "";
-			using (var s = asset.GetDataStream())
+			using (var s = file.GetDataStream())
 				source = ReadAll(s);
 
-			source = ReplaceIncludeDirectiveWithFileContents(source, assetSystem.GetAssetFolder(asset));
+			source = ReplaceIncludeDirectiveWithFileContents(source, FileSystem.GetFolder(file));
 
 			return source;
 		}
 
-		string ReplaceIncludeDirectiveWithFileContents(string source, AssetFolder folder)
+		string ReplaceIncludeDirectiveWithFileContents(string source, MyFolder folder)
 		{
 			while (true)
 			{

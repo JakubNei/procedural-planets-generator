@@ -8,14 +8,14 @@ namespace MyEngine
 {
 	public class MyFile
 	{
-		public AssetFolder AssetFolder
+		public MyFolder Folder
 		{
 			get
 			{
-				return AssetSystem.GetAssetFolder(this);
+				return FileSystem.GetFolder(this);
 			}
 		}
-		public FileSystem AssetSystem { get; private set; }
+		public FileSystem FileSystem { get; private set; }
 		public string VirtualPath { get; private set; }
 		public bool HasRealPath
 		{
@@ -29,9 +29,9 @@ namespace MyEngine
 		FileChangedWatcher fileWatcher;
 		event Action onFileChanged;
 
-		public MyFile(FileSystem assetSystem, string virtualPath, string realPath)
+		public MyFile(FileSystem FileSystem, string virtualPath, string realPath)
 		{
-			this.AssetSystem = assetSystem;
+			this.FileSystem = FileSystem;
 			this.VirtualPath = virtualPath;
 			this.RealPath = realPath;
 		}
