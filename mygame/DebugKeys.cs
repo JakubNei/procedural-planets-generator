@@ -15,44 +15,76 @@ namespace MyGame
 	public class DebugKeys
 	{
 		SceneSystem scene;
+		Debug debug;
 
-		public DebugKeys(SceneSystem scene)
+		public DebugKeys(SceneSystem scene, Debug debug)
 		{
 			this.scene = scene;
+			this.debug = debug;
 			scene.EventSystem.Register<MyEngine.Events.InputUpdate>(e => Update(e.DeltaTimeNow));
 		}
 
-
-		public static float keyTG = 0;
-		public static float keyZH = 0;
+		
+		/*public static float keyTG = 0;
+		public static float keyZH = 0;*/
 		public static float keyUJ = 0;
 		public static float keyIK = 0;
-		public static float keyOL = 0;
+		//public static float keyOL = 0;
 
 		void Update(double dt)
 		{
 			float s = 0.3f;
+			
+			/*var newKeyTG = keyTG;
+			if (scene.Input.GetKey(Key.T)) newKeyTG += (float)dt * s;
+			if (scene.Input.GetKey(Key.G)) newKeyTG -= (float)dt * s;
+			MyMath.Clamp01(ref newKeyTG);
+			if (newKeyTG != keyTG)
+			{
+				keyTG = newKeyTG;
+				debug.Info("keyTG = " + keyTG);
+			}
 
-			if (scene.Input.GetKey(Key.T)) keyTG += (float)dt * s;
-			if (scene.Input.GetKey(Key.G)) keyTG -= (float)dt * s;
-			MyMath.Clamp01(ref keyTG);
+			var newKeyZH = keyZH;
+			if (scene.Input.GetKey(Key.Z)) newKeyZH += (float)dt * s;
+			if (scene.Input.GetKey(Key.H)) newKeyZH -= (float)dt * s;
+			MyMath.Clamp01(ref newKeyZH);
+			if (newKeyZH != keyZH)
+			{
+				keyZH = newKeyZH;
+				debug.Info("keyZH = " + keyZH);
+			}
+			*/
+			var newKeyUJ = keyUJ;
+			if (scene.Input.GetKey(Key.U)) newKeyUJ += (float)dt * s;
+			if (scene.Input.GetKey(Key.J)) newKeyUJ -= (float)dt * s;
+			MyMath.Clamp01(ref newKeyUJ);
+			if (newKeyUJ != keyUJ)
+			{
+				keyUJ = newKeyUJ;
+				debug.Info("keyUJ = " + keyUJ);
+			}
 
-			if (scene.Input.GetKey(Key.Z)) keyZH += (float)dt * s;
-			if (scene.Input.GetKey(Key.H)) keyZH -= (float)dt * s;
-			MyMath.Clamp01(ref keyZH);
-
-			if (scene.Input.GetKey(Key.U)) keyUJ += (float)dt * s;
-			if (scene.Input.GetKey(Key.J)) keyUJ -= (float)dt * s;
-			MyMath.Clamp01(ref keyUJ);
-
-			if (scene.Input.GetKey(Key.I)) keyIK += (float)dt * s;
-			if (scene.Input.GetKey(Key.K)) keyIK -= (float)dt * s;
-			MyMath.Clamp01(ref keyIK);
-
-			if (scene.Input.GetKey(Key.O)) keyOL += (float)dt * s;
-			if (scene.Input.GetKey(Key.L)) keyOL -= (float)dt * s;
-			MyMath.Clamp01(ref keyOL);
-
+			var newKeyIK = keyIK;
+			if (scene.Input.GetKey(Key.I)) newKeyIK += (float)dt * s;
+			if (scene.Input.GetKey(Key.K)) newKeyIK -= (float)dt * s;
+			MyMath.Clamp01(ref newKeyIK);
+			if (newKeyIK != keyIK)
+			{
+				keyIK = newKeyIK;
+				debug.Info("keyIK = " + keyIK);
+			}
+			/*
+			var newKeyOL = keyOL;
+			if (scene.Input.GetKey(Key.O)) newKeyOL += (float)dt * s;
+			if (scene.Input.GetKey(Key.L)) newKeyOL -= (float)dt * s;
+			MyMath.Clamp01(ref newKeyOL);
+			if (newKeyOL != keyOL)
+			{
+				keyOL = newKeyOL;
+				debug.Info("keyOL = " + keyOL);
+			}			
+			*/
 		}
 	}
 }

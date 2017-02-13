@@ -3,6 +3,7 @@
 uniform sampler2D param_biomesSplatMap;
 uniform sampler2D param_rock;
 uniform sampler2D param_snow;
+uniform sampler2D param_perlinNoise;
 
 uniform float param_finalPosWeight;
 
@@ -78,6 +79,7 @@ void main()
 	float tessLevel(float d1, float d2) {		
 		float d=(d1+d2)/2;
 		//float r=clamp((1/d)*(keyIK*10), 1, 64);
+		//float r=clamp((1/d)*(100.0), 1, 64);
 		float r=clamp((1/d)*(100.0), 1, 64);
 		r=closestPowerOf2(r);
 		return r;		
@@ -92,15 +94,13 @@ void main()
 		o[gl_InvocationID].worldPos = i[gl_InvocationID].worldPos; 
 		o[gl_InvocationID].uv = i[gl_InvocationID].uv; 
 		o[gl_InvocationID].tangent = i[gl_InvocationID].tangent; 
-		
-		
-		
+				
 
 		// TESS LEVEL BASED ON EYE DISTANCE
 
-		float d0=distance(i[0].worldPos,EyePosition);
-		float d1=distance(i[1].worldPos,EyePosition);
-		float d2=distance(i[2].worldPos,EyePosition);	
+		float d0=distance(i[0].worldPos,vec3(0));
+		float d1=distance(i[1].worldPos,vec3(0));
+		float d2=distance(i[2].worldPos,vec3(0));	
 
 		gl_TessLevelOuter[0] = tessLevel(d1,d2);
 		gl_TessLevelOuter[1] = tessLevel(d0,d2);
@@ -109,6 +109,9 @@ void main()
 
 		gl_TessLevelInner[0] = gl_TessLevelOuter[2];
 		//gl_TessLevelInner[1] = tess;
+
+		//DEBUG
+		//gl_TessLevelInner[0] = gl_TessLevelOuter[0] = gl_TessLevelOuter[1] = gl_TessLevelOuter[2] = 2;
 
 	}
 
@@ -149,16 +152,15 @@ void main()
 	}
 
 	float PerlinAt(float x, float y) {		
-		y=mod(y,0.3);
-		return texture2D(perlinNoise,vec2(y,x)).r;
+		return texture2D(param_perlinNoise, vec2(x,y)).r;
 	}
-	float TerrainAt(float x, float y) {
+	float AdjustTerrainAt(float x, float y) {
 		float result=0;
-		int octaves=4;
+		int octaves=3;
 		float frequency=0.01;
 		float height=1;
 		for(int i=0; i<octaves; i++) {
-			result=PerlinAt(x*frequency, y*frequency);
+			result=PerlinAt(x*frequency, y*frequency) * height;
 			height/=2;
 			frequency*=2;
 		}
@@ -178,12 +180,11 @@ void main()
 
 
 		// APPLY TERRAIN MODIFIER
-		vec2 xz=o.worldPos.xz;
+		vec2 xz=o.uv.xy * 10000;
 		float x=xz.x;
 		float y=xz.y;
 
-		//float adjustedHeight=TerrainAt(x, y);
-		//o.worldPos.y+=adjustedHeight;
+		o.worldPos += o.normal * AdjustTerrainAt(x, y);
 		
 		//o.worldPos+=o.normal*adjustedHeight;
 		//>>>>//o.normal.y+=adjustedHeight*adjustedHeight;
@@ -195,7 +196,7 @@ void main()
 		);*/
 
 		o.normal=normalize(o.normal);
-		gl_Position = ProjectionMatrix * ViewMatrix * vec4(o.worldPos,1);
+		gl_Position = engine.projectionMatrix * engine.viewMatrix * vec4(o.worldPos,1);
 
 	}
 

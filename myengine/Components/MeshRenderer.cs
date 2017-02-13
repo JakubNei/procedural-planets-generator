@@ -91,7 +91,7 @@ namespace MyEngine.Components
 			ubo.model.modelViewMatrix = modelViewMat;
 			ubo.model.modelViewProjectionMatrix = modelViewMat * camera.GetProjectionMat();
 			ubo.modelUBO.UploadData();
-			Mesh.Draw();
+			Mesh.Draw(Material.GBufferShader.HasTesselation);
 		}
 
 		public override bool ShouldRenderInContext(object renderContext)

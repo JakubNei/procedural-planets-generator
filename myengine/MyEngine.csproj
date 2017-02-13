@@ -94,7 +94,7 @@
     <Compile Include="Neitri\Utils\FormatUtils.cs" />
     <Compile Include="Neitri\Utils\MemberName.cs" />
     <Compile Include="Neitri\Utils\MyWeakReference.cs" />
-    <Compile Include="Neitri\Extensions\NeitriExtensions.cs" />
+    <Compile Include="Neitri\NeitriExtensions.cs" />
     <Compile Include="Neitri\Utils\PropertyDescriptors.cs" />
     <Compile Include="Neitri\Utils\ReadOnlyDictionary.cs" />
     <Compile Include="Neitri\Utils\Require.cs" />

@@ -92,7 +92,7 @@ namespace MyEngine
 			}
 		}
 
-		public void Draw()
+		public void Draw(bool drawWithTesselationSupport = false)
 		{
 			lock (this)
 			{
@@ -101,7 +101,7 @@ namespace MyEngine
 					UploadDataToGpu();
 				}
 				GL.BindVertexArray(VertexArray.handle);
-				GL.DrawElements(PrimitiveType.Triangles, TriangleIndicies.Count, DrawElementsType.UnsignedInt, IntPtr.Zero);
+				GL.DrawElements(drawWithTesselationSupport ? PrimitiveType.Patches : PrimitiveType.Triangles, TriangleIndicies.Count, DrawElementsType.UnsignedInt, IntPtr.Zero);
 				GL.BindVertexArray(0);
 			}
 		}
@@ -109,13 +109,10 @@ namespace MyEngine
 		void UploadDataToGpu()
 		{
 			if (!HasNormals())
-			{
 				RecalculateNormals();
-			}
+
 			if (!HasTangents())
-			{
 				RecalculateTangents();
-			}
 
 			//VertexArrayObj.Dispose(); // causes access violation if we try to reupload
 			if (VertexArray.handle == -1) VertexArray.CreateBuffer();

@@ -8,22 +8,10 @@ namespace MyEngine
 {
 	public class MyFile
 	{
-		public MyFolder Folder
-		{
-			get
-			{
-				return FileSystem.GetFolder(this);
-			}
-		}
+		public MyFolder Folder { get { return FileSystem.GetFolder(this); } }
 		public FileSystem FileSystem { get; private set; }
 		public string VirtualPath { get; private set; }
-		public bool HasRealPath
-		{
-			get
-			{
-				return string.IsNullOrWhiteSpace(RealPath) == false;
-			}
-		}
+		public bool HasRealPath { get { return string.IsNullOrWhiteSpace(RealPath) == false; } }
 		public string RealPath { get; private set; }
 
 		FileChangedWatcher fileWatcher;
@@ -36,21 +24,41 @@ namespace MyEngine
 			this.RealPath = realPath;
 		}
 
-		public Stream GetDataStream()
+		public Stream GetDataStream(int numOfRetries = 5)
 		{
-			int numTries = 0;
-			while (numTries++ < 10)
+			while (numOfRetries >= 0)
 			{
 				try
 				{
 					return new FileStream(RealPath, FileMode.Open, FileAccess.Read, FileShare.Read);
 				}
-				catch
+				catch (Exception e)
 				{
-					System.Threading.Thread.Sleep(numTries);
+					if (numOfRetries == 0) throw e;
+					System.Threading.Thread.Sleep(10);
+					numOfRetries--;
 				}
 			}
-			return null;
+			throw new NotSupportedException();
+		}
+
+		public string ReadAllText(int numOfRetries = 5)
+		{
+			while (numOfRetries >= 0)
+			{
+				try
+				{
+					using (var sr = new StreamReader(GetDataStream(numOfRetries), Encoding.Default))
+						return sr.ReadToEnd();
+				}
+				catch (Exception e)
+				{
+					if (numOfRetries == 0) throw e;
+					System.Threading.Thread.Sleep(numOfRetries);
+					numOfRetries--;
+				}
+			}
+			throw new NotSupportedException();
 		}
 
 		public void OnFileChanged(Action action)

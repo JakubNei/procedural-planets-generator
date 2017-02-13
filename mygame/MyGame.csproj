@@ -46,6 +46,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CommonCVarsExtensions.cs" />
     <Compile Include="DebugKeys.cs" />
     <Compile Include="DebugShowFrustumPlanes.cs" />
     <Compile Include="FirstPersonCamera.cs" />

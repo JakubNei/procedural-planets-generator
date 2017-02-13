@@ -8,7 +8,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 
 /// <summary>
-/// Version 2017-02-07
+/// Version 2017-02-13
 /// Many useful extensions I've made over the years.
 /// All in one class.
 /// </summary>
@@ -402,33 +402,47 @@ public static class NeitriExtensions
 	{
 		return System.Math.Abs(a);
 	}
-
-	public static double Pow(this double x, double power)
+	public static double Pow(this double a, double power)
 	{
-		return (double)System.Math.Pow(x, power);
+		return (double)System.Math.Pow(a, power);
 	}
-
 	public static double Round(this double a)
 	{
 		return (double)System.Math.Round(a);
 	}
-
 	public static double Ceil(this double a)
 	{
 		return (double)System.Math.Ceiling(a);
 	}
-
 	public static double Floor(this double a)
 	{
 		return (double)System.Math.Floor(a);
 	}
-	public static int ToInt(this double a)
+
+	public static double RoundToInt(this double a)
 	{
-		return (int)a;
+		return (int)a.Round();
 	}
-	public static long ToLong(this double a)
+	public static double CeilToInt(this double a)
 	{
-		return (long)a;
+		return (int)a.Ceil();
+	}
+	public static double FloorToInt(this double a)
+	{
+		return (int)a.Floor();
+	}
+
+	public static double RoundToLong(this double a)
+	{
+		return (long)a.Round();
+	}
+	public static double CeilToLong(this double a)
+	{
+		return (long)a.Ceil();
+	}
+	public static double FloorToLong(this double a)
+	{
+		return (long)a.Floor();
 	}
 	#endregion
 
@@ -444,7 +458,20 @@ public static class NeitriExtensions
 
 	static readonly Regex oneOrMoreWhiteSpaces = new Regex(@"\s+");
 
-
+	/// <summary>
+	/// Counts the amount of occurence of <paramref name="needle"/> in <paramref name="haystack"/>;
+	/// </summary>
+	/// <param name="haystack"></param>
+	/// <param name="needle"></param>
+	/// <returns></returns>
+	public static int Count(this string haystack, char needle)
+	{
+		int count = 0;
+		for (int i = 0; i < haystack.Length; i++)
+			if (haystack[i] == needle)
+				count++;
+		return count;
+	}
 	public static string Replace(this string str, string oldValue, string newValue, StringComparison comparison)
 	{
 		if (oldValue == null)

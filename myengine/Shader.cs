@@ -23,6 +23,8 @@ namespace MyEngine
 
 		public bool shouldReload;
 
+		public bool HasTesselation { get; private set; }
+
 		internal int shaderProgramHandle { get; private set; }
 
 		[Dependency]
@@ -104,6 +106,7 @@ namespace MyEngine
 
 		bool AttachShader(string source, ShaderType type, string resource)
 		{
+			if (type == ShaderType.TessControlShader) HasTesselation = true;
 			//source = source.Replace(maxNumberOfLights_name, maxNumberOfLights.ToString());
 
 			int handle = GL.CreateShader(type);
@@ -115,16 +118,16 @@ namespace MyEngine
 
 			string logInfo;
 			GL.GetShaderInfoLog(handle, out logInfo);
-			if (logInfo.Length > 0 && !logInfo.Contains("hardware"))
+			if (logInfo.Length > 0)
 			{
-				debug.Error("Vertex Shader failed!\nLog:\n" + logInfo);
+				debug.Error($"Error occured during compilation of {type} from '{resource}'\n{logInfo}");
 			}
 
 			int statusCode = 0;
 			GL.GetShader(handle, ShaderParameter.CompileStatus, out statusCode);
 			if (statusCode != 1)
 			{
-				debug.Error(type.ToString() + " :: " + source + "\n" + GL.GetShaderInfoLog(handle) + "\n in file: " + resource);
+				//debug.Error(type.ToString() + " :: " + source + "\n" + GL.GetShaderInfoLog(handle) + "\n in file: " + resource);
 				return false;
 			}
 

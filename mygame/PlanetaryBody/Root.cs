@@ -12,7 +12,7 @@ namespace MyGame.PlanetaryBody
 {
 	public class Root : ComponentWithShortcuts
 	{
-		public double radius { get; set; }
+		public double radius { get; set; } // poloměr
 		public double radiusVariation = 20;
 
 		/// <summary>
@@ -20,18 +20,36 @@ namespace MyGame.PlanetaryBody
 		/// </summary>
 		public int chunkNumberOfVerticesOnEdge = 20;
 
-		public int subdivisionMaxRecurisonDepth = 10;
+		//public int subdivisionMaxRecurisonDepth = 10;
+		int? subdivisionMaxRecurisonDepth;
+		public int SubdivisionMaxRecurisonDepth
+		{
+			get
+			{
+				if (!subdivisionMaxRecurisonDepth.HasValue)
+				{
+					//var planetCircumference = 2 * Math.PI * radius;
+					//var oneRootChunkCircumference = planetCircumference / 6.0f;
+					var oneRootChunkCircumference = rootChunks[0].noElevationRange.a.Distance(rootChunks[0].noElevationRange.b);
+
+					subdivisionMaxRecurisonDepth = 0;
+					while (oneRootChunkCircumference > 50)
+					{
+						oneRootChunkCircumference /= 2;
+						subdivisionMaxRecurisonDepth++;
+					}
+				}
+				return subdivisionMaxRecurisonDepth.Value;
+			}
+		}
+
+
 		public volatile Material planetMaterial;
 		public double subdivisionSphereRadiusModifier { get; set; } = 1f;
 		public double startingRadiusSubdivisionModifier = 1;
 
-		double debugWeight
-		{
-			get
-			{
-				return DebugKeys.keyIK * 2 - 0.8;
-			}
-		}
+		double debugWeight => DebugKeys.keyIK * 2 - 0.8;
+
 
 		const bool debugSameHeightEverywhere = false; // DEBUG
 
@@ -55,6 +73,8 @@ namespace MyGame.PlanetaryBody
 			worley = new WorleyD(894984, WorleyD.DistanceFunction.Euclidian);
 
 			MeshGenerationService = new Chunk.MeshGenerationService(entity.Debug);
+
+			Debug.CommonCVars.SmoothChunksEdgeNormals().ToogledByKey(OpenTK.Input.Key.N);
 		}
 
 		public void Configure(double radius, double radiusVariation)
@@ -66,7 +86,7 @@ namespace MyGame.PlanetaryBody
 			this.radiusVariation = radiusVariation;
 		}
 
-		
+
 		public SpehricalCoord CalestialToSpherical(Vector3d c) => SpehricalCoord.FromCalestial(c);
 		public SpehricalCoord CalestialToSpherical(Vector3 c) => SpehricalCoord.FromCalestial(c);
 		public Vector3d SphericalToCalestial(SpehricalCoord s) => s.ToCalestial();
@@ -164,9 +184,9 @@ namespace MyGame.PlanetaryBody
 			*/
 		}
 
-		List<Vector3d> vertices;
 
-		void FACE(int A, int B, int C)
+
+		void AddRootChunk(List<Vector3d> vertices, int A, int B, int C)
 		{
 			var child = new Chunk(this, null);
 			child.noElevationRange.a = vertices[A];
@@ -184,7 +204,7 @@ namespace MyGame.PlanetaryBody
 
 			//detailLevel = (int)ceil(planetInfo.rootChunks[0].range.ToBoundingSphere().radius / 100);
 
-			vertices = new List<Vector3d>();
+			var vertices = new List<Vector3d>();
 			var indicies = new List<uint>();
 
 			var r = this.radius / 2.0;
@@ -208,32 +228,32 @@ namespace MyGame.PlanetaryBody
 			vertices.Add(new Vector3d(-t, 0, d));
 
 			// 5 faces around point 0
-			FACE(0, 11, 5);
-			FACE(0, 5, 1);
-			FACE(0, 1, 7);
-			FACE(0, 7, 10);
-			FACE(0, 10, 11);
+			AddRootChunk(vertices, 0, 11, 5);
+			AddRootChunk(vertices, 0, 5, 1);
+			AddRootChunk(vertices, 0, 1, 7);
+			AddRootChunk(vertices, 0, 7, 10);
+			AddRootChunk(vertices, 0, 10, 11);
 
 			// 5 adjacent faces
-			FACE(1, 5, 9);
-			FACE(5, 11, 4);
-			FACE(11, 10, 2);
-			FACE(10, 7, 6);
-			FACE(7, 1, 8);
+			AddRootChunk(vertices, 1, 5, 9);
+			AddRootChunk(vertices, 5, 11, 4);
+			AddRootChunk(vertices, 11, 10, 2);
+			AddRootChunk(vertices, 10, 7, 6);
+			AddRootChunk(vertices, 7, 1, 8);
 
 			// 5 faces around point 3
-			FACE(3, 9, 4);
-			FACE(3, 4, 2);
-			FACE(3, 2, 6);
-			FACE(3, 6, 8);
-			FACE(3, 8, 9);
+			AddRootChunk(vertices, 3, 9, 4);
+			AddRootChunk(vertices, 3, 4, 2);
+			AddRootChunk(vertices, 3, 2, 6);
+			AddRootChunk(vertices, 3, 6, 8);
+			AddRootChunk(vertices, 3, 8, 9);
 
 			// 5 adjacent faces
-			FACE(4, 9, 5);
-			FACE(2, 4, 11);
-			FACE(6, 2, 10);
-			FACE(8, 6, 7);
-			FACE(9, 8, 1);
+			AddRootChunk(vertices, 4, 9, 5);
+			AddRootChunk(vertices, 2, 4, 11);
+			AddRootChunk(vertices, 6, 2, 10);
+			AddRootChunk(vertices, 8, 6, 7);
+			AddRootChunk(vertices, 9, 8, 1);
 		}
 
 		void StopMeshGenerationInChilds(Chunk chunk)
@@ -330,8 +350,8 @@ namespace MyGame.PlanetaryBody
 					toSmoothWith.ForEach(c =>
 					{
 						chunk.SmoothEdgeNormalsWith(c);
-					//c.SmoothEdgeNormalsBasedOn(chunk);
-				});
+						//c.SmoothEdgeNormalsBasedOn(chunk);
+					});
 				}
 
 				// if visible, update final positions weight according to distance
@@ -364,8 +384,10 @@ namespace MyGame.PlanetaryBody
 
 		public void TrySubdivideOver(WorldPos pos)
 		{
-			if (Input.GetKey(OpenTK.Input.Key.K))
+			if (Debug.CommonCVars.SmoothChunksEdgeNormals().Bool)
 			{
+				Debug.CommonCVars.SmoothChunksEdgeNormals().Bool = false;
+
 				var all = new List<Chunk>();
 				Console.WriteLine($"SMOOTH NORMALS gather chunks");
 				GetVisibleChunksWithin(all, new Sphere(this.Center.ToVector3d(), double.MaxValue));
@@ -385,8 +407,8 @@ namespace MyGame.PlanetaryBody
 			var sphere = new Sphere((pos - Transform.Position).ToVector3d(), this.radius * startingRadiusSubdivisionModifier);
 			foreach (var rootChunk in this.rootChunks)
 			{
-				TrySubdivideToLevel_Generation(rootChunk, startingRadiusSubdivisionModifier, this.subdivisionMaxRecurisonDepth);
-				TrySubdivideToLevel_Visibility(rootChunk, startingRadiusSubdivisionModifier, this.subdivisionMaxRecurisonDepth);
+				TrySubdivideToLevel_Generation(rootChunk, startingRadiusSubdivisionModifier, this.SubdivisionMaxRecurisonDepth);
+				TrySubdivideToLevel_Visibility(rootChunk, startingRadiusSubdivisionModifier, this.SubdivisionMaxRecurisonDepth);
 			}
 		}
 	}

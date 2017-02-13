@@ -115,7 +115,7 @@ namespace MyGame.PlanetaryBody
 
 					if (threadIndex == 0)
 					{
-						debug.AddValue("generation / chunkd to generate queued", chunkToWeight.Count.ToString());
+						debug.AddValue("generation / chunks to generate queued", chunkToWeight.Count.ToString());
 						debug.AddValue("generation / total chunks generated", countChunksGenerated);
 						debug.AddValue("generation / total time spent generating", timeSpentGenerating.TotalSeconds + " s");
 						debug.AddValue("generation / average time spent generating", (timeSpentGenerating.TotalSeconds / (float)countChunksGenerated) + " s");

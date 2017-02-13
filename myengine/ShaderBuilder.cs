@@ -29,32 +29,11 @@ namespace MyEngine
 				prependSource += fs.ReadToEnd();
 		}
 
-		string ReadAll(Stream stream, int numOfRetries = 5)
-		{
-			string text = "";
-			while (numOfRetries > 0)
-			{
-				try
-				{
-					using (var sr = new StreamReader(stream, Encoding.Default))
-						text = sr.ReadToEnd();
-					numOfRetries = 0;
-				}
-				catch (IOException e)
-				{
-					numOfRetries--;
-				}
-			}
-			return text;
-		}
-
 		public void Load(MyFile file)
 		{
-			string source = "";
-			using (var r = file.GetDataStream())
-				source = ReadAll(r);
+			string source = file.ReadAllText();
 
-			source = ReplaceIncludeDirectiveWithFileContents(source, FileSystem.GetFolder(file));
+			source = ReplaceIncludeDirectiveWithFileContents(source, file.Folder);
 
 			// the contents above first shader program [VertexShader] are shared amongs all parts (prepended to all parts)
 			string prependContents = "";
@@ -70,9 +49,9 @@ namespace MyEngine
 				source = source.Substring(startOfTag);
 			}
 
-			int currentStartingLine = prependContents.Split('\n').Length;
+			int currentStartingLine = prependContents.Count('\n');
 
-			foreach (ShaderType type in System.Enum.GetValues(typeof(ShaderType)))
+			foreach (ShaderType type in Enum.GetValues(typeof(ShaderType)))
 			{
 				ShaderType shaderType = ShaderType.VertexShader;
 				int startOfTag = GetClosestShaderTypeTagPosition(source, 0, ref shaderType);
@@ -93,7 +72,7 @@ namespace MyEngine
 
 					AttachShader(prependContents + "\n#line " + currentStartingLine + "\n" + shaderPart, shaderType, file.VirtualPath);
 
-					currentStartingLine += shaderPart.Split('\n').Length;
+					currentStartingLine += shaderPart.Count('\n');
 
 					source = source.Substring(endOfShaderPart);
 				}
@@ -106,9 +85,7 @@ namespace MyEngine
 		{
 			var file = FileSystem.FindFile(virtualPath, folder);
 
-			string source = "";
-			using (var s = file.GetDataStream())
-				source = ReadAll(s);
+			string source = file.ReadAllText();
 
 			source = ReplaceIncludeDirectiveWithFileContents(source, FileSystem.GetFolder(file));
 
@@ -152,8 +129,10 @@ namespace MyEngine
 				if (thisStartOfTag != -1)
 				{
 					if (startOfTag == -1 || thisStartOfTag < startOfTag)
+					{
 						shaderType = type;
-					startOfTag = thisStartOfTag;
+						startOfTag = thisStartOfTag;
+					}
 				}
 			}
 			return startOfTag;

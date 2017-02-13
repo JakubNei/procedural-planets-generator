@@ -42,44 +42,15 @@
 			columnHeader3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
 			this.SuspendLayout();
 			// 
-			// listView1
-			// 
-			this.listView1.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            columnName,
-            columnValue});
-			this.listView1.GridLines = true;
-			this.listView1.Location = new System.Drawing.Point(1, 0);
-			this.listView1.Name = "listView1";
-			this.listView1.Size = new System.Drawing.Size(486, 309);
-			this.listView1.Sorting = System.Windows.Forms.SortOrder.Descending;
-			this.listView1.TabIndex = 0;
-			this.listView1.UseCompatibleStateImageBehavior = false;
-			this.listView1.View = System.Windows.Forms.View.Details;
-			// 
 			// columnName
 			// 
 			columnName.Text = "Name";
-			columnName.Width = 175;
+			columnName.Width = 248;
 			// 
 			// columnValue
 			// 
 			columnValue.Text = "Value";
-			columnValue.Width = 200;
-			// 
-			// listView2
-			// 
-			this.listView2.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            columnHeader1,
-            columnHeader2,
-            columnHeader3});
-			this.listView2.GridLines = true;
-			this.listView2.Location = new System.Drawing.Point(1, 305);
-			this.listView2.Name = "listView2";
-			this.listView2.Size = new System.Drawing.Size(486, 407);
-			this.listView2.Sorting = System.Windows.Forms.SortOrder.Descending;
-			this.listView2.TabIndex = 1;
-			this.listView2.UseCompatibleStateImageBehavior = false;
-			this.listView2.View = System.Windows.Forms.View.Details;
+			columnValue.Width = 230;
 			// 
 			// columnHeader1
 			// 
@@ -94,7 +65,36 @@
 			// columnHeader3
 			// 
 			columnHeader3.Text = "Value";
-			columnHeader3.Width = 145;
+			columnHeader3.Width = 91;
+			// 
+			// listView1
+			// 
+			this.listView1.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            columnName,
+            columnValue});
+			this.listView1.GridLines = true;
+			this.listView1.Location = new System.Drawing.Point(1, 0);
+			this.listView1.Name = "listView1";
+			this.listView1.Size = new System.Drawing.Size(486, 346);
+			this.listView1.Sorting = System.Windows.Forms.SortOrder.Descending;
+			this.listView1.TabIndex = 0;
+			this.listView1.UseCompatibleStateImageBehavior = false;
+			this.listView1.View = System.Windows.Forms.View.Details;
+			// 
+			// listView2
+			// 
+			this.listView2.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            columnHeader1,
+            columnHeader2,
+            columnHeader3});
+			this.listView2.GridLines = true;
+			this.listView2.Location = new System.Drawing.Point(1, 343);
+			this.listView2.Name = "listView2";
+			this.listView2.Size = new System.Drawing.Size(486, 369);
+			this.listView2.Sorting = System.Windows.Forms.SortOrder.Descending;
+			this.listView2.TabIndex = 1;
+			this.listView2.UseCompatibleStateImageBehavior = false;
+			this.listView2.View = System.Windows.Forms.View.Details;
 			// 
 			// DebugForm
 			// 

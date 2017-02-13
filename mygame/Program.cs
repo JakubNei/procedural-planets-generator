@@ -25,11 +25,16 @@ namespace MyGame
 				var scene = engine.AddScene();
 				var factory = engine.Factory;
 
-				new DebugKeys(scene);
+				new DebugKeys(scene, engine.Debug);
 
 				{
 					var entity = scene.AddEntity();
 					fpc = entity.AddComponent<FirstPersonCamera>();
+
+					//var flashLight = entity.AddComponent<Light>();
+					//flashLight.LighType = LightType.Point;
+					
+
 
 					var cam = scene.mainCamera = entity.AddComponent<Camera>();
 
@@ -88,6 +93,7 @@ namespace MyGame
 					mat.Uniforms.Set("param_turbulenceColorGradient", factory.GetTexture2D("textures/fire_gradient.png"));
 					mat.Uniforms.Set("param_turbulenceMap", factory.GetTexture2D("textures/turbulence_map.png"));
 					mat.Uniforms.Set("param_surfaceDiffuse", factory.GetTexture2D("textures/sun_surface_d.png"));
+					mat.Uniforms.Set("param_perlinNoise", factory.GetTexture2D("textures/perlin_noise.png"));					
 				}
 
 				{
