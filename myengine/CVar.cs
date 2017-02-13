@@ -32,6 +32,7 @@ namespace MyEngine
 			}
 		}
 
+
 		public OpenTK.Input.Key toogleKey = OpenTK.Input.Key.Unknown;
 		public bool hasDefaultValue = false;
 
@@ -40,6 +41,15 @@ namespace MyEngine
 		public CVar(Debug debug)
 		{
 			this.debug = debug;
+		}
+
+		public bool EatBoolIfTrue()
+		{
+			if(Bool) {
+				Bool = false;
+				return true;
+			}
+			return false;
 		}
 
 		public CVar ToogledByKey(OpenTK.Input.Key key)

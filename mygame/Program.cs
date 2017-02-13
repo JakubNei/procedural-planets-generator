@@ -32,11 +32,11 @@ namespace MyGame
 					fpc = entity.AddComponent<FirstPersonCamera>();
 
 					//var flashLight = entity.AddComponent<Light>();
-					//flashLight.LighType = LightType.Point;
-					
+					//flashLight.LighType = LightType.Point;				
 
 
 					var cam = scene.mainCamera = entity.AddComponent<Camera>();
+					cam.farClipPlane = 1000000;
 
 					// post process effects
 					{

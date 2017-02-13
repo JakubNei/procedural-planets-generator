@@ -321,7 +321,7 @@ namespace MyGame.PlanetaryBody
 
 
 			bool useSkirts = false;
-			useSkirts = true;
+			//useSkirts = true;
 			if (useSkirts)
 			{
 				var skirtVertices = mesh.Duplicate(edgeVerticesIndexes, mesh.Vertices, mesh.Normals, positionsInitial, normalsInitial);

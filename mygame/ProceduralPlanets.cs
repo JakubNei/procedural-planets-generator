@@ -53,14 +53,15 @@ namespace MyGame
 			planetMaterial.Uniforms.Set("param_biomesSplatMap", Factory.GetTexture2D("textures/biomesSplatMap.png"));
 			planetMaterial.Uniforms.Set("param_perlinNoise", Factory.GetTexture2D("textures/perlin_noise.png"));
 
-			{
+			/*{
+				// procedural stars or star dust
 				var random = new Random();
 				for (int i = 0; i < 1000; i++)
 				{
 					var e = scene.AddEntity("start dust #" + i);
 					var vec = new Vector3d(random.Next(-1.0, 1.0), random.Next(-1.0, 1.0), random.Next(-1.0, 1.0));
-					e.Transform.Position = new WorldPos(vec.Normalized() * (2000.0 + random.Next(0, 2000)));
-					e.Transform.Scale *= 1f;
+					e.Transform.Position = new WorldPos(vec.Normalized() * (600000.0 + random.Next(0, 200000)));
+					e.Transform.Scale *= random.Next(0.5f, 1f) * 1000f;
 					var r = e.AddComponent<MeshRenderer>();
 					r.Mesh = Factory.GetMesh("sphere.obj");
 					var m = new MaterialPBR(Factory);
@@ -68,7 +69,7 @@ namespace MyGame
 					m.GBufferShader = Factory.GetShader("internal/deferred.gBuffer.PBR.shader");
 					m.albedo = new Vector4(10);
 				}
-			}
+			}*/
 
 			PlanetaryBody.Root planet;
 
@@ -93,11 +94,11 @@ namespace MyGame
 			planet = scene.AddEntity().AddComponent<PlanetaryBody.Root>();
 			planets.Add(planet);			
 			// 6371000 earth radius
-			planet.Configure(2000, 300);
-			planet.Configure(300, 15);
-			planet.Transform.Position = new WorldPos(1000, -100, 1000);
+			planet.Configure(50000, 2000);
+			planet.Transform.Position = new WorldPos(planet.radius * 3, 0, 0);
 			planet.Start();
 			planet.planetMaterial = planetMaterial;
+			planet.planetMaterial.Uniforms.Set("param_planetRadius", (float)planet.radius);
 			planets.Add(planet);
 
 			Cam.Transform.LookAt(planet.Transform.Position);
@@ -114,20 +115,16 @@ namespace MyGame
 			if (scene.Input.GetKeyDown(Key.P)) freezeUpdate = !freezeUpdate;
 			if (freezeUpdate) return;
 
-			Debug.Tick("updatePlanets");
+			Debug.Tick("generation / planet logic");
 
 			var camPos = Cam.Transform.Position;
 
-			var planet = planets.OrderBy(p => p.Transform.Position.Distance(camPos) - p.radius).First();
+			var closestPlanet = planets.OrderBy(p => p.Transform.Position.DistanceSqr(camPos) - p.radius * p.radius).First();
 
 			foreach (var p in planets)
 			{
 				p.TrySubdivideOver(camPos);
 			}
-
-			/*var normal = normalize(pos - planet.position);
-            var tangent = cross(normal, vec3(0, 1, 0));
-            CameraMovement::instance.cameraUpDirection = normal;*/
 		}
 	}
 }

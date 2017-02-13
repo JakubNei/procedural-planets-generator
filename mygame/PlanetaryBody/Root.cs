@@ -384,14 +384,12 @@ namespace MyGame.PlanetaryBody
 
 		public void TrySubdivideOver(WorldPos pos)
 		{
-			if (Debug.CommonCVars.SmoothChunksEdgeNormals().Bool)
+			if (Debug.CommonCVars.SmoothChunksEdgeNormals())
 			{
-				Debug.CommonCVars.SmoothChunksEdgeNormals().Bool = false;
-
 				var all = new List<Chunk>();
-				Console.WriteLine($"SMOOTH NORMALS gather chunks");
+				//Console.WriteLine($"SMOOTH NORMALS gather chunks");
 				GetVisibleChunksWithin(all, new Sphere(this.Center.ToVector3d(), double.MaxValue));
-				Console.WriteLine($"SMOOTH NORMALS starting on {all.Count} chunks");
+				//Console.WriteLine($"SMOOTH NORMALS starting on {all.Count} chunks");
 
 				foreach (var a in all)
 				{
@@ -401,7 +399,7 @@ namespace MyGame.PlanetaryBody
 						a.SmoothEdgeNormalsWith(b);
 					}
 				}
-				Console.WriteLine($"SMOOTH NORMALS end");
+				//Console.WriteLine($"SMOOTH NORMALS end");
 			}
 
 			var sphere = new Sphere((pos - Transform.Position).ToVector3d(), this.radius * startingRadiusSubdivisionModifier);

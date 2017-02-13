@@ -238,11 +238,9 @@ namespace MyEngine
 			Debug.Tick("rendering / main render");
 			renderThreadTime.Tick();
 
-			var reloadAllShaders = Debug.CommonCVars.ReloadAllShaders();
-			if (reloadAllShaders.Bool)
+			if (Debug.CommonCVars.ReloadAllShaders().EatBoolIfTrue())
 			{
 				Factory.ReloadAllShaders();
-				reloadAllShaders.Bool = false;
 			}
 
 			if (this.Focused) Input.Update();

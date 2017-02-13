@@ -5,6 +5,7 @@ uniform sampler2D param_rock;
 uniform sampler2D param_snow;
 uniform sampler2D param_perlinNoise;
 
+uniform float param_planetRadius;
 uniform float param_finalPosWeight;
 
 [VertexShader]
@@ -180,7 +181,7 @@ void main()
 
 
 		// APPLY TERRAIN MODIFIER
-		vec2 xz=o.uv.xy * 10000;
+		vec2 xz=o.uv.xy * param_planetRadius * 50;
 		float x=xz.x;
 		float y=xz.y;
 
@@ -311,7 +312,8 @@ vec3 getColor() {
 			triPlanar(param_rock, pos, i.normal, 0.5) 
 		) / 3;
 
-	return mix(rock, snow, biomesSplatMap);
+	return rock;
+	//return mix(rock, snow, biomesSplatMap);
 }
 
 
