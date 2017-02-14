@@ -1,4 +1,4 @@
-[include internal/prependAll.shader]
+[include internal/include.all.shader]
 
 uniform sampler2D param_biomesSplatMap;
 uniform sampler2D param_rock;
@@ -20,6 +20,7 @@ layout(location = 5) in vec3 in_normalInitial;
 
 out data {
 	vec3 worldPos;
+	vec3 modelPos;
 	vec3 normal; 
 	vec2 uv; 
 	vec3 tangent;
@@ -27,14 +28,15 @@ out data {
 
 void main()
 {
-	vec3 modelPosition = mix(in_positionInitial, in_position, param_finalPosWeight);
-	vec4 worldPos4 = (model.modelMatrix * vec4(modelPosition, 1));	
+	vec3 modelPos = mix(in_positionInitial, in_position, param_finalPosWeight);
+	vec4 worldPos4 = (model.modelMatrix * vec4(modelPos, 1));	
 	vec3 worldPos3 = worldPos4.xyz / worldPos4.w;
 
 	vec3 normalModelSpace = mix(in_normalInitial, in_normal, param_finalPosWeight);
 
-	gl_Position = model.modelViewProjectionMatrix * vec4(modelPosition,1);
+	gl_Position = model.modelViewProjectionMatrix * vec4(modelPos,1);
 	o.worldPos = worldPos3;
+	o.modelPos = modelPos;
 	o.uv = in_uv;
 	o.normal = (model.modelMatrix * vec4(normalModelSpace,0)).xyz;
 	o.tangent = (model.modelMatrix * vec4(in_tangent,0)).xyz;
@@ -55,6 +57,7 @@ void main()
 
 	in data {
 		vec3 worldPos;
+		vec3 modelPos;
 	  	vec3 normal; 
 		vec2 uv; 
 		vec3 tangent;
@@ -62,6 +65,7 @@ void main()
 
 	out data {
 		vec3 worldPos;
+		vec3 modelPos;
 	  	vec3 normal; 
 		vec2 uv; 
 		vec3 tangent;
@@ -91,8 +95,9 @@ void main()
 		gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;
 
 		// COPY OVER PARAMS
-		o[gl_InvocationID].normal = i[gl_InvocationID].normal; 
 		o[gl_InvocationID].worldPos = i[gl_InvocationID].worldPos; 
+		o[gl_InvocationID].modelPos = i[gl_InvocationID].modelPos; 
+		o[gl_InvocationID].normal = i[gl_InvocationID].normal; 
 		o[gl_InvocationID].uv = i[gl_InvocationID].uv; 
 		o[gl_InvocationID].tangent = i[gl_InvocationID].tangent; 
 				
@@ -127,6 +132,7 @@ void main()
 
 	in data {
 		vec3 worldPos;
+		vec3 modelPos;
 	  	vec3 normal; 
 		vec2 uv; 
 		vec3 tangent;
@@ -134,6 +140,7 @@ void main()
 
 	out data {
 		vec3 worldPos;
+		vec3 modelPos;
 	  	vec3 normal; 
 		vec2 uv; 
 		vec3 tangent;
@@ -174,9 +181,10 @@ void main()
 	{
 
 		// INTERPOLATE NEW PARAMS
-		o.normal	= interpolate3D(	i[0].normal,	i[1].normal,	i[2].normal	); 
 		o.worldPos	= interpolate3D(	i[0].worldPos,	i[1].worldPos,	i[2].worldPos	); 
-		o.uv		= interpolate2D(	i[0].uv,		i[1].uv,		i[2].uv		); 
+		o.modelPos	= interpolate3D(	i[0].modelPos,	i[1].modelPos,	i[2].modelPos	); 
+		o.normal	= interpolate3D(	i[0].normal,	i[1].normal,	i[2].normal		); 
+		o.uv		= interpolate2D(	i[0].uv,		i[1].uv,		i[2].uv			); 
 		o.tangent	= interpolate3D(	i[0].tangent,	i[1].tangent,	i[2].tangent	); 
 
 
@@ -216,6 +224,7 @@ void main()
 
 in data {
 	vec3 worldPos;
+	vec3 modelPos;
 	vec3 normal; 
 	vec2 uv; 
 	vec3 tangent;
@@ -296,7 +305,9 @@ vec3 getColor() {
 	float biomesSplatMap = texture2D(param_biomesSplatMap, i.uv).r;
 	//return vec3(i.uv.y<-0.4);
 	//return vec3(biomesSplatMap);
-	vec3 pos = engine.cameraPosition + i.worldPos;
+
+	vec3 pos = i.modelPos;
+    //vec3 pos = engine.cameraPosition + i.worldPos;
 
 	vec3 snow = 
 		(

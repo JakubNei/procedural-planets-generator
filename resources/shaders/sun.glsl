@@ -1,6 +1,6 @@
 // http://www.mathematik.uni-marburg.de/~menzel/index.php?seite=tutorials&id=1
 
-[include internal/prependAll.shader]
+[include internal/include.all.shader]
 
 uniform sampler2D param_turbulenceColorGradient;
 uniform sampler2D param_turbulenceMap;

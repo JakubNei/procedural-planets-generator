@@ -1,13 +1,13 @@
 ﻿#version 410 core
 
 
-[include uniformBufferObjects.inc.glsl]
+[include include.uniformBufferObjects.glsl]
 
-[include gBuffer.inc.glsl]
+[include include.gBuffer.glsl]
 
-[include lightingModels.inc.glsl]
+[include include.lightingModels.glsl]
 
-[include snoise.inc.glsl]
+[include include.snoise.glsl]
 
 
 // from http://stackoverflow.com/questions/6652253/getting-the-true-z-value-from-the-depth-buffer
