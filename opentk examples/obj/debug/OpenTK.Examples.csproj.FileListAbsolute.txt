@@ -1,0 +1,10 @@
+C:\Users\Neitri\Documents\OpenTK\1.1\Source\Examples\obj\Debug\Examples.ExampleBrowser.resources
+C:\Users\Neitri\Documents\OpenTK\1.1\Source\Examples\obj\Debug\OpenTK.Examples.Properties.Resources.resources
+C:\Users\Neitri\Documents\OpenTK\1.1\Source\Examples\obj\Debug\Examples.Parrot.resources
+C:\Users\Neitri\Documents\OpenTK\1.1\Source\Examples\obj\Debug\Examples.WinForms.FontRenderingBasic.resources
+C:\Users\Neitri\Documents\OpenTK\1.1\Source\Examples\obj\Debug\Examples.WinForms.MultipleGLControlsForm.resources
+C:\Users\Neitri\Documents\OpenTK\1.1\Source\Examples\obj\Debug\Examples.WinForms.GameLoopForm.resources
+C:\Users\Neitri\Documents\OpenTK\1.1\Source\Examples\obj\Debug\Examples.WinForms.SimpleForm.resources
+C:\Users\Neitri\Documents\OpenTK\1.1\Source\Examples\obj\Debug\Examples.WinForms.DerivedGLControl.resources
+C:\Users\Neitri\Documents\OpenTK\1.1\Source\Examples\obj\Debug\Examples.WinForms.Extensions.resources
+C:\Users\Neitri\Documents\OpenTK\1.1\Source\Examples\obj\Debug\OpenTK.Examples.csproj.GenerateResource.Cache

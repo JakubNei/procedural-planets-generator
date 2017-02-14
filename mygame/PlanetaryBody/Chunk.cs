@@ -15,7 +15,13 @@ namespace MyGame.PlanetaryBody
 {
 	public partial class Chunk
 	{
+		/// <summary>
+		/// Planet local position
+		/// </summary>
 		public Triangle noElevationRange;
+		/// <summary>
+		/// Planet local position
+		/// </summary>
 		public Triangle realVisibleRange;
 		public List<Chunk> childs { get; } = new List<Chunk>();
 		public MeshRenderer renderer;
@@ -93,9 +99,8 @@ namespace MyGame.PlanetaryBody
 		int numberOfChunksGenerated = 0;
 		bool isGenerated = false;
 
-		static Dictionary<int, List<int>> numberOfVerticesOnEdge_To_oneTimeGeneratedIndicies = new Dictionary<int, List<int>>();
-
-		static void GetIndiciesList(int numberOfVerticesOnEdge, out List<int> newIndicies)
+		List<int> indiciesList;
+		List<int> GetIndiciesList()
 		{
 			/*
 
@@ -107,50 +112,44 @@ namespace MyGame.PlanetaryBody
             /\/\/\/\/\/\ bottom line
 
             */
-			lock (numberOfVerticesOnEdge_To_oneTimeGeneratedIndicies)
+			if (indiciesList != null) return indiciesList;
+
+			var numberOfVerticesOnEdge = NumberOfVerticesOnEdge;
+			indiciesList = new List<int>();
+			// make triangles indicies list
 			{
-				List<int> oneTimeGeneratedIndicies;
-				if (numberOfVerticesOnEdge_To_oneTimeGeneratedIndicies.TryGetValue(numberOfVerticesOnEdge, out oneTimeGeneratedIndicies) == false)
+				int lineStartIndex = 0;
+				int nextLineStartIndex = 1;
+				indiciesList.Add(0);
+				indiciesList.Add(1);
+				indiciesList.Add(2);
+
+				int numberOfVerticesInBetween = 0;
+				// we skip first triangle as it was done manually
+				// we skip last row of vertices as there are no triangles under it
+				for (int y = 1; y < numberOfVerticesOnEdge - 1; y++)
 				{
-					oneTimeGeneratedIndicies = new List<int>();
-					numberOfVerticesOnEdge_To_oneTimeGeneratedIndicies[numberOfVerticesOnEdge] = oneTimeGeneratedIndicies;
-					// make triangles indicies list
+					lineStartIndex = nextLineStartIndex;
+					nextLineStartIndex = lineStartIndex + numberOfVerticesInBetween + 2;
+
+					for (int x = 0; x <= numberOfVerticesInBetween + 1; x++)
 					{
-						int lineStartIndex = 0;
-						int nextLineStartIndex = 1;
-						oneTimeGeneratedIndicies.Add(0);
-						oneTimeGeneratedIndicies.Add(1);
-						oneTimeGeneratedIndicies.Add(2);
+						indiciesList.Add(lineStartIndex + x);
+						indiciesList.Add(nextLineStartIndex + x);
+						indiciesList.Add(nextLineStartIndex + x + 1);
 
-						int numberOfVerticesInBetween = 0;
-						// we skip first triangle as it was done manually
-						// we skip last row of vertices as there are no triangles under it
-						for (int y = 1; y < numberOfVerticesOnEdge - 1; y++)
+						if (x <= numberOfVerticesInBetween) // not a last triangle in line
 						{
-							lineStartIndex = nextLineStartIndex;
-							nextLineStartIndex = lineStartIndex + numberOfVerticesInBetween + 2;
-
-							for (int x = 0; x <= numberOfVerticesInBetween + 1; x++)
-							{
-								oneTimeGeneratedIndicies.Add(lineStartIndex + x);
-								oneTimeGeneratedIndicies.Add(nextLineStartIndex + x);
-								oneTimeGeneratedIndicies.Add(nextLineStartIndex + x + 1);
-
-								if (x <= numberOfVerticesInBetween) // not a last triangle in line
-								{
-									oneTimeGeneratedIndicies.Add(lineStartIndex + x);
-									oneTimeGeneratedIndicies.Add(nextLineStartIndex + x + 1);
-									oneTimeGeneratedIndicies.Add(lineStartIndex + x + 1);
-								}
-							}
-
-							numberOfVerticesInBetween++;
+							indiciesList.Add(lineStartIndex + x);
+							indiciesList.Add(nextLineStartIndex + x + 1);
+							indiciesList.Add(lineStartIndex + x + 1);
 						}
 					}
-				}
 
-				newIndicies = oneTimeGeneratedIndicies;//.ToList();
+					numberOfVerticesInBetween++;
+				}
 			}
+			return indiciesList;
 		}
 
 		public void StopMeshGeneration()

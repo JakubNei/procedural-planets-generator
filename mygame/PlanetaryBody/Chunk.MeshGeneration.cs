@@ -50,6 +50,21 @@ namespace MyGame.PlanetaryBody
 			return skirtIndicies;
 		}
 
+
+		Vector3d GetFinalPos(Vector3d calestialOnPlanetPos)
+		{
+			var p = planetaryBody.GetFinalPos(calestialOnPlanetPos);
+			p -= realVisibleRange.CenterPos;
+			return p;
+		}
+		Vector3d GetFinalPos2(Vector3d calestialInChunkPos)
+		{
+			calestialInChunkPos += realVisibleRange.CenterPos;
+			var p = planetaryBody.GetFinalPos(calestialInChunkPos);
+			p -= realVisibleRange.CenterPos;
+			return p;
+		}
+
 		void CreateRendererAndGenerateMesh()
 		{
 			if (parentChunk != null && parentChunk.renderer == null)
@@ -63,6 +78,7 @@ namespace MyGame.PlanetaryBody
 				isGenerated = true;
 			}
 
+			var offsetCenter = realVisibleRange.CenterPos;
 			var mesh = new Mesh();// "PlanetaryBodyChunk depth:" + subdivisionDepth + " #" + numbetOfChunksGenerated);
 			numberOfChunksGenerated++;
 
@@ -76,11 +92,12 @@ namespace MyGame.PlanetaryBody
 			var positionsInitial = new Mesh.VertexBufferObjectVector3();
 			var normalsInitial = new Mesh.VertexBufferObjectVector3();
 
+			const bool finalPositionSmoothing = false;
 			// generate all of our vertices
 			if (childPosition == ChildPosition.NoneNoParent)
 			{
 				//positionsFinal.Add(noElevationRange.a.ToVector3());
-				positionsFinal.Add(planetaryBody.GetFinalPos(noElevationRange.a).ToVector3());
+				positionsFinal.Add(GetFinalPos(noElevationRange.a).ToVector3());
 
 				// add positions, line by line
 				{
@@ -91,7 +108,7 @@ namespace MyGame.PlanetaryBody
 						var start = MyMath.Slerp(noElevationRange.a, noElevationRange.b, percent);
 						var end = MyMath.Slerp(noElevationRange.a, noElevationRange.c, percent);
 						//positionsFinal.Add(start.ToVector3());
-						positionsFinal.Add(planetaryBody.GetFinalPos(start).ToVector3());
+						positionsFinal.Add(GetFinalPos(start).ToVector3());
 
 						if (numberOfVerticesInBetween > 0)
 						{
@@ -99,11 +116,11 @@ namespace MyGame.PlanetaryBody
 							{
 								var v = MyMath.Slerp(start, end, x / (float)(numberOfVerticesInBetween + 1));
 								//positionsFinal.Add(v.ToVector3());
-								positionsFinal.Add(planetaryBody.GetFinalPos(v).ToVector3());
+								positionsFinal.Add(GetFinalPos(v).ToVector3());
 							}
 						}
 						//positionsFinal.Add(end.ToVector3());
-						positionsFinal.Add(planetaryBody.GetFinalPos(end).ToVector3());
+						positionsFinal.Add(GetFinalPos(end).ToVector3());
 						numberOfVerticesInBetween++;
 					}
 				}
@@ -125,7 +142,9 @@ namespace MyGame.PlanetaryBody
 					parentIndicies.MoveNext();
 					i++;
 
+
 					// copy position from parent
+					var offsetFromParent = (parentChunk.renderer.Offset.ToVector3d() - this.noElevationRange.CenterPos).ToVector3();
 					int numberOfVerticesOnLine = 2;
 					for (int y = 1; y < NumberOfVerticesOnEdge; y++)
 					{
@@ -135,7 +154,7 @@ namespace MyGame.PlanetaryBody
 							{
 								if (x % 2 == 0)
 								{
-									positionsFinal[i] = parentVertices[parentIndicies.Current];
+									positionsFinal[i] = parentVertices[parentIndicies.Current] + offsetFromParent;
 									parentIndicies.MoveNext();
 								}
 							}
@@ -160,7 +179,7 @@ namespace MyGame.PlanetaryBody
 								{
 									int a = i - 1;
 									int b = i + 1;
-									positionsFinal[i] = planetaryBody.GetFinalPos((positionsFinal[a].ToVector3d() + positionsFinal[b].ToVector3d()) / 2.0f).ToVector3();
+									positionsFinal[i] = GetFinalPos2((positionsFinal[a].ToVector3d() + positionsFinal[b].ToVector3d()) / 2.0f).ToVector3();
 								}
 							}
 							else
@@ -169,24 +188,24 @@ namespace MyGame.PlanetaryBody
 								{
 									int a = i - numberOfVerticesOnLine + 1;
 									int b = i + numberOfVerticesOnLine;
-									positionsFinal[i] = planetaryBody.GetFinalPos((positionsFinal[a].ToVector3d() + positionsFinal[b].ToVector3d()) / 2.0f).ToVector3();
+									positionsFinal[i] = GetFinalPos2((positionsFinal[a].ToVector3d() + positionsFinal[b].ToVector3d()) / 2.0f).ToVector3();
 								}
 								else
 								{
 									int a = i - numberOfVerticesOnLine;
 									int b = i + numberOfVerticesOnLine + 1;
-									positionsFinal[i] = planetaryBody.GetFinalPos((positionsFinal[a].ToVector3d() + positionsFinal[b].ToVector3d()) / 2.0f).ToVector3();
+									positionsFinal[i] = GetFinalPos2((positionsFinal[a].ToVector3d() + positionsFinal[b].ToVector3d()) / 2.0f).ToVector3();
 								}
 							}
 							i++;
 						}
 						numberOfVerticesOnLine++;
 					}
+
 				}
 			}
 
-			List<int> indicies;
-			GetIndiciesList(NumberOfVerticesOnEdge, out indicies);
+			List<int> indicies = GetIndiciesList();
 
 			mesh.Vertices.SetData(positionsFinal);
 			mesh.TriangleIndicies.SetData(indicies);
@@ -334,6 +353,7 @@ namespace MyGame.PlanetaryBody
 			if (renderer != null) throw new Exception("something went terribly wrong, renderer should be null");
 			renderer = planetaryBody.Entity.AddComponent<MeshRenderer>();
 			renderer.Mesh = mesh;
+			renderer.Offset += offsetCenter;
 
 			if (planetaryBody.planetMaterial != null) renderer.Material = planetaryBody.planetMaterial.CloneTyped();
 			renderer.RenderingMode = RenderingMode.DontRender;

@@ -7,11 +7,12 @@ using System.Text;
 
 namespace MyEngine.Components
 {
+	[Flags]
 	public enum RenderStatus
 	{
 		NotRendered = 0,
 		Rendered = (1 << 1),
-		RenderedForced = (1 << 2),
+		RenderedForced = (1 << 1) | (1 << 2),
 		Visible = (1 << 3),
 		RenderedAndVisible = (1 << 1) | (1 << 3),
 		Unknown = (1 << 9),
