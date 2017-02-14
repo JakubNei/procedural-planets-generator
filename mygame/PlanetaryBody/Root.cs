@@ -63,10 +63,10 @@ namespace MyGame.PlanetaryBody
 		public Chunk.MeshGenerationService MeshGenerationService { get; private set; }
 
 		public static Root instance;
-		ProceduralMath proceduralMath;
+		//ProceduralMath proceduralMath;
 		public Root(Entity entity) : base(entity)
 		{
-			proceduralMath = new ProceduralMath();
+			//proceduralMath = new ProceduralMath();
 
 			instance = this;
 			perlin = new PerlinD(5646);
@@ -79,8 +79,7 @@ namespace MyGame.PlanetaryBody
 
 		public void Configure(double radius, double radiusVariation)
 		{
-
-			proceduralMath.Configure(radius, radiusVariation);
+			// proceduralMath.Configure(radius, radiusVariation);
 
 			this.radius = radius;
 			this.radiusVariation = radiusVariation;
@@ -116,7 +115,7 @@ namespace MyGame.PlanetaryBody
 #endif
 			if (false)
 			{
-				return proceduralMath.GetHeight(calestialPos, detailDensity);
+				// return proceduralMath.GetHeight(calestialPos, detailDensity);
 			}
 			else
 			{

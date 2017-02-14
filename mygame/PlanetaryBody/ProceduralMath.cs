@@ -12,7 +12,7 @@ namespace MyGame
 {
 	public class ProceduralMath : IDisposable
 	{
-
+		
 		public bool LoadedSuccessfully { get; private set; }
 
 		IntPtr instance;
@@ -60,5 +60,6 @@ namespace MyGame
 			if (!LoadedSuccessfully) return;
 			DestroyInstance(instance);
 		}
+		
 	}
 }
