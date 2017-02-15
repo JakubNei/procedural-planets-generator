@@ -67,6 +67,7 @@ namespace MyEngine.Components
 			dataToRender.Target?.Add(this);
 		}
 
+        public void SetRenderingMode(RenderingMode renderingMode) => RenderingMode = renderingMode;
 		public abstract Bounds GetCameraSpaceBounds(WorldPos viewPointPos);
 
 		public virtual void UploadUBOandDraw(Camera camera, UniformBlock ubo)

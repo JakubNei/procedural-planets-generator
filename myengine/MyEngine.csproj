@@ -129,6 +129,7 @@
     <Compile Include="Mathematical\WorleyD.cs" />
     <Compile Include="Mesh.Utils.cs" />
     <Compile Include="GameSystems\RenderManager.cs" />
+    <Compile Include="ReverseComparer.cs" />
     <Compile Include="Tier1\DeferredSynchronizeInvoke.cs" />
     <Compile Include="enums.cs" />
     <Compile Include="Events\EventSystem.cs" />

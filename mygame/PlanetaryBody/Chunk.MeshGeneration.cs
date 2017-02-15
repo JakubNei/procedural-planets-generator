@@ -65,11 +65,10 @@ namespace MyGame.PlanetaryBody
 			return p;
 		}
 
-		void CreateRendererAndGenerateMesh()
+		public void CreateRendererAndGenerateMesh()
 		{
 			if (parentChunk != null && parentChunk.renderer == null)
 			{
-				parentChunk.RequestMeshGeneration();
 				return;
 			}
 			lock (this)
@@ -358,6 +357,17 @@ namespace MyGame.PlanetaryBody
 			if (planetaryBody.planetMaterial != null) renderer.Material = planetaryBody.planetMaterial.CloneTyped();
 			renderer.RenderingMode = RenderingMode.DontRender;
 			this.visibility = 0;
+		}
+
+
+		public void DestroyRenderer()
+		{
+			if(renderer != null)
+			{
+				//renderer.Mesh.Dispose();
+				planetaryBody.Entity.DestroyComponent(renderer);
+				renderer = null;
+			}
 		}
 
 		public void SmoothEdgeNormalsBasedOn(Chunk otherChunk)

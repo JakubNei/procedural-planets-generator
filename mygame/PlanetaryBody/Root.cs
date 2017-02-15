@@ -3,7 +3,6 @@ using MyEngine.Components;
 using OpenTK;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,7 +17,7 @@ namespace MyGame.PlanetaryBody
 		/// <summary>
 		/// Is guaranteeed to be odd (1, 3, 5, 7, ...)
 		/// </summary>
-		public int chunkNumberOfVerticesOnEdge = 40;
+		public int chunkNumberOfVerticesOnEdge = 10;
 
 		//public int subdivisionMaxRecurisonDepth = 10;
 		int? subdivisionMaxRecurisonDepth;
@@ -48,7 +47,7 @@ namespace MyGame.PlanetaryBody
 		public double subdivisionSphereRadiusModifier { get; set; } = 1f;
 		public double startingRadiusSubdivisionModifier = 1;
 
-		double debugWeight => DebugKeys.keyIK * 2 - 0.8;
+		double DebugWeight => DebugKeys.keyIK * 2 - 0.8;
 
 
 		const bool debugSameHeightEverywhere = false; // DEBUG
@@ -60,19 +59,22 @@ namespace MyGame.PlanetaryBody
 
 		List<Chunk> rootChunks = new List<Chunk>();
 
-		public Chunk.MeshGenerationService MeshGenerationService { get; private set; }
+		//public Chunk.MeshGenerationService MeshGenerationService { get; private set; }
+
+		GenerationStats stats;
 
 		public static Root instance;
 		//ProceduralMath proceduralMath;
 		public Root(Entity entity) : base(entity)
 		{
 			//proceduralMath = new ProceduralMath();
+			stats = new GenerationStats(Debug);
 
 			instance = this;
 			perlin = new PerlinD(5646);
 			worley = new WorleyD(894984, WorleyD.DistanceFunction.Euclidian);
 
-			MeshGenerationService = new Chunk.MeshGenerationService(entity.Debug);
+			//MeshGenerationService = new Chunk.MeshGenerationService(entity.Debug);
 
 			Debug.CommonCVars.SmoothChunksEdgeNormals().ToogledByKey(OpenTK.Input.Key.N);
 		}
@@ -104,7 +106,6 @@ namespace MyGame.PlanetaryBody
 			*/
 		}
 
-		Stopwatch getHeight_sw = new Stopwatch();
 		long getHeight_counter = 0;
 		public double GetHeight(Vector3d calestialPos, int detailDensity = 1)
 		{
@@ -255,123 +256,86 @@ namespace MyGame.PlanetaryBody
 			AddRootChunk(vertices, 9, 8, 1);
 		}
 
-		void StopMeshGenerationInChilds(Chunk chunk)
+
+		void DestroyChildren(Chunk chunk)
 		{
-			lock (chunk.childs)
-			{
-				foreach (var child in chunk.childs)
-				{
-					child.StopMeshGeneration();
-					StopMeshGenerationInChilds(child);
-				}
-			}
+			chunk.DestroyRenderer();
+			foreach (var child in chunk.childs)
+				DestroyChildren(child);
 		}
-
-		void TrySubdivideToLevel_Generation(Chunk chunk, double tresholdWeight, int recursionDepth)
-		{
-			var cam = Entity.Scene.mainCamera;
-			var weight = chunk.GetWeight(cam) + debugWeight + 0.1;
-
-			if (recursionDepth > 0 && weight > tresholdWeight)
-			//if (recursionDepth > 0 && GeometryUtility.Intersects(chunk.realVisibleRange, sphere))
-			{
-				chunk.SubDivide();
-				chunk.StopMeshGeneration();
-				lock (chunk.childs)
-				{
-					foreach (var child in chunk.childs)
-					{
-						TrySubdivideToLevel_Generation(child, tresholdWeight, recursionDepth - 1);
-					}
-				}
-			}
-			else
-			{
-				if (chunk.renderer == null)
-				{
-					chunk.RequestMeshGeneration();
-				}
-				StopMeshGenerationInChilds(chunk);
-			}
-		}
-
 		void HideChilds(Chunk chunk)
 		{
-			lock (chunk.childs)
+			foreach (var child in chunk.childs)
+			{
+				child.renderer?.SetRenderingMode(RenderingMode.DontRender);
+				child.renderer = null;
+				HideChilds(child);
+			}
+		}
+
+		void TrySubdivideToLevel_GatherWeights(ChunkWeightedList weightedList, Chunk chunk, int recursionDepth, double parentWeight)
+		{
+			var cam = Entity.Scene.mainCamera;
+			var weight = chunk.GetWeight(cam);
+
+			if (recursionDepth == 0) weight *= 100; // root chunks have epic weight
+
+			if(weight < 0.3f)
+			{
+				HideChilds(chunk);
+				return;
+			}
+
+			if (chunk.renderer == null)
+				weightedList.Add(weight, chunk);
+
+			// if we want to show this chunk, our neighbours have the same weight, because we cant be shown without our neighbours
+			if (chunk.parentChunk != null)
+				foreach (var neighbour in chunk.parentChunk.childs)
+					if (neighbour.renderer == null)
+						weightedList.Add(weight, neighbour);
+
+
+			if (recursionDepth < SubdivisionMaxRecurisonDepth)
 			{
 				foreach (var child in chunk.childs)
 				{
-					if (child.renderer != null && child.renderer.RenderingMode != RenderingMode.DontRender)
-						child.renderer.RenderingMode = RenderingMode.DontRender;
-					HideChilds(child);
+					TrySubdivideToLevel_GatherWeights(weightedList, child, recursionDepth + 1, weight);
 				}
 			}
 		}
 
+
 		// return true if all childs are visible
-		bool TrySubdivideToLevel_Visibility(Chunk chunk, double tresholdWeight, int recursionDepth)
+		// we can hide parent only once all 4 childs are generated
+		// we have to show all 4 childs at once
+		void Chunks_UpdateVisibility(Chunk chunk, int recursionDepth)
 		{
 			var cam = Entity.Scene.mainCamera;
-			var weight = chunk.GetWeight(cam) + debugWeight;
 
-			//if (recursionDepth > 0 && GeometryUtility.Intersects(chunk.realVisibleRange, sphere))
-			if (recursionDepth > 0 && weight > tresholdWeight)
+			if (recursionDepth < SubdivisionMaxRecurisonDepth)
 			{
-				var areChildrenFullyVisible = true;
-				chunk.SubDivide();
-				lock (chunk.childs)
-				{
-					foreach (var child in chunk.childs)
-					{
-						areChildrenFullyVisible &= TrySubdivideToLevel_Visibility(child, tresholdWeight, recursionDepth - 1);
-					}
-				}
+				var areAllChildsGenerated = chunk.childs.All(c => c.renderer != null);
 
 				// hide only if all our childs are visible, they mighht still be generating
-				if (areChildrenFullyVisible) if (chunk.renderer != null) chunk.renderer.RenderingMode = RenderingMode.DontRender;
+				if (areAllChildsGenerated)
+				{
+					if(chunk.parentChunk == null) chunk.renderer?.SetRenderingMode(RenderingMode.DontRender);
+					else chunk.renderer.SetRenderingMode(RenderingMode.DontRender);
 
-				return areChildrenFullyVisible;
+					foreach (var child in chunk.childs)
+					{
+						Chunks_UpdateVisibility(child, recursionDepth + 1);
+					}
+				}
+				else
+				{
+					chunk.renderer.SetRenderingMode(RenderingMode.RenderGeometryAndCastShadows);
+				}
 			}
 			else
 			{
-				if (chunk.renderer == null) return false;
-
-				// end node, we must show this one and hide all childs or parents, parents should already be hidden
-				if (chunk.renderer.RenderingMode != RenderingMode.RenderGeometryAndCastShadows)
-				{
-					// is not visible
-					// show it
-					chunk.renderer.RenderingMode = RenderingMode.RenderGeometryAndCastShadows;
-
-					// averge edge normals
-					var toSmoothWith = new List<Chunk>();
-					var s = chunk.realVisibleRange.ToBoundingSphere();
-					s.radius *= 1.5f;
-					GetVisibleChunksWithin(toSmoothWith, s);
-					toSmoothWith.ForEach(c =>
-					{
-						chunk.SmoothEdgeNormalsWith(c);
-						//c.SmoothEdgeNormalsBasedOn(chunk);
-					});
-				}
-
-				// if visible, update final positions weight according to distance
-				if (chunk.renderer.RenderingMode == RenderingMode.RenderGeometryAndCastShadows)
-				{
-					/*
-					var camPos = (Scene.mainCamera.Transform.Position - this.Transform.Position).ToVector3();
-					var d = chunk.renderer.Mesh.Vertices.FindClosest(p => p.Distance(camPos)).Distance(camPos);
-					var e0 = sphere.radius / subdivisionSphereRadiusModifier_debugModified;
-					var e1 = e0 * subdivisionSphereRadiusModifier_debugModified;
-					var w = MyMath.SmoothStep(e0, e1, d);
-					*/
-					var w = MyMath.Clamp01(weight / tresholdWeight);
-					chunk.renderer.Material.Uniforms.Set("param_finalPosWeight", (float)w);
-				}
-
-				HideChilds(chunk);
-
-				return true;
+				chunk.renderer.SetRenderingMode(RenderingMode.RenderGeometryAndCastShadows);
 			}
 		}
 
@@ -380,6 +344,20 @@ namespace MyGame.PlanetaryBody
 			foreach (var rootChunk in this.rootChunks)
 			{
 				rootChunk.GetVisibleChunksWithin(chunksResult, sphere);
+			}
+		}
+
+		// new SortedList<double, Chunk>(ReverseComparer<double>.Default)
+		class ChunkWeightedList
+		{
+			List<Tuple<double, Chunk>> l = new List<Tuple<double, Chunk>>();
+			public void Add(double weight, Chunk chunk)
+			{
+				l.Add(new Tuple<double, Chunk>(weight, chunk));
+			}
+			public Chunk GetHighestWeightChunk()
+			{
+				return l.OrderByDescending(i => i.Item1).FirstOrDefault()?.Item2;
 			}
 		}
 
@@ -402,12 +380,55 @@ namespace MyGame.PlanetaryBody
 				}
 				//Console.WriteLine($"SMOOTH NORMALS end");
 			}
-
+			var weightedList = new ChunkWeightedList();
 			var sphere = new Sphere((pos - Transform.Position).ToVector3d(), this.radius * startingRadiusSubdivisionModifier);
 			foreach (var rootChunk in this.rootChunks)
+				TrySubdivideToLevel_GatherWeights(weightedList, rootChunk, 0, 0);
+
+			var toGenerate = weightedList.GetHighestWeightChunk();
+			if (toGenerate != null)
 			{
-				TrySubdivideToLevel_Generation(rootChunk, startingRadiusSubdivisionModifier, this.SubdivisionMaxRecurisonDepth);
-				TrySubdivideToLevel_Visibility(rootChunk, startingRadiusSubdivisionModifier, this.SubdivisionMaxRecurisonDepth);
+				while (toGenerate.parentChunk != null && toGenerate.parentChunk.renderer == null) // we have to generate our parent first
+					toGenerate = toGenerate.parentChunk;
+
+				stats.Start();
+				toGenerate.CreateRendererAndGenerateMesh();
+				stats.End();
+				stats.Update();
+				toGenerate.SubDivide();
+				//toGenerate.renderer?.SetRenderingMode(RenderingMode.RenderGeometryAndCastShadows);
+			}
+
+			foreach (var rootChunk in this.rootChunks) Chunks_UpdateVisibility(rootChunk, 0);
+
+		}
+
+		public class GenerationStats
+		{
+			ulong countChunksGenerated;
+			TimeSpan timeSpentGenerating;
+			Debug debug;
+			System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
+			public GenerationStats(Debug debug)
+			{
+				this.debug = debug;
+			}
+			public void Update()
+			{
+				debug.AddValue("generation / total chunks generated", countChunksGenerated);
+				debug.AddValue("generation / total time spent generating", timeSpentGenerating.TotalSeconds + " s");
+				debug.AddValue("generation / average time spent generating", (timeSpentGenerating.TotalSeconds / (float)countChunksGenerated) + " s");
+			}
+			public void Start()
+			{
+				stopwatch.Reset();
+				stopwatch.Start();
+			}
+			public void End()
+			{
+				stopwatch.Stop();
+				timeSpentGenerating += stopwatch.Elapsed;
+				countChunksGenerated++;
 			}
 		}
 	}

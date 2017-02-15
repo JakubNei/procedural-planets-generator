@@ -33,7 +33,7 @@ namespace MyGame
 				while (true)
 				{
 					OnGraphicsUpdate();
-					Thread.Sleep(100);
+					Thread.Sleep(10);
 				}
 			});
 			t.Priority = ThreadPriority.Highest;

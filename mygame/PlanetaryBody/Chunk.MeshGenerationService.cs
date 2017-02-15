@@ -130,6 +130,7 @@ namespace MyGame.PlanetaryBody
 				}
 			}
 
+
 			/// <summary>
 			/// Smaller priority is more important.
 			/// </summary>
@@ -141,7 +142,7 @@ namespace MyGame.PlanetaryBody
 
 				if (chunk.parentChunk != null && chunk.parentChunk.renderer == null)
 				{
-					chunk.parentChunk.RequestMeshGeneration();
+					//chunk.parentChunk.RequestMeshGeneration();
 					return;
 				}
 

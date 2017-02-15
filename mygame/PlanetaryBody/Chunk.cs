@@ -26,6 +26,8 @@ namespace MyGame.PlanetaryBody
         public List<Chunk> childs { get; } = new List<Chunk>();
         public MeshRenderer renderer;
 
+        public bool IsRendererReady => renderer != null;
+
         public float hideIn;
         public float showIn;
         public float visibility;
@@ -33,9 +35,9 @@ namespace MyGame.PlanetaryBody
         int subdivisionDepth;
         Root planetaryBody;
 
-        MeshGenerationService GenerationService => planetaryBody.MeshGenerationService;
+        //MeshGenerationService GenerationService => planetaryBody.MeshGenerationService;
 
-        Chunk parentChunk;
+        public Chunk parentChunk;
         ChildPosition childPosition;
 
         public enum ChildPosition
@@ -55,21 +57,14 @@ namespace MyGame.PlanetaryBody
         }
 
 
-
-
-        public void StopMeshGeneration()
-        {
-            GenerationService.DoesNotNeedMeshGeneration(this);
-        }
-
         public double GetWeight(Camera cam)
         {
             bool isVisible = true;
 
             var myPos = realVisibleRange.CenterPos + planetaryBody.Transform.Position;
-            var dirToCamera = myPos.Towards(cam.ViewPointPosition).ToVector3d();
+            var dirToCamera = myPos.Towards(cam.ViewPointPosition).ToVector3d().Normalized();
 
-            // 0 looking at it from side, 1 looking at it from top, -1 looking at it from bottom
+            // 0 looking at chunk from side, 1 looking at chunk from front, -1 looking at chunk from bottom/behind
             var dotToCamera = realVisibleRange.Normal.Dot(dirToCamera);
 
             var distanceToCamera = myPos.Distance(cam.ViewPointPosition);
@@ -108,14 +103,13 @@ namespace MyGame.PlanetaryBody
             }
             */
 
-            var weight = radiusCameraSpace;// * MyMath.SmoothStep(2, 1, MyMath.Clamp01(dotToCamera));
-                                           //if (isVisible == false) weight *= 0.3f;
+            var weight = radiusCameraSpace * (1 + dotToCamera);
 
             renderer?.Material.Uniforms.Set("param_debugWeight", (float)weight);
 
             return weight;
         }
-
+        /*
         public void RequestMeshGeneration()
         {
             if (renderer != null) return;
@@ -125,25 +119,23 @@ namespace MyGame.PlanetaryBody
             GenerationService.RequestGenerationOfMesh(this, GetWeight(planetaryBody.Scene.mainCamera));
 
             // help from http://stackoverflow.com/questions/3717226/radius-of-projected-sphere
-            /*
-            var sphere = noElevationRange.ToBoundingSphere();
-            var radiusWorldSpace = sphere.radius;
-            var sphereDistanceToCameraWorldSpace = cam.Transform.Position.Distance(planetaryBody.Transform.Position + sphere.center.ToVector3());
-            var fov = cam.fieldOfView;
-            var radiusCameraSpace = radiusWorldSpace * MyMath.Cot(fov / 2) / sphereDistanceToCameraWorldSpace;
-            var priority = sphereDistanceToCameraWorldSpace / radiusCameraSpace;
-            if (priority < 0) priority *= -1;
-            meshGenerationService.RequestGenerationOfMesh(this, priority);
-            */
-
-            /*
-            if (parentChunk != null && parentChunk.renderer != null)
-            {
-                var cameraStatus = parentChunk.renderer.GetCameraRenderStatus(planetaryBody.Scene.mainCamera);
-                if (cameraStatus.HasFlag(Renderer.RenderStatus.Visible)) priority *= 0.3f;
-            }
-            */
+            
+            //var sphere = noElevationRange.ToBoundingSphere();
+            //var radiusWorldSpace = sphere.radius;
+            //var sphereDistanceToCameraWorldSpace = cam.Transform.Position.Distance(planetaryBody.Transform.Position + sphere.center.ToVector3());
+            //var fov = cam.fieldOfView;
+            //var radiusCameraSpace = radiusWorldSpace * MyMath.Cot(fov / 2) / sphereDistanceToCameraWorldSpace;
+            //var priority = sphereDistanceToCameraWorldSpace / radiusCameraSpace;
+            //if (priority < 0) priority *= -1;
+            //meshGenerationService.RequestGenerationOfMesh(this, priority);
+            
+            //if (parentChunk != null && parentChunk.renderer != null)
+            //{
+            //    var cameraStatus = parentChunk.renderer.GetCameraRenderStatus(planetaryBody.Scene.mainCamera);
+            //    if (cameraStatus.HasFlag(Renderer.RenderStatus.Visible)) priority *= 0.3f;
+            //}
         }
+        */
 
         void MAKE_CHILD(Vector3d A, Vector3d B, Vector3d C, ChildPosition cp)
         {

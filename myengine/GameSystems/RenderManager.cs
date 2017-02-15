@@ -272,7 +272,7 @@ namespace MyEngine
 			int totalPossible = possibleRenderables.Count;
 
 			toRenderCount = 0;
-			//lock (possibleRenderables)
+			lock (possibleRenderables)
 			{
 				Parallel.ForEach(possibleRenderables, (renderable) =>
 					{
