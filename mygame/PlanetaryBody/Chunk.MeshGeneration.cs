@@ -92,9 +92,9 @@ namespace MyGame.PlanetaryBody
 			var positionsInitial = new Mesh.VertexBufferObjectVector3();
 			var normalsInitial = new Mesh.VertexBufferObjectVector3();
 
-			const bool finalPositionSmoothing = false;
+			const bool disableFinalPositionSmoothing = true;
 			// generate all of our vertices
-			if (childPosition == ChildPosition.NoneNoParent)
+			if (disableFinalPositionSmoothing || childPosition == ChildPosition.NoneNoParent)
 			{
 				//positionsFinal.Add(noElevationRange.a.ToVector3());
 				positionsFinal.Add(GetFinalPos(noElevationRange.a).ToVector3());
@@ -340,12 +340,12 @@ namespace MyGame.PlanetaryBody
 
 
 			bool useSkirts = false;
-			//useSkirts = true;
+			useSkirts = true;
 			if (useSkirts)
 			{
 				var skirtVertices = mesh.Duplicate(edgeVerticesIndexes, mesh.Vertices, mesh.Normals, positionsInitial, normalsInitial);
-				var moveAmount = this.realVisibleRange.ToBoundingSphere().radius / 1000;
-				mesh.MoveVertices(skirtVertices, this.realVisibleRange.CenterPos.Towards(Vector3d.Zero).ToVector3() * (float)moveAmount, mesh.Vertices, positionsInitial);
+				var moveAmount = this.realVisibleRange.ToBoundingSphere().radius / 10;
+				mesh.MoveVertices(skirtVertices, -this.realVisibleRange.Normal.ToVector3() * (float)moveAmount, mesh.Vertices, positionsInitial);
 			}
 
 			mesh.RecalculateBounds();

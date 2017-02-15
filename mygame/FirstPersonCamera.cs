@@ -138,6 +138,11 @@ namespace MyGame
 
 			var planet = PlanetaryBody.Root.instance;
 
+			if(Input.GetKeyDown(Key.C))
+			{
+				rotation = this.Transform.Position.Towards(planet.Transform.Position).ToVector3().LookRot();
+			}
+
 			if (WalkOnPlanet.Bool)
 			{
 

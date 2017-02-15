@@ -1,6 +1,6 @@
 // help from http://prideout.net/archive/bloom/
 
-[include internal/prependAll.shader]
+[include internal/include.all.shader]
 
 [VertexShader] // pass thru vertex shader
 

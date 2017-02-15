@@ -1,2 +1,3 @@
 # Visual Studio C++ project .vcxproj .gitignore 2017-02-14
 /x64/*
+/obj

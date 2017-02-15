@@ -1,4 +1,4 @@
-[include internal/prependAll.shader]
+[include internal/include.all.shader]
 
 uniform vec3 param_lightScreenPos;
 uniform vec3 param_lightWorldPos;

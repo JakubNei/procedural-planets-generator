@@ -7,6 +7,7 @@ uniform sampler2D param_perlinNoise;
 
 uniform float param_planetRadius;
 uniform float param_finalPosWeight;
+uniform float param_debugWeight;
 
 [VertexShader]
 
@@ -351,7 +352,7 @@ void main()
 	//DEBUG
 	//out_color = vec4(vec3(0,1,0),1);
 	//out_color = vec4(vec3(param_finalPosWeight,0,0),1);
-	
+	out_color = vec4(param_debugWeight,0,0,1);
 }
 
 	

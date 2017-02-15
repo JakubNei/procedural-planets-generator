@@ -1,6 +1,6 @@
 // help from http://gamedev.stackexchange.com/questions/53377/reinhard-tone-mapping-and-color-space
 
-[include internal/prependAll.shader]
+[include internal/include.all.shader]
 
 [VertexShader] // pass thru vertex shader
 

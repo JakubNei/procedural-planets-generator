@@ -13,181 +13,86 @@ using System.Threading.Tasks;
 
 namespace MyGame.PlanetaryBody
 {
-	public partial class Chunk
-	{
-		/// <summary>
-		/// Planet local position
-		/// </summary>
-		public Triangle noElevationRange;
-		/// <summary>
-		/// Planet local position
-		/// </summary>
-		public Triangle realVisibleRange;
-		public List<Chunk> childs { get; } = new List<Chunk>();
-		public MeshRenderer renderer;
+    public partial class Chunk
+    {
+        /// <summary>
+        /// Planet local position
+        /// </summary>
+        public Triangle noElevationRange;
+        /// <summary>
+        /// Planet local position
+        /// </summary>
+        public Triangle realVisibleRange;
+        public List<Chunk> childs { get; } = new List<Chunk>();
+        public MeshRenderer renderer;
 
-		public float hideIn;
-		public float showIn;
-		public float visibility;
+        public float hideIn;
+        public float showIn;
+        public float visibility;
 
-		int subdivisionDepth;
-		Root planetaryBody;
+        int subdivisionDepth;
+        Root planetaryBody;
 
-		MeshGenerationService GenerationService => planetaryBody.MeshGenerationService;
+        MeshGenerationService GenerationService => planetaryBody.MeshGenerationService;
 
-		Chunk parentChunk;
-		ChildPosition childPosition;
+        Chunk parentChunk;
+        ChildPosition childPosition;
 
-		public enum ChildPosition
-		{
-			Top = 0,
-			Left = 1,
-			Middle = 2,
-			Right = 3,
-			NoneNoParent = -1,
-		}
+        public enum ChildPosition
+        {
+            Top = 0,
+            Left = 1,
+            Middle = 2,
+            Right = 3,
+            NoneNoParent = -1,
+        }
 
-		public Chunk(Root planetInfo, Chunk parentChunk, ChildPosition childPosition = ChildPosition.NoneNoParent)
-		{
-			this.planetaryBody = planetInfo;
-			this.parentChunk = parentChunk;
-			this.childPosition = childPosition;
-			lock (childs)
-			{
-				childs.Clear();
-			}
-		}
+        public Chunk(Root planetInfo, Chunk parentChunk, ChildPosition childPosition = ChildPosition.NoneNoParent)
+        {
+            this.planetaryBody = planetInfo;
+            this.parentChunk = parentChunk;
+            this.childPosition = childPosition;
+        }
 
-		void MAKE_CHILD(Vector3d A, Vector3d B, Vector3d C, ChildPosition cp)
-		{
-			var child = new Chunk(planetaryBody, this, cp);
-			childs.Add(child);
-			child.subdivisionDepth = subdivisionDepth + 1;
-			child.noElevationRange.a = A;
-			child.noElevationRange.b = B;
-			child.noElevationRange.c = C;
-			child.realVisibleRange.a = planetaryBody.GetFinalPos(child.noElevationRange.a);
-			child.realVisibleRange.b = planetaryBody.GetFinalPos(child.noElevationRange.b);
-			child.realVisibleRange.c = planetaryBody.GetFinalPos(child.noElevationRange.c);
-		}
 
-		public void SubDivide()
-		{
-			lock (childs)
-			{
-				if (childs.Count <= 0)
-				{
-					var a = noElevationRange.a;
-					var b = noElevationRange.b;
-					var c = noElevationRange.c;
-					var ab = (a + b).Divide(2.0f).Normalized();
-					var ac = (a + c).Divide(2.0f).Normalized();
-					var bc = (b + c).Divide(2.0f).Normalized();
 
-					ab *= planetaryBody.radius;
-					ac *= planetaryBody.radius;
-					bc *= planetaryBody.radius;
 
-					MAKE_CHILD(a, ab, ac, ChildPosition.Top);
-					MAKE_CHILD(ab, b, bc, ChildPosition.Left);
-					MAKE_CHILD(ac, bc, c, ChildPosition.Right);
-					MAKE_CHILD(ab, bc, ac, ChildPosition.Middle);
-				}
-			}
-		}
+        public void StopMeshGeneration()
+        {
+            GenerationService.DoesNotNeedMeshGeneration(this);
+        }
 
-		int numberOfChunksGenerated = 0;
-		bool isGenerated = false;
+        public double GetWeight(Camera cam)
+        {
+            bool isVisible = true;
 
-		List<int> indiciesList;
-		List<int> GetIndiciesList()
-		{
-			/*
+            var myPos = realVisibleRange.CenterPos + planetaryBody.Transform.Position;
+            var dirToCamera = myPos.Towards(cam.ViewPointPosition).ToVector3d();
 
-                 /\  top line
-                /\/\
-               /\/\/\
-              /\/\/\/\ middle lines
-             /\/\/\/\/\
-            /\/\/\/\/\/\ bottom line
+            // 0 looking at it from side, 1 looking at it from top, -1 looking at it from bottom
+            var dotToCamera = realVisibleRange.Normal.Dot(dirToCamera);
 
-            */
-			if (indiciesList != null) return indiciesList;
+            var distanceToCamera = myPos.Distance(cam.ViewPointPosition);
+            if (renderer != null && renderer.Mesh != null)
+            {
+                var localCamPos = planetaryBody.Transform.Position.Towards(cam.ViewPointPosition).ToVector3();
+                distanceToCamera = renderer.Mesh.Vertices.FindClosest((v) => v.DistanceSqr(localCamPos)).Distance(localCamPos);
 
-			var numberOfVerticesOnEdge = NumberOfVerticesOnEdge;
-			indiciesList = new List<int>();
-			// make triangles indicies list
-			{
-				int lineStartIndex = 0;
-				int nextLineStartIndex = 1;
-				indiciesList.Add(0);
-				indiciesList.Add(1);
-				indiciesList.Add(2);
+                {
+                    isVisible = renderer.GetCameraRenderStatus(cam).HasFlag(RenderStatus.Rendered);
+                }
+            }
 
-				int numberOfVerticesInBetween = 0;
-				// we skip first triangle as it was done manually
-				// we skip last row of vertices as there are no triangles under it
-				for (int y = 1; y < numberOfVerticesOnEdge - 1; y++)
-				{
-					lineStartIndex = nextLineStartIndex;
-					nextLineStartIndex = lineStartIndex + numberOfVerticesInBetween + 2;
+            double radiusCameraSpace;
+            {
+                // this is world space, doesnt take into consideration rotation, not good
+                var sphere = realVisibleRange.ToBoundingSphere();
+                var radiusWorldSpace = sphere.radius;
+                var fov = cam.fieldOfView;
+                radiusCameraSpace = radiusWorldSpace * MyMath.Cot(fov / 2) / distanceToCamera;
+            }
 
-					for (int x = 0; x <= numberOfVerticesInBetween + 1; x++)
-					{
-						indiciesList.Add(lineStartIndex + x);
-						indiciesList.Add(nextLineStartIndex + x);
-						indiciesList.Add(nextLineStartIndex + x + 1);
-
-						if (x <= numberOfVerticesInBetween) // not a last triangle in line
-						{
-							indiciesList.Add(lineStartIndex + x);
-							indiciesList.Add(nextLineStartIndex + x + 1);
-							indiciesList.Add(lineStartIndex + x + 1);
-						}
-					}
-
-					numberOfVerticesInBetween++;
-				}
-			}
-			return indiciesList;
-		}
-
-		public void StopMeshGeneration()
-		{
-			GenerationService.DoesNotNeedMeshGeneration(this);
-		}
-
-		public double GetWeight(Camera cam)
-		{
-			bool isVisible = true;
-
-			var myPos = realVisibleRange.CenterPos + planetaryBody.Transform.Position;
-			var dirToCamera = myPos.Towards(cam.ViewPointPosition).ToVector3d();
-
-			// 0 looking at it from side, 1 looking at it from top, -1 looking at it from behind
-			var dotToCamera = realVisibleRange.Normal.Dot(dirToCamera);
-
-			var distanceToCamera = myPos.Distance(cam.ViewPointPosition);
-			if (renderer != null && renderer.Mesh != null)
-			{
-				var localCamPos = planetaryBody.Transform.Position.Towards(cam.ViewPointPosition).ToVector3();
-				distanceToCamera = renderer.Mesh.Vertices.FindClosest((v) => v.DistanceSqr(localCamPos)).Distance(localCamPos);
-
-				{
-					isVisible = renderer.GetCameraRenderStatus(cam).HasFlag(RenderStatus.Rendered);
-				}
-			}
-
-			double radiusCameraSpace;
-			{
-				// this is world space, doesnt take into consideration rotation, not good
-				var sphere = noElevationRange.ToBoundingSphere();
-				var radiusWorldSpace = sphere.radius;
-				var fov = cam.fieldOfView;
-				radiusCameraSpace = radiusWorldSpace * MyMath.Cot(fov / 2) / distanceToCamera;
-			}
-
-			/*
+            /*
             {
                 var a = cam.WorldToScreenPos(realVisibleRange.a + planetaryBody.Transform.Position);
                 var b = cam.WorldToScreenPos(realVisibleRange.b + planetaryBody.Transform.Position);
@@ -203,21 +108,24 @@ namespace MyGame.PlanetaryBody
             }
             */
 
-			var weight = radiusCameraSpace * MyMath.SmoothStep(2, 1, MyMath.Clamp01(dotToCamera));
-			if (isVisible == false) weight *= 0.3f;
-			return weight;
-		}
+            var weight = radiusCameraSpace;// * MyMath.SmoothStep(2, 1, MyMath.Clamp01(dotToCamera));
+                                           //if (isVisible == false) weight *= 0.3f;
 
-		public void RequestMeshGeneration()
-		{
-			if (renderer != null) return;
+            renderer?.Material.Uniforms.Set("param_debugWeight", (float)weight);
 
-			var cam = planetaryBody.Entity.Scene.mainCamera;
+            return weight;
+        }
 
-			GenerationService.RequestGenerationOfMesh(this, GetWeight(planetaryBody.Scene.mainCamera));
+        public void RequestMeshGeneration()
+        {
+            if (renderer != null) return;
 
-			// help from http://stackoverflow.com/questions/3717226/radius-of-projected-sphere
-			/*
+            var cam = planetaryBody.Entity.Scene.mainCamera;
+
+            GenerationService.RequestGenerationOfMesh(this, GetWeight(planetaryBody.Scene.mainCamera));
+
+            // help from http://stackoverflow.com/questions/3717226/radius-of-projected-sphere
+            /*
             var sphere = noElevationRange.ToBoundingSphere();
             var radiusWorldSpace = sphere.radius;
             var sphereDistanceToCameraWorldSpace = cam.Transform.Position.Distance(planetaryBody.Transform.Position + sphere.center.ToVector3());
@@ -228,35 +136,129 @@ namespace MyGame.PlanetaryBody
             meshGenerationService.RequestGenerationOfMesh(this, priority);
             */
 
-			/*
+            /*
             if (parentChunk != null && parentChunk.renderer != null)
             {
                 var cameraStatus = parentChunk.renderer.GetCameraRenderStatus(planetaryBody.Scene.mainCamera);
                 if (cameraStatus.HasFlag(Renderer.RenderStatus.Visible)) priority *= 0.3f;
             }
             */
-		}
+        }
 
-		public bool GetVisibleChunksWithin(List<Chunk> chunksResult, Sphere sphere)
-		{
-			if (sphere.Intersects(this.realVisibleRange))
-			{
-				if (this.renderer != null && this.renderer.RenderingMode.HasFlag(RenderingMode.RenderGeometry))
-				{
-					chunksResult.Add(this);
-					return true;
-				}
-				else
-				{
-					var anythingAdded = false;
-					foreach (var chunk in childs)
-					{
-						anythingAdded |= chunk.GetVisibleChunksWithin(chunksResult, sphere);
-					}
-					return anythingAdded;
-				}
-			}
-			return false;
-		}
-	}
+        void MAKE_CHILD(Vector3d A, Vector3d B, Vector3d C, ChildPosition cp)
+        {
+            var child = new Chunk(planetaryBody, this, cp);
+            childs.Add(child);
+            child.subdivisionDepth = subdivisionDepth + 1;
+            child.noElevationRange.a = A;
+            child.noElevationRange.b = B;
+            child.noElevationRange.c = C;
+            child.realVisibleRange.a = planetaryBody.GetFinalPos(child.noElevationRange.a);
+            child.realVisibleRange.b = planetaryBody.GetFinalPos(child.noElevationRange.b);
+            child.realVisibleRange.c = planetaryBody.GetFinalPos(child.noElevationRange.c);
+        }
+
+        public void SubDivide()
+        {
+            lock (childs)
+            {
+                if (childs.Count <= 0)
+                {
+                    var a = noElevationRange.a;
+                    var b = noElevationRange.b;
+                    var c = noElevationRange.c;
+                    var ab = (a + b).Divide(2.0f).Normalized();
+                    var ac = (a + c).Divide(2.0f).Normalized();
+                    var bc = (b + c).Divide(2.0f).Normalized();
+
+                    ab *= planetaryBody.radius;
+                    ac *= planetaryBody.radius;
+                    bc *= planetaryBody.radius;
+
+                    MAKE_CHILD(a, ab, ac, ChildPosition.Top);
+                    MAKE_CHILD(ab, b, bc, ChildPosition.Left);
+                    MAKE_CHILD(ac, bc, c, ChildPosition.Right);
+                    MAKE_CHILD(ab, bc, ac, ChildPosition.Middle);
+                }
+            }
+        }
+
+        int numberOfChunksGenerated = 0;
+        bool isGenerated = false;
+
+        List<int> indiciesList;
+        List<int> GetIndiciesList()
+        {
+            /*
+
+                 /\  top line
+                /\/\
+               /\/\/\
+              /\/\/\/\ middle lines
+             /\/\/\/\/\
+            /\/\/\/\/\/\ bottom line
+
+            */
+            if (indiciesList != null) return indiciesList;
+
+            var numberOfVerticesOnEdge = NumberOfVerticesOnEdge;
+            indiciesList = new List<int>();
+            // make triangles indicies list
+            {
+                int lineStartIndex = 0;
+                int nextLineStartIndex = 1;
+                indiciesList.Add(0);
+                indiciesList.Add(1);
+                indiciesList.Add(2);
+
+                int numberOfVerticesInBetween = 0;
+                // we skip first triangle as it was done manually
+                // we skip last row of vertices as there are no triangles under it
+                for (int y = 1; y < numberOfVerticesOnEdge - 1; y++)
+                {
+                    lineStartIndex = nextLineStartIndex;
+                    nextLineStartIndex = lineStartIndex + numberOfVerticesInBetween + 2;
+
+                    for (int x = 0; x <= numberOfVerticesInBetween + 1; x++)
+                    {
+                        indiciesList.Add(lineStartIndex + x);
+                        indiciesList.Add(nextLineStartIndex + x);
+                        indiciesList.Add(nextLineStartIndex + x + 1);
+
+                        if (x <= numberOfVerticesInBetween) // not a last triangle in line
+                        {
+                            indiciesList.Add(lineStartIndex + x);
+                            indiciesList.Add(nextLineStartIndex + x + 1);
+                            indiciesList.Add(lineStartIndex + x + 1);
+                        }
+                    }
+
+                    numberOfVerticesInBetween++;
+                }
+            }
+            return indiciesList;
+        }
+
+        public bool GetVisibleChunksWithin(List<Chunk> chunksResult, Sphere sphere)
+        {
+            if (sphere.Intersects(this.realVisibleRange))
+            {
+                if (this.renderer != null && this.renderer.RenderingMode.HasFlag(RenderingMode.RenderGeometry))
+                {
+                    chunksResult.Add(this);
+                    return true;
+                }
+                else
+                {
+                    var anythingAdded = false;
+                    foreach (var chunk in childs)
+                    {
+                        anythingAdded |= chunk.GetVisibleChunksWithin(chunksResult, sphere);
+                    }
+                    return anythingAdded;
+                }
+            }
+            return false;
+        }
+    }
 }

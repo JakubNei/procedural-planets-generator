@@ -271,6 +271,7 @@ namespace MyGame.PlanetaryBody
 		{
 			var cam = Entity.Scene.mainCamera;
 			var weight = chunk.GetWeight(cam) + debugWeight + 0.1;
+
 			if (recursionDepth > 0 && weight > tresholdWeight)
 			//if (recursionDepth > 0 && GeometryUtility.Intersects(chunk.realVisibleRange, sphere))
 			{
@@ -300,7 +301,8 @@ namespace MyGame.PlanetaryBody
 			{
 				foreach (var child in chunk.childs)
 				{
-					if (child.renderer != null && child.renderer.RenderingMode != RenderingMode.DontRender) child.renderer.RenderingMode = RenderingMode.DontRender;
+					if (child.renderer != null && child.renderer.RenderingMode != RenderingMode.DontRender)
+						child.renderer.RenderingMode = RenderingMode.DontRender;
 					HideChilds(child);
 				}
 			}
