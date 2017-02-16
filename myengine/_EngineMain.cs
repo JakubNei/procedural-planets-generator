@@ -35,16 +35,16 @@ namespace MyEngine
 		public Factory Factory { get; private set; }
 
 		public EngineMain() : base(
-			1400,
-			900,
+			140,
+			90,
 			new GraphicsMode(),
 			"MyEngine",
 			GameWindowFlags.Default,
 			DisplayDevice.Default,
 			4,
 			3,
-			GraphicsContextFlags.ForwardCompatible
-		)
+            GraphicsContextFlags.ForwardCompatible | GraphicsContextFlags.Debug
+        )
 		{
 			Dependency.Register(this);
 			Dependency.BuildUp(this);

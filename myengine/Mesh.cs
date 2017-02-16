@@ -12,11 +12,11 @@ namespace MyEngine
 {
 	public partial class Mesh : IDisposable
 	{
-		public VertexBufferObject<Vector3> Vertices { get; private set; }
-		public VertexBufferObject<Vector3> Normals { get; private set; }
-		public VertexBufferObject<Vector3> Tangents { get; private set; }
-		public VertexBufferObject<Vector2> UVs { get; private set; }
-		public VertexBufferObject<int> TriangleIndicies { get; private set; }
+		public VertexBufferObjectVector3 Vertices { get; private set; }
+		public VertexBufferObjectVector3 Normals { get; private set; }
+		public VertexBufferObjectVector3 Tangents { get; private set; }
+		public VertexBufferObjectVector2 UVs { get; private set; }
+		public VertexBufferObjectInt TriangleIndicies { get; private set; }
 
 		public MyFile file;
 
@@ -324,7 +324,7 @@ namespace MyEngine
 				}
 			}
 
-			public int offset;
+			int offset = 0;
 
 			public VertexBufferObject()
 			{
@@ -343,7 +343,7 @@ namespace MyEngine
 				GL.BindBuffer(GL_BufferTarget, Handle);
 				var arr = this.ToArray();
 				var size = NumberOfElements * DataSizeOfOneElementInBytes;
-				GL.BufferData(GL_BufferTarget, (IntPtr)(size), arr, BufferUsageHint.DynamicCopy); // BufferUsageHint explained: http://www.informit.com/articles/article.aspx?p=1377833&seqNum=7
+				GL.BufferData(GL_BufferTarget, size, arr, BufferUsageHint.StaticDraw); // BufferUsageHint explained: http://www.informit.com/articles/article.aspx?p=1377833&seqNum=7
 				GL.GetBufferParameter(GL_BufferTarget, BufferParameterName.BufferSize, out sizeFromGpu);
 				// if (size != sizeFromGpu) Debug.Error(myName + " size mismatch size=" + GL_BufferTarget + " sizeFromGpu=" + sizeFromGpu);
 			}

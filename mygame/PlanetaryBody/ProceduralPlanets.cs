@@ -73,29 +73,32 @@ namespace MyGame
 				Gler();
 
 				shader = GL.CreateShader(ShaderType.ComputeShader); Gler();
-				GL.ShaderSource(shader, @"
-#version 430
+				GL.ShaderSource(shader, @"#version 430
+
+struct ssbo_data_t
+{
+    float x;
+    float y;
+    float z;
+};
  
-layout( binding=3 ) buffer Vertexes {
- vec4 Positions[ ];  
+layout( binding=0 ) buffer Vertexes {
+ ssbo_data_t Positions[ ];  
 };
  
 layout( local_size_x = 1, local_size_y = 1, local_size_z = 1 ) in;
  
 void main() {
  
-	uint globalId = gl_GlobalInvocationID.x;
+uint globalId = gl_GlobalInvocationID.x;
  
-	vec4 p = Positions[ globalId ];
+ssbo_data_t p = Positions[ globalId ];
  
-	p.x = 100;
-	p.y = 100;
-	p.z = 100;
+p.x += 0.02;
  
-	Positions[ globalId ] = p;
+Positions[ globalId ] = p;
  
-}
-"); Gler();
+}"); Gler();
 				GL.CompileShader(shader); Gler();
 
 				string logInfo;
@@ -116,15 +119,17 @@ void main() {
 			{
 				var m = c.renderer?.Mesh;
 				if (m == null) continue;
+                if (m.Vertices.Handle == -1) continue;
 
 				GL.UseProgram(program);
 				Gler();
-				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 3, m.Vertices.Handle);
+				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 0, m.Vertices.Handle);
 				Gler();
 				GL.DispatchCompute(m.Vertices.Count, 1, 1);
 				Gler();
+                Debug.Tick("compute shader");
 			}
-			GL.MemoryBarrier(MemoryBarrierFlags.VertexAttribArrayBarrierBit);
+			//GL.MemoryBarrier(MemoryBarrierFlags.VertexAttribArrayBarrierBit);
 			Gler();
 		}
 
@@ -179,7 +184,7 @@ void main() {
 			planet = scene.AddEntity().AddComponent<PlanetaryBody.Root>();
 			planets.Add(planet);
 			// 6371000 earth radius
-			planet.Configure(50000, 2000);
+			planet.Configure(50, 10);
 			planet.Transform.Position = new WorldPos(planet.radius * 3, 0, 0);
 			planet.Start();
 			planet.planetMaterial = planetMaterial;

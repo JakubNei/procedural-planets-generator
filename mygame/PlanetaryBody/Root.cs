@@ -395,10 +395,10 @@ namespace MyGame.PlanetaryBody
 				stats.End();
 				stats.Update();
 				toGenerate.SubDivide();
-				//toGenerate.renderer?.SetRenderingMode(RenderingMode.RenderGeometryAndCastShadows);
+				toGenerate.renderer?.SetRenderingMode(RenderingMode.RenderGeometryAndCastShadows);
 			}
 
-			foreach (var rootChunk in this.rootChunks) Chunks_UpdateVisibility(rootChunk, 0);
+			//foreach (var rootChunk in this.rootChunks) Chunks_UpdateVisibility(rootChunk, 0);
 
 		}
 

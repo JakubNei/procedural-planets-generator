@@ -103,11 +103,11 @@ namespace MyEngine
                 this.getData = getData;
                 size=System.Runtime.InteropServices.Marshal.SizeOf(typeof(T));
 
-                GL.GenBuffers(1, out bufferUBO); // Generate the buffer
+                bufferUBO = GL.GenBuffer(); // Generate the buffer
                 GL.BindBuffer(BufferTarget.UniformBuffer, bufferUBO); // Bind the buffer for writing
                 GL.BufferData(BufferTarget.UniformBuffer, (IntPtr)(size), (IntPtr)(null), BufferUsageHint.StreamDraw); // Request the memory to be allocated
-
-                GL.BindBufferRange(BufferRangeTarget.UniformBuffer, bufferIndex, bufferUBO, (IntPtr)0, (IntPtr)(size));
+                GL.BindBufferRange(BufferRangeTarget.UniformBuffer, bufferIndex, bufferUBO, (IntPtr)0, size);
+                GL.BindBuffer(BufferTarget.UniformBuffer, 0); //unbind
             }
 
 
@@ -115,8 +115,7 @@ namespace MyEngine
             {
                 T d = getData();
                 GL.BindBuffer(BufferTarget.UniformBuffer, bufferUBO);
-                GL.BufferSubData(BufferTarget.UniformBuffer, (IntPtr)0, (IntPtr)(size), ref d);
-
+                GL.BufferSubData(BufferTarget.UniformBuffer, (IntPtr)0, size, ref d);
                 GL.BindBuffer(BufferTarget.UniformBuffer, 0); //unbind
             }
 
