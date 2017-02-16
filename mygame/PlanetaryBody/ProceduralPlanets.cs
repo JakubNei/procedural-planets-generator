@@ -1,8 +1,11 @@
 ﻿using MyEngine;
 using MyEngine.Components;
+using MyEngine.Events;
 using Neitri;
 using OpenTK;
 using OpenTK.Input;
+using OpenTK.Graphics;
+using OpenTK.Graphics.OpenGL;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,13 +35,97 @@ namespace MyGame
 			{
 				while (true)
 				{
-					OnGraphicsUpdate();
+					PlanetLogicUpdate();
 					Thread.Sleep(10);
 				}
 			});
 			t.Priority = ThreadPriority.Highest;
 			t.IsBackground = true;
 			t.Start();
+
+			scene.EventSystem.Register<RenderUpdate>(OnRender);
+
+
+
+
+		}
+
+		int shader = -1;
+		int program;
+
+		PlanetaryBody.Root planet;
+
+		void Gler()
+
+		{
+			var e = GL.GetError();
+			//if (e != ErrorCode.NoError) System.Diagnostics.Debugger.Break();
+		}
+
+
+		void OnRender(RenderUpdate r)
+		{
+
+			if (shader == -1)
+			{
+
+
+				Gler();
+
+				shader = GL.CreateShader(ShaderType.ComputeShader); Gler();
+				GL.ShaderSource(shader, @"
+#version 430
+ 
+layout( binding=3 ) buffer Vertexes {
+ vec4 Positions[ ];  
+};
+ 
+layout( local_size_x = 1, local_size_y = 1, local_size_z = 1 ) in;
+ 
+void main() {
+ 
+	uint globalId = gl_GlobalInvocationID.x;
+ 
+	vec4 p = Positions[ globalId ];
+ 
+	p.x = 100;
+	p.y = 100;
+	p.z = 100;
+ 
+	Positions[ globalId ] = p;
+ 
+}
+"); Gler();
+				GL.CompileShader(shader); Gler();
+
+				string logInfo;
+				int statusCode;
+
+				GL.GetShaderInfoLog(shader, out logInfo); Gler();
+
+
+				program = GL.CreateProgram(); Gler();
+				GL.AttachShader(program, shader); Gler();
+				GL.LinkProgram(program); Gler();
+
+				GL.GetProgram(program, GetProgramParameterName.LinkStatus, out statusCode); Gler();
+				GL.GetProgramInfoLog(program, out logInfo); Gler();
+			}
+
+			foreach (var c in planet.rootChunks)
+			{
+				var m = c.renderer?.Mesh;
+				if (m == null) continue;
+
+				GL.UseProgram(program);
+				Gler();
+				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 3, m.Vertices.Handle);
+				Gler();
+				GL.DispatchCompute(m.Vertices.Count, 1, 1);
+				Gler();
+			}
+			GL.MemoryBarrier(MemoryBarrierFlags.VertexAttribArrayBarrierBit);
+			Gler();
 		}
 
 		void Start()
@@ -71,8 +158,6 @@ namespace MyGame
 				}
 			}*/
 
-			PlanetaryBody.Root planet;
-
 			/*
             planet = scene.AddEntity().AddComponent<PlanetaryBody>();
             planet.radius = 150;
@@ -92,7 +177,7 @@ namespace MyGame
             */
 
 			planet = scene.AddEntity().AddComponent<PlanetaryBody.Root>();
-			planets.Add(planet);			
+			planets.Add(planet);
 			// 6371000 earth radius
 			planet.Configure(50000, 2000);
 			planet.Transform.Position = new WorldPos(planet.radius * 3, 0, 0);
@@ -110,7 +195,7 @@ namespace MyGame
 
 		bool freezeUpdate = false;
 
-		void OnGraphicsUpdate()
+		void PlanetLogicUpdate()
 		{
 			if (scene.Input.GetKeyDown(Key.P)) freezeUpdate = !freezeUpdate;
 			if (freezeUpdate) return;

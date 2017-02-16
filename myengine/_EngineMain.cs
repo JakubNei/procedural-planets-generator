@@ -42,7 +42,7 @@ namespace MyEngine
 			GameWindowFlags.Default,
 			DisplayDevice.Default,
 			4,
-			0,
+			3,
 			GraphicsContextFlags.ForwardCompatible
 		)
 		{
@@ -254,6 +254,7 @@ namespace MyEngine
 			ubo.engine.gammaCorrectionTextureRead = 2.2f;
 			ubo.engine.gammaCorrectionFinalColor = 1 / 2.2f;
 
+
 			//GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
 			{
@@ -269,6 +270,7 @@ namespace MyEngine
 
 			GC.Collect();
 		}
+
 
 		void UpdateGPUMemoryInfo()
 		{

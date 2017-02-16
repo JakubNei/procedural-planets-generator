@@ -20,7 +20,7 @@ namespace MyGame.PlanetaryBody
 		public int chunkNumberOfVerticesOnEdge = 10;
 
 		//public int subdivisionMaxRecurisonDepth = 10;
-		int? subdivisionMaxRecurisonDepth;
+		int? subdivisionMaxRecurisonDepth = 0;
 		public int SubdivisionMaxRecurisonDepth
 		{
 			get
@@ -57,7 +57,7 @@ namespace MyGame.PlanetaryBody
 		PerlinD perlin;
 		WorleyD worley;
 
-		List<Chunk> rootChunks = new List<Chunk>();
+		public List<Chunk> rootChunks = new List<Chunk>();
 
 		//public Chunk.MeshGenerationService MeshGenerationService { get; private set; }
 
@@ -320,8 +320,7 @@ namespace MyGame.PlanetaryBody
 				// hide only if all our childs are visible, they mighht still be generating
 				if (areAllChildsGenerated)
 				{
-					if(chunk.parentChunk == null) chunk.renderer?.SetRenderingMode(RenderingMode.DontRender);
-					else chunk.renderer.SetRenderingMode(RenderingMode.DontRender);
+					chunk.renderer?.SetRenderingMode(RenderingMode.DontRender);
 
 					foreach (var child in chunk.childs)
 					{
@@ -330,12 +329,12 @@ namespace MyGame.PlanetaryBody
 				}
 				else
 				{
-					chunk.renderer.SetRenderingMode(RenderingMode.RenderGeometryAndCastShadows);
+					chunk.renderer?.SetRenderingMode(RenderingMode.RenderGeometryAndCastShadows);
 				}
 			}
 			else
 			{
-				chunk.renderer.SetRenderingMode(RenderingMode.RenderGeometryAndCastShadows);
+				chunk.renderer?.SetRenderingMode(RenderingMode.RenderGeometryAndCastShadows);
 			}
 		}
 
