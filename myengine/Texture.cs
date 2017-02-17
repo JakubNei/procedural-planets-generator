@@ -4,7 +4,7 @@ using System.Text;
 using System.Diagnostics;
 using OpenTK;
 using OpenTK.Graphics;
-using OpenTK.Graphics.OpenGL;
+using OpenTK.Graphics.OpenGL4;
 
 namespace MyEngine
 {
@@ -12,8 +12,8 @@ namespace MyEngine
 
     public enum TextureWrapMode
     {
-        Repeat,
-        Clamp,
+        Repeat = OpenTK.Graphics.OpenGL4.TextureWrapMode.Repeat,
+        Clamp = OpenTK.Graphics.OpenGL4.TextureWrapMode.ClampToEdge,
     }
     public enum FilterMode
     {
@@ -59,5 +59,5 @@ namespace MyEngine
         }
     }
 
-    
+
 }

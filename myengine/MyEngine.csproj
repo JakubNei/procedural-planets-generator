@@ -75,6 +75,7 @@
     </Compile>
     <Compile Include="DeltaTimeManager.cs" />
     <Compile Include="DictionaryWatcher.cs" />
+    <Compile Include="MyGL.cs" />
     <Compile Include="Neitri\DependencyInjection\DependencyManager.cs" />
     <Compile Include="Neitri\IBinarySerializer.cs" />
     <Compile Include="Neitri\IDependencyManager.cs" />

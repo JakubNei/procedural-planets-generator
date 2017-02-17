@@ -15,7 +15,9 @@ namespace MyEngine.Components
 		public Factory Factory => Entity.Factory;
 		public Debug Debug => Entity.Debug;
 
-		public IDependencyManager Dependency => Entity.Dependency;
+        public FileSystem FileSystem => Entity.FileSystem;
+
+        public IDependencyManager Dependency => Entity.Dependency;
 
 		public ComponentWithShortcuts(Entity entity) : base(entity)
 		{

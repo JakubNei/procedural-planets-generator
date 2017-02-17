@@ -5,7 +5,7 @@ using System.Threading;
 
 namespace Neitri.Logging
 {
-	public class LogFile : ILogEnd
+	public class LogFile : ILog
 	{
 		StreamWriter streamWriter;
 		ConcurrentQueue<string> entries = new ConcurrentQueue<string>();

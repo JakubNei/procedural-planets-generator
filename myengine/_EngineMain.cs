@@ -2,7 +2,7 @@
 using Neitri;
 using OpenTK;
 using OpenTK.Graphics;
-using OpenTK.Graphics.OpenGL;
+using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -35,15 +35,15 @@ namespace MyEngine
 		public Factory Factory { get; private set; }
 
 		public EngineMain() : base(
-			140,
-			90,
+			1400,
+			900,
 			new GraphicsMode(),
-			"MyEngine",
+			"Procedural Planets Generator",
 			GameWindowFlags.Default,
 			DisplayDevice.Default,
 			4,
 			3,
-            GraphicsContextFlags.ForwardCompatible | GraphicsContextFlags.Debug
+            GraphicsContextFlags.ForwardCompatible// | GraphicsContextFlags.Debug
         )
 		{
 			Dependency.Register(this);
@@ -110,17 +110,16 @@ namespace MyEngine
 			foreach (StringName r in System.Enum.GetValues(typeof(StringName)))
 			{
 				if (r == StringName.Extensions) break;
-				Debug.Info(r.ToString() + ": " + GL.GetString(r));
+                var str = GL.GetString(r); My.Check();
+                Debug.Info(r.ToString() + ": " + str);
 			}
-			//Debug.Info(StringName.Extensions.ToString() + ": " + GL.GetString(StringName.Extensions));
-
+	
 			// Other state
-			GL.Enable(EnableCap.Texture2D);
-			GL.Hint(HintTarget.PerspectiveCorrectionHint, HintMode.Nicest);
-			GL.Enable(EnableCap.Multisample);
+			//GL.Enable(EnableCap.Texture2D); My.Check();
+			//GL.Hint(HintTarget.PerspectiveCorrectionHint, HintMode.Nicest); My.Check();
+			//GL.Enable(EnableCap.Multisample); My.Check();
 
-			//GL.ClearColor(System.Drawing.Color.MidnightBlue);
-			GL.ClearColor(System.Drawing.Color.Black);
+			GL.ClearColor(System.Drawing.Color.Black); My.Check();
 		}
 
 		protected override void OnUnload(EventArgs e)
@@ -134,7 +133,12 @@ namespace MyEngine
 			Debug.Info("Window resized to: width:" + resizeEvent.NewPixelWidth + " height:" + resizeEvent.NewPixelHeight);
 		}
 
-		public void AddScene(SceneSystem scene)
+        protected override void OnUpdateFrame(FrameEventArgs e)
+        {
+           
+        }
+
+        public void AddScene(SceneSystem scene)
 		{
 			EventSystem.PassEventsTo(scene.EventSystem);
 			scenes.Add(scene);
@@ -220,7 +224,11 @@ namespace MyEngine
 
 		void RenderMain()
 		{
-			if (Debug.CommonCVars.PauseRenderPrepare() == false)
+            if (this.Focused) Input.Update();
+            Debug.Update();
+
+
+            if (Debug.CommonCVars.PauseRenderPrepare() == false)
 			{
 				renderManagerBackReady.Wait();
 				renderManagerBackReady.Reset();
@@ -235,7 +243,7 @@ namespace MyEngine
 
 			UpdateGPUMemoryInfo();
 
-			Debug.Tick("rendering / main render");
+			var fps = Debug.Tick("rendering / main render");
 			renderThreadTime.Tick();
 
 			if (Debug.CommonCVars.ReloadAllShaders().EatBoolIfTrue())
@@ -243,30 +251,29 @@ namespace MyEngine
 				Factory.ReloadAllShaders();
 			}
 
-			if (this.Focused) Input.Update();
-			Debug.Update();
-
-			EventSystem.Raise(new MyEngine.Events.InputUpdate(renderThreadTime));
-			EventSystem.Raise(new MyEngine.Events.EventThreadUpdate(renderThreadTime));
-			EventSystem.Raise(new MyEngine.Events.RenderUpdate(renderThreadTime));
-
-			ubo.engine.totalElapsedSecondsSinceEngineStart = (float)stopwatchSinceStart.Elapsed.TotalSeconds;
+            ubo.engine.totalElapsedSecondsSinceEngineStart = (float)stopwatchSinceStart.Elapsed.TotalSeconds;
 			ubo.engine.gammaCorrectionTextureRead = 2.2f;
 			ubo.engine.gammaCorrectionFinalColor = 1 / 2.2f;
 
+            EventSystem.Raise(new MyEngine.Events.InputUpdate(renderThreadTime));
+            EventSystem.Raise(new MyEngine.Events.EventThreadUpdate(renderThreadTime));
+            EventSystem.Raise(new MyEngine.Events.RenderUpdate(renderThreadTime));
 
-			//GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
-			{
-				var scene = scenes[0];
+            //GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit); My.Check();
+
+            {
+                var scene = scenes[0];
 				var camera = scene.mainCamera;
 				var dataToRender = scene.DataToRender;
 
-				renderManagerFront.SkyboxCubeMap = scene.skyBox;
-				renderManagerFront.RenderAll(ubo, camera, dataToRender.Lights, camera.postProcessEffects);
+                if (fps.FpsPer10Sec > 30) renderManagerFront.SkyboxCubeMap = scene.skyBox;
+                else renderManagerFront.SkyboxCubeMap = null;
+                renderManagerFront.RenderAll(ubo, camera, dataToRender.Lights, camera.postProcessEffects);
 			}
 
-			SwapBuffers();
+
+            SwapBuffers();
 
 			GC.Collect();
 		}
@@ -284,8 +291,8 @@ namespace MyEngine
 			var GPU_MEMORY_INFO_EVICTED_MEMORY_NVX = 0x904;
 
 			int totalAvailableKb, currentAvailableKb;
-			GL.GetInteger((GetPName)GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX, out totalAvailableKb);
-			GL.GetInteger((GetPName)GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, out currentAvailableKb);
+			GL.GetInteger((GetPName)GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX, out totalAvailableKb); My.Check();
+			GL.GetInteger((GetPName)GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, out currentAvailableKb); My.Check();
 
 			int total = totalAvailableKb / 1024;
 			int used = (totalAvailableKb - currentAvailableKb) / 1024;

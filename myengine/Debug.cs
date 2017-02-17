@@ -11,6 +11,8 @@ namespace MyEngine
 {
 	public class Debug
 	{
+        public static Debug Instance { get; private set; }
+
 		List<string> alreadyShown = new List<string>();
 
 		[Dependency]
@@ -44,13 +46,14 @@ namespace MyEngine
 
 		public Debug()
 		{
-			CommonCVars = new CommonCVars(this);
+            Instance = this;
+            CommonCVars = new CommonCVars(this);
 			AddCommonCvars();
 
 			System.Diagnostics.Debug.Listeners.Add(new TraceListener(this));
 		}
 
-		class TickStats
+		public class TickStats
 		{
 			public string name;
 
@@ -134,7 +137,7 @@ namespace MyEngine
 			return result;
 		}
 
-		public void Tick(string name)
+		public TickStats Tick(string name)
 		{
 			TickStats t;
 			if (nameToTickStat.TryGetValue(name, out t) == false)
@@ -144,6 +147,7 @@ namespace MyEngine
 				nameToTickStat[name] = t;
 			}
 			t.Update(this);
+            return t;
 		}
 
 

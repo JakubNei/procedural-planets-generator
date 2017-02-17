@@ -3,11 +3,11 @@ using System.Collections.Generic;
 
 namespace Neitri.Logging
 {
-	public class LogAgregator : ILogEnd
+	public class LogAgregator : ILog
 	{
-		List<ILogEnd> loggers = new List<ILogEnd>();
+		List<ILog> loggers = new List<ILog>();
 
-		public void AddLogger(ILogEnd logEnd)
+		public void AddLogger(ILog logEnd)
 		{
 			loggers.Add(logEnd);
 		}

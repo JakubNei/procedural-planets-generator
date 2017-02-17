@@ -4,14 +4,14 @@ using System.Runtime.CompilerServices;
 
 namespace Neitri
 {
-	public interface ILogEnd
+	public interface ILog
 	{
 		void Log(LogEntry logEntry);
 	}
 
 	public static class LogEndExtensions
 	{
-		public static void Trace<T>(this ILogEnd log, T value, [CallerMemberName] string caller = null)
+		public static void Trace<T>(this ILog log, T value, [CallerMemberName] string caller = null)
 		{
 			log.Log(new LogEntry(
 				LogEntry.LogType.Trace,
@@ -20,7 +20,7 @@ namespace Neitri
 			));
 		}
 
-		public static void Debug<T>(this ILogEnd log, T value, [CallerMemberName] string caller = null)
+		public static void Debug<T>(this ILog log, T value, [CallerMemberName] string caller = null)
 		{
 			log.Log(new LogEntry(
 				LogEntry.LogType.Debug,
@@ -29,7 +29,7 @@ namespace Neitri
 			));
 		}
 
-		public static void Info<T>(this ILogEnd log, T value, [CallerMemberName] string caller = null)
+		public static void Info<T>(this ILog log, T value, [CallerMemberName] string caller = null)
 		{
 			log.Log(new LogEntry(
 				LogEntry.LogType.Info,
@@ -38,7 +38,7 @@ namespace Neitri
 			));
 		}
 
-		public static void Warn<T>(this ILogEnd log, T value, [CallerMemberName] string caller = null)
+		public static void Warn<T>(this ILog log, T value, [CallerMemberName] string caller = null)
 		{
 			log.Log(new LogEntry(
 				LogEntry.LogType.Warn,
@@ -47,7 +47,7 @@ namespace Neitri
 			));
 		}
 
-		public static void Error<T>(this ILogEnd log, T value, [CallerMemberName] string caller = null)
+		public static void Error<T>(this ILog log, T value, [CallerMemberName] string caller = null)
 		{
 			log.Log(new LogEntry(
 				LogEntry.LogType.Error,
@@ -56,7 +56,7 @@ namespace Neitri
 			));
 		}
 
-		public static void Fatal<T>(this ILogEnd log, T value, [CallerMemberName] string caller = null)
+		public static void Fatal<T>(this ILog log, T value, [CallerMemberName] string caller = null)
 		{
 			log.Log(new LogEntry(
 				LogEntry.LogType.Fatal,
@@ -65,31 +65,31 @@ namespace Neitri
 			));
 		}
 
-		public static void FatalException(this ILogEnd log, Exception e)
+		public static void FatalException(this ILog log, Exception e)
 		{
 			log.Fatal(e);
 			var ae = e as AggregateException;
 			if (ae != null) foreach (var _e in ae.InnerExceptions) log.FatalException(_e);
 		}
 
-		public static LogScope Scope<T>(this ILogEnd log, T value)
+		public static LogScope Scope<T>(this ILog log, T value)
 		{
 			return new LogScope(log, value.ToString());
 		}
 
-		public static LogScope ScopeStart<T>(this ILogEnd log, T value)
+		public static LogScope ScopeStart<T>(this ILog log, T value)
 		{
 			var scope = Scope<T>(log, value);
 			scope.Start();
 			return scope;
 		}
 
-		public static LogScope Profile<T>(this ILogEnd log, T value)
+		public static LogScope Profile<T>(this ILog log, T value)
 		{
 			return new LogProfile(log, value.ToString());
 		}
 
-		public static LogScope ProfileStart<T>(this ILogEnd log, T value)
+		public static LogScope ProfileStart<T>(this ILog log, T value)
 		{
 			var scope = Profile<T>(log, value);
 			scope.Start();
@@ -97,13 +97,13 @@ namespace Neitri
 		}
 	}
 
-	public class LogScope : ILogEnd, IDisposable
+	public class LogScope : ILog, IDisposable
 	{
-		protected ILogEnd parent;
+		protected ILog parent;
 		protected string scopeName;
 		protected bool started;
 
-		public LogScope(ILogEnd parent, string scopeName)
+		public LogScope(ILog parent, string scopeName)
 		{
 			this.parent = parent;
 			this.scopeName = scopeName;
@@ -142,9 +142,9 @@ namespace Neitri
 	{
 		string name;
 		Stopwatch time;
-		ILogEnd log;
+		ILog log;
 
-		public LogProfile(ILogEnd parent, string scopeName) : base(parent, scopeName)
+		public LogProfile(ILog parent, string scopeName) : base(parent, scopeName)
 		{
 		}
 

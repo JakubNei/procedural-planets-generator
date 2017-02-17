@@ -1,7 +1,7 @@
 ﻿using Neitri;
 using OpenTK;
 using OpenTK.Graphics;
-using OpenTK.Graphics.OpenGL;
+using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -11,7 +11,7 @@ using System.Text;
 namespace MyEngine.Components
 {
 	[Flags]
-	public enum RenderingMode
+	public enum MyRenderingMode
 	{
 		DontRender = 0,
 		RenderGeometry = (1 << 1),
@@ -59,7 +59,7 @@ namespace MyEngine.Components
 		public MeshRenderer(Entity entity) : base(entity)
 		{
 			Material = Dependency.Create<Material>();
-			RenderingMode = RenderingMode.RenderGeometryAndCastShadows;
+			RenderingMode = MyRenderingMode.RenderGeometryAndCastShadows;
 		}
 
 		public override Bounds GetCameraSpaceBounds(WorldPos viewPointPos)

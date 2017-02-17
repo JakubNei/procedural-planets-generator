@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 
 using OpenTK;
 using OpenTK.Graphics;
-using OpenTK.Graphics.OpenGL;
+using OpenTK.Graphics.OpenGL4;
 
 
 using vec2 = OpenTK.Vector2;
@@ -65,7 +65,7 @@ namespace MyEngine
             public vec3 direction; // direction == 0,0,0 => point light
             public int hasShadows;
             public int lightIndex;
-            
+
         }
         public LightUniformStruct light;
         public UniformBufferObject<LightUniformStruct> lightUBO;
@@ -76,8 +76,8 @@ namespace MyEngine
 
         public UniformBlock()
         {
-            GL.GetInteger(GetPName.MaxUniformBufferBindings, out maxUniformIndex);
-            engineUBO = new UniformBufferObject<EngineUniformStruct>(nextUniformIndex++, ()=> engine);
+            GL.GetInteger(GetPName.MaxUniformBufferBindings, out maxUniformIndex); My.Check();
+            engineUBO = new UniformBufferObject<EngineUniformStruct>(nextUniformIndex++, () => engine);
             modelUBO = new UniformBufferObject<ModelUniformStruct>(nextUniformIndex++, () => model);
             lightUBO = new UniformBufferObject<LightUniformStruct>(nextUniformIndex++, () => light);
         }
@@ -91,7 +91,8 @@ namespace MyEngine
 
 
 
-        public class UniformBufferObject<T> where T : struct { 
+        public class UniformBufferObject<T> where T : struct
+        {
 
             int bufferUBO; // Location for the UBO given by OpenGL
             int bufferIndex; // Index to use for the buffer binding (All good things start at 0 )
@@ -101,26 +102,27 @@ namespace MyEngine
             {
                 bufferIndex = index;
                 this.getData = getData;
-                size=System.Runtime.InteropServices.Marshal.SizeOf(typeof(T));
+                size = System.Runtime.InteropServices.Marshal.SizeOf(typeof(T));
 
-                bufferUBO = GL.GenBuffer(); // Generate the buffer
-                GL.BindBuffer(BufferTarget.UniformBuffer, bufferUBO); // Bind the buffer for writing
-                GL.BufferData(BufferTarget.UniformBuffer, (IntPtr)(size), (IntPtr)(null), BufferUsageHint.StreamDraw); // Request the memory to be allocated
-                GL.BindBufferRange(BufferRangeTarget.UniformBuffer, bufferIndex, bufferUBO, (IntPtr)0, size);
-                GL.BindBuffer(BufferTarget.UniformBuffer, 0); //unbind
+                bufferUBO = GL.GenBuffer(); My.Check(); // Generate the buffer
+                GL.BindBuffer(BufferTarget.UniformBuffer, bufferUBO); My.Check(); // Bind the buffer for writing
+                GL.BufferData(BufferTarget.UniformBuffer, (IntPtr)(size), (IntPtr)(null), BufferUsageHint.StreamDraw); My.Check(); // Request the memory to be allocated
+                GL.BindBufferRange(BufferRangeTarget.UniformBuffer, bufferIndex, bufferUBO, (IntPtr)0, size); My.Check();
+                GL.BindBuffer(BufferTarget.UniformBuffer, 0); My.Check(); //unbind
             }
 
 
             public void UploadData()
             {
                 T d = getData();
-                GL.BindBuffer(BufferTarget.UniformBuffer, bufferUBO);
-                GL.BufferSubData(BufferTarget.UniformBuffer, (IntPtr)0, size, ref d);
-                GL.BindBuffer(BufferTarget.UniformBuffer, 0); //unbind
+                GL.BindBuffer(BufferTarget.UniformBuffer, bufferUBO); My.Check();
+                GL.BufferSubData(BufferTarget.UniformBuffer, (IntPtr)0, size, ref d); My.Check();
+                GL.BindBuffer(BufferTarget.UniformBuffer, 0); My.Check(); //unbind
             }
 
- 
-            public int GetBufferIndex() {
+
+            public int GetBufferIndex()
+            {
                 return bufferIndex;
             }
         }

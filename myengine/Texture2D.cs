@@ -1,5 +1,5 @@
 ﻿using OpenTK;
-using OpenTK.Graphics.OpenGL;
+using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -84,7 +84,7 @@ namespace MyEngine
 		{
 			if (IsOnGpu)
 			{
-				GL.DeleteTexture(textureHandle);
+				GL.DeleteTexture(textureHandle); My.Check();
 				IsOnGpu = false;
 			}
 		}
@@ -106,8 +106,11 @@ namespace MyEngine
 
 		void UploadToGpu()
 		{
-			if (textureHandle == -1) textureHandle = GL.GenTexture();
-			GL.BindTexture(TextureTarget.Texture2D, textureHandle);
+            if (textureHandle == -1)
+            {
+                textureHandle = GL.GenTexture(); My.Check();
+            }
+			GL.BindTexture(TextureTarget.Texture2D, textureHandle); My.Check();
 
 			Stream stream = null;
 
@@ -119,7 +122,7 @@ namespace MyEngine
 			lock (bmp)
 			{
 				BitmapData bmpData = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-				GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, bmpData.Width, bmpData.Height, 0, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, bmpData.Scan0);
+				GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, bmpData.Width, bmpData.Height, 0, OpenTK.Graphics.OpenGL4.PixelFormat.Bgra, PixelType.UnsignedByte, bmpData.Scan0); My.Check();
 				bmp.UnlockBits(bmpData);
 			}
 			bmp?.Dispose();
@@ -127,40 +130,46 @@ namespace MyEngine
 			stream?.Dispose();
 
 
-			// We will not upload mipmaps, so disable mipmapping (otherwise the texture will not appear).
-			// We can use GL.GenerateMipmaps() or GL.Ext.GenerateMipmaps() to create
-			// mipmaps automatically. In that case, use TextureMinFilter.LinearMipmapLinear to enable them.
-			if (UsingMipMaps) GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
+            // We will not upload mipmaps, so disable mipmapping (otherwise the texture will not appear).
+            // We can use GL.GenerateMipmaps() or GL.Ext.GenerateMipmaps() to create
+            // mipmaps automatically. In that case, use TextureMinFilter.LinearMipmapLinear to enable them.
+            if (UsingMipMaps)
+            {
+                GL.GenerateMipmap(GenerateMipmapTarget.Texture2D); My.Check();
+            }
 
-			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)GetTextureMagFilter());
-			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)GetTextureMinFilter());
+			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)GetTextureMagFilter()); My.Check();
+			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)GetTextureMinFilter()); My.Check();
 
 			// https://www.opengl.org/wiki/Sampler_Object
-			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)GetTextureWrapMode());
-			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)GetTextureWrapMode());
+			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)GetTextureWrapMode()); My.Check();
+			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)GetTextureWrapMode()); My.Check();
 
 			// ???
 			//GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureLodBias, this.anisoLevel);
 
-			var extensions = GL.GetString(StringName.Extensions);
-			if (extensions.Contains("GL_EXT_texture_filter_anisotropic"))
-			{
-				if (maxAniso.HasValue == false) maxAniso = GL.GetInteger((GetPName)ExtTextureFilterAnisotropic.MaxTextureMaxAnisotropyExt);
-				GL.TexParameter(
-				   TextureTarget.Texture2D,
-				   (TextureParameterName)ExtTextureFilterAnisotropic.TextureMaxAnisotropyExt,
-				   maxAniso.Value
-				);
-			}
+			//var extensions = GL.GetString(StringName.Extensions); My.Check();
+			//if (extensions.Contains("GL_EXT_texture_filter_anisotropic"))
+			//{
+   //             if (maxAniso.HasValue == false)
+   //             {
+   //                 maxAniso = GL.GetInteger((GetPName)ExtTextureFilterAnisotropic.MaxTextureMaxAnisotropyExt); My.Check();
+   //             }
+			//	GL.TexParameter(
+			//	   TextureTarget.Texture2D,
+			//	   (TextureParameterName)ExtTextureFilterAnisotropic.TextureMaxAnisotropyExt,
+			//	   maxAniso.Value
+			//	);
+			//}
 		}
 
 		static int? maxAniso;
 
 		void UpdateIsOnGpu()
 		{
-			var yes = new bool[1];
-			GL.AreTexturesResident(1, new int[] { textureHandle }, yes);
-			IsOnGpu = yes[0];
+			//var yes = new bool[1];
+			//GL.AreTexturesResident(1, new int[] { textureHandle }, yes); My.Check();
+			//IsOnGpu = yes[0];
 		}
 
 		public override int GetNativeTextureID()

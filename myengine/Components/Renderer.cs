@@ -52,7 +52,7 @@ namespace MyEngine.Components
 
 	public abstract class Renderer : ComponentWithShortcuts, IRenderable, IDisposable
 	{
-		public virtual RenderingMode RenderingMode { get; set; }
+		public virtual MyRenderingMode RenderingMode { get; set; }
 		public virtual Material Material { get; set; }
 
 		Dictionary<Camera, RenderStatus> cameraToRenderStatus = new Dictionary<Camera, RenderStatus>();
@@ -67,7 +67,7 @@ namespace MyEngine.Components
 			dataToRender.Target?.Add(this);
 		}
 
-        public void SetRenderingMode(RenderingMode renderingMode) => RenderingMode = renderingMode;
+        public void SetRenderingMode(MyRenderingMode renderingMode) => RenderingMode = renderingMode;
 		public abstract Bounds GetCameraSpaceBounds(WorldPos viewPointPos);
 
 		public virtual void UploadUBOandDraw(Camera camera, UniformBlock ubo)
@@ -86,8 +86,8 @@ namespace MyEngine.Components
 
 		public virtual bool ShouldRenderInContext(object renderContext)
 		{
-			if (renderContext == RenderContext.Geometry && RenderingMode.HasFlag(RenderingMode.RenderGeometry)) return true;
-			if (renderContext == RenderContext.Shadows && RenderingMode.HasFlag(RenderingMode.CastShadows)) return true;
+			if (renderContext == RenderContext.Geometry && RenderingMode.HasFlag(MyRenderingMode.RenderGeometry)) return true;
+			if (renderContext == RenderContext.Shadows && RenderingMode.HasFlag(MyRenderingMode.CastShadows)) return true;
 			return false;
 		}
 

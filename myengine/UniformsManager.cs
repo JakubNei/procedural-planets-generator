@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 using OpenTK;
 using OpenTK.Graphics;
-using OpenTK.Graphics.OpenGL;
+using OpenTK.Graphics.OpenGL4;
 
 namespace MyEngine
 {
@@ -141,49 +141,49 @@ namespace MyEngine
             if (o is Matrix4)
             {
                 var u = (Matrix4)o;
-                GL.UniformMatrix4(location, false, ref u);
+                GL.UniformMatrix4(location, false, ref u); My.Check();
                 return true;
             }
             if (o is bool)
             {
                 var u = (bool)o;
-                GL.Uniform1(location, u ? 1 : 0);
+                GL.Uniform1(location, u ? 1 : 0); My.Check();
                 return true;
             }
             if (o is int)
             {
                 var u = (int)o;
-                GL.Uniform1(location, u);
+                GL.Uniform1(location, u); My.Check();
                 return true;
             }
             if (o is float)
             {
                 var u = (float)o;
-                GL.Uniform1(location, u);
+                GL.Uniform1(location, u); My.Check();
                 return true;
             }
             if (o is double)
             {
                 var u = (double)o;
-                GL.Uniform1(location, u);
+                GL.Uniform1(location, u); My.Check();
                 return true;
             }
             if (o is Vector2)
             {
                 var u = (Vector2)o;
-                GL.Uniform2(location, ref u);
+                GL.Uniform2(location, ref u); My.Check();
                 return true;
             }
             if (o is Vector3)
             {
                 var u = (Vector3)o;
-                GL.Uniform3(location, ref u);
+                GL.Uniform3(location, ref u); My.Check();
                 return true;
             }
             if (o is Vector4)
             {
                 var u = (Vector4)o;
-                GL.Uniform4(location, ref u);
+                GL.Uniform4(location, ref u); My.Check();
                 return true;
             }
             return false;
@@ -210,13 +210,13 @@ namespace MyEngine
         }
         void SendTexture(string name, Texture2D texture2D, int texturingUnit)
         {
-            GL.ActiveTexture(TextureUnit.Texture0 + texturingUnit);
-            GL.BindTexture(TextureTarget.Texture2D, texture2D.GetNativeTextureID());
+            GL.ActiveTexture(TextureUnit.Texture0 + texturingUnit); My.Check();
+            GL.BindTexture(TextureTarget.Texture2D, texture2D.GetNativeTextureID()); My.Check();
         }
         void SendTexture(string name, Cubemap cubeMap, int texturingUnit)
         {
-            GL.ActiveTexture(TextureUnit.Texture0 + texturingUnit);
-            GL.BindTexture(TextureTarget.TextureCubeMap, cubeMap.GetNativeTextureID());
+            GL.ActiveTexture(TextureUnit.Texture0 + texturingUnit); My.Check();
+            GL.BindTexture(TextureTarget.TextureCubeMap, cubeMap.GetNativeTextureID()); My.Check();
         }
 
 

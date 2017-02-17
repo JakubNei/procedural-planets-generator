@@ -4,7 +4,7 @@ using System.Text;
 using System.Diagnostics;
 using OpenTK;
 using OpenTK.Graphics;
-using OpenTK.Graphics.OpenGL;
+using OpenTK.Graphics.OpenGL4;
 
 namespace MyEngine.Components
 {

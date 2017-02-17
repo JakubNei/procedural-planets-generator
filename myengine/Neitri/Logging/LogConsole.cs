@@ -4,7 +4,7 @@ using System.Threading;
 
 namespace Neitri.Logging
 {
-	public class LogConsole : ILogEnd
+	public class LogConsole : ILog
 	{
 		ConcurrentQueue<Entry> entries = new ConcurrentQueue<Entry>();
 		Thread thread;

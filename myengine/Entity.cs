@@ -3,7 +3,7 @@ using MyEngine.Events;
 using Neitri;
 using OpenTK;
 using OpenTK.Graphics;
-using OpenTK.Graphics.OpenGL;
+using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -20,7 +20,8 @@ namespace MyEngine
 		public SceneSystem Scene { get; private set; }
 		public InputSystem Input { get; private set; }
 
-		public Debug Debug => Scene.Debug;
+        public FileSystem FileSystem => Scene.FileSystem;
+        public Debug Debug => Scene.Debug;
 		public Factory Factory => Scene.Factory;
 
 		public IDependencyManager Dependency => Scene.Dependency;

@@ -1,6 +1,6 @@
 ﻿using OpenTK;
 using OpenTK.Graphics;
-using OpenTK.Graphics.OpenGL;
+using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -13,14 +13,14 @@ namespace MyEngine
 	{
 		string prependSource;
 
-		[Dependency]
-		FileSystem FileSystem;
+		
+		readonly FileSystem FileSystem;
+        readonly Debug debug;
 
-		[Dependency]
-		Debug debug;
-
-		ShaderBuilder()
+		public ShaderBuilder(FileSystem fileSystem, Debug debug)
 		{
+            FileSystem = fileSystem;
+            this.debug = debug;
 		}
 
 		void Prepend(MyFile name)
@@ -29,24 +29,22 @@ namespace MyEngine
 				prependSource += fs.ReadToEnd();
 		}
 
-		public void Load(MyFile file)
+		public void LoadAndParse(MyFile file)
 		{
 			string source = file.ReadAllText();
 
 			source = ReplaceIncludeDirectiveWithFileContents(source, file.Folder);
 
-			// the contents above first shader program [VertexShader] are shared amongs all parts (prepended to all parts)
+			// the contents above first shader part (program) [VertexShader] are shared amongs all parts (prepended to all parts)
 			string prependContents = "";
 			{
 				ShaderType shaderType = ShaderType.VertexShader;
 				int startOfTag = GetClosestShaderTypeTagPosition(source, 0, ref shaderType);
-				if (startOfTag == -1)
-				{
-					debug.Error("Shader part start not found " + file.VirtualPath);
-					return;
-				}
-				prependContents += source.Substring(0, startOfTag - 1);
-				source = source.Substring(startOfTag);
+                if (startOfTag > 0)
+                {
+                    prependContents += source.Substring(0, startOfTag - 1);
+                    source = source.Substring(startOfTag);
+                }
 			}
 
 			int currentStartingLine = prependContents.Count('\n');

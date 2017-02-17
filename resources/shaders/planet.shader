@@ -29,7 +29,8 @@ out data {
 
 void main()
 {
-	vec3 modelPos = mix(in_positionInitial, in_position, param_finalPosWeight);
+	//vec3 modelPos = mix(in_positionInitial, in_position, param_finalPosWeight);
+	vec3 modelPos = in_position;
 	vec4 worldPos4 = (model.modelMatrix * vec4(modelPos, 1));	
 	vec3 worldPos3 = worldPos4.xyz / worldPos4.w;
 
@@ -352,7 +353,7 @@ void main()
 	//DEBUG
 	//out_color = vec4(vec3(0,1,0),1);
 	//out_color = vec4(vec3(param_finalPosWeight,0,0),1);
-	out_color = vec4(param_debugWeight,0,0,1);
+	//out_color = vec4(param_debugWeight,0,0,1);
 }
 
 	

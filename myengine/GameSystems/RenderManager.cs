@@ -3,7 +3,7 @@ using MyEngine.Components;
 using Neitri;
 using OpenTK;
 using OpenTK.Graphics;
-using OpenTK.Graphics.OpenGL;
+using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -54,18 +54,21 @@ namespace MyEngine
 
 			RenderGBuffer(ubo, camera);
 			RenderLights(ubo, camera, allLights);
-			if (drawLines) GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
+            if (drawLines)
+            {
+                GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill); My.Check();
+            }
 			RenderPostProcessEffects(ubo, postProcessEffect);
 
 			// FINAL DRAW TO SCREEN
 			{
 				//DebugDrawTexture(gBuffer.finalTextureToRead);
-				GL.Disable(EnableCap.DepthTest);
-				GL.Disable(EnableCap.CullFace);
-				GL.Disable(EnableCap.Blend);
+				GL.Disable(EnableCap.DepthTest); My.Check();
+				GL.Disable(EnableCap.CullFace); My.Check();
+				GL.Disable(EnableCap.Blend); My.Check();
 
-				GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, 0);
-				GL.Viewport(0, 0, camera.pixelWidth, camera.pixelHeight);
+				GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, 0); My.Check();
+				GL.Viewport(0, 0, camera.pixelWidth, camera.pixelHeight); My.Check();
 
 				FinalDrawShader.Uniforms.Set("finalDrawTexture", GBuffer.finalTextureToRead);
 				FinalDrawShader.Bind();
@@ -80,11 +83,11 @@ namespace MyEngine
                 {
                     allColiders.AddRange(go.GetComponents<BoxCollider>());
                 }
-                GL.DepthMask(false);
-                GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
-                GL.Disable(EnableCap.DepthTest);
-                GL.Disable(EnableCap.CullFace);
-                GL.Disable(EnableCap.Blend);
+                GL.DepthMask(false); My.Check();
+                GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line); My.Check();
+                GL.Disable(EnableCap.DepthTest); My.Check();
+                GL.Disable(EnableCap.CullFace); My.Check();
+                GL.Disable(EnableCap.Blend); My.Check();
                 foreach (var c in allColiders)
                 {
                     var modelMat = c.entity.transform.GetScalePosRotMatrix();
@@ -108,35 +111,41 @@ namespace MyEngine
 			{
 				GBuffer.BindAllFrameBuffersForDrawing();
 
-				GL.Enable(EnableCap.DepthTest);
-				GL.DepthMask(true);
-				GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit);
+				GL.Enable(EnableCap.DepthTest); My.Check();
+				GL.DepthMask(true); My.Check();
+				GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit); My.Check();
 
-				// SKYBOX PASS
+                // SKYBOX PASS
 
-				if (SkyboxCubeMap != null)
-				{
-					GL.DepthRange(0.999, 1);
-					GL.DepthMask(false);
+                if (SkyboxCubeMap != null)
+                {
+                    GL.DepthRange(0.999, 1); My.Check();
+                    GL.DepthMask(false); My.Check();
 
-					var shader = factory.GetShader("internal/deferred.skybox.shader");
-					shader.Uniforms.Set("skyboxCubeMap", SkyboxCubeMap);
-					shader.Bind();
+                    var shader = factory.GetShader("internal/deferred.skybox.shader");
+                    shader.Uniforms.Set("skyboxCubeMap", SkyboxCubeMap);
+                    shader.Bind();
 
-					factory.SkyBoxMesh.Draw();
-					GL.DepthRange(0, 1);
-				}
+                    factory.SkyBoxMesh.Draw();
+                    GL.DepthRange(0, 1); My.Check();
+                }
 
-				if (drawLines) GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
-				else GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
+                if (drawLines)
+                {
+                    GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line); My.Check();
+                }
+                else
+                {
+                    GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill); My.Check();
+                }
 
 				// RENDER ALL OBJECTS
 				{
-					GL.DepthMask(true);
+					GL.DepthMask(true); My.Check();
 
-					GL.Enable(EnableCap.CullFace);
-					GL.Disable(EnableCap.Blend);
-					GL.CullFace(CullFaceMode.Back);
+					GL.Enable(EnableCap.CullFace); My.Check();
+					GL.Disable(EnableCap.Blend); My.Check();
+					GL.CullFace(CullFaceMode.Back); My.Check();
 					for (int i = 0; i < toRenderCount; i++)
 					{
 						var renderable = toRender[i];
@@ -148,7 +157,8 @@ namespace MyEngine
 					// GL.MultiDrawElementsIndirect
 				}
 
-				GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
+				GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill); My.Check();
+                GBuffer.Unbind();
 			}
 		}
 
@@ -175,8 +185,8 @@ namespace MyEngine
 
 						shadowMap.FrameBufferForWriting();
 
-						GL.Enable(EnableCap.DepthTest);
-						GL.DepthMask(true);
+						GL.Enable(EnableCap.DepthTest); My.Check();
+						GL.DepthMask(true); My.Check();
 
 						shadowMap.Clear();
 
@@ -204,18 +214,21 @@ namespace MyEngine
 					// G BUFFER LIGHT PASS
 
 					{
-						GL.Disable(EnableCap.CullFace);
+						GL.Disable(EnableCap.CullFace); My.Check();
 						//GL.CullFace(CullFaceMode.Back);
 
-						GL.Disable(EnableCap.DepthTest);
-						GL.DepthMask(false);
+						GL.Disable(EnableCap.DepthTest); My.Check();
+						GL.DepthMask(false); My.Check();
 
 						light.UploadUBOdata(camera, ubo, lightIndex);
 
 						var shader = factory.GetShader("internal/deferred.oneLight.shader");
 						GBuffer.BindForLightPass(shader);
 
-						if (lightIndex == 0) GL.Clear(ClearBufferMask.ColorBufferBit);
+                        if (lightIndex == 0)
+                        {
+                            GL.Clear(ClearBufferMask.ColorBufferBit); My.Check();
+                        }
 
 						if (shadowsEnabled && light.HasShadows)
 						{
@@ -227,10 +240,12 @@ namespace MyEngine
 						//GL.Enable(EnableCap.Blend);
 						//GL.BlendEquationSeparate(BlendEquationMode.FuncAdd, BlendEquationMode.FuncAdd);
 						//GL.BlendFunc(BlendingFactorSrc.SrcColor, BlendingFactorDest.SrcColor);
-						GL.BlendEquation(BlendEquationMode.FuncAdd);
-						GL.BlendFunc(BlendingFactorSrc.One, BlendingFactorDest.One);
+						GL.BlendEquation(BlendEquationMode.FuncAdd); My.Check();
+						GL.BlendFunc(BlendingFactorSrc.One, BlendingFactorDest.One); My.Check();
 						factory.QuadMesh.Draw();
-						GL.Disable(EnableCap.Blend);
+						GL.Disable(EnableCap.Blend); My.Check();
+
+                        GBuffer.Unbind();
 					}
 				}
 			}
@@ -243,12 +258,12 @@ namespace MyEngine
 			// POST PROCESS EFFECTs
 			if (enablePostProcessEffects)
 			{
-				GL.Disable(EnableCap.DepthTest);
-				GL.Disable(EnableCap.CullFace);
-				GL.Disable(EnableCap.Blend);
+				GL.Disable(EnableCap.DepthTest); My.Check();
+				GL.Disable(EnableCap.CullFace); My.Check();
+				GL.Disable(EnableCap.Blend); My.Check();
 
-				GL.Disable(EnableCap.DepthTest);
-				GL.DepthMask(false);
+				GL.Disable(EnableCap.DepthTest); My.Check();
+				GL.DepthMask(false); My.Check();
 
 				foreach (var pe in postProcessEffects)
 				{
@@ -258,7 +273,9 @@ namespace MyEngine
 					pe.Shader.Bind();
 					factory.QuadMesh.Draw();
 				}
-			}
+                GBuffer.Unbind();
+
+            }
 		}
 
 		public void BuildRenderList(IList<IRenderable> possibleRenderables, Camera camera)

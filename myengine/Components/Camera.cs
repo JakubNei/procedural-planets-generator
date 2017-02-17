@@ -4,7 +4,7 @@ using System.Text;
 using System.Diagnostics;
 using OpenTK;
 using OpenTK.Graphics;
-using OpenTK.Graphics.OpenGL;
+using OpenTK.Graphics.OpenGL4;
 
 using MyEngine;
 using MyEngine.Components;
@@ -80,7 +80,7 @@ namespace MyEngine.Components
             ubo.engine.farClipPlane = this.farClipPlane;
             ubo.engine.ambientColor = this.ambientColor;
             ubo.engine.cameraPosition = this.ViewPointPosition.ToVector3();
-            GL.Viewport(0, 0, pixelWidth, pixelHeight);
+            GL.Viewport(0, 0, pixelWidth, pixelHeight); My.Check();
             ubo.engineUBO.UploadData();
         }
 

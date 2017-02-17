@@ -355,9 +355,10 @@ namespace MyGame.PlanetaryBody
 			renderer.Offset += offsetCenter;
 
 			if (planetaryBody.planetMaterial != null) renderer.Material = planetaryBody.planetMaterial.CloneTyped();
-			renderer.RenderingMode = RenderingMode.DontRender;
+			renderer.RenderingMode = MyRenderingMode.DontRender;
 			this.visibility = 0;
-		}
+
+        }
 
 
 		public void DestroyRenderer()

@@ -5,7 +5,7 @@ using System.Drawing;
 using OpenTK;
 using OpenTK.Input;
 using OpenTK.Graphics;
-using OpenTK.Graphics.OpenGL;
+using OpenTK.Graphics.OpenGL4;
 
 using MyEngine;
 using MyEngine.Events;

@@ -2,7 +2,7 @@
 using Neitri;
 using OpenTK;
 using OpenTK.Graphics;
-using OpenTK.Graphics.OpenGL;
+using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -53,68 +53,73 @@ namespace MyEngine
 			textures = new Texture2D[texturesNum];
 
 			// create textures for fbo
-			GL.GenTextures(textureHandles.Length, textureHandles);
+			GL.GenTextures(textureHandles.Length, textureHandles); My.Check();
 
 			List<DrawBuffersEnum> bufs = new List<DrawBuffersEnum>();
 			for (int i = 0; i < textureHandles.Length; i++)
 			{
 				var t = new Texture2D(textureHandles[i]);
 				textures[i] = t;
-				GL.BindTexture(TextureTarget.Texture2D, t.GetNativeTextureID());
-				GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba32f, width, height, 0, PixelFormat.Rgba, PixelType.Float, new IntPtr(0));
-				GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
-				GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.LinearMipmapLinear);
-				GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
-				GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Clamp);
-				GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Clamp);
-				bufs.Add(DrawBuffersEnum.ColorAttachment0 + i);
+				GL.BindTexture(TextureTarget.Texture2D, t.GetNativeTextureID()); My.Check();
+				GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba32f, width, height, 0, PixelFormat.Rgba, PixelType.Float, new IntPtr(0)); My.Check();
+				GL.GenerateMipmap(GenerateMipmapTarget.Texture2D); My.Check();
+				GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.LinearMipmapLinear); My.Check();
+				GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear); My.Check();
+				GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Clamp); My.Check();
+				GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Clamp); My.Check();
+                GL.BindTexture(TextureTarget.Texture2D, 0); My.Check(); //unbind
+                bufs.Add(DrawBuffersEnum.ColorAttachment0 + i);
 			}
 
-			depthTexture = new Texture2D(GL.GenTexture());
-			GL.BindTexture(TextureTarget.Texture2D, depthTexture.GetNativeTextureID());
-			GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.DepthComponent32f, width, height, 0, PixelFormat.DepthComponent, PixelType.Float, new IntPtr(0));
-			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
-			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
-			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Clamp);
-			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Clamp);
-			//GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
+            depthTexture = new Texture2D(GL.GenTexture());
+			GL.BindTexture(TextureTarget.Texture2D, depthTexture.GetNativeTextureID()); My.Check();
+			GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.DepthComponent32f, width, height, 0, PixelFormat.DepthComponent, PixelType.Float, new IntPtr(0)); My.Check();
+			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear); My.Check();
+			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear); My.Check();
+			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Clamp); My.Check();
+			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Clamp); My.Check();
+            //GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
+            GL.BindTexture(TextureTarget.Texture2D, 0); My.Check(); //unbind
 
-			// create frame buffer object
-			frameBufferObjectHandle = GL.GenFramebuffer();
-			GL.BindFramebuffer(FramebufferTarget.Framebuffer, frameBufferObjectHandle);
-			for (int i = 0; i < bufs.Count; i++) GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0 + i, TextureTarget.Texture2D, textures[i].GetNativeTextureID(), 0);
-			GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.DepthAttachment, TextureTarget.Texture2D, depthTexture.GetNativeTextureID(), 0);
+            // create frame buffer object
+            frameBufferObjectHandle = GL.GenFramebuffer(); My.Check();
+			GL.BindFramebuffer(FramebufferTarget.Framebuffer, frameBufferObjectHandle); My.Check();
+            for (int i = 0; i < bufs.Count; i++)
+            {
+                GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0 + i, TextureTarget.Texture2D, textures[i].GetNativeTextureID(), 0); My.Check();
+            }
+			GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.DepthAttachment, TextureTarget.Texture2D, depthTexture.GetNativeTextureID(), 0); My.Check();
 
-			/*
-            GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Depth32fStencil8, width, height, 0, PixelFormat.DepthStencil, PixelType.UnsignedInt248, new IntPtr(0));
-            GL.FramebufferTexture2D(FramebufferTarget.DrawFramebuffer, FramebufferAttachment.DepthStencilAttachment, TextureTarget.Texture2D, depthTexture.GetNativeTextureID(), 0);
+            /*
+            GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Depth32fStencil8, width, height, 0, PixelFormat.DepthStencil, PixelType.UnsignedInt248, new IntPtr(0)); My.Check();
+            GL.FramebufferTexture2D(FramebufferTarget.DrawFramebuffer, FramebufferAttachment.DepthStencilAttachment, TextureTarget.Texture2D, depthTexture.GetNativeTextureID(), 0); My.Check();
             */
 
-			buffers = bufs.ToArray();
+            buffers = bufs.ToArray();
 
-			var status = GL.CheckFramebufferStatus(FramebufferTarget.DrawFramebuffer);
+			var status = GL.CheckFramebufferStatus(FramebufferTarget.DrawFramebuffer); My.Check();
 			if (status != FramebufferErrorCode.FramebufferComplete) debug.Error(status);
 
-			GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, 0); //restore default FBO
-		}
+            GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0); My.Check(); //unbind
+        }
 
 		public void BindAllFrameBuffersForDrawing()
 		{
-			GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, frameBufferObjectHandle);
-			GL.DrawBuffers(buffers.Length, buffers);
+			GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, frameBufferObjectHandle); My.Check();
+			GL.DrawBuffers(buffers.Length, buffers); My.Check();
 		}
 
 		public void BindForLightPass(Shader shader)
 		{
 			readFirstFinalTexture = true;
 
-			GL.Disable(EnableCap.DepthTest);
-			GL.DepthMask(false);
-			GL.CullFace(CullFaceMode.Back);
+			GL.Disable(EnableCap.DepthTest); My.Check();
+			GL.DepthMask(false); My.Check();
+			GL.CullFace(CullFaceMode.Back); My.Check();
 
-			GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, frameBufferObjectHandle);
+			GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, frameBufferObjectHandle); My.Check();
 
-			GL.DrawBuffer(DrawBufferMode.ColorAttachment4);
+			GL.DrawBuffer(DrawBufferMode.ColorAttachment4); My.Check();
 			shader.Uniforms.Set("gBufferUniform.depth", depthTexture);
 
 			for (int i = 0; i < textures.Length - 2; i++)
@@ -122,6 +127,12 @@ namespace MyEngine
 				shader.Uniforms.Set("gBufferUniform." + ((GBufferTextures)i).ToString().ToLower(), textures[i]);
 			}
 		}
+
+        public void Unbind()
+        {
+            GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, 0); My.Check();
+            GL.DrawBuffer(DrawBufferMode.Back); My.Check();
+        }
 
 		public void BindForPostProcessEffects(IPostProcessEffect postProcess)
 		{
@@ -132,23 +143,29 @@ namespace MyEngine
 			if (generateMipMaps)
 			{
 				/*GL.ActiveTexture(TextureUnit.Texture0);
-                GL.BindTexture(TextureTarget.Texture2D, finalTextureToWriteTo.GetNativeTextureID());
-                GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);*/
+                GL.BindTexture(TextureTarget.Texture2D, finalTextureToWriteTo.GetNativeTextureID()); My.Check();
+                GL.GenerateMipmap(GenerateMipmapTarget.Texture2D); My.Check();*/
 
-				GL.ActiveTexture(TextureUnit.Texture0);
-				GL.BindTexture(TextureTarget.Texture2D, finalTextureToRead.GetNativeTextureID());
-				GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
+				GL.ActiveTexture(TextureUnit.Texture0); My.Check();
+				GL.BindTexture(TextureTarget.Texture2D, finalTextureToRead.GetNativeTextureID()); My.Check();
+				GL.GenerateMipmap(GenerateMipmapTarget.Texture2D); My.Check();
 			}
 
-			GL.Disable(EnableCap.DepthTest);
-			GL.DepthMask(false);
-			GL.CullFace(CullFaceMode.Back);
+			GL.Disable(EnableCap.DepthTest); My.Check();
+			GL.DepthMask(false); My.Check();
+			GL.CullFace(CullFaceMode.Back); My.Check();
 
-			GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, frameBufferObjectHandle);
+			GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, frameBufferObjectHandle); My.Check();
 
-			// draw to the one we are not reading
-			if (readFirstFinalTexture == false) GL.DrawBuffer(DrawBufferMode.ColorAttachment4);
-			else GL.DrawBuffer(DrawBufferMode.ColorAttachment5);
+            // draw to the one we are not reading
+            if (readFirstFinalTexture == false)
+            {
+                GL.DrawBuffer(DrawBufferMode.ColorAttachment4); My.Check();
+            }
+            else
+            {
+                GL.DrawBuffer(DrawBufferMode.ColorAttachment5); My.Check();
+            }
 
 			shader.Uniforms.Set("gBufferUniform.depth", depthTexture);
 			shader.Uniforms.Set("gBufferUniform.final", finalTextureToRead);
@@ -163,7 +180,7 @@ namespace MyEngine
 
 		public void DebugDrawContents()
 		{
-			GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, frameBufferObjectHandle);
+			GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, frameBufferObjectHandle); My.Check();
 
 			int qh = height / 4;
 			int qw = width / 4;
@@ -184,17 +201,17 @@ namespace MyEngine
 
 		public void DebugDrawNormal()
 		{
-			GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, frameBufferObjectHandle);
-			GL.ReadBuffer(ReadBufferMode.ColorAttachment2);
-			GL.BlitFramebuffer(0, 0, width, height, 0, 0, width, height, ClearBufferMask.ColorBufferBit, BlitFramebufferFilter.Linear);
+			GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, frameBufferObjectHandle); My.Check();
+			GL.ReadBuffer(ReadBufferMode.ColorAttachment2); My.Check();
+			GL.BlitFramebuffer(0, 0, width, height, 0, 0, width, height, ClearBufferMask.ColorBufferBit, BlitFramebufferFilter.Linear); My.Check();
 		}
 
 		void DrawBufferToQuarterOfScreen(ReadBufferMode buffer, int x, int y)
 		{
 			int qh = height / 4;
 			int qw = width / 4;
-			GL.ReadBuffer(buffer);
-			GL.BlitFramebuffer(0, 0, width, height, x, y, x + qw, y + qh, ClearBufferMask.ColorBufferBit, BlitFramebufferFilter.Linear);
+			GL.ReadBuffer(buffer); My.Check();
+			GL.BlitFramebuffer(0, 0, width, height, x, y, x + qw, y + qh, ClearBufferMask.ColorBufferBit, BlitFramebufferFilter.Linear); My.Check();
 		}
 
 		void DebugDrawTexture(Texture2D texture, float valueScale = 1, float valueOffset = 0)
@@ -206,12 +223,12 @@ namespace MyEngine
 		{
 			var debugDrawTextureShader = factory.GetShader("internal/debugDrawTexture.shader");
 
-			GL.Disable(EnableCap.DepthTest);
-			GL.Disable(EnableCap.CullFace);
-			GL.Disable(EnableCap.Blend);
+			GL.Disable(EnableCap.DepthTest); My.Check();
+			GL.Disable(EnableCap.CullFace); My.Check();
+			GL.Disable(EnableCap.Blend); My.Check();
 
-			GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, 0);
-			GL.Viewport(0, 0, width, height);
+			GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, 0); My.Check();
+			GL.Viewport(0, 0, width, height); My.Check();
 			//GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit);
 
 			debugDrawTextureShader.Uniforms.Set("debugDrawTexture", texture);
@@ -229,7 +246,7 @@ namespace MyEngine
 
 		public void Dispose()
 		{
-			GL.DeleteFramebuffer(frameBufferObjectHandle);
+			GL.DeleteFramebuffer(frameBufferObjectHandle); My.Check();
 			depthTexture.Dispose();
 			foreach (var t in textures) t.Dispose();
 		}

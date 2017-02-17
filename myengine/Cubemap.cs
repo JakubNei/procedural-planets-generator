@@ -5,7 +5,7 @@ using System.IO;
 
 using System.Drawing;
 using System.Drawing.Imaging;
-using OpenTK.Graphics.OpenGL;
+using OpenTK.Graphics.OpenGL4;
 using OpenTK;
 
 namespace MyEngine
@@ -106,7 +106,7 @@ namespace MyEngine
         {
             if (IsOnGpu)
             {
-                GL.DeleteTexture(textureHandle);
+                GL.DeleteTexture(textureHandle); My.Check();
                 IsOnGpu = false;
             }
         }
@@ -133,22 +133,25 @@ namespace MyEngine
 
             // better performance: 2d array, 2d texture buffer
             if (bmps == null) return;
-            if (textureHandle == -1) textureHandle = GL.GenTexture();
-            GL.BindTexture(TextureTarget.TextureCubeMap, textureHandle);
+            if (textureHandle == -1)
+            {
+                textureHandle = GL.GenTexture(); My.Check();
+            }
+            GL.BindTexture(TextureTarget.TextureCubeMap, textureHandle); My.Check();
 
             bool useMimMaps = false; // goes black if cubeMap uses mipmaps
 
             // We will not upload mipmaps, so disable mipmapping (otherwise the texture will not appear).
             // We can use GL.GenerateMipmaps() or GL.Ext.GenerateMipmaps() to create
             // mipmaps automatically. In that case, use TextureMinFilter.LinearMipmapLinear to enable them.
-            GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureMinFilter, (int)GetTextureMinFilter());
-            GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureMagFilter, (int)GetTextureMagFilter());
-            GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureWrapS, (int)GetTextureWrapMode());
-            GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureWrapT, (int)GetTextureWrapMode());
-            GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureWrapR, (int)GetTextureWrapMode());
+            GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureMinFilter, (int)GetTextureMinFilter()); My.Check();
+            GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureMagFilter, (int)GetTextureMagFilter()); My.Check();
+            GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureWrapS, (int)GetTextureWrapMode()); My.Check();
+            GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureWrapT, (int)GetTextureWrapMode()); My.Check();
+            GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureWrapR, (int)GetTextureWrapMode()); My.Check();
 
             // ???
-            //GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureLodBias, this.anisoLevel);
+            //GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureLodBias, this.anisoLevel); My.Check();
 
 
             Stream s;
@@ -169,7 +172,7 @@ namespace MyEngine
                 {
                     BitmapData bmp_data = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
                     GL.TexImage2D(textureTarget, 0, PixelInternalFormat.Rgba, bmp_data.Width, bmp_data.Height, 0,
-                        OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, bmp_data.Scan0);
+                        OpenTK.Graphics.OpenGL4.PixelFormat.Bgra, PixelType.UnsignedByte, bmp_data.Scan0);
                     bmp.UnlockBits(bmp_data);
                 }
                 if (s != null)
@@ -181,15 +184,17 @@ namespace MyEngine
             }
             if (useMimMaps)
             {
-                GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
+                GL.GenerateMipmap(GenerateMipmapTarget.Texture2D); My.Check();
             }
+
+            GL.BindTexture(TextureTarget.TextureCubeMap, 0); My.Check();
 
         }
         void UpdateIsOnGpu()
         {
-            var yes = new bool[1];
-            GL.AreTexturesResident(1, new int[] { textureHandle }, yes);
-            IsOnGpu = yes[0];
+            //var yes = new bool[1];
+            //GL.AreTexturesResident(1, new int[] { textureHandle }, yes); My.Check();
+            //IsOnGpu = yes[0];
         }
 
         public override int GetNativeTextureID()

@@ -28,6 +28,7 @@ namespace MyGame.PlanetaryBody
 
         public bool IsRendererReady => renderer != null;
 
+
         public float hideIn;
         public float showIn;
         public float visibility;
@@ -235,7 +236,7 @@ namespace MyGame.PlanetaryBody
         {
             if (sphere.Intersects(this.realVisibleRange))
             {
-                if (this.renderer != null && this.renderer.RenderingMode.HasFlag(RenderingMode.RenderGeometry))
+                if (this.renderer != null && this.renderer.RenderingMode.HasFlag(MyRenderingMode.RenderGeometry))
                 {
                     chunksResult.Add(this);
                     return true;
