@@ -15,8 +15,6 @@ layout(location = 0) in vec3 in_position;
 layout(location = 1) in vec3 in_normal;
 layout(location = 2) in vec3 in_tangent;
 layout(location = 3) in vec2 in_uv;
-layout(location = 4) in vec3 in_positionInitial;
-layout(location = 5) in vec3 in_normalInitial;
 // in mat4 in_modelMatrix; // instanced rendering
 
 out data {
@@ -29,12 +27,11 @@ out data {
 
 void main()
 {
-	//vec3 modelPos = mix(in_positionInitial, in_position, param_finalPosWeight);
 	vec3 modelPos = in_position;
 	vec4 worldPos4 = (model.modelMatrix * vec4(modelPos, 1));	
 	vec3 worldPos3 = worldPos4.xyz / worldPos4.w;
 
-	vec3 normalModelSpace = mix(in_normalInitial, in_normal, param_finalPosWeight);
+	vec3 normalModelSpace = in_normal;
 
 	gl_Position = model.modelViewProjectionMatrix * vec4(modelPos,1);
 	o.worldPos = worldPos3;

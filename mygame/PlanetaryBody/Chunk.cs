@@ -29,10 +29,6 @@ namespace MyGame.PlanetaryBody
         public bool IsRendererReady => renderer != null;
 
 
-        public float hideIn;
-        public float showIn;
-        public float visibility;
-
         int subdivisionDepth;
         Root planetaryBody;
 

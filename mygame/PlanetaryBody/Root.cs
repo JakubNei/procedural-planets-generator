@@ -104,7 +104,7 @@ namespace MyGame.PlanetaryBody
 
 		public Vector3d GetFinalPos(Vector3d calestialPos, int detailDensity = 1)
 		{
-            return calestialPos.Normalized() * radius;
+            return calestialPos.Normalized() * GetHeight(calestialPos);
 
 			var s = CalestialToSpherical(calestialPos);
 			s.altitude = GetHeight(calestialPos, detailDensity);
@@ -455,7 +455,12 @@ namespace MyGame.PlanetaryBody
                 var m = c.renderer.Mesh;
                 if (m.Vertices.VboHandle == -1) continue;
                 toComputeShader.Remove(c);
-                GL.Uniform3(GL.GetUniformLocation(computeShader.ShaderProgramHandle, "chunkOffset"), c.renderer.Offset.ToVector3());
+                GL.Uniform1(GL.GetUniformLocation(computeShader.ShaderProgramHandle, "planetRadius"), (float)radius);
+                My.Uniform3(GL.GetUniformLocation(computeShader.ShaderProgramHandle, "offsetFromPlanetCenter"), c.renderer.Offset.ToVector3d());
+                GL.Uniform1(GL.GetUniformLocation(computeShader.ShaderProgramHandle, "numberOfVerticesOnEdge"), chunkNumberOfVerticesOnEdge);
+                My.Uniform3(GL.GetUniformLocation(computeShader.ShaderProgramHandle, "cornerPositionA"), c.noElevationRange.a);
+                My.Uniform3(GL.GetUniformLocation(computeShader.ShaderProgramHandle, "cornerPositionB"), c.noElevationRange.b);
+                My.Uniform3(GL.GetUniformLocation(computeShader.ShaderProgramHandle, "cornerPositionC"), c.noElevationRange.c);
                 GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 0, m.Vertices.VboHandle); My.Check();
                 GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 1, m.Normals.VboHandle); My.Check();
                 GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 2, m.UVs.VboHandle); My.Check();

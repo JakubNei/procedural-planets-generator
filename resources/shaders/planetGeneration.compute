@@ -1,36 +1,6 @@
 #version 430
 [ComputeShader]
 
-uniform vec3 chunkOffset;
-
-struct vec3_struct
-{
-    float x;
-    float y;
-    float z;
-};
-struct vec2_struct
-{
-    float x;
-    float y;
-    float z;
-};
-
-layout( binding=0 ) buffer buffer1 {
-    vec3_struct pos[ ];
-};
-layout( binding=1 ) buffer buffer2 {
-    vec3_struct normal[ ];
-};
-layout( binding=2 ) buffer buffer3 {
-    vec2_struct uv[ ];
-};
- 
-layout( local_size_x = 1, local_size_y = 1, local_size_z = 1 ) in;
- 
-
-
-
 
 
 
@@ -253,6 +223,43 @@ float snoise(vec3 v)
 
 
 
+uniform float planetRadius;
+uniform dvec3 offsetFromPlanetCenter;
+uniform int numberOfVerticesOnEdge;
+uniform dvec3 cornerPositionA;
+uniform dvec3 cornerPositionB;
+uniform dvec3 cornerPositionC;
+
+struct vec3_struct
+{
+    float x;
+    float y;
+    float z;
+};
+struct vec2_struct
+{
+    float x;
+    float y;
+    float z;
+};
+
+layout( binding=0 ) buffer buffer1 {
+    vec3_struct pos[ ];
+};
+layout( binding=1 ) buffer buffer2 {
+    vec3_struct normal[ ];
+};
+layout( binding=2 ) buffer buffer3 {
+    vec2_struct uv[ ];
+};
+ 
+layout( local_size_x = 1, local_size_y = 1, local_size_z = 1 ) in;
+ 
+
+
+
+
+
 
 
 
@@ -272,12 +279,27 @@ vec3_struct toStruct(vec3 p)
 
 void main() {
 	 
-	uint globalId = gl_GlobalInvocationID.x;
+	uint id = gl_GlobalInvocationID.x;
 	 
-	vec3 p = fromStruct(pos[globalId]);
+	int x = 0;
+	int y = 0;
+	int tempNumberOfVerticesOnEdge = numberOfVerticesOnEdge;
 
-	p += snoise(p);
+	while(id > tempNumberOfVerticesOnEdge && tempNumberOfVerticesOnEdge > 0)
+	{
+		id -= tempNumberOfVerticesOnEdge;
+		tempNumberOfVerticesOnEdge--;
+		y++;
+	}
+	x = tempNumberOfVerticesOnEdge;
+	
+	dvec3 p = (cornerPositionB - cornerPositionA) * (x / numberOfVerticesOnEdge) + (cornerPositionC - cornerPositionA) * (y / numberOfVerticesOnEdge);
 
-	pos[globalId] = toStruct(p);
+	p = normalize(p);
+
+	p = p * planetRadius - offsetFromPlanetCenter;	
+	//p = p * planetRadius * snoise(vec3(p)) - offsetFromPlanetCenter;
+
+	//pos[id] = toStruct(vec3(p));
  
 }
