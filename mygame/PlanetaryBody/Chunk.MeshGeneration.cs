@@ -84,6 +84,7 @@ namespace MyGame.PlanetaryBody
 
 
 			// generate all of our vertices
+			/*
 			{
 				//positionsFinal.Add(noElevationRange.a.ToVector3());
 				vertices.Add(GetFinalPos(noElevationRange.a).ToVector3());
@@ -123,6 +124,29 @@ namespace MyGame.PlanetaryBody
 					}
 				}
 			}
+			*/
+
+			int numberOfVerticesNeededTotal = 1;
+			{
+				int numberOfVerticesInBetween = 0;
+				for (uint y = 1; y < NumberOfVerticesOnEdge; y++)
+				{
+					numberOfVerticesNeededTotal++;
+					if (numberOfVerticesInBetween > 0)
+					{
+						numberOfVerticesNeededTotal += numberOfVerticesInBetween;
+					}
+					numberOfVerticesNeededTotal++;
+					numberOfVerticesInBetween++;
+				}
+			}
+
+			var r = new Random();
+			while(vertices.Count < numberOfVerticesNeededTotal)
+				vertices.Add(new Vector3d(r.NextDouble(), r.NextDouble(), r.NextDouble()).ToVector3()); // WTF WTF WTF WTF FUCK
+			// THE FUCK IS THIS
+			// WHY THE FUCK DOES IT NOT WORK WITH ZEROS OR ONES
+
 
 			List<int> indicies = GetIndiciesList();
 
@@ -156,12 +180,16 @@ namespace MyGame.PlanetaryBody
 				mesh.MoveVertices(skirtVertices, -this.realVisibleRange.Normal.ToVector3() * (float)moveAmount, mesh.Vertices);
 			}
 
-			mesh.RecalculateBounds();
+			var o = offsetCenter.ToVector3();
+			mesh.Bounds.Encapsulate(noElevationRange.a.ToVector3() - o);
+			mesh.Bounds.Encapsulate(noElevationRange.b.ToVector3() - o);
+			mesh.Bounds.Encapsulate(noElevationRange.c.ToVector3() - o);
 
 			if (renderer != null) throw new Exception("something went terribly wrong, renderer should be null");
 			renderer = planetaryBody.Entity.AddComponent<MeshRenderer>();
 			renderer.Mesh = mesh;
 			renderer.Offset += offsetCenter;
+			renderer.ForcePassFrustumCulling = true;
 
 			if (planetaryBody.planetMaterial != null) renderer.Material = planetaryBody.planetMaterial.CloneTyped();
 			renderer.RenderingMode = MyRenderingMode.DontRender;

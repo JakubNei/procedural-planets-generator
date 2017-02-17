@@ -302,7 +302,7 @@ namespace MyEngine
 						{
 							if (renderable.ForcePassFrustumCulling)
 							{
-								renderable.CameraRenderStatusFeedback(camera, RenderStatus.RenderedForced);
+								renderable.CameraRenderStatusFeedback(camera, RenderStatus.RenderedAndVisible);
 								var newIndex = Interlocked.Increment(ref toRenderCount);
 								toRender[newIndex - 1] = renderable;
 							}

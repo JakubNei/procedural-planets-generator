@@ -23,7 +23,7 @@ namespace MyEngine
         bool recalculateBounds = true;
 
         /// <summary>
-        /// Local space bounds of the mesh.
+        /// Mesh space bounds of the mesh.
         /// </summary>
         public Bounds Bounds
         {

@@ -21,7 +21,7 @@ namespace MyGame.PlanetaryBody
 		/// <summary>
 		/// Is guaranteeed to be odd (1, 3, 5, 7, ...)
 		/// </summary>
-		public int chunkNumberOfVerticesOnEdge = 30;
+		public int chunkNumberOfVerticesOnEdge = 5;
 
 		//public int subdivisionMaxRecurisonDepth = 10;
 		int? subdivisionMaxRecurisonDepth = 0;

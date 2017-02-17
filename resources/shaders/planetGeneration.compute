@@ -293,8 +293,10 @@ void main() {
 	}
 	ix = id;
 
-	float x = float(ix) / (numberOfVerticesOnEdge-1);
-	float y = float(iy) / (numberOfVerticesOnEdge-1);
+	float x = 0;
+	float y = 0;
+	if(numberOfVerticesOnLine > 1) x = float(ix) / (numberOfVerticesOnLine-1);
+	if(numberOfVerticesOnEdge > 1) y = float(iy) / (numberOfVerticesOnEdge-1);
 
 	vec3 p = 
 		cornerPositionA + 
@@ -302,7 +304,6 @@ void main() {
 		(cornerPositionC - cornerPositionA) * y * x;
 
 	//p = normalize(p);
-
 	p = p - offsetFromPlanetCenter;	
 	//p = p * planetRadius * snoise(vec3(p)) - offsetFromPlanetCenter;
 
