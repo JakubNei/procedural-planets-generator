@@ -151,16 +151,19 @@ namespace MyEngine
 			//var extensions = GL.GetString(StringName.Extensions); My.Check();
 			//if (extensions.Contains("GL_EXT_texture_filter_anisotropic"))
 			//{
-   //             if (maxAniso.HasValue == false)
-   //             {
-   //                 maxAniso = GL.GetInteger((GetPName)ExtTextureFilterAnisotropic.MaxTextureMaxAnisotropyExt); My.Check();
-   //             }
+			//             if (maxAniso.HasValue == false)
+			//             {
+			//                 maxAniso = GL.GetInteger((GetPName)ExtTextureFilterAnisotropic.MaxTextureMaxAnisotropyExt); My.Check();
+			//             }
 			//	GL.TexParameter(
 			//	   TextureTarget.Texture2D,
 			//	   (TextureParameterName)ExtTextureFilterAnisotropic.TextureMaxAnisotropyExt,
 			//	   maxAniso.Value
 			//	);
 			//}
+
+
+			UpdateIsOnGpu();
 		}
 
 		static int? maxAniso;
@@ -170,6 +173,7 @@ namespace MyEngine
 			//var yes = new bool[1];
 			//GL.AreTexturesResident(1, new int[] { textureHandle }, yes); My.Check();
 			//IsOnGpu = yes[0];
+			IsOnGpu = true;
 		}
 
 		public override int GetNativeTextureID()
@@ -179,7 +183,6 @@ namespace MyEngine
 				Dispose();
 				WantsToBeUploadedToGpu = false;
 				UploadToGpu();
-				UpdateIsOnGpu();
 			}
 			return textureHandle;
 		}

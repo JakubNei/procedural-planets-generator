@@ -95,11 +95,12 @@ namespace MyEngine
         /// <summary>
         /// Reloads the shader if marked to reload, binds the shader, uploads all changed uniforms;
         /// </summary>
-        public void Bind()
+        public bool Bind()
         {
             if (LoadState == State.NotLoaded)
             {
                 Load();
+				return false;
             }
             else if (shouldReload)
             {
@@ -110,14 +111,15 @@ namespace MyEngine
                 shouldReload = false;
             }
 
-            if (LoadState == State.LoadedError) return;
+            if (LoadState == State.LoadedError) return false;
 
             if (lastBindedShader != this)
             {
                 GL.UseProgram(ShaderProgramHandle); My.Check();
                 lastBindedShader = this;
             }
-            Uniforms.UploadChangedUniforms(this);
+			Uniforms.UploadChangedUniforms(this);
+			return true;
         }
 
         bool AttachShader(string source, ShaderType type, string resource)

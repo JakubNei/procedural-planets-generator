@@ -54,7 +54,7 @@ namespace MyEngine
 			System.Diagnostics.Process.GetCurrentProcess().PriorityClass = System.Diagnostics.ProcessPriorityClass.RealTime;
 			Thread.CurrentThread.Priority = ThreadPriority.Highest;
 
-			VSync = VSyncMode.Off;
+			//VSync = VSyncMode.Off;
 			TargetRenderFrequency = 0;
 
 

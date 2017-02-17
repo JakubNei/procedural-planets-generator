@@ -13,13 +13,14 @@ namespace MyEngine
 {
     public static class My
     {
+		//[Conditional("DEBUG")]
         public static void Check()
         {
             ErrorCode err;
             while ((err = GL.GetError()) != ErrorCode.NoError)
             {
-                //Debug.Instance.Error("GL Error: " + err);
-                //throw new Exception("GL Error: " + err);
+                Debug.Instance.Error("GL Error: " + err);
+                throw new Exception("GL Error: " + err);
             }
         }
 

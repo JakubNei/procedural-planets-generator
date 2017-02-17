@@ -16,7 +16,7 @@ namespace MyGame.PlanetaryBody
 		public double radius { get; set; } // poloměr
 		public double radiusVariation = 20;
 
-        public HashSet<Chunk> toComputeShader = new HashSet<Chunk>();
+		public HashSet<Chunk> toComputeShader = new HashSet<Chunk>();
 
 		/// <summary>
 		/// Is guaranteeed to be odd (1, 3, 5, 7, ...)
@@ -63,7 +63,7 @@ namespace MyGame.PlanetaryBody
 
 		public List<Chunk> rootChunks = new List<Chunk>();
 
-        public Shader computeShader;
+		public Shader computeShader;
 
 		//public Chunk.MeshGenerationService MeshGenerationService { get; private set; }
 
@@ -85,11 +85,11 @@ namespace MyGame.PlanetaryBody
 			Debug.CommonCVars.SmoothChunksEdgeNormals().ToogledByKey(OpenTK.Input.Key.N);
 
 
-            computeShader = Factory.GetShader("shaders/planetGeneration.compute");
+			computeShader = Factory.GetShader("shaders/planetGeneration.compute");
 
-        }
+		}
 
-        public void Configure(double radius, double radiusVariation)
+		public void Configure(double radius, double radiusVariation)
 		{
 			// proceduralMath.Configure(radius, radiusVariation);
 
@@ -104,7 +104,7 @@ namespace MyGame.PlanetaryBody
 
 		public Vector3d GetFinalPos(Vector3d calestialPos, int detailDensity = 1)
 		{
-            return calestialPos.Normalized() * GetHeight(calestialPos);
+			return calestialPos.Normalized() * GetHeight(calestialPos);
 
 			var s = CalestialToSpherical(calestialPos);
 			s.altitude = GetHeight(calestialPos, detailDensity);
@@ -121,7 +121,7 @@ namespace MyGame.PlanetaryBody
 		long getHeight_counter = 0;
 		public double GetHeight(Vector3d calestialPos, int detailDensity = 1)
 		{
-            return radius;
+			return radius;
 
 			double ret;
 #if PERF_TEXT
@@ -293,7 +293,7 @@ namespace MyGame.PlanetaryBody
 
 			if (recursionDepth == 0) weight *= 100; // root chunks have epic weight
 
-			if(weight < 0.3f)
+			if (weight < 0.3f)
 			{
 				HideChilds(chunk);
 				return;
@@ -408,16 +408,16 @@ namespace MyGame.PlanetaryBody
 				stats.End();
 				stats.Update();
 				toGenerate.SubDivide();
-                toComputeShader.Add(toGenerate);
+				toComputeShader.Add(toGenerate);
 
-                toGenerate.renderer?.SetRenderingMode(MyRenderingMode.RenderGeometryAndCastShadows);
+				toGenerate.renderer?.SetRenderingMode(MyRenderingMode.RenderGeometryAndCastShadows);
 			}
 
-            //foreach (var rootChunk in this.rootChunks) Chunks_UpdateVisibility(rootChunk, 0);
+			//foreach (var rootChunk in this.rootChunks) Chunks_UpdateVisibility(rootChunk, 0);
 
-        }
+		}
 
-        public class GenerationStats
+		public class GenerationStats
 		{
 			ulong countChunksGenerated;
 			TimeSpan timeSpentGenerating;
@@ -447,30 +447,33 @@ namespace MyGame.PlanetaryBody
 		}
 
 
-        public void OnRender(RenderUpdate r)
-        {
-            computeShader.Bind();
-            foreach (var c in toComputeShader.ToArray())
-            {
-                var m = c.renderer.Mesh;
-                if (m.Vertices.VboHandle == -1) continue;
-                toComputeShader.Remove(c);
-                GL.Uniform1(GL.GetUniformLocation(computeShader.ShaderProgramHandle, "planetRadius"), (float)radius);
-                My.Uniform3(GL.GetUniformLocation(computeShader.ShaderProgramHandle, "offsetFromPlanetCenter"), c.renderer.Offset.ToVector3d());
-                GL.Uniform1(GL.GetUniformLocation(computeShader.ShaderProgramHandle, "numberOfVerticesOnEdge"), chunkNumberOfVerticesOnEdge);
-                My.Uniform3(GL.GetUniformLocation(computeShader.ShaderProgramHandle, "cornerPositionA"), c.noElevationRange.a);
-                My.Uniform3(GL.GetUniformLocation(computeShader.ShaderProgramHandle, "cornerPositionB"), c.noElevationRange.b);
-                My.Uniform3(GL.GetUniformLocation(computeShader.ShaderProgramHandle, "cornerPositionC"), c.noElevationRange.c);
-                GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 0, m.Vertices.VboHandle); My.Check();
-                GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 1, m.Normals.VboHandle); My.Check();
-                GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 2, m.UVs.VboHandle); My.Check();
-                GL.DispatchCompute(m.Vertices.Count, 1, 1); My.Check();
-            }
+		public void OnRender(RenderUpdate r)
+		{
+
+			if (computeShader.Bind())
+			{
+				foreach (var c in toComputeShader.ToArray())
+				{
+					var m = c.renderer.Mesh;
+					if (m.Vertices.VboHandle == -1) continue;
+					//toComputeShader.Remove(c);
+					GL.Uniform1(GL.GetUniformLocation(computeShader.ShaderProgramHandle, "planetRadius"), (float)radius); My.Check();
+					GL.Uniform3(GL.GetUniformLocation(computeShader.ShaderProgramHandle, "offsetFromPlanetCenter"), c.renderer.Offset.ToVector3()); My.Check();
+					GL.Uniform1(GL.GetUniformLocation(computeShader.ShaderProgramHandle, "numberOfVerticesOnEdge"), chunkNumberOfVerticesOnEdge); My.Check();
+					GL.Uniform3(GL.GetUniformLocation(computeShader.ShaderProgramHandle, "cornerPositionA"), c.noElevationRange.a.ToVector3()); My.Check();
+					GL.Uniform3(GL.GetUniformLocation(computeShader.ShaderProgramHandle, "cornerPositionB"), c.noElevationRange.b.ToVector3()); My.Check();
+					GL.Uniform3(GL.GetUniformLocation(computeShader.ShaderProgramHandle, "cornerPositionC"), c.noElevationRange.c.ToVector3()); My.Check();
+					GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 0, m.Vertices.VboHandle); My.Check();
+					GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 1, m.Normals.VboHandle); My.Check();
+					GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 2, m.UVs.VboHandle); My.Check();
+					GL.DispatchCompute(m.Vertices.Count, 1, 1); My.Check();
+				}
+			}
 
 
-        }
+		}
 
 
 
-    }
+	}
 }

@@ -224,11 +224,11 @@ float snoise(vec3 v)
 
 
 uniform float planetRadius;
-uniform dvec3 offsetFromPlanetCenter;
+uniform vec3 offsetFromPlanetCenter;
 uniform int numberOfVerticesOnEdge;
-uniform dvec3 cornerPositionA;
-uniform dvec3 cornerPositionB;
-uniform dvec3 cornerPositionC;
+uniform vec3 cornerPositionA;
+uniform vec3 cornerPositionB;
+uniform vec3 cornerPositionC;
 
 struct vec3_struct
 {
@@ -278,28 +278,38 @@ vec3_struct toStruct(vec3 p)
 
 
 void main() {
-	 
-	uint id = gl_GlobalInvocationID.x;
-	 
-	int x = 0;
-	int y = 0;
-	int tempNumberOfVerticesOnEdge = numberOfVerticesOnEdge;
-
-	while(id > tempNumberOfVerticesOnEdge && tempNumberOfVerticesOnEdge > 0)
-	{
-		id -= tempNumberOfVerticesOnEdge;
-		tempNumberOfVerticesOnEdge--;
-		y++;
-	}
-	x = tempNumberOfVerticesOnEdge;
 	
-	dvec3 p = (cornerPositionB - cornerPositionA) * (x / numberOfVerticesOnEdge) + (cornerPositionC - cornerPositionA) * (y / numberOfVerticesOnEdge);
+	int invocationId = int(gl_GlobalInvocationID.x);
+	int id = invocationId;
+	int ix = 0;
+	int iy = 0;
+		
+	int numberOfVerticesOnLine = 1;
+	while(id >= numberOfVerticesOnLine && numberOfVerticesOnLine < numberOfVerticesOnEdge)
+	{
+		id -= numberOfVerticesOnLine;
+		numberOfVerticesOnLine++;
+		iy++;
+	}
+	ix = id;
 
-	p = normalize(p);
+	float x = float(ix) / (numberOfVerticesOnEdge-1);
+	float y = float(iy) / (numberOfVerticesOnEdge-1);
 
-	p = p * planetRadius - offsetFromPlanetCenter;	
+	vec3 p = 
+		cornerPositionA + 
+		(cornerPositionB - cornerPositionA) * y * (1-x) + 
+		(cornerPositionC - cornerPositionA) * y * x;
+
+	//p = normalize(p);
+
+	p = p - offsetFromPlanetCenter;	
 	//p = p * planetRadius * snoise(vec3(p)) - offsetFromPlanetCenter;
 
-	//pos[id] = toStruct(vec3(p));
+	// DEBUG
+	//vec3 p = fromStruct(pos[invocationId]);
+	//p.x += 0.01f;
+
+	pos[invocationId] = toStruct(vec3(p));
  
 }

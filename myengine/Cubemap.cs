@@ -189,12 +189,15 @@ namespace MyEngine
 
             GL.BindTexture(TextureTarget.TextureCubeMap, 0); My.Check();
 
-        }
+
+			UpdateIsOnGpu();
+		}
         void UpdateIsOnGpu()
         {
-            //var yes = new bool[1];
-            //GL.AreTexturesResident(1, new int[] { textureHandle }, yes); My.Check();
-            //IsOnGpu = yes[0];
+			//var yes = new bool[1];
+			//GL.AreTexturesResident(1, new int[] { textureHandle }, yes); My.Check();
+			//IsOnGpu = yes[0];
+			IsOnGpu = true;
         }
 
         public override int GetNativeTextureID()
@@ -204,7 +207,6 @@ namespace MyEngine
                 Unload();
                 WantsToBeUploadedToGpu = false;
                 UploadToGpu();
-                UpdateIsOnGpu();
             }
             return textureHandle;
         }

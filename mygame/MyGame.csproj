@@ -75,7 +75,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <Compile Include="PlanetaryBody\Chunk.MeshGenerationService.cs" />
     <Compile Include="PlanetaryBody\Chunk.ParentIndiciesEnumerator.cs" />
     <None Include="OpenTK.dll.config" />
     <None Include="packages.config" />
