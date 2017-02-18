@@ -58,11 +58,11 @@ namespace MyGame.PlanetaryBody
         {
             bool isVisible = true;
 
-            var myPos = realVisibleRange.CenterPos + planetaryBody.Transform.Position;
-            var dirToCamera = myPos.Towards(cam.ViewPointPosition).ToVector3d().Normalized();
+            var myPos = noElevationRange.CenterPos + planetaryBody.Transform.Position;
+            var planetCenterDirToCamera = planetaryBody.Transform.Position.Towards(cam.ViewPointPosition).ToVector3d().Normalized();
 
             // 0 looking at chunk from side, 1 looking at chunk from front, -1 looking at chunk from bottom/behind
-            var dotToCamera = realVisibleRange.Normal.Dot(dirToCamera);
+            var dotToCamera = noElevationRange.Normal.Dot(planetCenterDirToCamera);
 
             var distanceToCamera = myPos.Distance(cam.ViewPointPosition);
             if (renderer != null && renderer.Mesh != null)
@@ -78,29 +78,13 @@ namespace MyGame.PlanetaryBody
             double radiusCameraSpace;
             {
                 // this is world space, doesnt take into consideration rotation, not good
-                var sphere = realVisibleRange.ToBoundingSphere();
+                var sphere = noElevationRange.ToBoundingSphere();
                 var radiusWorldSpace = sphere.radius;
                 var fov = cam.fieldOfView;
                 radiusCameraSpace = radiusWorldSpace * MyMath.Cot(fov / 2) / distanceToCamera;
             }
 
-            /*
-            {
-                var a = cam.WorldToScreenPos(realVisibleRange.a + planetaryBody.Transform.Position);
-                var b = cam.WorldToScreenPos(realVisibleRange.b + planetaryBody.Transform.Position);
-                var c = cam.WorldToScreenPos(realVisibleRange.c + planetaryBody.Transform.Position);
-                a.Z = 0;
-                b.Z = 0;
-                c.Z = 0;
-                var aabb = new Bounds();
-                aabb.Encapsulate(a);
-                aabb.Encapsulate(b);
-                aabb.Encapsulate(c);
-                radiusCameraSpace = aabb.Size.Length;
-            }
-            */
-
-            var weight = radiusCameraSpace * (1 + dotToCamera);
+			var weight = radiusCameraSpace * (1 + dotToCamera);
 
             renderer?.Material.Uniforms.Set("param_debugWeight", (float)weight);
 
@@ -160,9 +144,9 @@ namespace MyGame.PlanetaryBody
                     var ac = (a + c).Divide(2.0f).Normalized();
                     var bc = (b + c).Divide(2.0f).Normalized();
 
-                    ab *= planetaryBody.radius;
-                    ac *= planetaryBody.radius;
-                    bc *= planetaryBody.radius;
+                    ab *= planetaryBody.RadiusMax;
+                    ac *= planetaryBody.RadiusMax;
+                    bc *= planetaryBody.RadiusMax;
 
                     MAKE_CHILD(a, ab, ac, ChildPosition.Top);
                     MAKE_CHILD(ab, b, bc, ChildPosition.Left);

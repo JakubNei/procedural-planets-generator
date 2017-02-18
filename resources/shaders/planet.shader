@@ -164,8 +164,8 @@ void main()
 	float AdjustTerrainAt(float x, float y) {
 		float result=0;
 		int octaves=3;
-		float frequency=0.01;
-		float height=1;
+		float frequency=1;
+		float height=4;
 		for(int i=0; i<octaves; i++) {
 			result=PerlinAt(x*frequency, y*frequency) * height;
 			height/=2;

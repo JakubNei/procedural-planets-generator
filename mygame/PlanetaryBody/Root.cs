@@ -13,36 +13,36 @@ namespace MyGame.PlanetaryBody
 {
 	public class Root : ComponentWithShortcuts
 	{
-		public double radius { get; set; } // poloměr
-		public double radiusVariation = 20;
+		public double RadiusMax { get; set; } // poloměr
+		public double RadiusVariation { get; set; }
 
 		public HashSet<Chunk> toComputeShader = new HashSet<Chunk>();
 
 		/// <summary>
 		/// Is guaranteeed to be odd (1, 3, 5, 7, ...)
 		/// </summary>
-		public int chunkNumberOfVerticesOnEdge = 5;
+		public int chunkNumberOfVerticesOnEdge = 50;
 
 		//public int subdivisionMaxRecurisonDepth = 10;
-		int? subdivisionMaxRecurisonDepth = 0;
+		int subdivisionMaxRecurisonDepth = -1;
 		public int SubdivisionMaxRecurisonDepth
 		{
 			get
 			{
-				if (!subdivisionMaxRecurisonDepth.HasValue)
+				if (subdivisionMaxRecurisonDepth < 0)
 				{
 					//var planetCircumference = 2 * Math.PI * radius;
 					//var oneRootChunkCircumference = planetCircumference / 6.0f;
 					var oneRootChunkCircumference = rootChunks[0].noElevationRange.a.Distance(rootChunks[0].noElevationRange.b);
 
 					subdivisionMaxRecurisonDepth = 0;
-					while (oneRootChunkCircumference > 50)
+					while (oneRootChunkCircumference > 100)
 					{
 						oneRootChunkCircumference /= 2;
 						subdivisionMaxRecurisonDepth++;
 					}
 				}
-				return subdivisionMaxRecurisonDepth.Value;
+				return subdivisionMaxRecurisonDepth;
 			}
 		}
 
@@ -93,8 +93,8 @@ namespace MyGame.PlanetaryBody
 		{
 			// proceduralMath.Configure(radius, radiusVariation);
 
-			this.radius = radius;
-			this.radiusVariation = radiusVariation;
+			this.RadiusMax = radius;
+			this.RadiusVariation = radiusVariation;
 		}
 
 
@@ -121,7 +121,7 @@ namespace MyGame.PlanetaryBody
 		long getHeight_counter = 0;
 		public double GetHeight(Vector3d calestialPos, int detailDensity = 1)
 		{
-			return radius;
+			return RadiusMax;
 
 			double ret;
 #if PERF_TEXT
@@ -141,7 +141,7 @@ namespace MyGame.PlanetaryBody
 				double ampModifier = .05f;
 				double freqModifier = 15;
 				double result = 0.0f;
-				double amp = radiusVariation;
+				double amp = RadiusVariation;
 				pos *= freq;
 				for (int i = 0; i < octaves; i++)
 				{
@@ -153,16 +153,16 @@ namespace MyGame.PlanetaryBody
 				{
 					// hill tops
 					var p = perlin.Get3D(initialPos * 10.0f);
-					if (p > 0) result -= p * radiusVariation * 2;
+					if (p > 0) result -= p * RadiusVariation * 2;
 				}
 
 				{
 					// craters
 					var p = worley.GetAt(initialPos * 2.0f, 1);
-					result += MyMath.SmoothStep(0.0f, 0.1f, p[0]) * radiusVariation * 2;
+					result += MyMath.SmoothStep(0.0f, 0.1f, p[0]) * RadiusVariation * 2;
 				}
 
-				result += radius;
+				result += RadiusMax;
 				return result;
 			}
 #if PERF_TEXT
@@ -220,7 +220,7 @@ namespace MyGame.PlanetaryBody
 			var vertices = new List<Vector3d>();
 			var indicies = new List<uint>();
 
-			var r = this.radius / 2.0;
+			var r = this.RadiusMax / 2.0;
 
 			var t = (1 + MyMath.Sqrt(5.0)) / 2.0 * r;
 			var d = r;
@@ -278,6 +278,7 @@ namespace MyGame.PlanetaryBody
 		}
 		void HideChilds(Chunk chunk)
 		{
+			chunk.renderer = null;
 			foreach (var child in chunk.childs)
 			{
 				child.renderer?.SetRenderingMode(MyRenderingMode.DontRender);
@@ -286,18 +287,18 @@ namespace MyGame.PlanetaryBody
 			}
 		}
 
-		void TrySubdivideToLevel_GatherWeights(ChunkWeightedList weightedList, Chunk chunk, int recursionDepth, double parentWeight)
+		void Chunks_GatherWeights(ChunkWeightedList weightedList, Chunk chunk, int recursionDepth, double parentWeight)
 		{
 			var cam = Entity.Scene.mainCamera;
 			var weight = chunk.GetWeight(cam);
 
 			if (recursionDepth == 0) weight *= 100; // root chunks have epic weight
 
-			if (weight < 0.3f)
-			{
-				HideChilds(chunk);
-				return;
-			}
+			//if (weight < 0.3f)
+			//{
+			//	HideChilds(chunk);
+			//	return;
+			//}
 
 			if (chunk.renderer == null)
 				weightedList.Add(weight, chunk);
@@ -313,7 +314,7 @@ namespace MyGame.PlanetaryBody
 			{
 				foreach (var child in chunk.childs)
 				{
-					TrySubdivideToLevel_GatherWeights(weightedList, child, recursionDepth + 1, weight);
+					Chunks_GatherWeights(weightedList, child, recursionDepth + 1, weight);
 				}
 			}
 		}
@@ -392,10 +393,11 @@ namespace MyGame.PlanetaryBody
 				}
 				//Console.WriteLine($"SMOOTH NORMALS end");
 			}
+
 			var weightedList = new ChunkWeightedList();
-			var sphere = new Sphere((pos - Transform.Position).ToVector3d(), this.radius * startingRadiusSubdivisionModifier);
+			//var sphere = new Sphere((pos - Transform.Position).ToVector3d(), this.RadiusMax * startingRadiusSubdivisionModifier);
 			foreach (var rootChunk in this.rootChunks)
-				TrySubdivideToLevel_GatherWeights(weightedList, rootChunk, 0, 0);
+				Chunks_GatherWeights(weightedList, rootChunk, 0, 0);
 
 			var toGenerate = weightedList.GetHighestWeightChunk();
 			if (toGenerate != null)
@@ -447,32 +449,51 @@ namespace MyGame.PlanetaryBody
 		}
 
 
+
+		HashSet<Mesh> toCalculateNormals = new HashSet<Mesh>();
 		public void OnRender(RenderUpdate r)
 		{
 
 			if (computeShader.Bind())
 			{
-				foreach (var c in toComputeShader.ToArray())
+				foreach (var chunk in toComputeShader.ToArray())
 				{
-					var m = c.renderer.Mesh;
-					if (m.Vertices.VboHandle == -1) continue;
-					//toComputeShader.Remove(c);
-					GL.Uniform1(GL.GetUniformLocation(computeShader.ShaderProgramHandle, "planetRadius"), (float)radius); My.Check();
-					GL.Uniform3(GL.GetUniformLocation(computeShader.ShaderProgramHandle, "offsetFromPlanetCenter"), c.renderer.Offset.ToVector3()); My.Check();
+					var mesh = chunk.renderer?.Mesh;
+					if (mesh == null || mesh.Vertices.VboHandle == -1) continue;
+					toComputeShader.Remove(chunk);
+					GL.Uniform1(GL.GetUniformLocation(computeShader.ShaderProgramHandle, "planetRadiusMax"), (float)RadiusMax); My.Check();
+					GL.Uniform1(GL.GetUniformLocation(computeShader.ShaderProgramHandle, "planetRadiusVariation"), (float)RadiusVariation); My.Check();
+					GL.Uniform3(GL.GetUniformLocation(computeShader.ShaderProgramHandle, "offsetFromPlanetCenter"), chunk.renderer.Offset.ToVector3()); My.Check();
 					GL.Uniform1(GL.GetUniformLocation(computeShader.ShaderProgramHandle, "numberOfVerticesOnEdge"), chunkNumberOfVerticesOnEdge); My.Check();
-					GL.Uniform3(GL.GetUniformLocation(computeShader.ShaderProgramHandle, "cornerPositionA"), c.noElevationRange.a.ToVector3()); My.Check();
-					GL.Uniform3(GL.GetUniformLocation(computeShader.ShaderProgramHandle, "cornerPositionB"), c.noElevationRange.b.ToVector3()); My.Check();
-					GL.Uniform3(GL.GetUniformLocation(computeShader.ShaderProgramHandle, "cornerPositionC"), c.noElevationRange.c.ToVector3()); My.Check();
-					GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 0, m.Vertices.VboHandle); My.Check();
-					GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 1, m.Normals.VboHandle); My.Check();
-					GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 2, m.UVs.VboHandle); My.Check();
-					GL.DispatchCompute(m.Vertices.Count, 1, 1); My.Check();
+					GL.Uniform3(GL.GetUniformLocation(computeShader.ShaderProgramHandle, "cornerPositionA"), chunk.noElevationRange.a.ToVector3()); My.Check();
+					GL.Uniform3(GL.GetUniformLocation(computeShader.ShaderProgramHandle, "cornerPositionB"), chunk.noElevationRange.b.ToVector3()); My.Check();
+					GL.Uniform3(GL.GetUniformLocation(computeShader.ShaderProgramHandle, "cornerPositionC"), chunk.noElevationRange.c.ToVector3()); My.Check();
+					GL.Uniform1(GL.GetUniformLocation(computeShader.ShaderProgramHandle, "indiciesCount"), mesh.TriangleIndicies.Count); My.Check();
+					GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 0, mesh.Vertices.VboHandle); My.Check();
+					GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 1, mesh.Normals.VboHandle); My.Check();
+					GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 2, mesh.UVs.VboHandle); My.Check();
+					GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 3, mesh.TriangleIndicies.VboHandle); My.Check();
+					GL.DispatchCompute(mesh.Vertices.Count, 1, 1); My.Check();
+					toCalculateNormals.Add(mesh);
 				}
 			}
-
-
+			toCalculateNormals.ForEach(CalculateNormalsOnGPU);
+			toCalculateNormals.Clear();
 		}
 
+		public void CalculateNormalsOnGPU(Mesh mesh)
+		{
+			Shader calculateNormalsShader = Factory.GetShader("internal/recalculateNormals.compute");
+			if (calculateNormalsShader.Bind())
+			{
+				GL.Uniform1(GL.GetUniformLocation(calculateNormalsShader.ShaderProgramHandle, "indiciesCount"), mesh.TriangleIndicies.Count); My.Check();
+				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 0, mesh.Vertices.VboHandle); My.Check();
+				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 1, mesh.Normals.VboHandle); My.Check();
+				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 2, mesh.UVs.VboHandle); My.Check();
+				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 3, mesh.TriangleIndicies.VboHandle); My.Check();
+				GL.DispatchCompute(mesh.Vertices.Count, 1, 1); My.Check();
+			}
+		}
 
 
 	}

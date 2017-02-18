@@ -118,17 +118,17 @@ namespace MyGame
             planet = scene.AddEntity().AddComponent<PlanetaryBody.Root>();
             planets.Add(planet);
             // 6371000 earth radius
-            planet.Configure(100, 0.1f);
-            planet.Transform.Position = new WorldPos(planet.radius * 3, 0, 0);
+            planet.Configure(10000, 500);
+            planet.Transform.Position = new WorldPos(planet.RadiusMax * 3, 0, 0);
             planet.Start();
             planet.planetMaterial = planetMaterial;
-            planet.planetMaterial.Uniforms.Set("param_planetRadius", (float)planet.radius);
+            planet.planetMaterial.Uniforms.Set("param_planetRadius", (float)planet.RadiusMax);
             planets.Add(planet);
 
             Cam.Transform.LookAt(planet.Transform.Position);
             if (moveCameraToSurfaceOnStart)
             {
-                Cam.Transform.Position = new WorldPos((float)-planet.radius, 0, 0) + planet.Transform.Position;
+                Cam.Transform.Position = new WorldPos((float)-planet.RadiusMax, 0, 0) + planet.Transform.Position;
             }
         }
 
@@ -143,7 +143,7 @@ namespace MyGame
 
             var camPos = Cam.Transform.Position;
 
-            var closestPlanet = planets.OrderBy(p => p.Transform.Position.DistanceSqr(camPos) - p.radius * p.radius).First();
+            var closestPlanet = planets.OrderBy(p => p.Transform.Position.DistanceSqr(camPos) - p.RadiusMax * p.RadiusMax).First();
 
             foreach (var p in planets)
             {

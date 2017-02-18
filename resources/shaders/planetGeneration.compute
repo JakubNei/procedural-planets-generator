@@ -220,15 +220,48 @@ float snoise(vec3 v)
 
 
 
+float GetHeightAt(vec3 initialPos)
+{
+	float result = 0;
+	
+	{ // base noise
+		vec3 pos = initialPos;
+		int octaves = 2;
+		float freq = 10;
+		float ampModifier = 0.05;
+		float freqModifier = 15;
+		float amp = 1;
+		pos *= freq;
+		for (int i = 0; i < octaves; i++)
+		{
+			result += snoise(pos) * amp;
+			pos *= freqModifier;
+			amp *= ampModifier;
+		}
+	}
+	
+
+	{ // hill tops
+		float p = snoise(initialPos * 10);
+		if(p > 0) result -= p * 2;
+	}
+	
+
+	return result;
+
+}
 
 
 
-uniform float planetRadius;
+
+uniform float planetRadiusMax;
+uniform float planetRadiusVariation;
 uniform vec3 offsetFromPlanetCenter;
 uniform int numberOfVerticesOnEdge;
 uniform vec3 cornerPositionA;
 uniform vec3 cornerPositionB;
 uniform vec3 cornerPositionC;
+uniform int indiciesCount;
 
 struct vec3_struct
 {
@@ -244,23 +277,21 @@ struct vec2_struct
 };
 
 layout( binding=0 ) buffer buffer1 {
-    vec3_struct pos[ ];
+    vec3_struct positions[];
 };
 layout( binding=1 ) buffer buffer2 {
-    vec3_struct normal[ ];
+    vec3_struct normals[];
 };
 layout( binding=2 ) buffer buffer3 {
-    vec2_struct uv[ ];
+    vec2_struct uvs[];
 };
- 
+layout( binding=3 ) buffer buffer4 {
+    int indicies[];
+};
+
+
 layout( local_size_x = 1, local_size_y = 1, local_size_z = 1 ) in;
  
-
-
-
-
-
-
 
 
 vec3 fromStruct(vec3_struct p)
@@ -277,21 +308,37 @@ vec3_struct toStruct(vec3 p)
 }
 
 
+
+vec3 GetNormal(int a, int b, int c)
+{
+	vec3 _a = fromStruct(positions[a]);
+	vec3 _b = fromStruct(positions[b]);
+	vec3 _c = fromStruct(positions[c]);
+	return normalize(cross(_b - _a, _c - _a));
+}
+
+
+
+
+
+
+
+
 void main() {
 	
-	int invocationId = int(gl_GlobalInvocationID.x);
-	int id = invocationId;
+	int id = int(gl_GlobalInvocationID.x);
+	int tempId = id;
 	int ix = 0;
 	int iy = 0;
 		
 	int numberOfVerticesOnLine = 1;
-	while(id >= numberOfVerticesOnLine && numberOfVerticesOnLine < numberOfVerticesOnEdge)
+	while(tempId >= numberOfVerticesOnLine && numberOfVerticesOnLine < numberOfVerticesOnEdge)
 	{
-		id -= numberOfVerticesOnLine;
+		tempId -= numberOfVerticesOnLine;
 		numberOfVerticesOnLine++;
 		iy++;
 	}
-	ix = id;
+	ix = tempId;
 
 	float x = 0;
 	float y = 0;
@@ -303,14 +350,14 @@ void main() {
 		(cornerPositionB - cornerPositionA) * y * (1-x) + 
 		(cornerPositionC - cornerPositionA) * y * x;
 
-	//p = normalize(p);
-	p = p - offsetFromPlanetCenter;	
-	//p = p * planetRadius * snoise(vec3(p)) - offsetFromPlanetCenter;
+	p = normalize(p);
+	p = p * (planetRadiusMax + planetRadiusVariation * GetHeightAt(p));
+	p -= offsetFromPlanetCenter;
 
 	// DEBUG
-	//vec3 p = fromStruct(pos[invocationId]);
+	//vec3 p = fromStruct(positions[id]);
 	//p.x += 0.01f;
 
-	pos[invocationId] = toStruct(vec3(p));
- 
+	positions[id] = toStruct(vec3(p));
 }
+

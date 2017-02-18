@@ -18,35 +18,77 @@ namespace MyGame.PlanetaryBody
 		Mesh.VertexIndex[] edgeVerticesIndexes;
 		int NumberOfVerticesOnEdge => planetaryBody.chunkNumberOfVerticesOnEdge;
 
-		List<Mesh.VertexIndex> GetEdgeVertices()
+
+		int numberOfVerticesNeededTotal = -1;
+		int NumberOfVerticesNeededTotal
 		{
-			var skirtIndicies = new List<Mesh.VertexIndex>();
+			get
+			{
+				if (numberOfVerticesNeededTotal != -1) return numberOfVerticesNeededTotal;
+
+				numberOfVerticesNeededTotal = 1;
+				{
+					int numberOfVerticesInBetween = 0;
+					for (uint y = 1; y < NumberOfVerticesOnEdge; y++)
+					{
+						numberOfVerticesNeededTotal++;
+						if (numberOfVerticesInBetween > 0)
+						{
+							numberOfVerticesNeededTotal += numberOfVerticesInBetween;
+						}
+						numberOfVerticesNeededTotal++;
+						numberOfVerticesInBetween++;
+					}
+				}
+
+				return numberOfVerticesNeededTotal;
+			}
+		}
+
+		Mesh.VertexIndex[] skirtIndicies = null;
+		Mesh.VertexIndex[] GetEdgeVertices()
+		{
+			if (skirtIndicies != null) return skirtIndicies;
+
+			var s = new List<Mesh.VertexIndex>();
 			// gather the edge vertices indicies
 			{
 				int lineStartIndex = 0;
 				int nextLineStartIndex = 1;
 				int numberOfVerticesInBetween = 0;
-				skirtIndicies.Add(0); // first line
-									  // top and all middle lines
+				s.Add(0); // first line
+									   // top and all middle lines
 				for (int i = 1; i < NumberOfVerticesOnEdge - 1; i++)
 				{
 					lineStartIndex = nextLineStartIndex;
 					nextLineStartIndex = lineStartIndex + numberOfVerticesInBetween + 2;
-					skirtIndicies.Add(lineStartIndex);
-					skirtIndicies.Add((lineStartIndex + numberOfVerticesInBetween + 1));
+					s.Add(lineStartIndex);
+					s.Add((lineStartIndex + numberOfVerticesInBetween + 1));
 					numberOfVerticesInBetween++;
 				}
 				// bottom line
 				lineStartIndex = nextLineStartIndex;
 				for (int i = 0; i < NumberOfVerticesOnEdge; i++)
 				{
-					skirtIndicies.Add((lineStartIndex + i));
+					s.Add((lineStartIndex + i));
 				}
 			}
+			skirtIndicies = s.ToArray();
 			return skirtIndicies;
 		}
 
+		List<Vector3> verticesList = new List<Vector3>();
+		List<Vector3> GetVerticesList()
+		{
+			if (verticesList.Count > 0) return verticesList;
 
+			var r = new Random();
+			while (verticesList.Count < NumberOfVerticesNeededTotal)
+				verticesList.Add(new Vector3d(r.NextDouble(), r.NextDouble(), r.NextDouble()).ToVector3()); // WTF WTF WTF WTF FUCK
+																											// THE FUCK IS THIS
+																											// WHY THE FUCK DOES IT NOT WORK WITH ZEROS OR ONES
+			return verticesList;
+		}
 		Vector3d GetFinalPos(Vector3d calestialOnPlanetPos)
 		{
 			var p = planetaryBody.GetFinalPos(calestialOnPlanetPos);
@@ -79,7 +121,7 @@ namespace MyGame.PlanetaryBody
 
 
 			// generate evenly spaced vertices, then we make triangles out of them
-			var vertices = new List<Vector3>();
+
 			var normals = mesh.Normals;
 
 
@@ -126,36 +168,11 @@ namespace MyGame.PlanetaryBody
 			}
 			*/
 
-			int numberOfVerticesNeededTotal = 1;
-			{
-				int numberOfVerticesInBetween = 0;
-				for (uint y = 1; y < NumberOfVerticesOnEdge; y++)
-				{
-					numberOfVerticesNeededTotal++;
-					if (numberOfVerticesInBetween > 0)
-					{
-						numberOfVerticesNeededTotal += numberOfVerticesInBetween;
-					}
-					numberOfVerticesNeededTotal++;
-					numberOfVerticesInBetween++;
-				}
-			}
-
-			var r = new Random();
-			while(vertices.Count < numberOfVerticesNeededTotal)
-				vertices.Add(new Vector3d(r.NextDouble(), r.NextDouble(), r.NextDouble()).ToVector3()); // WTF WTF WTF WTF FUCK
-			// THE FUCK IS THIS
-			// WHY THE FUCK DOES IT NOT WORK WITH ZEROS OR ONES
-
-
+			List<Vector3> vertices = GetVerticesList();
 			List<int> indicies = GetIndiciesList();
 
 			mesh.Vertices.SetData(vertices);
 			mesh.TriangleIndicies.SetData(indicies);
-			mesh.RecalculateNormals();
-
-	
-
 
 			// tell every vertex where on the planet it is, so it can query from biomes splat map
 			/*
@@ -169,7 +186,7 @@ namespace MyGame.PlanetaryBody
 			}
 			*/
 
-			edgeVerticesIndexes = this.GetEdgeVertices().ToArray();
+			edgeVerticesIndexes = GetEdgeVertices();
 
 			bool useSkirts = false;
 			//useSkirts = true;
@@ -193,12 +210,12 @@ namespace MyGame.PlanetaryBody
 
 			if (planetaryBody.planetMaterial != null) renderer.Material = planetaryBody.planetMaterial.CloneTyped();
 			renderer.RenderingMode = MyRenderingMode.DontRender;
-        }
+		}
 
 
 		public void DestroyRenderer()
 		{
-			if(renderer != null)
+			if (renderer != null)
 			{
 				//renderer.Mesh.Dispose();
 				planetaryBody.Entity.DestroyComponent(renderer);
@@ -232,7 +249,7 @@ namespace MyGame.PlanetaryBody
 
 		//	var myNormalsInitial = myMesh.VertexArray.GetVertexArrayBufferObject("normalsInitial") as Mesh.VertexBufferObject<Vector3>;
 		//	var otherNormalsInitial = otherMesh.VertexArray.GetVertexArrayBufferObject("normalsInitial") as Mesh.VertexBufferObject<Vector3>;
-			
+
 		//	foreach (var toAverageIndex in toAverageIndexes)
 		//	{
 		//		{
@@ -253,7 +270,7 @@ namespace MyGame.PlanetaryBody
 		//			myNormalsInitial[toAverageIndex.Item1] = newNormal;
 		//		}
 		//	}
-			
+
 		//	myMesh.NotifyDataChanged();
 		//}
 
