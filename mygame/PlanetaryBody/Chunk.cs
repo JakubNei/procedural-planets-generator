@@ -22,6 +22,7 @@ namespace MyGame.PlanetaryBody
 		public List<Chunk> childs { get; } = new List<Chunk>();
 		public MeshRenderer renderer;
 
+		public bool isGenerationDone;
 		public bool IsRendererReady => renderer != null;
 
 
@@ -50,7 +51,7 @@ namespace MyGame.PlanetaryBody
 		}
 
 
-		public double GetSizeOnCamera(Camera cam)
+		public double GetSizeOnScreen(Camera cam)
 		{
 			bool isVisible = true;
 
@@ -64,10 +65,9 @@ namespace MyGame.PlanetaryBody
 			var distanceToCamera = myPos.Distance(cam.ViewPointPosition);
 			if (renderer != null && renderer.Mesh != null)
 			{
-				var localCamPos = planetaryBody.Transform.Position.Towards(cam.ViewPointPosition).ToVector3();
-				distanceToCamera = renderer.Mesh.Vertices.FindClosest((v) => v.DistanceSqr(localCamPos)).Distance(localCamPos);
-				isVisible = cam.GetFrustum().VsBounds(renderer.GetCameraSpaceBounds(cam.ViewPointPosition));
-
+				//var localCamPos = planetaryBody.Transform.Position.Towards(cam.ViewPointPosition).ToVector3();
+				//distanceToCamera = renderer.Mesh.Vertices.FindClosest((v) => v.DistanceSqr(localCamPos)).Distance(localCamPos);
+				//isVisible = cam.GetFrustum().VsBounds(renderer.GetCameraSpaceBounds(cam.ViewPointPosition));
 			}
 
 			double radiusCameraSpace;
@@ -97,7 +97,7 @@ namespace MyGame.PlanetaryBody
 
 
 			var weight = radiusCameraSpace * MyMath.SmoothStep(2, 1, MyMath.Clamp01(dotToCamera));
-			if (isVisible == false) weight *= 0.3f;
+			//if (isVisible == false) weight *= 0.3f;
 			return weight;
 		}
 		/*
@@ -179,9 +179,6 @@ namespace MyGame.PlanetaryBody
 			planetaryBody.Entity.DestroyComponent(renderer);
 			renderer = null;
 		}
-
-		int numberOfChunksGenerated = 0;
-		bool isGenerated = false;
 
 		List<int> indiciesList;
 		List<int> GetIndiciesList()

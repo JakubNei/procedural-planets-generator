@@ -91,22 +91,17 @@ namespace MyGame.PlanetaryBody
 		}
 
 
-		public void CreateRendererAndGenerateMesh()
+		public bool generationBegan = false;
+		public void CreateRendererAndBasicMesh()
 		{
-			if (parentChunk != null && parentChunk.renderer == null)
-			{
-				return;
-			}
 			lock (this)
 			{
-				if (isGenerated) return;
-				isGenerated = true;
+				if (generationBegan) return;// throw new Exception("generation already began");
+				generationBegan = true;
 			}
 
 			var offsetCenter = noElevationRange.CenterPos;
 			var mesh = new Mesh();// "PlanetaryBodyChunk depth:" + subdivisionDepth + " #" + numbetOfChunksGenerated);
-			numberOfChunksGenerated++;
-
 
 			// generate evenly spaced vertices, then we make triangles out of them
 
@@ -184,7 +179,7 @@ namespace MyGame.PlanetaryBody
 				var moveAmount = this.noElevationRange.ToBoundingSphere().radius / 10;
 				mesh.MoveVertices(skirtVertices, -this.noElevationRange.Normal.ToVector3() * (float)moveAmount, mesh.Vertices);
 			}
-			
+
 			{
 				var o = offsetCenter.ToVector3();
 				var c = 0;

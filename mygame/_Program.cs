@@ -36,7 +36,7 @@ namespace MyGame
 
 
 					var cam = scene.mainCamera = entity.AddComponent<Camera>();
-					cam.farClipPlane = 1000000;
+					cam.farClipPlane = 5000000;
 
 					// post process effects
 					{

@@ -192,6 +192,7 @@
   <ItemGroup>
     <None Include="app.config" />
     <Compile Include="ObjLoader.MaterialLibrary.cs" />
+    <Compile Include="Mesh.Subtypes.cs" />
     <None Include="Neitri\readme.md" />
     <None Include="OpenTK.dll.config" />
     <None Include="packages.config">

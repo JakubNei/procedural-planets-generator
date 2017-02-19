@@ -56,6 +56,9 @@ namespace MyGame
 		void Update(float deltaTime)
 		{
 
+			var planet = PlanetaryBody.Root.instance;
+
+
 			Debug.AddValue("camera / speed", cameraSpeed.ToString());
 			Debug.AddValue("camera / position", Transform.Position.ToString());
 
@@ -108,8 +111,9 @@ namespace MyGame
             p.Y -= mouseDelta.Y;
             System.Windows.Forms.Cursor.Position = p;*/
 
+			var distanceToPlanet = planet.Center.Distance(this.Transform.Position) - planet.RadiusMax - planet.RadiusVariation * 2;
 
-			float d = cameraSpeed;
+			float d = cameraSpeed * (1 + (float)distanceToPlanet.Abs() / 10.0f);
 
 			if (Input.GetKey(Key.ShiftLeft)) d *= 5;
 
@@ -136,9 +140,7 @@ namespace MyGame
 			if (Input.GetKey(Key.E)) rollDelta += c;
 
 
-			var planet = PlanetaryBody.Root.instance;
-
-			if(Input.GetKeyDown(Key.C))
+			if (Input.GetKeyDown(Key.C))
 			{
 				rotation = this.Transform.Position.Towards(planet.Transform.Position).ToVector3().LookRot();
 			}

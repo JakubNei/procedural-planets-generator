@@ -5,6 +5,7 @@ using OpenTK;
 using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -17,7 +18,7 @@ namespace MyGame.PlanetaryBody
 		public double RadiusMax { get; set; } // poloměr
 		public double RadiusVariation { get; set; }
 
-		public HashSet<Chunk> toComputeShader = new HashSet<Chunk>();
+		public HashSet<Chunk> toBeginGeneration = new HashSet<Chunk>();
 
 		/// <summary>
 		/// Is guaranteeed to be odd (1, 3, 5, 7, ...)
@@ -184,28 +185,26 @@ namespace MyGame.PlanetaryBody
 		}
 
 
-		void Chunks_GatherWeights(ChunkWeightedList list, Chunk chunk, int recursionDepth, double parentWeight)
+		void Chunks_GatherWeights(ChunkWeightedList list, Chunk chunk, int recursionDepth)
 		{
 			var cam = Entity.Scene.mainCamera;
-			var distanceToCam = chunk.GetSizeOnCamera(cam);
+			var sizeOnScreen = chunk.GetSizeOnScreen(cam);
 
-			if (chunk.renderer == null)
+			if (!chunk.generationBegan)
 			{
-				list.Add(distanceToCam, chunk);
+				list.Add(sizeOnScreen, chunk);
 			}
 
 			if (recursionDepth < SubdivisionMaxRecurisonDepth)
 			{
-				var threshold = RadiusVariation + RadiusMax / (recursionDepth + 1);
-
-				if (distanceToCam < threshold * 5)
+				if (sizeOnScreen > 0.4f)
 					chunk.CreteChildren();
 				else
 					chunk.DeleteChildren();
 
 				foreach (var child in chunk.childs)
 				{
-					Chunks_GatherWeights(list, child, recursionDepth + 1, distanceToCam);
+					Chunks_GatherWeights(list, child, recursionDepth + 1);
 				}
 			}
 		}
@@ -220,9 +219,9 @@ namespace MyGame.PlanetaryBody
 
 			if (recursionDepth < SubdivisionMaxRecurisonDepth)
 			{
-				var areAllChildsGenerated = chunk.childs.Count > 0 && chunk.childs.All(c => c.renderer != null);
+				var areAllChildsGenerated = chunk.childs.Count > 0 && chunk.childs.All(c => c.isGenerationDone);
 
-				// hide only if all our childs are visible, they mighht still be generating
+				// hide only if all our childs are visible, they might still be generating
 				if (areAllChildsGenerated)
 				{
 					chunk.renderer?.SetRenderingMode(MyRenderingMode.DontRender);
@@ -248,13 +247,13 @@ namespace MyGame.PlanetaryBody
 		class ChunkWeightedList
 		{
 			List<Tuple<double, Chunk>> l = new List<Tuple<double, Chunk>>();
-			public void Add(double priority, Chunk chunk)
+			public void Add(double weight, Chunk chunk)
 			{
-				l.Add(new Tuple<double, Chunk>(priority, chunk));
+				l.Add(new Tuple<double, Chunk>(weight, chunk));
 			}
 			public Chunk GetMostImportantChunk()
 			{
-				return l.OrderBy(i => i.Item1).FirstOrDefault()?.Item2;
+				return l.OrderByDescending(i => i.Item1).FirstOrDefault()?.Item2;
 			}
 		}
 
@@ -269,36 +268,32 @@ namespace MyGame.PlanetaryBody
 			{
 				//var sphere = new Sphere((pos - Transform.Position).ToVector3d(), this.RadiusMax * startingRadiusSubdivisionModifier);
 				foreach (var rootChunk in this.rootChunks)
-					Chunks_GatherWeights(weightedList, rootChunk, 0, 0);
+					Chunks_GatherWeights(weightedList, rootChunk, 0);
 				toGenerate = weightedList.GetMostImportantChunk();
 			}
 
 			if (toGenerate != null)
 			{
-				while (toGenerate.parentChunk != null && toGenerate.parentChunk.renderer == null) // we have to generate our parent first
+				while (toGenerate.parentChunk != null && !toGenerate.parentChunk.generationBegan) // we have to generate our parent first
 					toGenerate = toGenerate.parentChunk;
 
 				// if we want to show this chunk, our neighbours have the same weight, because we cant be shown without our neighbours
 				if (toGenerate.parentChunk != null)
 					foreach (var neighbour in toGenerate.parentChunk.childs)
-						if (neighbour.renderer == null)
-							Generate(neighbour);
+						if (!neighbour.generationBegan)
+							BeginGeneration(neighbour);
 
-				Generate(toGenerate);
+				BeginGeneration(toGenerate);
 			}
 
-			 foreach (var rootChunk in this.rootChunks) Chunks_UpdateVisibility(rootChunk, 0);
+			foreach (var rootChunk in this.rootChunks) Chunks_UpdateVisibility(rootChunk, 0);
 
 		}
 
-		void Generate(Chunk toGenerate)
+		void BeginGeneration(Chunk toGenerate)
 		{
-			stats.Start();
-			toGenerate.CreateRendererAndGenerateMesh();
-			stats.End();
-			stats.Update();
-			toComputeShader.Add(toGenerate);
-
+			lock(toBeginGeneration)
+				toBeginGeneration.Add(toGenerate);
 			//toGenerate.renderer?.SetRenderingMode(MyRenderingMode.RenderGeometryAndCastShadows);
 		}
 
@@ -338,11 +333,20 @@ namespace MyGame.PlanetaryBody
 		{
 			if (computeShader.Bind())
 			{
-				foreach (var chunk in toComputeShader.ToArray())
+				Chunk chunk = null;
+				while(toBeginGeneration.Count > 0)
 				{
-					var mesh = chunk.renderer?.Mesh;
-					if (mesh == null || mesh.Vertices.VboHandle == -1) continue;
-					toComputeShader.Remove(chunk);
+					lock (toBeginGeneration)
+					{
+						chunk = toBeginGeneration.First();
+						toBeginGeneration.Remove(chunk);
+					}
+					stats.Start();
+
+					chunk.CreateRendererAndBasicMesh();
+					var mesh = chunk.renderer.Mesh;
+					mesh.EnsureIsOnGpu();
+
 					GL.Uniform1(GL.GetUniformLocation(computeShader.ShaderProgramHandle, "planetRadiusMax"), (float)RadiusMax); My.Check();
 					GL.Uniform1(GL.GetUniformLocation(computeShader.ShaderProgramHandle, "planetRadiusVariation"), (float)RadiusVariation); My.Check();
 					GL.Uniform3(GL.GetUniformLocation(computeShader.ShaderProgramHandle, "offsetFromPlanetCenter"), chunk.renderer.Offset.ToVector3()); My.Check();
@@ -363,6 +367,11 @@ namespace MyGame.PlanetaryBody
 					mesh.Vertices.SetData(intPtr, mesh.Vertices.Count);
 					GL.UnmapBuffer(BufferTarget.ShaderStorageBuffer);
 					mesh.RecalculateBounds();
+
+					chunk.isGenerationDone = true;
+
+					stats.End();
+					stats.Update();
 
 					break;
 				}
