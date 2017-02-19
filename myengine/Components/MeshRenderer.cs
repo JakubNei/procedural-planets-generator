@@ -34,7 +34,10 @@ namespace MyEngine.Components
 			{
 				if (m_mesh != value)
 				{
-					m_mesh = value;
+					lock (this)
+					{
+						m_mesh = value;
+					}
 				}
 			}
 			get

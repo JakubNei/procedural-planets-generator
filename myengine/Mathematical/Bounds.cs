@@ -7,7 +7,7 @@ using OpenTK;
 
 namespace MyEngine
 {
-	public struct Bounds
+	public class Bounds
 	{
 		private Vector3 m_Center;
 		private Vector3 m_Extents;

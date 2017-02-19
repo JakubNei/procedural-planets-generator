@@ -55,6 +55,10 @@ namespace Neitri
 		{
 			this.owner = owner;
 		}
+		public DeferredSynchronizeInvoke() : this(new Owner())
+		{
+			
+		}
 
 		public IAsyncResult BeginInvoke(Delegate method, object[] args)
 		{

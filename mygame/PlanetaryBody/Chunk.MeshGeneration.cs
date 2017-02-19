@@ -57,7 +57,7 @@ namespace MyGame.PlanetaryBody
 				int nextLineStartIndex = 1;
 				int numberOfVerticesInBetween = 0;
 				s.Add(0); // first line
-									   // top and all middle lines
+						  // top and all middle lines
 				for (int i = 1; i < NumberOfVerticesOnEdge - 1; i++)
 				{
 					lineStartIndex = nextLineStartIndex;
@@ -89,19 +89,7 @@ namespace MyGame.PlanetaryBody
 																											// WHY THE FUCK DOES IT NOT WORK WITH ZEROS OR ONES
 			return verticesList;
 		}
-		Vector3d GetFinalPos(Vector3d calestialOnPlanetPos)
-		{
-			var p = planetaryBody.GetFinalPos(calestialOnPlanetPos);
-			p -= realVisibleRange.CenterPos;
-			return p;
-		}
-		Vector3d GetFinalPos2(Vector3d calestialInChunkPos)
-		{
-			calestialInChunkPos += realVisibleRange.CenterPos;
-			var p = planetaryBody.GetFinalPos(calestialInChunkPos);
-			p -= realVisibleRange.CenterPos;
-			return p;
-		}
+
 
 		public void CreateRendererAndGenerateMesh()
 		{
@@ -115,7 +103,7 @@ namespace MyGame.PlanetaryBody
 				isGenerated = true;
 			}
 
-			var offsetCenter = realVisibleRange.CenterPos;
+			var offsetCenter = noElevationRange.CenterPos;
 			var mesh = new Mesh();// "PlanetaryBodyChunk depth:" + subdivisionDepth + " #" + numbetOfChunksGenerated);
 			numberOfChunksGenerated++;
 
@@ -193,20 +181,32 @@ namespace MyGame.PlanetaryBody
 			if (useSkirts)
 			{
 				var skirtVertices = mesh.Duplicate(edgeVerticesIndexes, mesh.Vertices, mesh.Normals);
-				var moveAmount = this.realVisibleRange.ToBoundingSphere().radius / 10;
-				mesh.MoveVertices(skirtVertices, -this.realVisibleRange.Normal.ToVector3() * (float)moveAmount, mesh.Vertices);
+				var moveAmount = this.noElevationRange.ToBoundingSphere().radius / 10;
+				mesh.MoveVertices(skirtVertices, -this.noElevationRange.Normal.ToVector3() * (float)moveAmount, mesh.Vertices);
 			}
+			
+			{
+				var o = offsetCenter.ToVector3();
+				var c = 0;
+				var n = noElevationRange.Normal.ToVector3();
 
-			var o = offsetCenter.ToVector3();
-			mesh.Bounds.Encapsulate(noElevationRange.a.ToVector3() - o);
-			mesh.Bounds.Encapsulate(noElevationRange.b.ToVector3() - o);
-			mesh.Bounds.Encapsulate(noElevationRange.c.ToVector3() - o);
+				mesh.Bounds = new Bounds(noElevationRange.CenterPos.ToVector3() - o);
+
+				mesh.Bounds.Encapsulate(noElevationRange.a.ToVector3() + n * c - o);
+				mesh.Bounds.Encapsulate(noElevationRange.b.ToVector3() + n * c - o);
+				mesh.Bounds.Encapsulate(noElevationRange.c.ToVector3() + n * c - o);
+				mesh.Bounds.Encapsulate(noElevationRange.CenterPos.ToVector3() + n * c - o);
+
+				mesh.Bounds.Encapsulate(noElevationRange.a.ToVector3() - n * c - o);
+				mesh.Bounds.Encapsulate(noElevationRange.b.ToVector3() - n * c - o);
+				mesh.Bounds.Encapsulate(noElevationRange.c.ToVector3() - n * c - o);
+				mesh.Bounds.Encapsulate(noElevationRange.CenterPos.ToVector3() - n * c - o);
+			}
 
 			if (renderer != null) throw new Exception("something went terribly wrong, renderer should be null");
 			renderer = planetaryBody.Entity.AddComponent<MeshRenderer>();
 			renderer.Mesh = mesh;
 			renderer.Offset += offsetCenter;
-			renderer.ForcePassFrustumCulling = true;
 
 			if (planetaryBody.planetMaterial != null) renderer.Material = planetaryBody.planetMaterial.CloneTyped();
 			renderer.RenderingMode = MyRenderingMode.DontRender;

@@ -8,6 +8,7 @@ using System.Linq;
 using System.IO;
 using System.Text;
 using System.Threading;
+using Neitri.Base;
 
 namespace MyEngine
 {

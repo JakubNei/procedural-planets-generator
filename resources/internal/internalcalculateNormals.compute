@@ -53,7 +53,7 @@ vec3 GetNormal(int a, int b, int c)
 	vec3 _a = fromStruct(positions[a]);
 	vec3 _b = fromStruct(positions[b]);
 	vec3 _c = fromStruct(positions[c]);
-	return normalize(cross(_b - _a, _c - _a));
+	return normalize(cross(normalize(_b - _a), normalize(_c - _a)));
 }
 
 
@@ -76,7 +76,6 @@ void main() {
 	}
 
 	normal /= normalCount;
-	normal = normalize(normal);
 	normals[id] = toStruct(normal);
 }
 

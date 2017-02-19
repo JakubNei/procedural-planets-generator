@@ -191,7 +191,7 @@ namespace MyEngine
 			Delete(removeVertices, Vertices, Normals, Tangents);
 		}
 
-		public void Delete(VertexIndex[] removeVertices, params IVertexBufferObject[] removeFromVbos)
+		public void Delete(VertexIndex[] removeVertices, params IBufferObject[] removeFromVbos)
 		{
 			for (int i = 0; i < removeVertices.Length; i++)
 			{
@@ -208,7 +208,7 @@ namespace MyEngine
 			return Duplicate(duplicateVertices, Vertices, Normals, Tangents);
 		}
 
-		public VertexIndex[] Duplicate(VertexIndex[] duplicateVertices, params IVertexBufferObject[] duplicateVbos)
+		public VertexIndex[] Duplicate(VertexIndex[] duplicateVertices, params IBufferObject[] duplicateVbos)
 		{
 			var newExtrudedVertices = new VertexIndex[duplicateVertices.Length];
 
@@ -253,7 +253,7 @@ namespace MyEngine
 			MoveVertices(moveVertices, addVector, Vertices);
 		}
 
-		public void MoveVertices(VertexIndex[] moveVertices, Vector3 addVector, params VertexBufferObject<Vector3>[] moveVbos)
+		public void MoveVertices(VertexIndex[] moveVertices, Vector3 addVector, params BufferObject<Vector3>[] moveVbos)
 		{
 			foreach (var vbo in moveVbos)
 			{

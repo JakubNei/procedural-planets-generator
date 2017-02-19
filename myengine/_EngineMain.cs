@@ -5,6 +5,7 @@ using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -120,6 +121,7 @@ namespace MyEngine
 			//GL.Enable(EnableCap.Multisample); My.Check();
 
 			GL.ClearColor(System.Drawing.Color.Black); My.Check();
+			
 		}
 
 		protected override void OnUnload(EventArgs e)
@@ -259,10 +261,9 @@ namespace MyEngine
             EventSystem.Raise(new MyEngine.Events.EventThreadUpdate(renderThreadTime));
             EventSystem.Raise(new MyEngine.Events.RenderUpdate(renderThreadTime));
 
+			//GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit); My.Check();
 
-            //GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit); My.Check();
-
-            {
+			{
                 var scene = scenes[0];
 				var camera = scene.mainCamera;
 				var dataToRender = scene.DataToRender;

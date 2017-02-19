@@ -60,15 +60,16 @@ namespace MyEngine
 			}
 			RenderPostProcessEffects(ubo, postProcessEffect);
 
+
+			GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, 0); My.Check();
+			GL.Viewport(0, 0, camera.pixelWidth, camera.pixelHeight); My.Check();
+
 			// FINAL DRAW TO SCREEN
 			{
 				//DebugDrawTexture(gBuffer.finalTextureToRead);
 				GL.Disable(EnableCap.DepthTest); My.Check();
 				GL.Disable(EnableCap.CullFace); My.Check();
 				GL.Disable(EnableCap.Blend); My.Check();
-
-				GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, 0); My.Check();
-				GL.Viewport(0, 0, camera.pixelWidth, camera.pixelHeight); My.Check();
 
 				FinalDrawShader.Uniforms.Set("finalDrawTexture", GBuffer.finalTextureToRead);
 				if (FinalDrawShader.Bind())
@@ -77,29 +78,37 @@ namespace MyEngine
 				}
 			}
 
-			/*if(debugBounds)
-            {
-                var allColiders = new List<BoxCollider>();
-                foreach (var go in Factory.allEntitys)
-                {
-                    allColiders.AddRange(go.GetComponents<BoxCollider>());
-                }
-                GL.DepthMask(false); My.Check();
-                GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line); My.Check();
-                GL.Disable(EnableCap.DepthTest); My.Check();
-                GL.Disable(EnableCap.CullFace); My.Check();
-                GL.Disable(EnableCap.Blend); My.Check();
-                foreach (var c in allColiders)
-                {
-                    var modelMat = c.entity.transform.GetScalePosRotMatrix();
-                    var modelViewMat = modelMat * camera.GetViewMat();
-                    ubo.model.modelMatrix = modelMat;
-                    ubo.model.modelViewMatrix = modelViewMat;
-                    ubo.model.modelViewProjectionMatrix = modelViewMat * camera.GetProjectionMat();
-                    ubo.modelUBO.UploadData();
-                    skyboxMesh.Draw();
-                }
-            }*/
+			if (debugBounds)
+			{
+				if (factory.GetShader("internal/debugDrawBounds.shader").Bind())
+				{
+					GL.DepthMask(false); My.Check();
+					GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line); My.Check();
+					GL.Disable(EnableCap.DepthTest); My.Check();
+					GL.Disable(EnableCap.CullFace); My.Check();
+					GL.Disable(EnableCap.Blend); My.Check();
+					var camPos = camera.ViewPointPosition;
+					for (int i = 0; i < toRenderCount; i++)
+					{
+						var renderable = toRender[i];
+						var bounds = renderable.GetCameraSpaceBounds(camPos);
+
+						var modelMat = Matrix4.CreateScale(bounds.Extents) * Matrix4.CreateTranslation(bounds.Center);
+						var modelViewMat = modelMat * camera.GetRotationMatrix();
+
+						ubo.model.modelMatrix = modelMat;
+						ubo.model.modelViewMatrix = modelViewMat;
+						ubo.model.modelViewProjectionMatrix = modelViewMat * camera.GetProjectionMat();
+						ubo.modelUBO.UploadData();
+						factory.SkyBoxMesh.Draw(false);
+					}
+					GL.DepthMask(true); My.Check();
+					GL.PolygonMode(MaterialFace.Front, PolygonMode.Fill); My.Check();
+					GL.Enable(EnableCap.DepthTest); My.Check();
+					GL.Enable(EnableCap.CullFace); My.Check();
+					GL.Disable(EnableCap.Blend); My.Check();
+				}
+			}
 
 			if (debug.CommonCVars.DebugDrawNormalBufferContents().Bool) GBuffer.DebugDrawNormal();
 			if (debug.CommonCVars.DebugDrawGBufferContents().Bool) GBuffer.DebugDrawContents();
@@ -291,7 +300,8 @@ namespace MyEngine
 			// with lock List = 200 fps
 
 			var frustum = camera.GetFrustum();
-			int totalPossible = possibleRenderables.Count;
+			var camPos = camera.Transform.Position;
+			var totalPossible = possibleRenderables.Count;
 
 			toRenderCount = 0;
 			lock (possibleRenderables)
@@ -308,7 +318,7 @@ namespace MyEngine
 							}
 							else
 							{
-								var bounds = renderable.GetCameraSpaceBounds(camera.Transform.Position);
+								var bounds = renderable.GetCameraSpaceBounds(camPos);
 								if (
 									frustum.SphereVsFrustum(bounds.Center, bounds.Extents.Length)
 									&& frustum.VolumeVsFrustum(bounds)
