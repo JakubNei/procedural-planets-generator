@@ -50,33 +50,55 @@ namespace MyGame.PlanetaryBody
 		}
 
 
-		public double GetDistanceToCamera(Camera cam)
+		public double GetSizeOnCamera(Camera cam)
 		{
 			bool isVisible = true;
 
-			var myPos = noElevationRange.CenterPos + planetaryBody.Transform.Position;
-			var planetCenterDirToCamera = planetaryBody.Transform.Position.Towards(cam.ViewPointPosition).ToVector3d().Normalized();
 
-			// 0 looking at chunk from side, 1 looking at chunk from front, -1 looking at chunk from bottom/behind
-			var dotToCamera = noElevationRange.Normal.Dot(planetCenterDirToCamera);
+			var myPos = noElevationRange.CenterPos + planetaryBody.Transform.Position;
+			var dirToCamera = myPos.Towards(cam.ViewPointPosition).ToVector3d();
+
+			// 0 looking at it from side, 1 looking at it from top, -1 looking at it from behind
+			var dotToCamera = noElevationRange.Normal.Dot(dirToCamera);
 
 			var distanceToCamera = myPos.Distance(cam.ViewPointPosition);
-
-			/*if (renderer != null && renderer.Mesh != null)
+			if (renderer != null && renderer.Mesh != null)
 			{
 				var localCamPos = planetaryBody.Transform.Position.Towards(cam.ViewPointPosition).ToVector3();
 				distanceToCamera = renderer.Mesh.Vertices.FindClosest((v) => v.DistanceSqr(localCamPos)).Distance(localCamPos);
+				isVisible = cam.GetFrustum().VsBounds(renderer.GetCameraSpaceBounds(cam.ViewPointPosition));
 
-				{
-					isVisible = renderer.GetCameraRenderStatus(cam).HasFlag(RenderStatus.Rendered);
-				}
-			}*/
+			}
 
-			//var size = noElevationRange.ToBoundingSphere().radius;
-			//var weight = (1 + dotToCamera) / distanceToCamera / (subdivisionDepth + 1);
-			//renderer?.Material.Uniforms.Set("param_debugWeight", (float)weight);
+			double radiusCameraSpace;
+			{
+				// this is world space, doesnt take into consideration rotation, not good
+				var sphere = noElevationRange.ToBoundingSphere();
+				var radiusWorldSpace = sphere.radius;
+				var fov = cam.fieldOfView;
+				radiusCameraSpace = radiusWorldSpace * MyMath.Cot(fov / 2) / distanceToCamera;
+			}
 
-			return distanceToCamera;
+			/*
+            {
+                var a = cam.WorldToScreenPos(realVisibleRange.a + planetaryBody.Transform.Position);
+                var b = cam.WorldToScreenPos(realVisibleRange.b + planetaryBody.Transform.Position);
+                var c = cam.WorldToScreenPos(realVisibleRange.c + planetaryBody.Transform.Position);
+                a.Z = 0;
+                b.Z = 0;
+                c.Z = 0;
+                var aabb = new Bounds();
+                aabb.Encapsulate(a);
+                aabb.Encapsulate(b);
+                aabb.Encapsulate(c);
+                radiusCameraSpace = aabb.Size.Length;
+            }
+            */
+
+
+			var weight = radiusCameraSpace * MyMath.SmoothStep(2, 1, MyMath.Clamp01(dotToCamera));
+			if (isVisible == false) weight *= 0.3f;
+			return weight;
 		}
 		/*
         public void RequestMeshGeneration()
@@ -145,14 +167,17 @@ namespace MyGame.PlanetaryBody
 				foreach (var child in childs)
 				{
 					child.DeleteChildren();
-					if (child.renderer != null)
-					{
-						child.renderer.Mesh = null;
-						child.renderer = null;
-					}
+					child.DestroyRenderer();
 				}
 				childs.Clear();
 			}
+		}
+
+		public void DestroyRenderer()
+		{
+			renderer?.SetRenderingMode(MyRenderingMode.DontRender);
+			planetaryBody.Entity.DestroyComponent(renderer);
+			renderer = null;
 		}
 
 		int numberOfChunksGenerated = 0;

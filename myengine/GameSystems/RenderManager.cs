@@ -308,7 +308,7 @@ namespace MyEngine
 			{
 				Parallel.ForEach(possibleRenderables, (renderable) =>
 					{
-						if (renderable.ShouldRenderInContext(RenderContext))
+						if (renderable != null && renderable.ShouldRenderInContext(RenderContext))
 						{
 							if (renderable.ForcePassFrustumCulling)
 							{
@@ -320,8 +320,8 @@ namespace MyEngine
 							{
 								var bounds = renderable.GetCameraSpaceBounds(camPos);
 								if (
-									frustum.SphereVsFrustum(bounds.Center, bounds.Extents.Length)
-									&& frustum.VolumeVsFrustum(bounds)
+									frustum.VsSphere(bounds.Center, bounds.Extents.Length)
+									&& frustum.VsBounds(bounds)
 								)
 								{
 									renderable.CameraRenderStatusFeedback(camera, RenderStatus.RenderedAndVisible);

@@ -213,16 +213,6 @@ namespace MyGame.PlanetaryBody
 		}
 
 
-		public void DestroyRenderer()
-		{
-			if (renderer != null)
-			{
-				//renderer.Mesh.Dispose();
-				planetaryBody.Entity.DestroyComponent(renderer);
-				renderer = null;
-			}
-		}
-
 		//public void SmoothEdgeNormalsBasedOn(Chunk otherChunk)
 		//{
 		//	// my index, other index

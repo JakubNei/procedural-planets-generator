@@ -43,7 +43,7 @@ namespace MyEngine
 		}
 
 		
-		public bool PointVsFrustum(float x, float y, float z)
+		public bool VsPoint(float x, float y, float z)
 		{
 			for (int i = 0; i < 6; i++)
 			{
@@ -56,7 +56,7 @@ namespace MyEngine
 		}
 
 		
-		public bool PointVsFrustum(Vector3 location)
+		public bool VsPoint(Vector3 location)
 		{
 			for (int i = 0; i < 6; i++)
 			{
@@ -69,7 +69,7 @@ namespace MyEngine
 		}
 
 		
-		public bool SphereVsFrustum(float x, float y, float z, float radius)
+		public bool VsSphere(float x, float y, float z, float radius)
 		{
 			for (int p = 0; p < 6; p++)
 			{
@@ -83,7 +83,7 @@ namespace MyEngine
 		}
 
 		
-		public bool SphereVsFrustum(Vector3 location, float radius)
+		public bool VsSphere(Vector3 location, float radius)
 		{
 			for (int p = 0; p < 6; p++)
 			{
@@ -97,7 +97,7 @@ namespace MyEngine
 		}
 
 		
-		public bool VolumeVsFrustum(float x, float y, float z, float width, float height, float length)
+		public bool VsVolume(float x, float y, float z, float width, float height, float length)
 		{
 			for (int i = 0; i < 6; i++)
 			{
@@ -123,7 +123,7 @@ namespace MyEngine
 		}
 
 		
-		public bool VolumeVsFrustum(Bounds volume)
+		public bool VsBounds(Bounds volume)
 		{
 			for (int i = 0; i < 6; i++)
 			{
@@ -149,7 +149,7 @@ namespace MyEngine
 		}
 
 		
-		public bool VolumeVsFrustum(Vector3 location, float width, float height, float length)
+		public bool VsVolume(Vector3 location, float width, float height, float length)
 		{
 			for (int i = 0; i < 6; i++)
 			{
@@ -174,8 +174,8 @@ namespace MyEngine
 			return true;
 		}
 
-		
-		public bool CubeVsFrustum(float x, float y, float z, float size)
+
+		public bool VsCube(float x, float y, float z, float size)
 		{
 			for (int i = 0; i < 6; i++)
 			{

@@ -184,27 +184,10 @@ namespace MyGame.PlanetaryBody
 		}
 
 
-		void DestroyChildren(Chunk chunk)
-		{
-			chunk.DestroyRenderer();
-			foreach (var child in chunk.childs)
-				DestroyChildren(child);
-		}
-		void HideChilds(Chunk chunk)
-		{
-			chunk.renderer = null;
-			foreach (var child in chunk.childs)
-			{
-				child.renderer?.SetRenderingMode(MyRenderingMode.DontRender);
-				child.renderer = null;
-				HideChilds(child);
-			}
-		}
-
 		void Chunks_GatherWeights(ChunkWeightedList list, Chunk chunk, int recursionDepth, double parentWeight)
 		{
 			var cam = Entity.Scene.mainCamera;
-			var distanceToCam = chunk.GetDistanceToCamera(cam);
+			var distanceToCam = chunk.GetSizeOnCamera(cam);
 
 			if (chunk.renderer == null)
 			{
@@ -215,7 +198,7 @@ namespace MyGame.PlanetaryBody
 			{
 				var threshold = RadiusVariation + RadiusMax / (recursionDepth + 1);
 
-				if (distanceToCam < threshold)
+				if (distanceToCam < threshold * 5)
 					chunk.CreteChildren();
 				else
 					chunk.DeleteChildren();
@@ -237,7 +220,7 @@ namespace MyGame.PlanetaryBody
 
 			if (recursionDepth < SubdivisionMaxRecurisonDepth)
 			{
-				var areAllChildsGenerated = chunk.childs.All(c => c.renderer != null);
+				var areAllChildsGenerated = chunk.childs.Count > 0 && chunk.childs.All(c => c.renderer != null);
 
 				// hide only if all our childs are visible, they mighht still be generating
 				if (areAllChildsGenerated)
@@ -304,7 +287,7 @@ namespace MyGame.PlanetaryBody
 				Generate(toGenerate);
 			}
 
-			//foreach (var rootChunk in this.rootChunks) Chunks_UpdateVisibility(rootChunk, 0);
+			 foreach (var rootChunk in this.rootChunks) Chunks_UpdateVisibility(rootChunk, 0);
 
 		}
 
@@ -316,7 +299,7 @@ namespace MyGame.PlanetaryBody
 			stats.Update();
 			toComputeShader.Add(toGenerate);
 
-			toGenerate.renderer?.SetRenderingMode(MyRenderingMode.RenderGeometryAndCastShadows);
+			//toGenerate.renderer?.SetRenderingMode(MyRenderingMode.RenderGeometryAndCastShadows);
 		}
 
 		public class GenerationStats
@@ -350,10 +333,9 @@ namespace MyGame.PlanetaryBody
 
 
 
-		HashSet<Mesh> toCalculateNormals = new HashSet<Mesh>();
+		List<Mesh> toCalculateNormals = new List<Mesh>();
 		public void OnRender(RenderUpdate r)
 		{
-
 			if (computeShader.Bind())
 			{
 				foreach (var chunk in toComputeShader.ToArray())
@@ -380,6 +362,9 @@ namespace MyGame.PlanetaryBody
 					var intPtr = GL.MapBuffer(BufferTarget.ShaderStorageBuffer, BufferAccess.ReadOnly); My.Check();
 					mesh.Vertices.SetData(intPtr, mesh.Vertices.Count);
 					GL.UnmapBuffer(BufferTarget.ShaderStorageBuffer);
+					mesh.RecalculateBounds();
+
+					break;
 				}
 			}
 			toCalculateNormals.ForEach(CalculateNormalsOnGPU);

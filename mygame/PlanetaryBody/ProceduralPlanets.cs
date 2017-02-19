@@ -119,7 +119,7 @@ namespace MyGame
             planet = scene.AddEntity().AddComponent<PlanetaryBody.Root>();
             planets.Add(planet);
             // 6371000 earth radius
-            planet.Configure(10000, 100);
+            planet.Configure(100000, 1000);
             planet.Transform.Position = new WorldPos(planet.RadiusMax * 3, 0, 0);
             planet.Start();
             planet.planetMaterial = planetMaterial;
