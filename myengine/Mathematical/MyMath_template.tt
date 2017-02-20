@@ -12,6 +12,10 @@
         "Vector4", "Vector4d",
         "Matrix4", "Matrix4d",
         "Quaternion", "Quaterniond",
+		"Ray", "RayD",
+		"Sphere", "SphereD",
+		"Triangle", "TriangleD",
+		"RayHitInfo", "RayDHitInfo",
     };
 
     foreach (var l in lines) 

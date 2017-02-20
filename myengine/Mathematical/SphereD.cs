@@ -7,12 +7,12 @@ using System.Threading.Tasks;
 
 namespace MyEngine
 {
-	public struct Sphere
+	public struct SphereD
 	{
-		public Vector3 center;
-		public float radius;
+		public Vector3d center;
+		public double radius;
 
-		public Sphere(Vector3 center, float radius)
+		public SphereD(Vector3d center, double radius)
 		{
 			this.center = center;
 			this.radius = radius;

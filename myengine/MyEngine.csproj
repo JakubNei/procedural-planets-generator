@@ -75,6 +75,7 @@
     </Compile>
     <Compile Include="DeltaTimeManager.cs" />
     <Compile Include="DictionaryWatcher.cs" />
+    <Compile Include="Mathematical\Intersections.cs" />
     <Compile Include="MyGL.cs" />
     <Compile Include="Neitri\DependencyInjection\DependencyManager.cs" />
     <Compile Include="Neitri\IBinarySerializer.cs" />
@@ -143,7 +144,6 @@
     </Compile>
     <Compile Include="Mathematical\Perlin.cs" />
     <Compile Include="Mathematical\QuaternionUtility.cs" />
-    <Compile Include="Mathematical\GeometryUtility.cs" />
     <Compile Include="Mathematical\Bounds.cs" />
     <Compile Include="Components\Camera.cs" />
     <Compile Include="Components\Component.cs" />
@@ -163,21 +163,21 @@
     <Compile Include="Components\MeshRenderer.cs" />
     <Compile Include="DeferredGBuffer.cs" />
     <Compile Include="Mathematical\Plane.cs" />
-    <Compile Include="Ray.cs" />
+    <Compile Include="Mathematical\RayD.cs" />
     <Compile Include="Components\Renderer.cs" />
     <Compile Include="GameSystems\Resource.cs" />
     <Compile Include="Shader.cs" />
     <Compile Include="ShadowMap.cs" />
     <Compile Include="SparseList.cs" />
     <Compile Include="SparseValueList.cs" />
-    <Compile Include="Mathematical\Sphere.cs" />
+    <Compile Include="Mathematical\SphereD.cs" />
     <Compile Include="Neitri\VirtualBrain.cs" />
     <Compile Include="Texture.cs" />
     <Compile Include="Texture2D.cs" />
     <Compile Include="Components\Transform.cs" />
     <Compile Include="GameSystems\GameSystemBase.cs" />
     <Compile Include="GameSystems\SceneSystem.cs" />
-    <Compile Include="Mathematical\Triangle.cs" />
+    <Compile Include="Mathematical\TriangleD.cs" />
     <Compile Include="UniformBlock.cs" />
     <Compile Include="UniformsManager.cs" />
     <Compile Include="OpenTK extensions\Vector3Extensions.cs" />

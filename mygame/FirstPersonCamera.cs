@@ -230,7 +230,7 @@ namespace MyGame
 			// make cam on top of the planet
 			if (clampCameraToSurface)
 			{
-				var p = (position - planet.Transform.Position).ToVector3d();
+				var p =  planet.Transform.Position.Towards(position).ToVector3d();
 				var camPosS = planet.CalestialToSpherical(p);
 				var h = 1 + planet.GetHeight(p);
 				if (camPosS.altitude < h || WalkOnPlanet.Bool)

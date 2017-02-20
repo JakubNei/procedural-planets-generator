@@ -110,9 +110,34 @@ namespace MyGame.PlanetaryBody
 		}
 
 
-		public double GetHeight(Vector3d calestialPos, int detailDensity = 1)
+		public double GetHeight(Vector3d planetLocalPosition, int detailDensity = 1)
 		{
-			return RadiusMax;
+			var rayFromPlanet = new RayD(Vector3d.Zero, planetLocalPosition);
+
+			Chunk chunk = null;
+			foreach (var c in rootChunks)
+			{
+				if (rayFromPlanet.CastRay(c.noElevationRange).DidHit)
+				{
+					chunk = c;
+					break;
+				}
+
+			}
+
+			int safe = 100; // in case something goes to shit, it always does
+			while (chunk.childs.Count > 0 && chunk.childs.Any(c => c.isGenerationDone) && safe-- > 0)
+			{
+				foreach (var child in chunk.childs)
+				{
+					if (child.isGenerationDone && rayFromPlanet.CastRay(child.noElevationRange).DidHit)
+					{
+						chunk = child;
+					}
+				}
+			}
+
+			return chunk.GetHeight((planetLocalPosition - chunk.noElevationRange.CenterPos).ToVector3());
 		}
 
 
@@ -292,7 +317,7 @@ namespace MyGame.PlanetaryBody
 
 		void BeginGeneration(Chunk toGenerate)
 		{
-			lock(toBeginGeneration)
+			lock (toBeginGeneration)
 				toBeginGeneration.Add(toGenerate);
 			//toGenerate.renderer?.SetRenderingMode(MyRenderingMode.RenderGeometryAndCastShadows);
 		}
@@ -334,7 +359,7 @@ namespace MyGame.PlanetaryBody
 			if (computeShader.Bind())
 			{
 				Chunk chunk = null;
-				while(toBeginGeneration.Count > 0)
+				while (toBeginGeneration.Count > 0)
 				{
 					lock (toBeginGeneration)
 					{

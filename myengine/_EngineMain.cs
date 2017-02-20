@@ -44,8 +44,8 @@ namespace MyEngine
 			DisplayDevice.Default,
 			4,
 			3,
-            GraphicsContextFlags.ForwardCompatible// | GraphicsContextFlags.Debug
-        )
+			GraphicsContextFlags.ForwardCompatible// | GraphicsContextFlags.Debug
+		)
 		{
 			Dependency.Register(this);
 			Dependency.BuildUp(this);
@@ -111,17 +111,17 @@ namespace MyEngine
 			foreach (StringName r in System.Enum.GetValues(typeof(StringName)))
 			{
 				if (r == StringName.Extensions) break;
-                var str = GL.GetString(r); My.Check();
-                Debug.Info(r.ToString() + ": " + str);
+				var str = GL.GetString(r); My.Check();
+				Debug.Info(r.ToString() + ": " + str);
 			}
-	
+
 			// Other state
 			//GL.Enable(EnableCap.Texture2D); My.Check();
 			//GL.Hint(HintTarget.PerspectiveCorrectionHint, HintMode.Nicest); My.Check();
 			//GL.Enable(EnableCap.Multisample); My.Check();
 
 			GL.ClearColor(System.Drawing.Color.Black); My.Check();
-			
+
 		}
 
 		protected override void OnUnload(EventArgs e)
@@ -135,12 +135,12 @@ namespace MyEngine
 			Debug.Info("Window resized to: width:" + resizeEvent.NewPixelWidth + " height:" + resizeEvent.NewPixelHeight);
 		}
 
-        protected override void OnUpdateFrame(FrameEventArgs e)
-        {
-           
-        }
+		protected override void OnUpdateFrame(FrameEventArgs e)
+		{
 
-        public void AddScene(SceneSystem scene)
+		}
+
+		public void AddScene(SceneSystem scene)
 		{
 			EventSystem.PassEventsTo(scene.EventSystem);
 			scenes.Add(scene);
@@ -226,11 +226,15 @@ namespace MyEngine
 
 		void RenderMain()
 		{
-            if (this.Focused) Input.Update();
-            Debug.Update();
+			if (this.Focused) Input.Update();
+			Debug.Update();
+
+			EventSystem.Raise(new MyEngine.Events.InputUpdate(renderThreadTime));
+			EventSystem.Raise(new MyEngine.Events.EventThreadUpdate(renderThreadTime));
+			EventSystem.Raise(new MyEngine.Events.RenderUpdate(renderThreadTime));
 
 
-            if (Debug.CommonCVars.PauseRenderPrepare() == false)
+			if (Debug.CommonCVars.PauseRenderPrepare() == false)
 			{
 				renderManagerBackReady.Wait();
 				renderManagerBackReady.Reset();
@@ -253,28 +257,24 @@ namespace MyEngine
 				Factory.ReloadAllShaders();
 			}
 
-            ubo.engine.totalElapsedSecondsSinceEngineStart = (float)stopwatchSinceStart.Elapsed.TotalSeconds;
+			ubo.engine.totalElapsedSecondsSinceEngineStart = (float)stopwatchSinceStart.Elapsed.TotalSeconds;
 			ubo.engine.gammaCorrectionTextureRead = 2.2f;
 			ubo.engine.gammaCorrectionFinalColor = 1 / 2.2f;
-
-            EventSystem.Raise(new MyEngine.Events.InputUpdate(renderThreadTime));
-            EventSystem.Raise(new MyEngine.Events.EventThreadUpdate(renderThreadTime));
-            EventSystem.Raise(new MyEngine.Events.RenderUpdate(renderThreadTime));
 
 			//GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit); My.Check();
 
 			{
-                var scene = scenes[0];
+				var scene = scenes[0];
 				var camera = scene.mainCamera;
 				var dataToRender = scene.DataToRender;
 
-                if (fps.FpsPer10Sec > 30) renderManagerFront.SkyboxCubeMap = scene.skyBox;
-                else renderManagerFront.SkyboxCubeMap = null;
-                renderManagerFront.RenderAll(ubo, camera, dataToRender.Lights, camera.postProcessEffects);
+				if (fps.FpsPer10Sec > 30) renderManagerFront.SkyboxCubeMap = scene.skyBox;
+				else renderManagerFront.SkyboxCubeMap = null;
+				renderManagerFront.RenderAll(ubo, camera, dataToRender.Lights, camera.postProcessEffects);
 			}
 
 
-            SwapBuffers();
+			SwapBuffers();
 
 			GC.Collect();
 		}

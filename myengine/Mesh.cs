@@ -150,5 +150,10 @@ namespace MyEngine
 			VertexArray.Dispose();
 		}
 
+		~Mesh()
+		{
+			VertexArray.Dispose();
+		}
+
 	}
 }

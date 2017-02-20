@@ -13,6 +13,27 @@ namespace MyEngine
 {
 	public partial class Mesh
 	{
+
+		public Triangle[] GetMeshTriangles()
+		{
+			var triangles = new Triangle[TriangleIndicies.Count / 3];
+
+			int trianglesIndex = 0;
+
+			for (int i = 0; i < TriangleIndicies.Count; i += 3)
+			{
+				var triangle = new Triangle(
+					Vertices[i],
+					Vertices[i + 1],
+					Vertices[i + 2]
+				);
+				triangles[trianglesIndex] = triangle;
+				trianglesIndex++;
+			}
+
+			return triangles;
+		}
+
 		public static void CalculateNormals(IList<int> inTriangleIndicies, IList<Vector3> inPositions, IList<Vector3> outNormals)
 		{
 			int verticesNum = inPositions.Count;

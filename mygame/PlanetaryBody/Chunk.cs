@@ -18,18 +18,17 @@ namespace MyGame.PlanetaryBody
 		/// <summary>
 		/// Planet local position
 		/// </summary>
-		public Triangle noElevationRange;
+		public TriangleD noElevationRange;
 		public List<Chunk> childs { get; } = new List<Chunk>();
 		public MeshRenderer renderer;
 
 		public bool isGenerationDone;
-		public bool IsRendererReady => renderer != null;
 
 
 		int subdivisionDepth;
 		Root planetaryBody;
 
-		//MeshGenerationService GenerationService => planetaryBody.MeshGenerationService;
+
 
 		public Chunk parentChunk;
 		ChildPosition childPosition;
@@ -51,6 +50,30 @@ namespace MyGame.PlanetaryBody
 		}
 
 
+		Triangle[] meshTriangles;
+
+		Triangle[] GetMeshTriangles()
+		{
+			if (meshTriangles == null)
+				meshTriangles = renderer.Mesh.GetMeshTriangles();
+			return meshTriangles;
+		}
+
+
+
+		public double GetHeight(Vector3 chunkLocalPosition)
+		{
+			//var barycentricOnChunk = noElevationRange.CalculateBarycentric(planetLocalPosition);
+			//var u = barycentricOnChunk.X;
+			//var v = barycentricOnChunk.Y;
+
+			var ray = new Ray(chunkLocalPosition, 
+
+
+
+			return 0;
+		}
+
 		public double GetSizeOnScreen(Camera cam)
 		{
 			bool isVisible = true;
@@ -68,6 +91,7 @@ namespace MyGame.PlanetaryBody
 				//var localCamPos = planetaryBody.Transform.Position.Towards(cam.ViewPointPosition).ToVector3();
 				//distanceToCamera = renderer.Mesh.Vertices.FindClosest((v) => v.DistanceSqr(localCamPos)).Distance(localCamPos);
 				//isVisible = cam.GetFrustum().VsBounds(renderer.GetCameraSpaceBounds(cam.ViewPointPosition));
+				isVisible = renderer.GetCameraRenderStatus(cam).HasFlag(RenderStatus.Rendered);
 			}
 
 			double radiusCameraSpace;
@@ -97,7 +121,7 @@ namespace MyGame.PlanetaryBody
 
 
 			var weight = radiusCameraSpace * MyMath.SmoothStep(2, 1, MyMath.Clamp01(dotToCamera));
-			//if (isVisible == false) weight *= 0.3f;
+			if (isVisible == false) weight *= 0.3f;
 			return weight;
 		}
 		/*
@@ -128,14 +152,14 @@ namespace MyGame.PlanetaryBody
         }
         */
 
-		void MAKE_CHILD(Vector3d A, Vector3d B, Vector3d C, ChildPosition cp)
+		void AddChild(Vector3d a, Vector3d b, Vector3d c, ChildPosition cp)
 		{
 			var child = new Chunk(planetaryBody, this, cp);
 			childs.Add(child);
 			child.subdivisionDepth = subdivisionDepth + 1;
-			child.noElevationRange.a = A;
-			child.noElevationRange.b = B;
-			child.noElevationRange.c = C;
+			child.noElevationRange.a = a;
+			child.noElevationRange.b = b;
+			child.noElevationRange.c = c;
 		}
 
 		public void CreteChildren()
@@ -153,10 +177,10 @@ namespace MyGame.PlanetaryBody
 				ac *= planetaryBody.RadiusMax;
 				bc *= planetaryBody.RadiusMax;
 
-				MAKE_CHILD(a, ab, ac, ChildPosition.Top);
-				MAKE_CHILD(ab, b, bc, ChildPosition.Left);
-				MAKE_CHILD(ac, bc, c, ChildPosition.Right);
-				MAKE_CHILD(ab, bc, ac, ChildPosition.Middle);
+				AddChild(a, ab, ac, ChildPosition.Top);
+				AddChild(ab, b, bc, ChildPosition.Left);
+				AddChild(ac, bc, c, ChildPosition.Right);
+				AddChild(ab, bc, ac, ChildPosition.Middle);
 			}
 		}
 
