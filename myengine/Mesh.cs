@@ -152,7 +152,7 @@ namespace MyEngine
 
 		~Mesh()
 		{
-			VertexArray.Dispose();
+			//VertexArray.Dispose();
 		}
 
 	}

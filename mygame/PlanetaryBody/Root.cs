@@ -137,7 +137,9 @@ namespace MyGame.PlanetaryBody
 				}
 			}
 
-			return chunk.GetHeight((planetLocalPosition - chunk.noElevationRange.CenterPos).ToVector3());
+			var chunkLocalPosition = (planetLocalPosition - chunk.noElevationRange.CenterPos).ToVector3();
+
+			return chunk.GetHeight(chunkLocalPosition);
 		}
 
 
@@ -363,14 +365,19 @@ namespace MyGame.PlanetaryBody
 				{
 					lock (toBeginGeneration)
 					{
-						chunk = toBeginGeneration.First();
-						toBeginGeneration.Remove(chunk);
+						while (chunk == null || chunk.generationBegan)
+						{
+							chunk = toBeginGeneration.First();
+							toBeginGeneration.Remove(chunk);
+						}
 					}
 					stats.Start();
 
 					chunk.CreateRendererAndBasicMesh();
 					var mesh = chunk.renderer.Mesh;
 					mesh.EnsureIsOnGpu();
+
+					if (chunk?.renderer == null) throw new Exception("this is wrong");
 
 					GL.Uniform1(GL.GetUniformLocation(computeShader.ShaderProgramHandle, "planetRadiusMax"), (float)RadiusMax); My.Check();
 					GL.Uniform1(GL.GetUniformLocation(computeShader.ShaderProgramHandle, "planetRadiusVariation"), (float)RadiusVariation); My.Check();

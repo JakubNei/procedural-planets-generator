@@ -18,17 +18,14 @@ namespace MyEngine
 		{
 			var triangles = new Triangle[TriangleIndicies.Count / 3];
 
-			int trianglesIndex = 0;
-
-			for (int i = 0; i < TriangleIndicies.Count; i += 3)
+			for (int i = 0; i < triangles.Length; i++)
 			{
 				var triangle = new Triangle(
-					Vertices[i],
-					Vertices[i + 1],
-					Vertices[i + 2]
+					Vertices[TriangleIndicies[i * 3 + 0]],
+					Vertices[TriangleIndicies[i * 3 + 1]],
+					Vertices[TriangleIndicies[i * 3 + 2]]
 				);
-				triangles[trianglesIndex] = triangle;
-				trianglesIndex++;
+				triangles[i] = triangle;
 			}
 
 			return triangles;

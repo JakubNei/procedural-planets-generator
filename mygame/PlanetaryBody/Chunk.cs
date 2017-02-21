@@ -59,7 +59,7 @@ namespace MyGame.PlanetaryBody
 			return meshTriangles;
 		}
 
-
+		Vector3 CenterPosVec3 => noElevationRange.CenterPos.ToVector3();
 
 		public double GetHeight(Vector3 chunkLocalPosition)
 		{
@@ -67,9 +67,16 @@ namespace MyGame.PlanetaryBody
 			//var u = barycentricOnChunk.X;
 			//var v = barycentricOnChunk.Y;
 
-			var ray = new Ray(chunkLocalPosition, 
+			var ray = new Ray(chunkLocalPosition, -CenterPosVec3.Normalized());
 
-
+			foreach (var t in GetMeshTriangles())
+			{
+				var hit = ray.CastRay(t);
+				if(hit.DidHit)
+				{
+					return (ray.GetPoint(hit.HitDistance) + CenterPosVec3).Length;
+				}
+			}
 
 			return 0;
 		}
