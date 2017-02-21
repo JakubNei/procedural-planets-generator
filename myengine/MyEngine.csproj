@@ -75,7 +75,9 @@
     </Compile>
     <Compile Include="DeltaTimeManager.cs" />
     <Compile Include="DictionaryWatcher.cs" />
-    <Compile Include="Mathematical\Intersections.cs" />
+    <Compile Include="Mathematical\Ray.cs" />
+    <Compile Include="Mathematical\Sphere.cs" />
+    <Compile Include="Mathematical\Triangle.cs" />
     <Compile Include="MyGL.cs" />
     <Compile Include="Neitri\DependencyInjection\DependencyManager.cs" />
     <Compile Include="Neitri\IBinarySerializer.cs" />
