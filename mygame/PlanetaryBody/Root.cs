@@ -365,12 +365,14 @@ namespace MyGame.PlanetaryBody
 				{
 					lock (toBeginGeneration)
 					{
-						while (chunk == null || chunk.generationBegan)
+						while (toBeginGeneration.Count > 0 && (chunk == null || chunk.generationBegan))
 						{
 							chunk = toBeginGeneration.First();
 							toBeginGeneration.Remove(chunk);
 						}
 					}
+					if (chunk == null) return;
+
 					stats.Start();
 
 					chunk.CreateRendererAndBasicMesh();
