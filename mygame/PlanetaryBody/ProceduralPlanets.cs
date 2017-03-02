@@ -31,18 +31,18 @@ namespace MyGame
             this.scene = scene;
             Start();
 
-            var t = new Thread(() =>
-            {
-                while (true)
-                {
-                    PlanetLogicUpdate();
-                    Thread.Sleep(10);
-                }
-            });
-			t.Name = "Planet logic";
-            t.Priority = ThreadPriority.Highest;
-            t.IsBackground = true;
-            t.Start();
+   //         var t = new Thread(() =>
+   //         {
+   //             while (true)
+   //             {
+   //                 PlanetLogicUpdate();
+   //                 Thread.Sleep(10);
+   //             }
+   //         });
+			//t.Name = "Planet logic";
+   //         t.Priority = ThreadPriority.Highest;
+   //         t.IsBackground = true;
+   //         t.Start();
 
             scene.EventSystem.Register<RenderUpdate>(OnRender);
 
@@ -51,17 +51,6 @@ namespace MyGame
  
 
         PlanetaryBody.Root planet;
-
-
-        void OnRender(RenderUpdate r)
-        {
-            foreach (var p in planets)
-                p.OnRender(r);
-        }
-
-
-
-
 
 
 
@@ -135,8 +124,10 @@ namespace MyGame
 
         bool freezeUpdate = false;
 
-        void PlanetLogicUpdate()
-        {
+
+
+		void OnRender(RenderUpdate r)
+		{
             if (scene.Input.GetKeyDown(Key.P)) freezeUpdate = !freezeUpdate;
             if (freezeUpdate) return;
 

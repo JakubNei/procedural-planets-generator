@@ -4,6 +4,7 @@ using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Runtime.InteropServices;
@@ -152,7 +153,16 @@ namespace MyEngine
 
 		~Mesh()
 		{
-			//VertexArray.Dispose();
+			GC.SuppressFinalize(this);
+			fromFinalizer.Enqueue(this);
+		}
+
+		static ConcurrentQueue<Mesh> fromFinalizer = new ConcurrentQueue<Mesh>();
+		public static void ProcessFinalizerQueue()
+		{
+			Mesh toDispose = null;
+			while (fromFinalizer.TryDequeue(out toDispose))
+				toDispose.Dispose();
 		}
 
 	}

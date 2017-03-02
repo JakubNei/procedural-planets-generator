@@ -20,7 +20,7 @@ namespace MyGame.PlanetaryBody
 		/// </summary>
 		public TriangleD noElevationRange;
 		public List<Chunk> childs { get; } = new List<Chunk>();
-		public MeshRenderer renderer;
+		public MeshRenderer renderer { get; set; }
 
 		public bool isGenerationDone;
 
@@ -72,7 +72,7 @@ namespace MyGame.PlanetaryBody
 			foreach (var t in GetMeshTriangles())
 			{
 				var hit = ray.CastRay(t);
-				if(hit.DidHit)
+				if (hit.DidHit)
 				{
 					return (ray.GetPoint(hit.HitDistance) + CenterPosVec3).Length;
 				}

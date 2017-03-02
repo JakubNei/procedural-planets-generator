@@ -210,15 +210,15 @@ namespace MyEngine
 
 		DeltaTimeManager eventThreadTime = new DeltaTimeManager();
 
-		void EventThreadMain()
-		{
-			Debug.Tick("event");
-			eventThreadTime.Tick();
+		//void EventThreadMain()
+		//{
+		//	Debug.Tick("event");
+		//	eventThreadTime.Tick();
 
-			EventSystem.Raise(new MyEngine.Events.EventThreadUpdate(eventThreadTime));
+		//	EventSystem.Raise(new MyEngine.Events.EventThreadUpdate(eventThreadTime));
 
-			Thread.Sleep(5);
-		}
+		//	Thread.Sleep(5);
+		//}
 
 		DeltaTimeManager renderThreadTime = new DeltaTimeManager();
 
@@ -277,6 +277,7 @@ namespace MyEngine
 			SwapBuffers();
 
 			GC.Collect();
+			Mesh.ProcessFinalizerQueue();
 		}
 
 

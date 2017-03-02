@@ -150,6 +150,43 @@ namespace MyEngine
             return t;
 		}
 
+		public class Profiler
+		{
+			ulong countChunksGenerated;
+			TimeSpan timeSpentGenerating;
+			Debug debug;
+			System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
+			public GenerationStats(Debug debug, string name)
+			{
+				this.debug = debug;
+			}
+			public void Update()
+			{
+				debug.AddValue("generation / total chunks generated", countChunksGenerated);
+				debug.AddValue("generation / total time spent generating", timeSpentGenerating.TotalSeconds + " s");
+				debug.AddValue("generation / average time spent generating", (timeSpentGenerating.TotalSeconds / (float)countChunksGenerated) + " s");
+			}
+			public void Start()
+			{
+				stopwatch.Reset();
+				stopwatch.Start();
+			}
+			public void End()
+			{
+				stopwatch.Stop();
+				timeSpentGenerating += stopwatch.Elapsed;
+				countChunksGenerated++;
+			}
+		}
+		public Profiler ProfileStart(string name)
+		{
+
+		}
+
+		public void ProfileStop(string name)
+		{
+
+		}
 
 
 		DebugForm debugForm;
