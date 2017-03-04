@@ -35,39 +35,39 @@ namespace MyEngine
 			this.height = height;
 
 			// create frame buffer object
-			frameBufferObjectHandle = GL.GenFramebuffer(); My.Check();
-			GL.BindFramebuffer(FramebufferTarget.Framebuffer, frameBufferObjectHandle); My.Check();
+			frameBufferObjectHandle = GL.GenFramebuffer(); MyGL.Check();
+			GL.BindFramebuffer(FramebufferTarget.Framebuffer, frameBufferObjectHandle); MyGL.Check();
 
 			depthMap = new Texture2D(GL.GenTexture());
 
-			GL.BindTexture(TextureTarget.Texture2D, depthMap.GetNativeTextureID()); My.Check();
+			GL.BindTexture(TextureTarget.Texture2D, depthMap.GetNativeTextureID()); MyGL.Check();
 
-			GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.DepthComponent32f, width, height, 0, PixelFormat.DepthComponent, PixelType.Float, new IntPtr(0)); My.Check();
+			GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.DepthComponent32f, width, height, 0, PixelFormat.DepthComponent, PixelType.Float, new IntPtr(0)); MyGL.Check();
 
-			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear); My.Check();
-			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear); My.Check();
+			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear); MyGL.Check();
+			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear); MyGL.Check();
 			//GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
 			//GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
-			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Clamp); My.Check();
-			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Clamp); My.Check();
+			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Clamp); MyGL.Check();
+			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Clamp); MyGL.Check();
 
 			// breaks it, but should enable hardware 4 pcf sampling
 			//GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureCompareMode, (int)TextureCompareMode.CompareRToTexture);
 			//GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureCompareFunc, (int)All.Lequal);
 			//GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.DepthTextureMode, (int)All.Intensity);
 
-			GL.FramebufferTexture(FramebufferTarget.Framebuffer, FramebufferAttachment.DepthAttachment, depthMap.GetNativeTextureID(), 0); My.Check();
-			GL.DrawBuffer(DrawBufferMode.None); My.Check();
-			var status = GL.CheckFramebufferStatus(FramebufferTarget.Framebuffer); My.Check();
+			GL.FramebufferTexture(FramebufferTarget.Framebuffer, FramebufferAttachment.DepthAttachment, depthMap.GetNativeTextureID(), 0); MyGL.Check();
+			GL.DrawBuffer(DrawBufferMode.None); MyGL.Check();
+			var status = GL.CheckFramebufferStatus(FramebufferTarget.Framebuffer); MyGL.Check();
 			if (status != FramebufferErrorCode.FramebufferComplete) debug.Error(status);
 
-			GL.ReadBuffer(ReadBufferMode.None); My.Check();
-			GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0); My.Check(); //restore default FBO
+			GL.ReadBuffer(ReadBufferMode.None); MyGL.Check();
+			GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0); MyGL.Check(); //restore default FBO
 		}
 
 		public void Dispose()
 		{
-			GL.DeleteFramebuffer(frameBufferObjectHandle); My.Check();
+			GL.DeleteFramebuffer(frameBufferObjectHandle); MyGL.Check();
 			depthMap.Dispose();
 		}
 
@@ -75,12 +75,12 @@ namespace MyEngine
 		{
 			//GL.Clear(ClearBufferMask.DepthBufferBit);
 			float clearDepth = 1.0f;
-			GL.ClearBuffer(ClearBuffer.Depth, 0, ref clearDepth); My.Check();
+			GL.ClearBuffer(ClearBuffer.Depth, 0, ref clearDepth); MyGL.Check();
 		}
 
 		public void FrameBufferForWriting()
 		{
-			GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, frameBufferObjectHandle); My.Check();
+			GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, frameBufferObjectHandle); MyGL.Check();
 		}
 
 		public void BindUniforms(Shader shader)

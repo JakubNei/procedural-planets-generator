@@ -11,16 +11,18 @@ using OpenTK;
 
 namespace MyEngine
 {
-    public static class My
+    public static class MyGL
     {
 		//[Conditional("DEBUG")]
         public static void Check()
         {
+			return;
+
             ErrorCode err;
             while ((err = GL.GetError()) != ErrorCode.NoError)
             {
                 Debug.Instance.Error("GL Error: " + err, false);
-                //throw new Exception("GL Error: " + err);
+                throw new Exception("GL Error: " + err);
             }
         }
 

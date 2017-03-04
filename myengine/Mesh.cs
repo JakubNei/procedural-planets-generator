@@ -105,9 +105,9 @@ namespace MyEngine
 			{
 				UploadDataToGpu();
 			}
-			GL.BindVertexArray(VertexArray.VaoHandle); My.Check();
-			GL.DrawElements(drawWithTesselationSupport ? PrimitiveType.Patches : PrimitiveType.Triangles, TriangleIndicies.Count, DrawElementsType.UnsignedInt, IntPtr.Zero); My.Check();
-			GL.BindVertexArray(0); My.Check();
+			GL.BindVertexArray(VertexArray.VaoHandle); MyGL.Check();
+			GL.DrawElements(drawWithTesselationSupport ? PrimitiveType.Patches : PrimitiveType.Triangles, TriangleIndicies.Count, DrawElementsType.UnsignedInt, IntPtr.Zero); MyGL.Check();
+			GL.BindVertexArray(0); MyGL.Check();
 		}
 
 		public void EnsureIsOnGpu()

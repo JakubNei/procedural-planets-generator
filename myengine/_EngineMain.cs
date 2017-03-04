@@ -111,7 +111,7 @@ namespace MyEngine
 			foreach (StringName r in System.Enum.GetValues(typeof(StringName)))
 			{
 				if (r == StringName.Extensions) break;
-				var str = GL.GetString(r); My.Check();
+				var str = GL.GetString(r); MyGL.Check();
 				Debug.Info(r.ToString() + ": " + str);
 			}
 
@@ -120,7 +120,7 @@ namespace MyEngine
 			//GL.Hint(HintTarget.PerspectiveCorrectionHint, HintMode.Nicest); My.Check();
 			//GL.Enable(EnableCap.Multisample); My.Check();
 
-			GL.ClearColor(System.Drawing.Color.Black); My.Check();
+			GL.ClearColor(System.Drawing.Color.Black); MyGL.Check();
 
 		}
 
@@ -293,8 +293,8 @@ namespace MyEngine
 			var GPU_MEMORY_INFO_EVICTED_MEMORY_NVX = 0x904;
 
 			int totalAvailableKb, currentAvailableKb;
-			GL.GetInteger((GetPName)GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX, out totalAvailableKb); My.Check();
-			GL.GetInteger((GetPName)GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, out currentAvailableKb); My.Check();
+			GL.GetInteger((GetPName)GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX, out totalAvailableKb); MyGL.Check();
+			GL.GetInteger((GetPName)GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, out currentAvailableKb); MyGL.Check();
 
 			int total = totalAvailableKb / 1024;
 			int used = (totalAvailableKb - currentAvailableKb) / 1024;

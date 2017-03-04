@@ -199,7 +199,8 @@ namespace MyGame.PlanetaryBody
 			}
 
 			if (renderer != null) throw new Exception("something went terribly wrong, renderer should be null");
-			renderer = planetaryBody.Entity.AddComponent<MeshRenderer>();
+			renderer = planetaryBody.Entity.AddComponent<CustomChunkMeshRenderer>();
+			renderer.chunk = this;
 			renderer.Mesh = mesh;
 			renderer.Offset += offsetCenter;
 

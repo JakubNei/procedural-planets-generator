@@ -183,12 +183,6 @@
     <Compile Include="UniformBlock.cs" />
     <Compile Include="UniformsManager.cs" />
     <Compile Include="OpenTK extensions\Vector3Extensions.cs" />
-    <Compile Include="Utils\ArrayUtil.cs" />
-    <Compile Include="Utils\DiagnosticsUtil.cs" />
-    <Compile Include="Utils\FormatUtils.cs" />
-    <Compile Include="Utils\MemberName.cs" />
-    <Compile Include="Utils\Require.cs" />
-    <Compile Include="Utils\TraceUtil.cs" />
     <Compile Include="Mathematical\Worley.cs" />
   </ItemGroup>
   <ItemGroup>

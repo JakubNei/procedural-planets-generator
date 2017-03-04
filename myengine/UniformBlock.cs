@@ -76,7 +76,7 @@ namespace MyEngine
 
         public UniformBlock()
         {
-            GL.GetInteger(GetPName.MaxUniformBufferBindings, out maxUniformIndex); My.Check();
+            GL.GetInteger(GetPName.MaxUniformBufferBindings, out maxUniformIndex); MyGL.Check();
             engineUBO = new UniformBufferObject<EngineUniformStruct>(nextUniformIndex++, () => engine);
             modelUBO = new UniformBufferObject<ModelUniformStruct>(nextUniformIndex++, () => model);
             lightUBO = new UniformBufferObject<LightUniformStruct>(nextUniformIndex++, () => light);
@@ -104,20 +104,20 @@ namespace MyEngine
                 this.getData = getData;
                 size = System.Runtime.InteropServices.Marshal.SizeOf(typeof(T));
 
-                bufferUBO = GL.GenBuffer(); My.Check(); // Generate the buffer
-                GL.BindBuffer(BufferTarget.UniformBuffer, bufferUBO); My.Check(); // Bind the buffer for writing
-                GL.BufferData(BufferTarget.UniformBuffer, (IntPtr)(size), (IntPtr)(null), BufferUsageHint.StreamDraw); My.Check(); // Request the memory to be allocated
-                GL.BindBufferRange(BufferRangeTarget.UniformBuffer, bufferIndex, bufferUBO, (IntPtr)0, size); My.Check();
-                GL.BindBuffer(BufferTarget.UniformBuffer, 0); My.Check(); //unbind
+                bufferUBO = GL.GenBuffer(); MyGL.Check(); // Generate the buffer
+                GL.BindBuffer(BufferTarget.UniformBuffer, bufferUBO); MyGL.Check(); // Bind the buffer for writing
+                GL.BufferData(BufferTarget.UniformBuffer, (IntPtr)(size), (IntPtr)(null), BufferUsageHint.StreamDraw); MyGL.Check(); // Request the memory to be allocated
+                GL.BindBufferRange(BufferRangeTarget.UniformBuffer, bufferIndex, bufferUBO, (IntPtr)0, size); MyGL.Check();
+                GL.BindBuffer(BufferTarget.UniformBuffer, 0); MyGL.Check(); //unbind
             }
 
 
             public void UploadData()
             {
                 T d = getData();
-                GL.BindBuffer(BufferTarget.UniformBuffer, bufferUBO); My.Check();
-                GL.BufferSubData(BufferTarget.UniformBuffer, (IntPtr)0, size, ref d); My.Check();
-                GL.BindBuffer(BufferTarget.UniformBuffer, 0); My.Check(); //unbind
+                GL.BindBuffer(BufferTarget.UniformBuffer, bufferUBO); MyGL.Check();
+                GL.BufferSubData(BufferTarget.UniformBuffer, (IntPtr)0, size, ref d); MyGL.Check();
+                GL.BindBuffer(BufferTarget.UniformBuffer, 0); MyGL.Check(); //unbind
             }
 
 

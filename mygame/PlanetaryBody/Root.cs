@@ -10,6 +10,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace MyGame.PlanetaryBody
 {
@@ -114,16 +115,9 @@ namespace MyGame.PlanetaryBody
 		{
 			var rayFromPlanet = new RayD(Vector3d.Zero, planetLocalPosition);
 
-			Chunk chunk = null;
-			foreach (var c in rootChunks)
-			{
-				if (rayFromPlanet.CastRay(c.noElevationRange).DidHit)
-				{
-					chunk = c;
-					break;
-				}
+			var chunk = rootChunks.FirstOrDefault(c => rayFromPlanet.CastRay(c.noElevationRange).DidHit);
 
-			}
+			if (chunk == null) return RadiusMax; // this should not happen
 
 			int safe = 100; // in case something goes to shit, it always does
 			while (chunk.childs.Count > 0 && chunk.childs.Any(c => c.isGenerationDone) && safe-- > 0)
@@ -139,7 +133,10 @@ namespace MyGame.PlanetaryBody
 
 			var chunkLocalPosition = (planetLocalPosition - chunk.noElevationRange.CenterPos).ToVector3();
 
-			return chunk.GetHeight(chunkLocalPosition);
+			var height = chunk.GetHeight(chunkLocalPosition);
+			if (height == -1)
+				height = RadiusMax;
+			return height;
 		}
 
 
@@ -351,9 +348,14 @@ namespace MyGame.PlanetaryBody
 		}
 
 
+		Chunk nextChunkToGenerate;
+		void ToComputeShader(Chunk chunk)
+		{
+			nextChunkToGenerate = chunk;
+		}
 
 
-		private void ToComputeShader(Chunk chunk)
+		void ExecuteComputeShader(Chunk chunk)
 		{
 			computeShader.Bind();
 
@@ -366,23 +368,23 @@ namespace MyGame.PlanetaryBody
 
 			if (chunk.renderer == null && mesh != null) throw new Exception("wtf");
 
-			GL.Uniform1(GL.GetUniformLocation(computeShader.ShaderProgramHandle, "planetRadiusMax"), (float)RadiusMax); My.Check();
-			GL.Uniform1(GL.GetUniformLocation(computeShader.ShaderProgramHandle, "planetRadiusVariation"), (float)RadiusVariation); My.Check();
-			GL.Uniform3(GL.GetUniformLocation(computeShader.ShaderProgramHandle, "offsetFromPlanetCenter"), chunk.renderer.Offset.ToVector3()); My.Check();
-			GL.Uniform1(GL.GetUniformLocation(computeShader.ShaderProgramHandle, "numberOfVerticesOnEdge"), chunkNumberOfVerticesOnEdge); My.Check();
-			GL.Uniform3(GL.GetUniformLocation(computeShader.ShaderProgramHandle, "cornerPositionA"), chunk.noElevationRange.a.ToVector3()); My.Check();
-			GL.Uniform3(GL.GetUniformLocation(computeShader.ShaderProgramHandle, "cornerPositionB"), chunk.noElevationRange.b.ToVector3()); My.Check();
-			GL.Uniform3(GL.GetUniformLocation(computeShader.ShaderProgramHandle, "cornerPositionC"), chunk.noElevationRange.c.ToVector3()); My.Check();
-			GL.Uniform1(GL.GetUniformLocation(computeShader.ShaderProgramHandle, "indiciesCount"), mesh.TriangleIndicies.Count); My.Check();
-			GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 0, mesh.Vertices.VboHandle); My.Check();
-			GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 1, mesh.Normals.VboHandle); My.Check();
-			GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 2, mesh.UVs.VboHandle); My.Check();
-			GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 3, mesh.TriangleIndicies.VboHandle); My.Check();
-			GL.DispatchCompute(mesh.Vertices.Count, 1, 1); My.Check();
+			GL.Uniform1(GL.GetUniformLocation(computeShader.ShaderProgramHandle, "planetRadiusMax"), (float)RadiusMax); MyGL.Check();
+			GL.Uniform1(GL.GetUniformLocation(computeShader.ShaderProgramHandle, "planetRadiusVariation"), (float)RadiusVariation); MyGL.Check();
+			GL.Uniform3(GL.GetUniformLocation(computeShader.ShaderProgramHandle, "offsetFromPlanetCenter"), chunk.renderer.Offset.ToVector3()); MyGL.Check();
+			GL.Uniform1(GL.GetUniformLocation(computeShader.ShaderProgramHandle, "numberOfVerticesOnEdge"), chunkNumberOfVerticesOnEdge); MyGL.Check();
+			GL.Uniform3(GL.GetUniformLocation(computeShader.ShaderProgramHandle, "cornerPositionA"), chunk.noElevationRange.a.ToVector3()); MyGL.Check();
+			GL.Uniform3(GL.GetUniformLocation(computeShader.ShaderProgramHandle, "cornerPositionB"), chunk.noElevationRange.b.ToVector3()); MyGL.Check();
+			GL.Uniform3(GL.GetUniformLocation(computeShader.ShaderProgramHandle, "cornerPositionC"), chunk.noElevationRange.c.ToVector3()); MyGL.Check();
+			GL.Uniform1(GL.GetUniformLocation(computeShader.ShaderProgramHandle, "indiciesCount"), mesh.TriangleIndicies.Count); MyGL.Check();
+			GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 0, mesh.Vertices.VboHandle); MyGL.Check();
+			GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 1, mesh.Normals.VboHandle); MyGL.Check();
+			GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 2, mesh.UVs.VboHandle); MyGL.Check();
+			GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 3, mesh.TriangleIndicies.VboHandle); MyGL.Check();
+			GL.DispatchCompute(mesh.Vertices.Count, 1, 1); MyGL.Check();
 			toCalculateNormals.Add(mesh);
 
-			GL.BindBuffer(BufferTarget.ShaderStorageBuffer, mesh.Vertices.VboHandle); My.Check();
-			var intPtr = GL.MapBuffer(BufferTarget.ShaderStorageBuffer, BufferAccess.ReadOnly); My.Check();
+			GL.BindBuffer(BufferTarget.ShaderStorageBuffer, mesh.Vertices.VboHandle); MyGL.Check();
+			var intPtr = GL.MapBuffer(BufferTarget.ShaderStorageBuffer, BufferAccess.ReadOnly); MyGL.Check();
 			mesh.Vertices.SetData(intPtr, mesh.Vertices.Count);
 			GL.UnmapBuffer(BufferTarget.ShaderStorageBuffer);
 			mesh.RecalculateBounds();
@@ -406,12 +408,22 @@ namespace MyGame.PlanetaryBody
 			Shader calculateNormalsShader = Factory.GetShader("internal/recalculateNormals.compute");
 			if (calculateNormalsShader.Bind())
 			{
-				GL.Uniform1(GL.GetUniformLocation(calculateNormalsShader.ShaderProgramHandle, "indiciesCount"), mesh.TriangleIndicies.Count); My.Check();
-				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 0, mesh.Vertices.VboHandle); My.Check();
-				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 1, mesh.Normals.VboHandle); My.Check();
-				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 2, mesh.UVs.VboHandle); My.Check();
-				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 3, mesh.TriangleIndicies.VboHandle); My.Check();
-				GL.DispatchCompute(mesh.Vertices.Count, 1, 1); My.Check();
+				GL.Uniform1(GL.GetUniformLocation(calculateNormalsShader.ShaderProgramHandle, "indiciesCount"), mesh.TriangleIndicies.Count); MyGL.Check();
+				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 0, mesh.Vertices.VboHandle); MyGL.Check();
+				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 1, mesh.Normals.VboHandle); MyGL.Check();
+				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 2, mesh.UVs.VboHandle); MyGL.Check();
+				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 3, mesh.TriangleIndicies.VboHandle); MyGL.Check();
+				GL.DispatchCompute(mesh.Vertices.Count, 1, 1); MyGL.Check();
+			}
+		}
+
+
+		public void GPUThreadUpdate()
+		{
+			if (nextChunkToGenerate != null)
+			{
+				ExecuteComputeShader(nextChunkToGenerate);
+				nextChunkToGenerate = null;
 			}
 		}
 

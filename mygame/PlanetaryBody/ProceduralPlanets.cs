@@ -15,61 +15,65 @@ using System.Threading.Tasks;
 
 namespace MyGame
 {
-    public class ProceduralPlanets
-    {
-        public List<PlanetaryBody.Root> planets = new List<PlanetaryBody.Root>();
-        SceneSystem scene;
-        Factory Factory => scene.Factory;
-        Debug Debug => scene.Debug;
+	public class ProceduralPlanets
+	{
+		public List<PlanetaryBody.Root> planets = new List<PlanetaryBody.Root>();
+		SceneSystem scene;
+		Factory Factory => scene.Factory;
+		Debug Debug => scene.Debug;
 
-        bool moveCameraToSurfaceOnStart = false;
+		bool moveCameraToSurfaceOnStart = false;
 
-        Camera Cam { get { return scene.mainCamera; } }
+		Camera Cam { get { return scene.mainCamera; } }
 
-        public ProceduralPlanets(SceneSystem scene)
-        {
-            this.scene = scene;
-            Start();
+		public bool runPlanetLogicInOwnThread = true;
 
-   //         var t = new Thread(() =>
-   //         {
-   //             while (true)
-   //             {
-   //                 PlanetLogicUpdate();
-   //                 Thread.Sleep(10);
-   //             }
-   //         });
-			//t.Name = "Planet logic";
-   //         t.Priority = ThreadPriority.Highest;
-   //         t.IsBackground = true;
-   //         t.Start();
+		public ProceduralPlanets(SceneSystem scene)
+		{
+			this.scene = scene;
 
-            scene.EventSystem.Register<RenderUpdate>(OnRender);
+			Initialize();
 
-        }
+			if (runPlanetLogicInOwnThread)
+			{
+				var t = new Thread(() =>
+				{
+					while (true)
+					{
+						PlanetLogicUpdate();
+						Thread.Sleep(10);
+					}
+				});
+				t.Name = "Planet logic";
+				t.Priority = ThreadPriority.Highest;
+				t.IsBackground = true;
+				t.Start();
+			}
 
- 
+			scene.EventSystem.Register<RenderUpdate>((r) => GPUThreadUpdate());
 
-        PlanetaryBody.Root planet;
-
-
-
+			scene.Debug.CVar("generation / planet logic update pause").ToogledByKey(Key.P).OnChanged += (v) => freezeUpdate = v.Bool;
+		}
 
 
 
-        void Start()
-        {
-            Material planetMaterial = null;
+		PlanetaryBody.Root planet;
 
-            var planetShader = Factory.GetShader("shaders/planet.shader");
-            planetMaterial = new Material(Factory);
-            planetMaterial.GBufferShader = planetShader;
-            planetMaterial.Uniforms.Set("param_rock", Factory.GetTexture2D("textures/rock.jpg"));
-            planetMaterial.Uniforms.Set("param_snow", Factory.GetTexture2D("textures/snow.jpg"));
-            planetMaterial.Uniforms.Set("param_biomesSplatMap", Factory.GetTexture2D("textures/biomesSplatMap.png"));
-            planetMaterial.Uniforms.Set("param_perlinNoise", Factory.GetTexture2D("textures/perlin_noise.png"));
 
-            /*{
+
+		void Initialize()
+		{
+			Material planetMaterial = null;
+
+			var planetShader = Factory.GetShader("shaders/planet.shader");
+			planetMaterial = new Material(Factory);
+			planetMaterial.GBufferShader = planetShader;
+			planetMaterial.Uniforms.Set("param_rock", Factory.GetTexture2D("textures/rock.jpg"));
+			planetMaterial.Uniforms.Set("param_snow", Factory.GetTexture2D("textures/snow.jpg"));
+			planetMaterial.Uniforms.Set("param_biomesSplatMap", Factory.GetTexture2D("textures/biomesSplatMap.png"));
+			planetMaterial.Uniforms.Set("param_perlinNoise", Factory.GetTexture2D("textures/perlin_noise.png"));
+
+			/*{
 				// procedural stars or star dust
 				var random = new Random();
 				for (int i = 0; i < 1000; i++)
@@ -87,7 +91,7 @@ namespace MyGame
 				}
 			}*/
 
-            /*
+			/*
             planet = scene.AddEntity().AddComponent<PlanetaryBody>();
             planet.radius = 150;
             planet.radiusVariation = 7;
@@ -105,42 +109,58 @@ namespace MyGame
             planets.Add(planet);
             */
 
-            planet = scene.AddEntity().AddComponent<PlanetaryBody.Root>();
-            planets.Add(planet);
-            // 6371000 earth radius
-            planet.Configure(1000000, 10000);
-            planet.Transform.Position = new WorldPos(planet.RadiusMax * 3, 0, 0);
-            planet.Start();
-            planet.planetMaterial = planetMaterial;
-            planet.planetMaterial.Uniforms.Set("param_planetRadius", (float)planet.RadiusMax);
-            planets.Add(planet);
+			planet = scene.AddEntity().AddComponent<PlanetaryBody.Root>();
+			planets.Add(planet);
+			// 6371000 earth radius
+			planet.Configure(1000000, 10000);
+			planet.Transform.Position = new WorldPos(planet.RadiusMax * 3, 0, 0);
+			planet.Start();
+			planet.planetMaterial = planetMaterial;
+			planet.planetMaterial.Uniforms.Set("param_planetRadius", (float)planet.RadiusMax);
+			planets.Add(planet);
 
-            Cam.Transform.LookAt(planet.Transform.Position);
-            if (moveCameraToSurfaceOnStart)
-            {
-                Cam.Transform.Position = new WorldPos((float)-planet.RadiusMax, 0, 0) + planet.Transform.Position;
-            }
-        }
+			Cam.Transform.LookAt(planet.Transform.Position);
+			if (moveCameraToSurfaceOnStart)
+			{
+				Cam.Transform.Position = new WorldPos((float)-planet.RadiusMax, 0, 0) + planet.Transform.Position;
+			}
+		}
 
-        bool freezeUpdate = false;
-
-
-
-		void OnRender(RenderUpdate r)
+		bool freezeUpdate = false;
+		void PlanetLogicUpdate()
 		{
-            if (scene.Input.GetKeyDown(Key.P)) freezeUpdate = !freezeUpdate;
-            if (freezeUpdate) return;
+			if (freezeUpdate) return;
 
-            Debug.Tick("generation / planet logic");
+			if(runPlanetLogicInOwnThread) canRunNextLogicUpdate.Wait();
 
-            var camPos = Cam.Transform.Position;
+			Debug.Tick("generation / planet logic");
 
-            var closestPlanet = planets.OrderBy(p => p.Transform.Position.DistanceSqr(camPos) - p.RadiusMax * p.RadiusMax).First();
+			var camPos = Cam.Transform.Position;
 
-            foreach (var p in planets)
-            {
-                p.TrySubdivideOver(camPos);
-            }
-        }
-    }
+			var closestPlanet = planets.OrderBy(p => p.Transform.Position.DistanceSqr(camPos) - p.RadiusMax * p.RadiusMax).First();
+
+			foreach (var p in planets)
+			{
+				p.TrySubdivideOver(camPos);
+			}
+
+			if (runPlanetLogicInOwnThread) canRunNextLogicUpdate.Reset();
+		}
+
+
+		ManualResetEventSlim canRunNextLogicUpdate = new ManualResetEventSlim();
+
+
+		void GPUThreadUpdate()
+		{
+			if (!runPlanetLogicInOwnThread) PlanetLogicUpdate();
+
+			foreach (var p in planets)
+			{
+				p.GPUThreadUpdate();
+			}
+
+			if (runPlanetLogicInOwnThread) canRunNextLogicUpdate.Set();
+		}
+	}
 }

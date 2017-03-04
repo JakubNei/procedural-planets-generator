@@ -20,14 +20,14 @@ namespace MyEngine
 
         public void SendAllUniformsTo(UniformsManager uniformManager)
         {
-            lock (this)
-            {
-                lock (uniformManager)
-                {
+            //lock (this)
+            //{
+            //    lock (uniformManager)
+            //    {
                     foreach (var kvp in uniformsObjectData) uniformManager.Set(kvp.Key, kvp.Value);
                     foreach (var kvp in uniformsTexturesData) uniformManager.Set(kvp.Key, kvp.Value);
-                }
-            }
+            //    }
+            //}
         }
 
         /// <summary>
@@ -141,49 +141,49 @@ namespace MyEngine
             if (o is Matrix4)
             {
                 var u = (Matrix4)o;
-                GL.UniformMatrix4(location, false, ref u); My.Check();
+                GL.UniformMatrix4(location, false, ref u); MyGL.Check();
                 return true;
             }
             if (o is bool)
             {
                 var u = (bool)o;
-                GL.Uniform1(location, u ? 1 : 0); My.Check();
+                GL.Uniform1(location, u ? 1 : 0); MyGL.Check();
                 return true;
             }
             if (o is int)
             {
                 var u = (int)o;
-                GL.Uniform1(location, u); My.Check();
+                GL.Uniform1(location, u); MyGL.Check();
                 return true;
             }
             if (o is float)
             {
                 var u = (float)o;
-                GL.Uniform1(location, u); My.Check();
+                GL.Uniform1(location, u); MyGL.Check();
                 return true;
             }
             if (o is double)
             {
                 var u = (double)o;
-                GL.Uniform1(location, u); My.Check();
+                GL.Uniform1(location, u); MyGL.Check();
                 return true;
             }
             if (o is Vector2)
             {
                 var u = (Vector2)o;
-                GL.Uniform2(location, ref u); My.Check();
+                GL.Uniform2(location, ref u); MyGL.Check();
                 return true;
             }
             if (o is Vector3)
             {
                 var u = (Vector3)o;
-                GL.Uniform3(location, ref u); My.Check();
+                GL.Uniform3(location, ref u); MyGL.Check();
                 return true;
             }
             if (o is Vector4)
             {
                 var u = (Vector4)o;
-                GL.Uniform4(location, ref u); My.Check();
+                GL.Uniform4(location, ref u); MyGL.Check();
                 return true;
             }
             return false;
@@ -210,13 +210,13 @@ namespace MyEngine
         }
         void SendTexture(string name, Texture2D texture2D, int texturingUnit)
         {
-            GL.ActiveTexture(TextureUnit.Texture0 + texturingUnit); My.Check();
-            GL.BindTexture(TextureTarget.Texture2D, texture2D.GetNativeTextureID()); My.Check();
+            GL.ActiveTexture(TextureUnit.Texture0 + texturingUnit); MyGL.Check();
+            GL.BindTexture(TextureTarget.Texture2D, texture2D.GetNativeTextureID()); MyGL.Check();
         }
         void SendTexture(string name, Cubemap cubeMap, int texturingUnit)
         {
-            GL.ActiveTexture(TextureUnit.Texture0 + texturingUnit); My.Check();
-            GL.BindTexture(TextureTarget.TextureCubeMap, cubeMap.GetNativeTextureID()); My.Check();
+            GL.ActiveTexture(TextureUnit.Texture0 + texturingUnit); MyGL.Check();
+            GL.BindTexture(TextureTarget.TextureCubeMap, cubeMap.GetNativeTextureID()); MyGL.Check();
         }
 
 

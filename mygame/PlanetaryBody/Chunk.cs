@@ -20,7 +20,27 @@ namespace MyGame.PlanetaryBody
 		/// </summary>
 		public TriangleD noElevationRange;
 		public List<Chunk> childs { get; } = new List<Chunk>();
-		public MeshRenderer renderer { get; set; }
+		public CustomChunkMeshRenderer renderer { get; set; }
+
+		public class CustomChunkMeshRenderer : MeshRenderer
+		{
+			public Chunk chunk;
+			public CustomChunkMeshRenderer(Entity entity) : base(entity)
+			{
+			}
+
+			public override bool ShouldRenderInContext(Camera camera, object renderContext)
+			{
+				if(base.ShouldRenderInContext(camera, renderContext))
+				{
+					var dotToCam = chunk.DotToCamera(camera);
+					if (dotToCam > 0) return true;
+
+					return false;
+				}
+				return false;
+			}
+		}
 
 		public bool isGenerationDone;
 
@@ -55,7 +75,7 @@ namespace MyGame.PlanetaryBody
 		Triangle[] GetMeshTriangles()
 		{
 			if (meshTriangles == null)
-				meshTriangles = renderer.Mesh.GetMeshTriangles();
+				meshTriangles = renderer?.Mesh?.GetMeshTriangles();
 			return meshTriangles;
 		}
 
@@ -67,18 +87,36 @@ namespace MyGame.PlanetaryBody
 			//var u = barycentricOnChunk.X;
 			//var v = barycentricOnChunk.Y;
 
-			var ray = new Ray(chunkLocalPosition, -CenterPosVec3.Normalized());
-
-			foreach (var t in GetMeshTriangles())
+			var triangles = GetMeshTriangles();
+			if (triangles != null)
 			{
-				var hit = ray.CastRay(t);
-				if (hit.DidHit)
+				var ray = new Ray(chunkLocalPosition, -CenterPosVec3.Normalized());
+				foreach (var t in triangles)
 				{
-					return (ray.GetPoint(hit.HitDistance) + CenterPosVec3).Length;
+					var hit = ray.CastRay(t);
+					if (hit.DidHit)
+					{
+						return (ray.GetPoint(hit.HitDistance) + CenterPosVec3).Length;
+					}
 				}
 			}
 
-			return 0;
+			return -1;
+		}
+
+
+		/// <summary>
+		/// 1 looking at it from top, 0 looking from side, -1 looking from bottom
+		/// </summary>
+		/// <param name="cam"></param>
+		/// <returns></returns>
+		public double DotToCamera(Camera cam)
+		{
+			var dotToCamera = noElevationRange.Normal.Dot(
+				planetaryBody.Transform.Position.Towards(cam.ViewPointPosition).ToVector3d().Normalized()
+			);
+
+			return dotToCamera;
 		}
 
 		public double GetSizeOnScreen(Camera cam)
@@ -131,6 +169,8 @@ namespace MyGame.PlanetaryBody
 			if (isVisible == false) weight *= 0.3f;
 			return weight;
 		}
+
+
 		/*
         public void RequestMeshGeneration()
         {

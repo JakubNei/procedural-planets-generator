@@ -56,20 +56,20 @@ namespace MyEngine
 			RenderLights(ubo, camera, allLights);
 			if (drawLines)
 			{
-				GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill); My.Check();
+				GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill); MyGL.Check();
 			}
 			RenderPostProcessEffects(ubo, postProcessEffect);
 
 
-			GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, 0); My.Check();
-			GL.Viewport(0, 0, camera.pixelWidth, camera.pixelHeight); My.Check();
+			GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, 0); MyGL.Check();
+			GL.Viewport(0, 0, camera.pixelWidth, camera.pixelHeight); MyGL.Check();
 
 			// FINAL DRAW TO SCREEN
 			{
 				//DebugDrawTexture(gBuffer.finalTextureToRead);
-				GL.Disable(EnableCap.DepthTest); My.Check();
-				GL.Disable(EnableCap.CullFace); My.Check();
-				GL.Disable(EnableCap.Blend); My.Check();
+				GL.Disable(EnableCap.DepthTest); MyGL.Check();
+				GL.Disable(EnableCap.CullFace); MyGL.Check();
+				GL.Disable(EnableCap.Blend); MyGL.Check();
 
 				FinalDrawShader.Uniforms.Set("finalDrawTexture", GBuffer.finalTextureToRead);
 				if (FinalDrawShader.Bind())
@@ -82,11 +82,11 @@ namespace MyEngine
 			{
 				if (factory.GetShader("internal/debugDrawBounds.shader").Bind())
 				{
-					GL.DepthMask(false); My.Check();
-					GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line); My.Check();
-					GL.Disable(EnableCap.DepthTest); My.Check();
-					GL.Disable(EnableCap.CullFace); My.Check();
-					GL.Disable(EnableCap.Blend); My.Check();
+					GL.DepthMask(false); MyGL.Check();
+					GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line); MyGL.Check();
+					GL.Disable(EnableCap.DepthTest); MyGL.Check();
+					GL.Disable(EnableCap.CullFace); MyGL.Check();
+					GL.Disable(EnableCap.Blend); MyGL.Check();
 					var camPos = camera.ViewPointPosition;
 					for (int i = 0; i < toRenderCount; i++)
 					{
@@ -102,17 +102,22 @@ namespace MyEngine
 						ubo.modelUBO.UploadData();
 						factory.SkyBoxMesh.Draw(false);
 					}
-					GL.DepthMask(true); My.Check();
-					GL.PolygonMode(MaterialFace.Front, PolygonMode.Fill); My.Check();
-					GL.Enable(EnableCap.DepthTest); My.Check();
-					GL.Enable(EnableCap.CullFace); My.Check();
-					GL.Disable(EnableCap.Blend); My.Check();
+					GL.DepthMask(true); MyGL.Check();
+					GL.PolygonMode(MaterialFace.Front, PolygonMode.Fill); MyGL.Check();
+					GL.Enable(EnableCap.DepthTest); MyGL.Check();
+					GL.Enable(EnableCap.CullFace); MyGL.Check();
+					GL.Disable(EnableCap.Blend); MyGL.Check();
 				}
 			}
 
 			if (debug.CommonCVars.DebugDrawNormalBufferContents().Bool) GBuffer.DebugDrawNormal();
 			if (debug.CommonCVars.DebugDrawGBufferContents().Bool) GBuffer.DebugDrawContents();
 			//if (drawShadowMapContents) DebugDrawTexture(shadowMap.depthMap, new Vector4(0.5f, 0.5f, 1, 1), new Vector4(0.5f,0.5f,0,1), 1, 0);
+
+
+			ErrorCode glError;
+			while ((glError = GL.GetError()) != ErrorCode.NoError)
+				debug.Error("GL Error: " + glError, false);
 		}
 
 		public void RenderGBuffer(UniformBlock ubo, Camera camera)
@@ -121,42 +126,42 @@ namespace MyEngine
 			{
 				GBuffer.BindAllFrameBuffersForDrawing();
 
-				GL.Enable(EnableCap.DepthTest); My.Check();
-				GL.DepthMask(true); My.Check();
-				GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit); My.Check();
+				GL.Enable(EnableCap.DepthTest); MyGL.Check();
+				GL.DepthMask(true); MyGL.Check();
+				GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit); MyGL.Check();
 
 				// SKYBOX PASS
 
 				if (SkyboxCubeMap != null)
 				{
-					GL.DepthRange(0.999, 1); My.Check();
-					GL.DepthMask(false); My.Check();
+					GL.DepthRange(0.999, 1); MyGL.Check();
+					GL.DepthMask(false); MyGL.Check();
 
 					var shader = factory.GetShader("internal/deferred.skybox.shader");
 					shader.Uniforms.Set("skyboxCubeMap", SkyboxCubeMap);
 					shader.Bind();
 
 					factory.SkyBoxMesh.Draw();
-					GL.DepthRange(0, 1); My.Check();
+					GL.DepthRange(0, 1); MyGL.Check();
 				}
 
 
 				if (drawLines)
 				{
-					GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line); My.Check();
+					GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line); MyGL.Check();
 				}
 				else
 				{
-					GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill); My.Check();
+					GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill); MyGL.Check();
 				}
 
 				// RENDER ALL OBJECTS
 				{
-					GL.DepthMask(true); My.Check();
+					GL.DepthMask(true); MyGL.Check();
 
-					GL.Enable(EnableCap.CullFace); My.Check();
-					GL.Disable(EnableCap.Blend); My.Check();
-					GL.CullFace(CullFaceMode.Back); My.Check();
+					GL.Enable(EnableCap.CullFace); MyGL.Check();
+					GL.Disable(EnableCap.Blend); MyGL.Check();
+					GL.CullFace(CullFaceMode.Back); MyGL.Check();
 					for (int i = 0; i < toRenderCount; i++)
 					{
 						var renderable = toRender[i];
@@ -168,7 +173,7 @@ namespace MyEngine
 					// GL.MultiDrawElementsIndirect
 				}
 
-				GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill); My.Check();
+				GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill); MyGL.Check();
 				GBuffer.Unbind();
 			}
 		}
@@ -225,11 +230,11 @@ namespace MyEngine
 					// G BUFFER LIGHT PASS
 
 					{
-						GL.Disable(EnableCap.CullFace); My.Check();
+						GL.Disable(EnableCap.CullFace); MyGL.Check();
 						//GL.CullFace(CullFaceMode.Back);
 
-						GL.Disable(EnableCap.DepthTest); My.Check();
-						GL.DepthMask(false); My.Check();
+						GL.Disable(EnableCap.DepthTest); MyGL.Check();
+						GL.DepthMask(false); MyGL.Check();
 
 						light.UploadUBOdata(camera, ubo, lightIndex);
 
@@ -238,7 +243,7 @@ namespace MyEngine
 
 						if (lightIndex == 0)
 						{
-							GL.Clear(ClearBufferMask.ColorBufferBit); My.Check();
+							GL.Clear(ClearBufferMask.ColorBufferBit); MyGL.Check();
 						}
 
 						if (shadowsEnabled && light.HasShadows)
@@ -252,10 +257,10 @@ namespace MyEngine
 							//GL.Enable(EnableCap.Blend);
 							//GL.BlendEquationSeparate(BlendEquationMode.FuncAdd, BlendEquationMode.FuncAdd);
 							//GL.BlendFunc(BlendingFactorSrc.SrcColor, BlendingFactorDest.SrcColor);
-							GL.BlendEquation(BlendEquationMode.FuncAdd); My.Check();
-							GL.BlendFunc(BlendingFactorSrc.One, BlendingFactorDest.One); My.Check();
+							GL.BlendEquation(BlendEquationMode.FuncAdd); MyGL.Check();
+							GL.BlendFunc(BlendingFactorSrc.One, BlendingFactorDest.One); MyGL.Check();
 							factory.QuadMesh.Draw();
-							GL.Disable(EnableCap.Blend); My.Check();
+							GL.Disable(EnableCap.Blend); MyGL.Check();
 
 						}
 
@@ -272,12 +277,12 @@ namespace MyEngine
 			// POST PROCESS EFFECTs
 			if (enablePostProcessEffects)
 			{
-				GL.Disable(EnableCap.DepthTest); My.Check();
-				GL.Disable(EnableCap.CullFace); My.Check();
-				GL.Disable(EnableCap.Blend); My.Check();
+				GL.Disable(EnableCap.DepthTest); MyGL.Check();
+				GL.Disable(EnableCap.CullFace); MyGL.Check();
+				GL.Disable(EnableCap.Blend); MyGL.Check();
 
-				GL.Disable(EnableCap.DepthTest); My.Check();
-				GL.DepthMask(false); My.Check();
+				GL.Disable(EnableCap.DepthTest); MyGL.Check();
+				GL.DepthMask(false); MyGL.Check();
 
 				foreach (var pe in postProcessEffects)
 				{
@@ -308,7 +313,7 @@ namespace MyEngine
 			{
 				Parallel.ForEach(possibleRenderables, (renderable) =>
 					{
-						if (renderable != null && renderable.ShouldRenderInContext(RenderContext))
+						if (renderable != null && renderable.ShouldRenderInContext(camera, RenderContext))
 						{
 							if (renderable.ForcePassFrustumCulling)
 							{
@@ -342,29 +347,28 @@ namespace MyEngine
 			if (debug.CommonCVars.SortRenderers())
 			{
 				var comparer = new RenderableDistanceComparer(camera.ViewPointPosition);
-				Array.Sort(toRender, 0, toRenderCount, comparer);
+				Array.Sort(toRender, 0, toRenderCount, comparer); // sorts renderables so the closest to camere are first
 			}
 		}
 
 		class RenderableDistanceComparer : IComparer<IRenderable>
 		{
 			WorldPos viewPointPosition;
-			Vector3 viewPointPosition_vec3;
 
 			public RenderableDistanceComparer(WorldPos viewPointPosition)
 			{
 				this.viewPointPosition = viewPointPosition;
-				this.viewPointPosition_vec3 = viewPointPosition.ToVector3();
 			}
 
+			//Less than zero = x is less than y.
+			//Zero = x equals y.
+			//Greater than zero = x is greater than y.
 			public int Compare(IRenderable x, IRenderable y)
 			{
 				if (ReferenceEquals(y, x)) return 0;
-				var distX = x.GetCameraSpaceBounds(viewPointPosition).Center.DistanceSqr(viewPointPosition_vec3);
-				var distY = y.GetCameraSpaceBounds(viewPointPosition).Center.DistanceSqr(viewPointPosition_vec3);
-				if (distX == distY) return 0;
-				if (distX > distY) return -1;
-				return +1;
+				var distX = x.GetCameraSpaceBounds(viewPointPosition).Center.LengthFast;
+				var distY = y.GetCameraSpaceBounds(viewPointPosition).Center.LengthFast;
+				return distX.CompareTo(distY);
 			}
 		}
 	}

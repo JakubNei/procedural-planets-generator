@@ -40,7 +40,6 @@ namespace MyEngine
 
 		public Entity(SceneSystem scene, string name = "")
 		{
-			Require.NotNull(() => scene);
 			this.Scene = scene;
 			this.Input = Scene.Input;
 			this.Name = name;

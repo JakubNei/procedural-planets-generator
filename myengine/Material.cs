@@ -56,7 +56,6 @@ namespace MyEngine
 
 		public Material(Factory factory)
 		{
-			Require.NotNull(() => factory);
 			this.factory = factory;
 			Uniforms = new UniformsManager();
 		}

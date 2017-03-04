@@ -78,7 +78,7 @@ namespace MyEngine
 
         public Color GetPixel(Face side, int x, int y)
         {
-            if (KeepLocalCopyOfTexture == false) throw new Exception("before you can acces texture data you have to set " + MemberName.For(() => KeepLocalCopyOfTexture) + " to true");
+            if (KeepLocalCopyOfTexture == false) throw new Exception("before you can acces texture data you have to set " + nameof(KeepLocalCopyOfTexture) + " to true");
             if (bmps == null) throw new NullReferenceException("texture was intialized only with gpu handle, no data");
             var bmp = bmps[(int)side];
             lock (bmp)
@@ -90,7 +90,7 @@ namespace MyEngine
 
         public void SetPixel(Face side, int x, int y, Color color)
         {
-            if (KeepLocalCopyOfTexture == false) throw new Exception("before you can acces texture data you have to set " + MemberName.For(() => KeepLocalCopyOfTexture) + " to true");
+            if (KeepLocalCopyOfTexture == false) throw new Exception("before you can acces texture data you have to set " + nameof(KeepLocalCopyOfTexture) + " to true");
             if (bmps == null) throw new NullReferenceException("texture was intialized only with gpu handle, no data");
             var bmp = bmps[(int)side];
             lock (bmp)
@@ -106,7 +106,7 @@ namespace MyEngine
         {
             if (IsOnGpu)
             {
-                GL.DeleteTexture(textureHandle); My.Check();
+                GL.DeleteTexture(textureHandle); MyGL.Check();
                 IsOnGpu = false;
             }
         }
@@ -135,20 +135,20 @@ namespace MyEngine
             if (bmps == null) return;
             if (textureHandle == -1)
             {
-                textureHandle = GL.GenTexture(); My.Check();
+                textureHandle = GL.GenTexture(); MyGL.Check();
             }
-            GL.BindTexture(TextureTarget.TextureCubeMap, textureHandle); My.Check();
+            GL.BindTexture(TextureTarget.TextureCubeMap, textureHandle); MyGL.Check();
 
             bool useMimMaps = false; // goes black if cubeMap uses mipmaps
 
             // We will not upload mipmaps, so disable mipmapping (otherwise the texture will not appear).
             // We can use GL.GenerateMipmaps() or GL.Ext.GenerateMipmaps() to create
             // mipmaps automatically. In that case, use TextureMinFilter.LinearMipmapLinear to enable them.
-            GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureMinFilter, (int)GetTextureMinFilter()); My.Check();
-            GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureMagFilter, (int)GetTextureMagFilter()); My.Check();
-            GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureWrapS, (int)GetTextureWrapMode()); My.Check();
-            GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureWrapT, (int)GetTextureWrapMode()); My.Check();
-            GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureWrapR, (int)GetTextureWrapMode()); My.Check();
+            GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureMinFilter, (int)GetTextureMinFilter()); MyGL.Check();
+            GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureMagFilter, (int)GetTextureMagFilter()); MyGL.Check();
+            GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureWrapS, (int)GetTextureWrapMode()); MyGL.Check();
+            GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureWrapT, (int)GetTextureWrapMode()); MyGL.Check();
+            GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureWrapR, (int)GetTextureWrapMode()); MyGL.Check();
 
             // ???
             //GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureLodBias, this.anisoLevel); My.Check();
@@ -184,10 +184,10 @@ namespace MyEngine
             }
             if (useMimMaps)
             {
-                GL.GenerateMipmap(GenerateMipmapTarget.Texture2D); My.Check();
+                GL.GenerateMipmap(GenerateMipmapTarget.Texture2D); MyGL.Check();
             }
 
-            GL.BindTexture(TextureTarget.TextureCubeMap, 0); My.Check();
+            GL.BindTexture(TextureTarget.TextureCubeMap, 0); MyGL.Check();
 
 
 			UpdateIsOnGpu();

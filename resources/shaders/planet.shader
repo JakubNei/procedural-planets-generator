@@ -241,7 +241,7 @@ layout(location = 3) out vec4 out_data;
 vec3 triPlanar(sampler2D tex, vec3 position, vec3 normal, float scale) {
 
 	vec3 blendWeights = abs(normal);
-	blendWeights = clamp(pow(blendWeights, vec3(5)),0,1);
+	blendWeights = clamp(pow(blendWeights, vec3(10)),0,1);
 	blendWeights /= blendWeights.x + blendWeights.y + blendWeights.z;
 
 	vec2 coord_x = position.yz * scale;
@@ -254,7 +254,9 @@ vec3 triPlanar(sampler2D tex, vec3 position, vec3 normal, float scale) {
 	#define TRILANAR_RESULT(A,B,C) \
 		result = blendWeights.##A * texture2D(tex, coord_##A).xyz; \
 		if(blendWeights.##B>0.05f) result += blendWeights.##B * texture2D(tex, coord_##B).xyz; \
-		// if(blendWeights.##B>0.05f) result = vec3(1,0,0); \
+		//if(blendWeights.##C>0.05f) result = vec3(1,0,0); \
+		//if(blendWeights.##B>0.05f) result = vec3(1,0,0); \
+		//if(blendWeights.##C>0.05f) result += blendWeights.##C * texture2D(tex, coord_##C).xyz; \		
 
 	if(blendWeights.x > blendWeights.y) { // x>y
 		if(blendWeights.x > blendWeights.z) { // x>y,x>z
@@ -329,7 +331,6 @@ vec3 getColor() {
 
 void main()
 {
-
 	// if(param_visibility != 1)	{
 	//	if(clamp(rand(gl_FragCoord.xy),0,1) > param_visibility) discard;
 	// }	
@@ -340,7 +341,6 @@ void main()
 	color = getColor();
 
 
-
 	out_color = vec4(pow(color,vec3(engine.gammaCorrectionTextureRead)),1);
 	//out_normal = normalize(i.normal);
 	out_normal = i.normal;
@@ -348,7 +348,7 @@ void main()
 	out_data = vec4(0);
 
 	//DEBUG
-	//out_color = vec4(vec3(0,1,0),1);
+	//out_color = vec4(vec3(1,0,0),1);
 	//out_color = vec4(vec3(param_finalPosWeight,0,0),1);
 	//out_color = vec4(param_debugWeight,0,0,1);
 }

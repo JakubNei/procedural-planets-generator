@@ -54,7 +54,7 @@ namespace MyEngine
 
         void Load()
         {
-            ShaderProgramHandle = GL.CreateProgram(); My.Check();
+            ShaderProgramHandle = GL.CreateProgram(); MyGL.Check();
 
             var builder = new ShaderBuilder(file.FileSystem, debug);
             var success = true;
@@ -116,7 +116,7 @@ namespace MyEngine
 
             if (lastBindedShader != this)
             {
-                GL.UseProgram(ShaderProgramHandle); My.Check();
+                GL.UseProgram(ShaderProgramHandle); MyGL.Check();
                 lastBindedShader = this;
             }
 			Uniforms.UploadChangedUniforms(this);
@@ -128,30 +128,30 @@ namespace MyEngine
             if (type == ShaderType.TessControlShader) HasTesselation = true;
             //source = source.Replace(maxNumberOfLights_name, maxNumberOfLights.ToString());
 
-            int handle = GL.CreateShader(type); My.Check();
+            int handle = GL.CreateShader(type); MyGL.Check();
 
 
-            GL.ShaderSource(handle, source); My.Check();
+            GL.ShaderSource(handle, source); MyGL.Check();
 
-            GL.CompileShader(handle); My.Check();
+            GL.CompileShader(handle); MyGL.Check();
 
             string logInfo;
-            GL.GetShaderInfoLog(handle, out logInfo); My.Check();
+            GL.GetShaderInfoLog(handle, out logInfo); MyGL.Check();
             if (logInfo.Length > 0)
             {
                 debug.Error($"Error occured during compilation of {type} from '{resource}'\n{logInfo}");
             }
 
             int statusCode = 0;
-            GL.GetShader(handle, ShaderParameter.CompileStatus, out statusCode); My.Check();
+            GL.GetShader(handle, ShaderParameter.CompileStatus, out statusCode); MyGL.Check();
             if (statusCode != 1)
             {
-                var error = GL.GetShaderInfoLog(handle); My.Check();
+                var error = GL.GetShaderInfoLog(handle); MyGL.Check();
                 //debug.Error(type.ToString() + " :: " + source + "\n" + error + "\n in file: " + resource);
                 return false;
             }
 
-            GL.AttachShader(ShaderProgramHandle, handle); My.Check();
+            GL.AttachShader(ShaderProgramHandle, handle); MyGL.Check();
 
 
             return true;
@@ -160,10 +160,10 @@ namespace MyEngine
         void CheckError(GetProgramParameterName n)
         {
             int statusCode = 0;
-            GL.GetProgram(ShaderProgramHandle, n, out statusCode); My.Check();
+            GL.GetProgram(ShaderProgramHandle, n, out statusCode); MyGL.Check();
             if (statusCode != 1)
             {
-                var infoLog = GL.GetProgramInfoLog(ShaderProgramHandle); My.Check();
+                var infoLog = GL.GetProgramInfoLog(ShaderProgramHandle); MyGL.Check();
                 debug.Error(n + "\n" + infoLog);
             }
         }
@@ -176,10 +176,10 @@ namespace MyEngine
             GL.BindAttribLocation(shaderProgramHandle, Shader.tangentLocation, "in_tangent"); My.Check();
             GL.BindAttribLocation(shaderProgramHandle, Shader.uvLocation, "in_uv"); My.Check();
             */
-            GL.LinkProgram(ShaderProgramHandle); My.Check();
+            GL.LinkProgram(ShaderProgramHandle); MyGL.Check();
             CheckError(GetProgramParameterName.LinkStatus);
 
-            GL.ValidateProgram(ShaderProgramHandle); My.Check();
+            GL.ValidateProgram(ShaderProgramHandle); MyGL.Check();
             CheckError(GetProgramParameterName.ValidateStatus);
 
             EngineMain.ubo.SetUniformBuffers(this);
@@ -189,13 +189,13 @@ namespace MyEngine
 
         public bool SetUniformBlockBufferIndex(string name, int uniformBufferIndex)
         {
-            var location = GL.GetUniformBlockIndex(ShaderProgramHandle, name); My.Check();
+            var location = GL.GetUniformBlockIndex(ShaderProgramHandle, name); MyGL.Check();
             if (location == -1)
             {
                 debug.Warning(file + ", uniform block index " + name + " not found ", false);
                 return false;
             }
-            GL.UniformBlockBinding(ShaderProgramHandle, location, uniformBufferIndex); My.Check();
+            GL.UniformBlockBinding(ShaderProgramHandle, location, uniformBufferIndex); MyGL.Check();
             return true;
         }
 
@@ -204,7 +204,7 @@ namespace MyEngine
             int location = -1;
             if (cache_uniformLocations.TryGetValue(name, out location) == false)
             {
-                location = GL.GetUniformLocation(ShaderProgramHandle, name); My.Check();
+                location = GL.GetUniformLocation(ShaderProgramHandle, name); MyGL.Check();
                 if (location == -1)
                 {
                     debug.Warning(file + ", uniform " + name + " not found ", false);
@@ -216,7 +216,7 @@ namespace MyEngine
 
         public void Dispose()
         {
-            GL.DeleteProgram(ShaderProgramHandle); My.Check();
+            GL.DeleteProgram(ShaderProgramHandle); MyGL.Check();
             LoadState = State.NotLoaded;
         }
     }

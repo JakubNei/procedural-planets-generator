@@ -47,7 +47,7 @@ namespace MyEngine
 			{
 				if (VaoHandle == -1)
 				{
-					VaoHandle = GL.GenVertexArray(); My.Check();
+					VaoHandle = GL.GenVertexArray(); MyGL.Check();
 				}
 				foreach (var vboName in vboNamesToBind)
 				{
@@ -55,16 +55,16 @@ namespace MyEngine
 					vbo.CreateBuffer();
 				}
 
-				GL.BindVertexArray(VaoHandle); My.Check();
+				GL.BindVertexArray(VaoHandle); MyGL.Check();
 				foreach (var vboName in vboNamesToBind)
 				{
 					var vbo = nameToVbo[vboName];
 					vbo.BindBufferToVAO();
 				}
 				vboNamesToBind.Clear();
-				GL.BindVertexArray(0); My.Check();
-				GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0); My.Check();
-				GL.BindBuffer(BufferTarget.ArrayBuffer, 0); My.Check();
+				GL.BindVertexArray(0); MyGL.Check();
+				GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0); MyGL.Check();
+				GL.BindBuffer(BufferTarget.ArrayBuffer, 0); MyGL.Check();
 			}
 
 			/// <summary>
@@ -74,7 +74,7 @@ namespace MyEngine
 			{
 				if (VaoHandle != -1)
 				{
-					GL.DeleteVertexArray(VaoHandle); My.Check();
+					GL.DeleteVertexArray(VaoHandle); MyGL.Check();
 					VaoHandle = -1;
 				}
 				foreach (var kvp in nameToVbo)
@@ -226,7 +226,7 @@ namespace MyEngine
 			{
 				if (VboHandle == -1)
 				{
-					VboHandle = GL.GenBuffer(); My.Check();
+					VboHandle = GL.GenBuffer(); MyGL.Check();
 				}
 			}
 
@@ -234,11 +234,11 @@ namespace MyEngine
 			{
 				CreateBuffer();
 				int sizeFromGpu;
-				GL.BindBuffer(GL_BufferTarget, VboHandle); My.Check();
+				GL.BindBuffer(GL_BufferTarget, VboHandle); MyGL.Check();
 				var arr = this.ToArray();
 				var size = NumberOfElements * DataSizeOfOneElementInBytes;
-				GL.BufferData(GL_BufferTarget, size, arr, BufferUsageHint.StaticDraw); My.Check(); // BufferUsageHint explained: http://www.informit.com/articles/article.aspx?p=1377833&seqNum=7
-				GL.GetBufferParameter(GL_BufferTarget, BufferParameterName.BufferSize, out sizeFromGpu); My.Check();
+				GL.BufferData(GL_BufferTarget, size, arr, BufferUsageHint.StaticDraw); MyGL.Check(); // BufferUsageHint explained: http://www.informit.com/articles/article.aspx?p=1377833&seqNum=7
+				GL.GetBufferParameter(GL_BufferTarget, BufferParameterName.BufferSize, out sizeFromGpu); MyGL.Check();
 				// if (size != sizeFromGpu) Debug.Error(myName + " size mismatch size=" + GL_BufferTarget + " sizeFromGpu=" + sizeFromGpu);
 				GL.BindBuffer(GL_BufferTarget, 0);
 			}
@@ -247,13 +247,13 @@ namespace MyEngine
 			{
 				if (UsesLayoutIndex)
 				{
-					GL.EnableVertexAttribArray(LayoutIndex); My.Check();
+					GL.EnableVertexAttribArray(LayoutIndex); MyGL.Check();
 				}
-				GL.BindBuffer(GL_BufferTarget, VboHandle); My.Check();
+				GL.BindBuffer(GL_BufferTarget, VboHandle); MyGL.Check();
 				if (UsesLayoutIndex)
 				{
 					//GL.VertexAttribPointer(Shader.positionLocation, 3, VertexAttribPointerType.Float, false, Vector3.SizeInBytes, 0); My.Check();
-					GL.VertexAttribPointer(LayoutIndex, DataStrideInElementsNumber, GL_PointerType, false, DataSizeOfOneElementInBytes, offset); My.Check();
+					GL.VertexAttribPointer(LayoutIndex, DataStrideInElementsNumber, GL_PointerType, false, DataSizeOfOneElementInBytes, offset); MyGL.Check();
 				}
 			}
 
@@ -261,7 +261,7 @@ namespace MyEngine
 			{
 				if (VboHandle != -1)
 				{
-					GL.DeleteBuffer(VboHandle); My.Check();
+					GL.DeleteBuffer(VboHandle); MyGL.Check();
 				}
 			}
 

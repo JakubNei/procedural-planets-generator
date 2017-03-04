@@ -42,7 +42,7 @@ namespace MyEngine.Components
 		Material Material { get; }
 		bool ForcePassFrustumCulling { get; }
 
-		bool ShouldRenderInContext(object renderContext);
+		bool ShouldRenderInContext(Camera camera, object renderContext);
 
 		Bounds GetCameraSpaceBounds(WorldPos viewPointPos);
 
@@ -85,7 +85,7 @@ namespace MyEngine.Components
 			return cameraToRenderStatus.GetValue(camera, RenderStatus.Unknown);
 		}
 
-		public virtual bool ShouldRenderInContext(object renderContext)
+		public virtual bool ShouldRenderInContext(Camera camera, object renderContext)
 		{
 			if (renderContext == RenderContext.Geometry && RenderingMode.HasFlag(MyRenderingMode.RenderGeometry)) return true;
 			if (renderContext == RenderContext.Shadows && RenderingMode.HasFlag(MyRenderingMode.CastShadows)) return true;

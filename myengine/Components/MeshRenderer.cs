@@ -97,9 +97,9 @@ namespace MyEngine.Components
 			Mesh.Draw(Material.GBufferShader.HasTesselation);
 		}
 
-		public override bool ShouldRenderInContext(object renderContext)
+		public override bool ShouldRenderInContext(Camera camera, object renderContext)
 		{
-			return Mesh != null && Material != null && Material.DepthGrabShader != null && base.ShouldRenderInContext(renderContext);
+			return Mesh != null && Material != null && Material.DepthGrabShader != null && base.ShouldRenderInContext(camera, renderContext);
 		}
 	}
 }
