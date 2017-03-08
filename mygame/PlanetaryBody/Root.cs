@@ -16,8 +16,9 @@ namespace MyGame.PlanetaryBody
 {
 	public class Root : ComponentWithShortcuts
 	{
-		public double RadiusMax { get; set; } // poloměr
-		public double RadiusVariation { get; set; }
+		public double RadiusMax => config.radiusMax;
+		public double RadiusVariation => config.radiusVariation;
+		public Texture2D baseHeightMap => config.baseHeightMap;
 
 		public HashSet<Chunk> toBeginGeneration = new HashSet<Chunk>();
 
@@ -49,7 +50,7 @@ namespace MyGame.PlanetaryBody
 			}
 		}
 
-		public Texture2D baseHeightMap;
+
 		public Material planetMaterial;
 		public double subdivisionSphereRadiusModifier { get; set; } = 1f;
 		public double startingRadiusSubdivisionModifier = 1;
@@ -65,6 +66,8 @@ namespace MyGame.PlanetaryBody
 		WorleyD worley;
 
 		public List<Chunk> rootChunks = new List<Chunk>();
+
+		public Config config;
 
 		public Shader computeShader;
 
@@ -92,12 +95,9 @@ namespace MyGame.PlanetaryBody
 
 		}
 
-		public void Configure(double radius, double radiusVariation)
+		public void SetConfig(Config config)
 		{
-			// proceduralMath.Configure(radius, radiusVariation);
-
-			this.RadiusMax = radius;
-			this.RadiusVariation = radiusVariation;
+			this.config = config;
 		}
 
 
@@ -150,7 +150,7 @@ namespace MyGame.PlanetaryBody
 			this.rootChunks.Add(child);
 		}
 
-		public void Start()
+		public void Initialize()
 		{
 			if (chunkNumberOfVerticesOnEdge % 2 == 0) chunkNumberOfVerticesOnEdge++;
 

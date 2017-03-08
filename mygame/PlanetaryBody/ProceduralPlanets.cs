@@ -59,7 +59,12 @@ namespace MyGame
 
 		PlanetaryBody.Root planet;
 
-
+		public PlanetaryBody.Root AddPlanet()
+		{
+			var planet = scene.AddEntity().AddComponent<PlanetaryBody.Root>();
+			planets.Add(planet);
+			return planet;
+		}
 
 		void Initialize()
 		{
@@ -100,12 +105,15 @@ namespace MyGame
             planets.Add(planet);
             */
 
-			planet = scene.AddEntity().AddComponent<PlanetaryBody.Root>();
-			planets.Add(planet);
+
 			// 6371000 earth radius
-			planet.Configure(1000000, 20000);
+			var cfg = new PlanetaryBody.Config();
+			cfg.radiusMax = 1000000;
+			cfg.radiusVariation = 20000;
+			cfg.baseHeightMap = Factory.GetTexture2D("textures/earth_elevation_map.png");
+			var planet = AddPlanet();
+			planet.SetConfig(cfg);
 			planet.Transform.Position = new WorldPos(planet.RadiusMax * 3, 0, 0);
-			planet.Start();
 
 			var planetShader = Factory.GetShader("shaders/planet.shader");
 			var planetMaterial = new Material(Factory);
@@ -114,12 +122,11 @@ namespace MyGame
 			planetMaterial.Uniforms.Set("param_snow", Factory.GetTexture2D("textures/snow.jpg"));
 			planetMaterial.Uniforms.Set("param_biomesSplatMap", Factory.GetTexture2D("textures/biomesSplatMap.png"));
 			planetMaterial.Uniforms.Set("param_perlinNoise", Factory.GetTexture2D("textures/perlin_noise.png"));
-			var baseHeightMap = Factory.GetTexture2D("textures/earth_elevation_map.png");
-			planetMaterial.Uniforms.Set("param_baseHeightMap", baseHeightMap);
-			planet.baseHeightMap = baseHeightMap;
+			planetMaterial.Uniforms.Set("param_baseHeightMap", cfg.baseHeightMap);
 			planet.planetMaterial = planetMaterial;
-			planet.planetMaterial.Uniforms.Set("param_planetRadius", (float)planet.RadiusMax);
-			planets.Add(planet);
+
+			planet.Initialize();
+
 
 			Cam.Transform.LookAt(planet.Transform.Position);
 			if (moveCameraToSurfaceOnStart)
