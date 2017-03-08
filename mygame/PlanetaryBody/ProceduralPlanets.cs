@@ -63,15 +63,6 @@ namespace MyGame
 
 		void Initialize()
 		{
-			Material planetMaterial = null;
-
-			var planetShader = Factory.GetShader("shaders/planet.shader");
-			planetMaterial = new Material(Factory);
-			planetMaterial.GBufferShader = planetShader;
-			planetMaterial.Uniforms.Set("param_rock", Factory.GetTexture2D("textures/rock.jpg"));
-			planetMaterial.Uniforms.Set("param_snow", Factory.GetTexture2D("textures/snow.jpg"));
-			planetMaterial.Uniforms.Set("param_biomesSplatMap", Factory.GetTexture2D("textures/biomesSplatMap.png"));
-			planetMaterial.Uniforms.Set("param_perlinNoise", Factory.GetTexture2D("textures/perlin_noise.png"));
 
 			/*{
 				// procedural stars or star dust
@@ -112,9 +103,20 @@ namespace MyGame
 			planet = scene.AddEntity().AddComponent<PlanetaryBody.Root>();
 			planets.Add(planet);
 			// 6371000 earth radius
-			planet.Configure(1000000, 10000);
+			planet.Configure(1000000, 20000);
 			planet.Transform.Position = new WorldPos(planet.RadiusMax * 3, 0, 0);
 			planet.Start();
+
+			var planetShader = Factory.GetShader("shaders/planet.shader");
+			var planetMaterial = new Material(Factory);
+			planetMaterial.GBufferShader = planetShader;
+			planetMaterial.Uniforms.Set("param_rock", Factory.GetTexture2D("textures/rock.jpg"));
+			planetMaterial.Uniforms.Set("param_snow", Factory.GetTexture2D("textures/snow.jpg"));
+			planetMaterial.Uniforms.Set("param_biomesSplatMap", Factory.GetTexture2D("textures/biomesSplatMap.png"));
+			planetMaterial.Uniforms.Set("param_perlinNoise", Factory.GetTexture2D("textures/perlin_noise.png"));
+			var baseHeightMap = Factory.GetTexture2D("textures/earth_elevation_map.png");
+			planetMaterial.Uniforms.Set("param_baseHeightMap", baseHeightMap);
+			planet.baseHeightMap = baseHeightMap;
 			planet.planetMaterial = planetMaterial;
 			planet.planetMaterial.Uniforms.Set("param_planetRadius", (float)planet.RadiusMax);
 			planets.Add(planet);

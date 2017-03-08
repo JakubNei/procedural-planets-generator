@@ -15,8 +15,8 @@ namespace MyEngine
 		public bool WantsToBeUploadedToGpu { get; private set; }
 		public bool KeepLocalCopyOfTexture { get; set; }
 
-		public int Width { get { return bmp.Width; } }
-		public int Height { get { return bmp.Height; } }
+		public int Width { get; private set; }
+		public int Height { get; private set; }
 
 		public Color this[int x, int y]
 		{
@@ -118,7 +118,13 @@ namespace MyEngine
 			{
 				stream = file.GetDataStream();
 				bmp = new Bitmap(stream);
+				this.Width = bmp.Width;
+				this.Height = bmp.Height;
 			}
+
+			if (bmp.Width > MaxTextureSize) throw new NotSupportedException($"width is over max {MaxTextureSize}, {this}");
+			if (bmp.Height > MaxTextureSize) throw new NotSupportedException($"width is over max {MaxTextureSize}, {this}");
+
 			lock (bmp)
 			{
 				BitmapData bmpData = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
@@ -189,5 +195,11 @@ namespace MyEngine
 			}
 			return textureHandle;
 		}
+
+		public override string ToString()
+		{
+			return $"{nameof(Texture2D)}: '{file.VirtualPath}' {Width} x {Height}";
+		}
+
 	}
 }

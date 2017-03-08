@@ -101,7 +101,6 @@ namespace MyEngine
             if (LoadState == State.NotLoaded)
             {
                 Load();
-				return false;
             }
             else if (shouldReload)
             {

@@ -4,6 +4,7 @@ uniform sampler2D param_biomesSplatMap;
 uniform sampler2D param_rock;
 uniform sampler2D param_snow;
 uniform sampler2D param_perlinNoise;
+uniform sampler2D param_baseHeightMap;
 
 uniform float param_planetRadius;
 uniform float param_finalPosWeight;
@@ -349,6 +350,8 @@ void main()
 
 	//DEBUG
 	//out_color = vec4(vec3(1,0,0),1);
+	out_color = vec4(i.uv.x ,0,0,1);
+	out_color = vec4(texture2D(param_baseHeightMap, i.uv).xyz, 1);
 	//out_color = vec4(vec3(param_finalPosWeight,0,0),1);
 	//out_color = vec4(param_debugWeight,0,0,1);
 }

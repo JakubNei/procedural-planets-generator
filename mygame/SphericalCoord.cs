@@ -14,10 +14,12 @@ namespace MyGame
 		/// east -PI, to west PI
 		/// </summary>
 		public double longitude;
+		public double longitude01 => longitude / (2 * Math.PI) + 0.5;
 		/// <summary>
 		/// top -PI/2, bottom PI/2
 		/// </summary>
 		public double latitude;
+		public double latitude01 => latitude / Math.PI + 0.5;
 		public double altitude;
 		public SpehricalCoord(double longitude, double latitude, double altitude)
 		{

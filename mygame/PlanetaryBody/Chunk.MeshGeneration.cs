@@ -165,7 +165,7 @@ namespace MyGame.PlanetaryBody
 			{
 				var v = mesh.Vertices[i];
 				var s = planetaryBody.CalestialToSpherical(v);
-				mesh.UVs.Add(new Vector2((float)((s.longitude / Math.PI + 1) / 2), (float)(s.latitude / Math.PI + 0.5)));
+				mesh.UVs.Add(new Vector2((float)s.longitude01, (float)s.latitude01));
 			}
 			*/
 

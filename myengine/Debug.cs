@@ -57,21 +57,8 @@ namespace MyEngine
 		{
 			public string name;
 
-			public float FpsPer1Sec
-			{
-				get
-				{
-					return frameTimes1sec.Count;
-				}
-			}
-
-			public float FpsPer10Sec
-			{
-				get
-				{
-					return frameTimes10sec.Count / 10.0f;
-				}
-			}
+			public float FpsPer1Sec { get; private set; }
+			public float FpsPer10Sec { get; private set; }
 
 			Queue<DateTime> frameTimes1sec = new Queue<DateTime>();
 			Queue<DateTime> frameTimes10sec = new Queue<DateTime>();
@@ -89,6 +76,12 @@ namespace MyEngine
 
 				while ((now - frameTimes1sec.Peek()).TotalSeconds > 1) frameTimes1sec.Dequeue();
 				while ((now - frameTimes10sec.Peek()).TotalSeconds > 10) frameTimes10sec.Dequeue();
+
+				if ((now - frameTimes1sec.Peek()).TotalSeconds < 0.9) FpsPer1Sec = 60;
+				else FpsPer1Sec = frameTimes1sec.Count;
+
+				if ((now - frameTimes10sec.Peek()).TotalSeconds < 9) FpsPer10Sec = 60;
+				else FpsPer10Sec = frameTimes10sec.Count / 10.0f;
 
 				debug.AddValue(name, $"FPS:{FpsPer1Sec.ToString("0.")}, average FPS over 10s:{FpsPer10Sec.ToString("0.")}");
 				//Debug.AddValue(name, $"(FPS now:{nowFps.ToString("0.")} 1s:{FpsPer1Sec.ToString("0.")} 10s:{FpsPer10Sec.ToString("0.")})");

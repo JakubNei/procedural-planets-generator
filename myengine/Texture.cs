@@ -8,56 +8,67 @@ using OpenTK.Graphics.OpenGL4;
 
 namespace MyEngine
 {
-    // http://docs.unity3d.com/ScriptReference/Texture.html
+	// http://docs.unity3d.com/ScriptReference/Texture.html
 
-    public enum TextureWrapMode
-    {
-        Repeat = OpenTK.Graphics.OpenGL4.TextureWrapMode.Repeat,
-        Clamp = OpenTK.Graphics.OpenGL4.TextureWrapMode.ClampToEdge,
-    }
-    public enum FilterMode
-    {
-        Bilinear,
-        Trilinear,
-        Point,
-    }
-    public abstract class Texture
-    {
-        public int anisoLevel;
-        public bool UsingMipMaps { get; protected set; }
-        public FilterMode filterMode = FilterMode.Trilinear;
-        public float mipMapBias;
-        public TextureWrapMode wrapMode = TextureWrapMode.Repeat;
+	public enum TextureWrapMode
+	{
+		Repeat = OpenTK.Graphics.OpenGL4.TextureWrapMode.Repeat,
+		Clamp = OpenTK.Graphics.OpenGL4.TextureWrapMode.ClampToEdge,
+	}
+	public enum FilterMode
+	{
+		Bilinear,
+		Trilinear,
+		Point,
+	}
+	public abstract class Texture
+	{
+		public int anisoLevel;
+		public bool UsingMipMaps { get; protected set; }
+		public FilterMode filterMode = FilterMode.Trilinear;
+		public float mipMapBias;
+		public TextureWrapMode wrapMode = TextureWrapMode.Repeat;
 
-        public virtual int GetNativeTextureID()
-        {
-            return 0;
-        }
+		public virtual int GetNativeTextureID()
+		{
+			return 0;
+		}
 
 
-        protected TextureMinFilter GetTextureMinFilter()
-        {
-            if (UsingMipMaps)
-            {
-                if (filterMode == FilterMode.Point) return TextureMinFilter.NearestMipmapNearest;
-                else return TextureMinFilter.LinearMipmapLinear;
-            }
-            else
-            {
-                if (filterMode == FilterMode.Point) return TextureMinFilter.Nearest;
-                else return TextureMinFilter.Linear;
-            }
-        }
-        protected TextureMagFilter GetTextureMagFilter()
-        {
-            if (filterMode == FilterMode.Point) return TextureMagFilter.Nearest;
-            else return TextureMagFilter.Linear;
-        }
-        protected TextureWrapMode GetTextureWrapMode()
-        {
-            return wrapMode;
-        }
-    }
+		protected TextureMinFilter GetTextureMinFilter()
+		{
+			if (UsingMipMaps)
+			{
+				if (filterMode == FilterMode.Point) return TextureMinFilter.NearestMipmapNearest;
+				else return TextureMinFilter.LinearMipmapLinear;
+			}
+			else
+			{
+				if (filterMode == FilterMode.Point) return TextureMinFilter.Nearest;
+				else return TextureMinFilter.Linear;
+			}
+		}
+		protected TextureMagFilter GetTextureMagFilter()
+		{
+			if (filterMode == FilterMode.Point) return TextureMagFilter.Nearest;
+			else return TextureMagFilter.Linear;
+		}
+		protected TextureWrapMode GetTextureWrapMode()
+		{
+			return wrapMode;
+		}
+
+
+		protected int MaxTextureSize
+		{
+			get
+			{
+				int maxSize = 0;
+				GL.GetInteger(GetPName.MaxTextureSize, out maxSize);
+				return maxSize;
+			}
+		}
+	}
 
 
 }

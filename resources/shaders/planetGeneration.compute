@@ -1,9 +1,9 @@
 #version 430
 [ComputeShader]
 
+#define M_PI 3.1415926535897932384626433832795
 
-
-
+uniform sampler2D param_baseHeightMap;
 
 
 
@@ -339,18 +339,47 @@ uniform vec3 cornerPositionB;
 uniform vec3 cornerPositionC;
 uniform int indiciesCount;
 
+
+ 
+struct vec2_struct
+{
+    float x;
+    float y;
+};
+vec2 fromStruct(vec2_struct p)
+{
+	return vec2(p.x, p.y);
+}
+vec2_struct toStruct(vec2 p)
+{
+	vec2_struct s;
+	s.x = p.x;
+	s.y = p.y;
+	return s;
+}
+
+
 struct vec3_struct
 {
     float x;
     float y;
     float z;
 };
-struct vec2_struct
+vec3 fromStruct(vec3_struct p)
 {
-    float x;
-    float y;
-    float z;
-};
+	return vec3(p.x, p.y, p.z);
+}
+vec3_struct toStruct(vec3 p)
+{
+	vec3_struct s;
+	s.x = p.x;
+	s.y = p.y;
+	s.z = p.z;
+	return s;
+}
+
+
+
 
 layout( binding=0 ) buffer buffer1 {
     vec3_struct positions[];
@@ -370,21 +399,6 @@ layout( local_size_x = 1, local_size_y = 1, local_size_z = 1 ) in;
  
 
 
-vec3 fromStruct(vec3_struct p)
-{
-	return vec3(p.x, p.y, p.z);
-}
-vec3_struct toStruct(vec3 p)
-{
-	vec3_struct s;
-	s.x = p.x;
-	s.y = p.y;
-	s.z = p.z;
-	return s;
-}
-
-
-
 vec3 GetNormal(int a, int b, int c)
 {
 	vec3 _a = fromStruct(positions[a]);
@@ -397,11 +411,24 @@ vec3 GetNormal(int a, int b, int c)
 
 
 
+vec3 calestialToSpherical(vec3 c /*calestial*/)
+{
+	float r = length(c);
+	if (r == 0) return vec3(0);
+	return vec3(
+		atan(c.z, c.x) / (2 * M_PI) + 0.5,
+		asin(c.y / r) / M_PI + 0.5,
+		r
+	);
+}
+
 
 
 
 void main() {
 	
+
+
 	int id = int(gl_GlobalInvocationID.x);
 	int tempId = id;
 	int ix = 0;
@@ -427,13 +454,23 @@ void main() {
 		(cornerPositionC - cornerPositionA) * y * x;
 
 	p = normalize(p);
-	p = p * (planetRadiusMax + planetRadiusVariation * GetHeightAt(p));
+	vec2 uv = calestialToSpherical(p).xy;
+
+	float height = 0;
+
+	height += texture2D(param_baseHeightMap, uv).r; 
+	if(height > 0)
+		height += 0.1*GetHeightAt(p);
+
+
+	p *= planetRadiusMax + planetRadiusVariation * height;
 	p -= offsetFromPlanetCenter;
 
 	// DEBUG
 	//vec3 p = fromStruct(positions[id]);
 	//p.x += 0.01f;
 
-	positions[id] = toStruct(vec3(p));
+	positions[id] = toStruct(p);
+	uvs[id] = toStruct(uv);
 }
 
