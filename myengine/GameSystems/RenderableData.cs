@@ -11,23 +11,12 @@ namespace MyEngine
 {
     public class RenderableData
     {
-        public SparseList<IRenderable> Renderers
-        {
-            get
-            {
-                return renderers;
-            }
-        }
-        public SparseList<ILight> Lights
-        {
-            get
-            {
-                return lights;
-            }
-        }
+        public IList<IRenderable> Renderers =>  renderers;
+    
+        public IList<ILight> Lights => lights;
 
-        SparseList<IRenderable> renderers = new SparseList<IRenderable>(1000);
-        SparseList<ILight> lights = new SparseList<ILight>(1000);
+        List<IRenderable> renderers = new List<IRenderable>(1000);
+        List<ILight> lights = new List<ILight>(1000);
 
         public void Add(IRenderable renderer)
         {

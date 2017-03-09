@@ -123,7 +123,7 @@ namespace MyGame
 			planetMaterial.Uniforms.Set("param_biomesSplatMap", Factory.GetTexture2D("textures/biomesSplatMap.png"));
 			planetMaterial.Uniforms.Set("param_perlinNoise", Factory.GetTexture2D("textures/perlin_noise.png"));
 			planetMaterial.Uniforms.Set("param_baseHeightMap", cfg.baseHeightMap);
-			planet.planetMaterial = planetMaterial;
+			planet.PlanetMaterial = planetMaterial;
 
 			planet.Initialize();
 

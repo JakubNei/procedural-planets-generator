@@ -24,6 +24,7 @@ namespace MyEngine
 
 		int toRenderCount = 0;
 		IRenderable[] toRender = new IRenderable[10000];
+		//List<IRenderable> toRender = new List<IRenderable>();
 
 		[Dependency]
 		Debug debug;
@@ -297,6 +298,7 @@ namespace MyEngine
 			}
 		}
 
+		int lastTotalPossible =0;
 		public void BuildRenderList(IList<IRenderable> possibleRenderables, Camera camera)
 		{
 			// without Parallel.ForEach = 130 fps
@@ -308,16 +310,19 @@ namespace MyEngine
 			var camPos = camera.Transform.Position;
 			var totalPossible = possibleRenderables.Count;
 
+			if (lastTotalPossible > totalPossible) Array.Clear(toRender, totalPossible, lastTotalPossible - totalPossible);
+
 			toRenderCount = 0;
 			lock (possibleRenderables)
 			{
+				
 				Parallel.ForEach(possibleRenderables, (renderable) =>
 					{
 						if (renderable != null && renderable.ShouldRenderInContext(camera, RenderContext))
 						{
 							if (renderable.ForcePassFrustumCulling)
 							{
-								renderable.CameraRenderStatusFeedback(camera, RenderStatus.RenderedAndVisible);
+								renderable.SetCameraRenderStatusFeedback(camera, RenderStatus.RenderedAndVisible);
 								var newIndex = Interlocked.Increment(ref toRenderCount);
 								toRender[newIndex - 1] = renderable;
 							}
@@ -329,13 +334,13 @@ namespace MyEngine
 									&& frustum.VsBounds(bounds)
 								)
 								{
-									renderable.CameraRenderStatusFeedback(camera, RenderStatus.RenderedAndVisible);
+									renderable.SetCameraRenderStatusFeedback(camera, RenderStatus.RenderedAndVisible);
 									var newIndex = Interlocked.Increment(ref toRenderCount);
 									toRender[newIndex - 1] = renderable;
 								}
 								else
 								{
-									renderable.CameraRenderStatusFeedback(camera, RenderStatus.NotRendered);
+									renderable.SetCameraRenderStatusFeedback(camera, RenderStatus.NotRendered);
 								}
 							}
 						}

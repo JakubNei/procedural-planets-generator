@@ -233,9 +233,9 @@ namespace MyGame
 
 			position += currentVelocity * (float)deltaTime;
 
-			var clampCameraToSurface = true;
+			var collideWithPlanetSurface = false;
 			// make cam on top of the planet
-			if (clampCameraToSurface)
+			if (collideWithPlanetSurface)
 			{
 				var p = planet.Transform.Position.Towards(position).ToVector3d();
 				var camPosS = planet.CalestialToSpherical(p);
@@ -248,7 +248,7 @@ namespace MyGame
 			}
 
 
-			Entity.Transform.Position += Entity.Transform.Position.Towards(position).ToVector3d() * deltaTime * 10;
+			Entity.Transform.Position = position; // += Entity.Transform.Position.Towards(position).ToVector3d() * deltaTime * 10;
 
 			//Debug.Info(entity.transform.position);
 

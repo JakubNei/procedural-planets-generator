@@ -203,8 +203,7 @@ namespace MyGame.PlanetaryBody
 			renderer.chunk = this;
 			renderer.Mesh = mesh;
 			renderer.Offset += offsetCenter;
-
-			if (planetaryBody.planetMaterial != null) renderer.Material = planetaryBody.planetMaterial.CloneTyped();
+			renderer.Material = planetaryBody.PlanetMaterial;
 			renderer.RenderingMode = MyRenderingMode.DontRender;
 		}
 

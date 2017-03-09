@@ -111,19 +111,20 @@ namespace MyEngine
         {
             list.CopyTo(array, arrayIndex);
         }
-        //public void CopyNonNullTo(T[] array, int arrayIndex)
-        //{
-        //}
+		//public void CopyNonNullTo(T[] array, int arrayIndex)
+		//{
+		//}
 
-        /// <summary>
-        /// Use this for iterating via for loop.
-        /// </summary>
-        public int Count { get { return list.Count; } }
+		/// <summary>
+		/// Use this for iterating via for loop.
+		/// </summary>
+		//public int Count { get { return list.Count; } }
+		public int Count => NonNullCount;
 
-        /// <summary>
-        /// Don't use this for for loops!  Use Count.
-        /// </summary>
-        public int NonNullCount
+		/// <summary>
+		/// Don't use this for for loops!  Use Count.
+		/// </summary>
+		public int NonNullCount
         {
             get { return list.Count - freeIndices.Count; }
         }

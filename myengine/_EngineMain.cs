@@ -274,18 +274,19 @@ namespace MyEngine
 				var camera = scene.mainCamera;
 				var dataToRender = scene.DataToRender;
 
-				if (renderThreadTime.FpsPer10Sec > 30) renderManagerFront.SkyboxCubeMap = scene.skyBox;
+				if (renderThreadTime.FpsPer1Sec > 30) renderManagerFront.SkyboxCubeMap = scene.skyBox;
 				else renderManagerFront.SkyboxCubeMap = null;
 				renderManagerFront.RenderAll(ubo, camera, dataToRender.Lights, camera.postProcessEffects);
 			}
+
+	
+
+			EventSystem.Raise(new MyEngine.Events.PostRenderUpdate(renderThreadTime));
 
 			SwapBuffers();
 
 			GC.Collect();
 			Mesh.ProcessFinalizerQueue();
-
-			EventSystem.Raise(new MyEngine.Events.PostRenderUpdate(renderThreadTime));
-
 		}
 
 

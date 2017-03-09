@@ -48,7 +48,7 @@ namespace MyEngine.Components
 
 		void UploadUBOandDraw(Camera camera, UniformBlock ubo);
 
-		void CameraRenderStatusFeedback(Camera camera, RenderStatus renderStatus);
+		void SetCameraRenderStatusFeedback(Camera camera, RenderStatus renderStatus);
 	}
 
 	public abstract class Renderer : ComponentWithShortcuts, IRenderable, IDisposable
@@ -75,7 +75,7 @@ namespace MyEngine.Components
 		{
 		}
 
-		public virtual void CameraRenderStatusFeedback(Camera camera, RenderStatus renderStatus)
+		public virtual void SetCameraRenderStatusFeedback(Camera camera, RenderStatus renderStatus)
 		{
 			cameraToRenderStatus[camera] = renderStatus;
 		}
