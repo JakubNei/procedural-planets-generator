@@ -6,6 +6,7 @@ using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -35,11 +36,13 @@ namespace MyEngine
 		[Dependency(Register = true)]
 		public Factory Factory { get; private set; }
 
+		public string windowTitle = "Procedural Planets Generator";
+
 		public EngineMain() : base(
 			1400,
 			900,
 			new GraphicsMode(),
-			"Procedural Planets Generator",
+			"initializing",
 			GameWindowFlags.Default,
 			DisplayDevice.Default,
 			4,
@@ -55,7 +58,7 @@ namespace MyEngine
 			System.Diagnostics.Process.GetCurrentProcess().PriorityClass = System.Diagnostics.ProcessPriorityClass.RealTime;
 			Thread.CurrentThread.Priority = ThreadPriority.Highest;
 
-			//VSync = VSyncMode.Off;
+			VSync = VSyncMode.Off;
 			TargetRenderFrequency = 0;
 
 
@@ -208,7 +211,7 @@ namespace MyEngine
 			renderManagerBackReady.Set();
 		}
 
-		DeltaTimeManager eventThreadTime = new DeltaTimeManager();
+		FrameTime eventThreadTime = new FrameTime();
 
 		//void EventThreadMain()
 		//{
@@ -220,18 +223,24 @@ namespace MyEngine
 		//	Thread.Sleep(5);
 		//}
 
-		DeltaTimeManager renderThreadTime = new DeltaTimeManager();
+		FrameTime renderThreadTime = new FrameTime();
 
 		ulong frameCounter;
 
 		void RenderMain()
 		{
+			renderThreadTime.FrameBegan();
+
+			this.Title = windowTitle + " " + renderThreadTime;
+
+			Debug.Tick("rendering / main render");
+
 			if (this.Focused) Input.Update();
 			Debug.Update();
 
 			EventSystem.Raise(new MyEngine.Events.InputUpdate(renderThreadTime));
 			EventSystem.Raise(new MyEngine.Events.EventThreadUpdate(renderThreadTime));
-			EventSystem.Raise(new MyEngine.Events.RenderUpdate(renderThreadTime));
+			EventSystem.Raise(new MyEngine.Events.PreRenderUpdate(renderThreadTime));
 
 
 			if (Debug.CommonCVars.PauseRenderPrepare() == false)
@@ -249,9 +258,6 @@ namespace MyEngine
 
 			UpdateGPUMemoryInfo();
 
-			var fps = Debug.Tick("rendering / main render");
-			renderThreadTime.Tick();
-
 			if (Debug.CommonCVars.ReloadAllShaders().EatBoolIfTrue())
 			{
 				Factory.ReloadAllShaders();
@@ -268,16 +274,18 @@ namespace MyEngine
 				var camera = scene.mainCamera;
 				var dataToRender = scene.DataToRender;
 
-				if (fps.FpsPer10Sec > 30) renderManagerFront.SkyboxCubeMap = scene.skyBox;
+				if (renderThreadTime.FpsPer10Sec > 30) renderManagerFront.SkyboxCubeMap = scene.skyBox;
 				else renderManagerFront.SkyboxCubeMap = null;
 				renderManagerFront.RenderAll(ubo, camera, dataToRender.Lights, camera.postProcessEffects);
 			}
-
 
 			SwapBuffers();
 
 			GC.Collect();
 			Mesh.ProcessFinalizerQueue();
+
+			EventSystem.Raise(new MyEngine.Events.PostRenderUpdate(renderThreadTime));
+
 		}
 
 

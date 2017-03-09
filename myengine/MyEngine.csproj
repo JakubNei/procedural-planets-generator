@@ -73,7 +73,7 @@
     <Compile Include="DebugForm.Designer.cs">
       <DependentUpon>DebugForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="DeltaTimeManager.cs" />
+    <Compile Include="FrameTime.cs" />
     <Compile Include="DictionaryWatcher.cs" />
     <Compile Include="Mathematical\Ray.cs" />
     <Compile Include="Mathematical\Sphere.cs" />
@@ -159,6 +159,7 @@
     <Compile Include="Mesh.cs" />
     <Compile Include="Components\ComponentWithShortcuts.cs" />
     <Compile Include="ObjLoader.cs" />
+    <Compile Include="TickStats.cs" />
     <Compile Include="_EngineMain.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Factory.cs" />

@@ -29,7 +29,7 @@ namespace MyGame.PlanetaryBody
 			{
 			}
 
-			public override bool ShouldRenderInContext(Camera camera, object renderContext)
+			public override bool ShouldRenderInContext(Camera camera, RenderContext renderContext)
 			{
 				if(base.ShouldRenderInContext(camera, renderContext))
 				{

@@ -8,21 +8,30 @@ namespace MyEngine.Events
 {
 	public class EventThreadUpdate : DeltaTimeEvent
 	{
-		public EventThreadUpdate(DeltaTimeManager deltaTimeManager) : base(deltaTimeManager)
+		public EventThreadUpdate(FrameTime deltaTimeManager) : base(deltaTimeManager)
 		{
 
 		}
 	}
-	public class RenderUpdate : DeltaTimeEvent
+
+	public class PreRenderUpdate : DeltaTimeEvent
 	{
-		public RenderUpdate(DeltaTimeManager deltaTimeManager) : base(deltaTimeManager)
+		public PreRenderUpdate(FrameTime deltaTimeManager) : base(deltaTimeManager)
+		{
+
+		}
+	}
+
+	public class PostRenderUpdate : DeltaTimeEvent
+	{
+		public PostRenderUpdate(FrameTime deltaTimeManager) : base(deltaTimeManager)
 		{
 
 		}
 	}
 	public class InputUpdate : DeltaTimeEvent
 	{
-		public InputUpdate(DeltaTimeManager deltaTimeManager) : base(deltaTimeManager)
+		public InputUpdate(FrameTime deltaTimeManager) : base(deltaTimeManager)
 		{
 
 		}
@@ -30,15 +39,17 @@ namespace MyEngine.Events
 
 	public class DeltaTimeEvent : IEvent
 	{
-		public double DeltaTimeNow { get; }
-		public double DeltaTimeOver1Second { get; }
-		public double DeltaTimeOver10Seconds { get; }
+		public readonly double DeltaTime;
+		public readonly double DeltaTimeOver1Second;
+		public readonly double DeltaTimeOver10Seconds;
 
-		public virtual bool AllowMultiThreading => true;
 
-		public DeltaTimeEvent(DeltaTimeManager deltaTimeManager)
+		public readonly FrameTime FrameTime;
+
+		public DeltaTimeEvent(FrameTime deltaTimeManager)
 		{
-			this.DeltaTimeNow = deltaTimeManager.DeltaTimeNow;
+			this.FrameTime = deltaTimeManager;
+			this.DeltaTime = deltaTimeManager.DeltaTime;
 			this.DeltaTimeOver1Second = deltaTimeManager.DeltaTime1Second;
 			this.DeltaTimeOver10Seconds = deltaTimeManager.DeltaTime10Seconds;
 		}

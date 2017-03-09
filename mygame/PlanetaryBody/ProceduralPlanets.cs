@@ -50,7 +50,7 @@ namespace MyGame
 				t.Start();
 			}
 
-			scene.EventSystem.Register<RenderUpdate>((r) => GPUThreadUpdate());
+			scene.EventSystem.Register<PostRenderUpdate>(GPUThreadUpdate);
 
 			scene.Debug.CVar("generation / planet logic update pause").ToogledByKey(Key.P).OnChanged += (v) => freezeUpdate = v.Bool;
 		}
@@ -160,8 +160,10 @@ namespace MyGame
 		ManualResetEventSlim canRunNextLogicUpdate = new ManualResetEventSlim();
 
 
-		void GPUThreadUpdate()
+		void GPUThreadUpdate(PostRenderUpdate r)
 		{
+			if (r.FrameTime.Fps < 55 || r.FrameTime.Fps < r.FrameTime.FpsPer10Sec) return;
+
 			if (!runPlanetLogicInOwnThread) PlanetLogicUpdate();
 
 			foreach (var p in planets)

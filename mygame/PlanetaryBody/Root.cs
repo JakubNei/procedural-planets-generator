@@ -25,7 +25,8 @@ namespace MyGame.PlanetaryBody
 		/// <summary>
 		/// Is guaranteeed to be odd (1, 3, 5, 7, ...)
 		/// </summary>
-		public int chunkNumberOfVerticesOnEdge = 50;
+		public int chunkNumberOfVerticesOnEdge = 70;
+		public float sizeOnScreenNeededToSubdivide = 0.8f;
 
 		//public int subdivisionMaxRecurisonDepth = 10;
 		int subdivisionMaxRecurisonDepth = -1;
@@ -40,7 +41,7 @@ namespace MyGame.PlanetaryBody
 					var oneRootChunkCircumference = rootChunks[0].noElevationRange.a.Distance(rootChunks[0].noElevationRange.b);
 
 					subdivisionMaxRecurisonDepth = 0;
-					while (oneRootChunkCircumference > 100)
+					while (oneRootChunkCircumference > 200)
 					{
 						oneRootChunkCircumference /= 2;
 						subdivisionMaxRecurisonDepth++;
@@ -221,7 +222,7 @@ namespace MyGame.PlanetaryBody
 
 			if (recursionDepth < SubdivisionMaxRecurisonDepth)
 			{
-				if (sizeOnScreen > 0.4f)
+				if (sizeOnScreen > sizeOnScreenNeededToSubdivide)
 					chunk.CreteChildren();
 				else
 					chunk.DeleteChildren();

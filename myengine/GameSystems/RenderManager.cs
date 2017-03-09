@@ -16,7 +16,7 @@ namespace MyEngine
 {
 	public class RenderManager
 	{
-		public object RenderContext { get; set; } = Components.RenderContext.Geometry;
+		public RenderContext RenderContext { get; set; } = RenderContext.Geometry;
 
 		public DeferredGBuffer GBuffer { get; private set; }
 

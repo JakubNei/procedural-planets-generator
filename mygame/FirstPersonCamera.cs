@@ -20,6 +20,7 @@ namespace MyGame
 		public float mouseSensitivty = 0.3f;
 
 		public bool disabledInput = false;
+		public bool speedBasedOnDistanceToPlanet = true;
 
 		Quaternion rotation;
 		WorldPos position;
@@ -42,7 +43,7 @@ namespace MyGame
 
 			Input.LockCursor = disabledInput;
 
-			Entity.EventSystem.Register<InputUpdate>(e => Update((float)e.DeltaTimeNow));
+			Entity.EventSystem.Register<InputUpdate>(e => Update((float)e.DeltaTime));
 
 			WalkOnPlanet.ToogledByKey(Key.G).OnChanged += (cvar) =>
 			{
@@ -111,9 +112,15 @@ namespace MyGame
             p.Y -= mouseDelta.Y;
             System.Windows.Forms.Cursor.Position = p;*/
 
-			var distanceToPlanet = planet.Center.Distance(this.Transform.Position) - planet.RadiusMax - planet.RadiusVariation * 2;
 
-			float d = cameraSpeed * (1 + (float)distanceToPlanet.Abs() / 10.0f);
+
+			float d = cameraSpeed;
+
+			if (speedBasedOnDistanceToPlanet)
+			{
+				var distanceToPlanet = planet.Center.Distance(this.Transform.Position) - planet.RadiusMax - planet.RadiusVariation * 2;
+				d *= (1 + (float)distanceToPlanet.Abs() / 5.0f);
+			}
 
 			if (Input.GetKey(Key.ShiftLeft)) d *= 5;
 
@@ -230,7 +237,7 @@ namespace MyGame
 			// make cam on top of the planet
 			if (clampCameraToSurface)
 			{
-				var p =  planet.Transform.Position.Towards(position).ToVector3d();
+				var p = planet.Transform.Position.Towards(position).ToVector3d();
 				var camPosS = planet.CalestialToSpherical(p);
 				var h = 1 + planet.GetHeight(p);
 				if (camPosS.altitude < h || WalkOnPlanet.Bool)

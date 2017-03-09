@@ -21,9 +21,9 @@ namespace MyEngine.Components
 
 	public class RenderContext
 	{
-		public static readonly object Geometry = new RenderContext("geometry");
-		public static readonly object Shadows = new RenderContext("shadow");
-		public static readonly object Depth = new RenderContext("depth");
+		public static readonly RenderContext Geometry = new RenderContext("geometry");
+		public static readonly RenderContext Shadows = new RenderContext("shadow");
+		public static readonly RenderContext Depth = new RenderContext("depth");
 		public string Name { get; set; }
 
 		public RenderContext(string name)
@@ -42,7 +42,7 @@ namespace MyEngine.Components
 		Material Material { get; }
 		bool ForcePassFrustumCulling { get; }
 
-		bool ShouldRenderInContext(Camera camera, object renderContext);
+		bool ShouldRenderInContext(Camera camera, RenderContext renderContext);
 
 		Bounds GetCameraSpaceBounds(WorldPos viewPointPos);
 
@@ -85,7 +85,7 @@ namespace MyEngine.Components
 			return cameraToRenderStatus.GetValue(camera, RenderStatus.Unknown);
 		}
 
-		public virtual bool ShouldRenderInContext(Camera camera, object renderContext)
+		public virtual bool ShouldRenderInContext(Camera camera, RenderContext renderContext)
 		{
 			if (renderContext == RenderContext.Geometry && RenderingMode.HasFlag(MyRenderingMode.RenderGeometry)) return true;
 			if (renderContext == RenderContext.Shadows && RenderingMode.HasFlag(MyRenderingMode.CastShadows)) return true;

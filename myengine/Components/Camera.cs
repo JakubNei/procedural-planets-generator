@@ -26,13 +26,8 @@ namespace MyEngine.Components
         public int pixelHeight;
         Vector2 screenSize = Vector2.Zero;
 
-        public WorldPos ViewPointPosition
-        {
-            get
-            {
-                return this.Entity.Transform.Position;
-            }
-        }
+        public WorldPos ViewPointPosition => this.Entity.Transform.Position;
+
 
         public Vector3 ambientColor = Vector3.One * 0.1f;
 
