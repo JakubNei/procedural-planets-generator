@@ -38,10 +38,10 @@ namespace MyGame.PlanetaryBody
 				{
 					//var planetCircumference = 2 * Math.PI * radius;
 					//var oneRootChunkCircumference = planetCircumference / 6.0f;
-					var oneRootChunkCircumference = rootChunks[0].noElevationRange.a.Distance(rootChunks[0].noElevationRange.b);
+					var oneRootChunkCircumference = RadiusMax;
 
 					subdivisionMaxRecurisonDepth = 0;
-					while (oneRootChunkCircumference > 400)
+					while (oneRootChunkCircumference > 200)
 					{
 						oneRootChunkCircumference /= 2;
 						subdivisionMaxRecurisonDepth++;
@@ -66,7 +66,7 @@ namespace MyGame.PlanetaryBody
 		PerlinD perlin;
 		WorleyD worley;
 
-		public List<Chunk> rootChunks = new List<Chunk>();
+		public System.Collections.Generic.List<Chunk> rootChunks = new System.Collections.Generic.List<Chunk>();
 
 		public Config config;
 
@@ -108,57 +108,98 @@ namespace MyGame.PlanetaryBody
 
 		public Vector3d GetFinalPos(Vector3d calestialPos, int detailDensity = 1)
 		{
-			return calestialPos.Normalized() * GetHeight(calestialPos);
+			return calestialPos.Normalized() * GetSurfaceHeight(calestialPos);
 		}
 
 
-		public double GetHeight(Vector3d planetLocalPosition, int detailDensity = 1)
+
+		public double GetSurfaceHeight(Vector3d planetLocalPosition, int detailDensity = 1)
 		{
+			double height = -1;
+
+			//planetLocalPosition.Normalize();
+
 			var rayFromPlanet = new RayD(Vector3d.Zero, planetLocalPosition);
 
-			var chunk = rootChunks.FirstOrDefault(c => rayFromPlanet.CastRay(c.noElevationRange).DidHit);
+			var chunk = rootChunks.FirstOrDefault(c => rayFromPlanet.CastRay(c.NoElevationRange).DidHit);
 
-			if (chunk == null) return RadiusMax; // this should not happen
-
-			int safe = 100; // in case something goes to shit, it always does
-			while (chunk.childs.Count > 0 && chunk.childs.Any(c => c.isGenerationDone) && safe-- > 0)
+			if(chunk != null)
 			{
-				foreach (var child in chunk.childs)
+				int safe = 100;
+				while (chunk.childs.Count > 0 && chunk.childs.Any(c => c.isGenerationDone) && safe-- > 0)
 				{
-					if (child.isGenerationDone && rayFromPlanet.CastRay(child.noElevationRange).DidHit)
+					foreach (var child in chunk.childs)
 					{
-						chunk = child;
+						if (child.isGenerationDone && rayFromPlanet.CastRay(child.NoElevationRange).DidHit)
+						{
+							chunk = child;
+						}
 					}
 				}
+
+				var chunkLocalPosition = (planetLocalPosition - chunk.NoElevationRange.CenterPos);
+
+				height = chunk.GetHeight(chunkLocalPosition);
+			}
+			if (height == -1)
+			{
+				height = RadiusMax;
+				if(chunk == null)
+					Scene.DebugShere(GetPosition(planetLocalPosition, height), 1000, new Vector4(1, 0, 0, 1));
+				else
+					Scene.DebugShere(GetPosition(planetLocalPosition, height), 1000, new Vector4(1, 1, 0, 1));
+			}
+			else
+			{
+				Scene.DebugShere(GetPosition(planetLocalPosition, height), 1000, new Vector4(0, 1, 0, 1));
 			}
 
-			var chunkLocalPosition = (planetLocalPosition - chunk.noElevationRange.CenterPos).ToVector3();
 
-			var height = chunk.GetHeight(chunkLocalPosition);
-			if (height == -1)
-				height = RadiusMax;
 			return height;
 		}
 
-
-
-		void AddRootChunk(List<Vector3d> vertices, int A, int B, int C)
+		public WorldPos GetPosition(Vector3d planetLocalPosition, double atPlanetAltitude)
 		{
-			var child = new Chunk(this, null);
-			child.noElevationRange.a = vertices[A];
-			child.noElevationRange.b = vertices[B];
-			child.noElevationRange.c = vertices[C];
+			var sphericalPos = this.CalestialToSpherical(planetLocalPosition);
+			sphericalPos.altitude = atPlanetAltitude;
+			return this.Transform.Position + this.SphericalToCalestial(sphericalPos).ToVector3();
+		}
+
+		public WorldPos GetPosition(WorldPos towards, double atPlanetAltitude)
+		{
+			var planetLocalPosition = this.Transform.Position.Towards(towards).ToVector3d();
+			var sphericalPos = this.CalestialToSpherical(planetLocalPosition);
+			sphericalPos.altitude = atPlanetAltitude;
+			return this.Transform.Position + this.SphericalToCalestial(sphericalPos).ToVector3();
+		}
+
+
+		void AddRootChunk(System.Collections.Generic.List<Vector3d> vertices, int A, int B, int C)
+		{
+			var range = new TriangleD();
+			range.a = vertices[A];
+			range.b = vertices[B];
+			range.c = vertices[C];
+			var child = new Chunk(this, range, null);
 			this.rootChunks.Add(child);
 		}
 
 		public void Initialize()
+		{			
+			PlanetMaterial.Uniforms.Set("param_planetRadiusMax", (float)RadiusMax);
+			PlanetMaterial.Uniforms.Set("param_planetRadiusVariation", (float)RadiusVariation);
+
+			InitializeRootSegments();
+		}
+
+		private void InitializeRootSegments()
 		{
 			if (chunkNumberOfVerticesOnEdge % 2 == 0) chunkNumberOfVerticesOnEdge++;
 
 			//detailLevel = (int)ceil(planetInfo.rootChunks[0].range.ToBoundingSphere().radius / 100);
 
-			var vertices = new List<Vector3d>();
-			var indicies = new List<uint>();
+			var vertices = new System.Collections.Generic.List<Vector3d>();
+			var indicies = new System.Collections.Generic.List<uint>();
 
 			var r = this.RadiusMax / 2.0;
 
@@ -207,8 +248,8 @@ namespace MyGame.PlanetaryBody
 			AddRootChunk(vertices, 6, 2, 10);
 			AddRootChunk(vertices, 8, 6, 7);
 			AddRootChunk(vertices, 9, 8, 1);
-		}
 
+		}
 
 		void Chunks_GatherWeights(ChunkWeightedList list, Chunk chunk, int recursionDepth)
 		{
@@ -271,7 +312,7 @@ namespace MyGame.PlanetaryBody
 		// new SortedList<double, Chunk>(ReverseComparer<double>.Default)
 		class ChunkWeightedList
 		{
-			List<Tuple<double, Chunk>> l = new List<Tuple<double, Chunk>>();
+			System.Collections.Generic.List<Tuple<double, Chunk>> l = new System.Collections.Generic.List<Tuple<double, Chunk>>();
 			public void Add(double weight, Chunk chunk)
 			{
 				l.Add(new Tuple<double, Chunk>(weight, chunk));
@@ -358,28 +399,27 @@ namespace MyGame.PlanetaryBody
 		UniformsManager computeShaderUniforms = new UniformsManager();
 		void ExecuteComputeShader(Chunk chunk)
 		{
-
 			stats.Start();
 
 			chunk.CreateRendererAndBasicMesh();
 			var mesh = chunk.renderer.Mesh;
 			mesh.EnsureIsOnGpu();
 
-			if (chunk.renderer == null && mesh != null) throw new Exception("wtf");
+			if (chunk.renderer == null && mesh != null) throw new Exception("concurency problem");
 
 			computeShaderUniforms.Set("planetRadiusMax", (float)RadiusMax);
 			computeShaderUniforms.Set("planetRadiusVariation", (float)RadiusVariation);
 			computeShaderUniforms.Set("offsetFromPlanetCenter", chunk.renderer.Offset.ToVector3());
 			computeShaderUniforms.Set("numberOfVerticesOnEdge", chunkNumberOfVerticesOnEdge);
-			computeShaderUniforms.Set("cornerPositionA", chunk.noElevationRange.a.ToVector3());
-			computeShaderUniforms.Set("cornerPositionB", chunk.noElevationRange.b.ToVector3());
-			computeShaderUniforms.Set("cornerPositionC", chunk.noElevationRange.c.ToVector3());
+			computeShaderUniforms.Set("cornerPositionA", chunk.NoElevationRange.a.ToVector3());
+			computeShaderUniforms.Set("cornerPositionB", chunk.NoElevationRange.b.ToVector3());
+			computeShaderUniforms.Set("cornerPositionC", chunk.NoElevationRange.c.ToVector3());
 			computeShaderUniforms.Set("indiciesCount", mesh.TriangleIndicies.Count);
 			computeShaderUniforms.Set("param_baseHeightMap", baseHeightMap);
 
 			computeShaderUniforms.SendAllUniformsTo(computeShader.Uniforms);
 			computeShader.Bind();
-			
+
 			GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 0, mesh.Vertices.VboHandle); MyGL.Check();
 			GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 1, mesh.Normals.VboHandle); MyGL.Check();
 			GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 2, mesh.UVs.VboHandle); MyGL.Check();
@@ -387,14 +427,10 @@ namespace MyGame.PlanetaryBody
 			GL.DispatchCompute(mesh.Vertices.Count, 1, 1); MyGL.Check();
 			toCalculateNormals.Add(mesh);
 
-			// get data from GPU to RAM
-			GL.BindBuffer(BufferTarget.ShaderStorageBuffer, mesh.Vertices.VboHandle); MyGL.Check();
-			var intPtr = GL.MapBuffer(BufferTarget.ShaderStorageBuffer, BufferAccess.ReadOnly); MyGL.Check();
-			mesh.Vertices.SetData(intPtr, mesh.Vertices.Count);
-			GL.UnmapBuffer(BufferTarget.ShaderStorageBuffer);
-
+			mesh.Vertices.DownloadDataFromGpuToRam();
 			mesh.RecalculateBounds();
 
+			chunk.CalculateRealVisibleRange();
 			chunk.isGenerationDone = true;
 
 			stats.End();
@@ -407,7 +443,7 @@ namespace MyGame.PlanetaryBody
 			toCalculateNormals.Clear();
 		}
 
-		List<Mesh> toCalculateNormals = new List<Mesh>();
+		System.Collections.Generic.List<Mesh> toCalculateNormals = new System.Collections.Generic.List<Mesh>();
 
 		public void CalculateNormalsOnGPU(Mesh mesh)
 		{

@@ -17,7 +17,7 @@ namespace MyGame
 {
 	public class ProceduralPlanets
 	{
-		public List<PlanetaryBody.Root> planets = new List<PlanetaryBody.Root>();
+		public System.Collections.Generic.List<PlanetaryBody.Root> planets = new System.Collections.Generic.List<PlanetaryBody.Root>();
 		SceneSystem scene;
 		Factory Factory => scene.Factory;
 		Debug Debug => scene.Debug;
@@ -50,7 +50,7 @@ namespace MyGame
 				t.Start();
 			}
 
-			scene.EventSystem.Register<PostRenderUpdate>(GPUThreadUpdate);
+			scene.EventSystem.Register<PreRenderUpdate>(GPUThreadUpdate);
 
 			scene.Debug.CVar("generation / planet logic update pause").ToogledByKey(Key.P).OnChanged += (v) => freezeUpdate = v.Bool;
 		}
@@ -160,9 +160,9 @@ namespace MyGame
 		ManualResetEventSlim canRunNextLogicUpdate = new ManualResetEventSlim();
 
 
-		void GPUThreadUpdate(PostRenderUpdate r)
+		void GPUThreadUpdate(FrameTimeEvent r)
 		{
-			if (r.FrameTime.Fps < 55 || r.FrameTime.Fps < r.FrameTime.FpsPer10Sec) return;
+			if (r.FrameTime.CurrentFrameElapsedTimeFps < 100 /*|| r.FrameTime.Fps < r.FrameTime.FpsPer10Sec*/) return;
 
 			if (!runPlanetLogicInOwnThread) PlanetLogicUpdate();
 

@@ -10,6 +10,7 @@
         "Vector2", "Vector2d",
         "Vector3", "Vector3d",
         "Vector4", "Vector4d",
+		"Matrix3", "Matrix3d",
         "Matrix4", "Matrix4d",
         "Quaternion", "Quaterniond",
     };

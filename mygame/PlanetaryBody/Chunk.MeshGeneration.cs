@@ -50,7 +50,7 @@ namespace MyGame.PlanetaryBody
 		{
 			if (skirtIndicies != null) return skirtIndicies;
 
-			var s = new List<Mesh.VertexIndex>();
+			var s = new System.Collections.Generic.List<Mesh.VertexIndex>();
 			// gather the edge vertices indicies
 			{
 				int lineStartIndex = 0;
@@ -77,7 +77,7 @@ namespace MyGame.PlanetaryBody
 			return skirtIndicies;
 		}
 
-		List<Vector3> verticesList = new List<Vector3>();
+		System.Collections.Generic.List<Vector3> verticesList = new System.Collections.Generic.List<Vector3>();
 		List<Vector3> GetVerticesList()
 		{
 			if (verticesList.Count > 0) return verticesList;
@@ -100,7 +100,7 @@ namespace MyGame.PlanetaryBody
 				generationBegan = true;
 			}
 
-			var offsetCenter = noElevationRange.CenterPos;
+			var offsetCenter = NoElevationRange.CenterPos;
 			var mesh = new Mesh();// "PlanetaryBodyChunk depth:" + subdivisionDepth + " #" + numbetOfChunksGenerated);
 
 			// generate evenly spaced vertices, then we make triangles out of them
@@ -151,8 +151,8 @@ namespace MyGame.PlanetaryBody
 			}
 			*/
 
-			List<Vector3> vertices = GetVerticesList();
-			List<int> indicies = GetIndiciesList();
+			System.Collections.Generic.List<Vector3> vertices = GetVerticesList();
+			System.Collections.Generic.List<int> indicies = GetIndiciesList();
 
 			mesh.Vertices.SetData(vertices);
 			mesh.TriangleIndicies.SetData(indicies);
@@ -176,26 +176,26 @@ namespace MyGame.PlanetaryBody
 			if (useSkirts)
 			{
 				var skirtVertices = mesh.Duplicate(edgeVerticesIndexes, mesh.Vertices, mesh.Normals);
-				var moveAmount = this.noElevationRange.ToBoundingSphere().radius / 10;
-				mesh.MoveVertices(skirtVertices, -this.noElevationRange.Normal.ToVector3() * (float)moveAmount, mesh.Vertices);
+				var moveAmount = this.NoElevationRange.ToBoundingSphere().radius / 10;
+				mesh.MoveVertices(skirtVertices, -this.NoElevationRange.Normal.ToVector3() * (float)moveAmount, mesh.Vertices);
 			}
 
 			{
 				var o = offsetCenter.ToVector3();
 				var c = 0;
-				var n = noElevationRange.Normal.ToVector3();
+				var n = NoElevationRange.Normal.ToVector3();
 
-				mesh.Bounds = new Bounds(noElevationRange.CenterPos.ToVector3() - o);
+				mesh.Bounds = new Bounds(NoElevationRange.CenterPos.ToVector3() - o);
 
-				mesh.Bounds.Encapsulate(noElevationRange.a.ToVector3() + n * c - o);
-				mesh.Bounds.Encapsulate(noElevationRange.b.ToVector3() + n * c - o);
-				mesh.Bounds.Encapsulate(noElevationRange.c.ToVector3() + n * c - o);
-				mesh.Bounds.Encapsulate(noElevationRange.CenterPos.ToVector3() + n * c - o);
+				mesh.Bounds.Encapsulate(NoElevationRange.a.ToVector3() + n * c - o);
+				mesh.Bounds.Encapsulate(NoElevationRange.b.ToVector3() + n * c - o);
+				mesh.Bounds.Encapsulate(NoElevationRange.c.ToVector3() + n * c - o);
+				mesh.Bounds.Encapsulate(NoElevationRange.CenterPos.ToVector3() + n * c - o);
 
-				mesh.Bounds.Encapsulate(noElevationRange.a.ToVector3() - n * c - o);
-				mesh.Bounds.Encapsulate(noElevationRange.b.ToVector3() - n * c - o);
-				mesh.Bounds.Encapsulate(noElevationRange.c.ToVector3() - n * c - o);
-				mesh.Bounds.Encapsulate(noElevationRange.CenterPos.ToVector3() - n * c - o);
+				mesh.Bounds.Encapsulate(NoElevationRange.a.ToVector3() - n * c - o);
+				mesh.Bounds.Encapsulate(NoElevationRange.b.ToVector3() - n * c - o);
+				mesh.Bounds.Encapsulate(NoElevationRange.c.ToVector3() - n * c - o);
+				mesh.Bounds.Encapsulate(NoElevationRange.CenterPos.ToVector3() - n * c - o);
 			}
 
 			if (renderer != null) throw new Exception("something went terribly wrong, renderer should be null");

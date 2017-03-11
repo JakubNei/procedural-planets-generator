@@ -66,7 +66,7 @@
     <Compile Include="Components\Tonemapping.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="CVar.cs" />
-    <Compile Include="DataAccessibleList.cs" />
+    <Compile Include="Collections\DataAccessibleList.cs" />
     <Compile Include="DataBinder.cs" />
     <Compile Include="DebugForm.cs">
       <SubType>Form</SubType>
@@ -74,12 +74,14 @@
     <Compile Include="DebugForm.Designer.cs">
       <DependentUpon>DebugForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Extensions\ColorExtensions.cs" />
     <Compile Include="FrameTime.cs" />
     <Compile Include="DictionaryWatcher.cs" />
     <Compile Include="Mathematical\Ray.cs" />
     <Compile Include="Mathematical\Sphere.cs" />
     <Compile Include="Mathematical\Triangle.cs" />
     <Compile Include="MyGL.cs" />
+    <Compile Include="Collections\UnorderedList.cs" />
     <Compile Include="Neitri\DependencyInjection\DependencyManager.cs" />
     <Compile Include="Neitri\IBinarySerializer.cs" />
     <Compile Include="Neitri\IDependencyManager.cs" />
@@ -106,15 +108,15 @@
     <Compile Include="Neitri\Utils\TraceUtil.cs" />
     <Compile Include="Neitri\Utils\TwoKeyDictionary.cs" />
     <Compile Include="Neitri\Utils\ValueChanged.cs" />
-    <Compile Include="OpenTK extensions\QuaternionExtensions.cs" />
-    <Compile Include="OpenTK extensions\Vector3Extensions_other.cs" />
-    <Compile Include="OpenTK extensions\Vector3Extensions_template.cs">
+    <Compile Include="Extensions\QuaternionExtensions.cs" />
+    <Compile Include="Extensions\Vector3Extensions_other.cs" />
+    <Compile Include="Extensions\Vector3Extensions_template.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Vector3Extensions_template.tt</DependentUpon>
     </Compile>
     <Compile Include="GameSystems\RenderableData.cs" />
-    <Content Include="OpenTK extensions\Vector3Extensions_template.tt">
+    <Content Include="Extensions\Vector3Extensions_template.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>Vector3Extensions_template.cs</LastGenOutput>
     </Content>
@@ -172,8 +174,8 @@
     <Compile Include="GameSystems\Resource.cs" />
     <Compile Include="Shader.cs" />
     <Compile Include="ShadowMap.cs" />
-    <Compile Include="SparseList.cs" />
-    <Compile Include="SparseValueList.cs" />
+    <Compile Include="Collections\SparseList.cs" />
+    <Compile Include="Collections\SparseValueList.cs" />
     <Compile Include="Mathematical\SphereD.cs" />
     <Compile Include="Neitri\VirtualBrain.cs" />
     <Compile Include="Texture.cs" />
@@ -184,7 +186,7 @@
     <Compile Include="Mathematical\TriangleD.cs" />
     <Compile Include="UniformBlock.cs" />
     <Compile Include="UniformsManager.cs" />
-    <Compile Include="OpenTK extensions\Vector3Extensions.cs" />
+    <Compile Include="Extensions\Vector3Extensions.cs" />
     <Compile Include="Mathematical\Worley.cs" />
   </ItemGroup>
   <ItemGroup>

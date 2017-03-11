@@ -31,6 +31,23 @@ namespace MyEngine
 			return triangles;
 		}
 
+		public TriangleD[] GetMeshTrianglesD()
+		{
+			var triangles = new TriangleD[TriangleIndicies.Count / 3];
+
+			for (int i = 0; i < triangles.Length; i++)
+			{
+				var triangle = new TriangleD(
+					Vertices[TriangleIndicies[i * 3 + 0]].ToVector3d(),
+					Vertices[TriangleIndicies[i * 3 + 1]].ToVector3d(),
+					Vertices[TriangleIndicies[i * 3 + 2]].ToVector3d()
+				);
+				triangles[i] = triangle;
+			}
+
+			return triangles;
+		}
+
 		public static void CalculateNormals(IList<int> inTriangleIndicies, IList<Vector3> inPositions, IList<Vector3> outNormals)
 		{
 			int verticesNum = inPositions.Count;

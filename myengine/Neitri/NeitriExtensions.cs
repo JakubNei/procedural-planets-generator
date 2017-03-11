@@ -8,7 +8,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 
 /// <summary>
-/// Version 2017-02-13
+/// Version 2017-03-11
 /// Many useful extensions I've made over the years.
 /// All in one class.
 /// </summary>
@@ -185,7 +185,8 @@ public static class NeitriExtensions
 	}
 	#endregion
 
-	#region IList<T> and IList extensions
+	#region List<T> extensions
+
 	public static void Resize<T>(this List<T> list, int newCount, T valueToAdd)
 	{
 		int currentCount = list.Count;
@@ -203,6 +204,10 @@ public static class NeitriExtensions
 	{
 		Resize(list, newCount, new T());
 	}
+
+	#endregion
+
+	#region IList<T> and IList extensions
 
 	public static void AddRange(this IList me, IEnumerable enumerable)
 	{

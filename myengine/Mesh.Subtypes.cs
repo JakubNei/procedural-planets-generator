@@ -105,6 +105,8 @@ namespace MyEngine
 
 			void SendDataToGpu(string myName);
 
+			void DownloadDataFromGpuToRam();
+
 			void BindBufferToVAO();
 
 			void DeleteBuffer();
@@ -130,7 +132,7 @@ namespace MyEngine
 				DataStrideInElementsNumber = 3;
 			}
 
-			public void SetData(IntPtr ptr, int countOfVector3s)
+			public override void SetData(IntPtr ptr, int countOfVector3s)
 			{
 				var countOfFloats = countOfVector3s * 3;
 				var data = new float[countOfFloats];
@@ -149,6 +151,17 @@ namespace MyEngine
 				ElementType = typeof(float);
 				DataStrideInElementsNumber = 2;
 			}
+			public override void SetData(IntPtr ptr, int countOfVector3s)
+			{
+				var countOfFloats = countOfVector3s * 3;
+				var data = new float[countOfFloats];
+				Marshal.Copy(ptr, data, 0, countOfFloats);
+				this.Clear();
+				for (int i = 0; i < countOfFloats; i += 2)
+				{
+					this.Add(new Vector2(data[i], data[i + 1]));
+				}
+			}
 		}
 		public class BufferObjectInt : BufferObject<int>
 		{
@@ -157,11 +170,20 @@ namespace MyEngine
 				ElementType = typeof(int);
 				DataStrideInElementsNumber = 1;
 			}
+
+			public override void SetData(IntPtr ptr, int countOfVector3s)
+			{
+				var countOfFloats = countOfVector3s * 3;
+				var data = new int[countOfFloats];
+				Marshal.Copy(ptr, data, 0, countOfFloats);
+				this.Clear();
+				this.AddRange(data);
+			}
 		}
 
 
 
-		public class BufferObject<T> : List<T>, IBufferObject where T : struct
+		public abstract class BufferObject<T> : List<T>, IBufferObject where T : struct
 		{
 			public event Action OnChanged;
 
@@ -290,6 +312,16 @@ namespace MyEngine
 			{
 				Add(this[index.vertexIndex]);
 			}
+
+			public void DownloadDataFromGpuToRam()
+			{
+				GL.BindBuffer(BufferTarget.ShaderStorageBuffer, VboHandle); MyGL.Check();
+				var intPtr = GL.MapBuffer(BufferTarget.ShaderStorageBuffer, BufferAccess.ReadOnly); MyGL.Check();
+				SetData(intPtr, Count);
+				GL.UnmapBuffer(BufferTarget.ShaderStorageBuffer);
+			}
+			public abstract void SetData(IntPtr intPtr, int count);
+
 		}
 
 	}

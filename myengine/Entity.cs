@@ -20,8 +20,8 @@ namespace MyEngine
 		public SceneSystem Scene { get; private set; }
 		public InputSystem Input { get; private set; }
 
-        public FileSystem FileSystem => Scene.FileSystem;
-        public Debug Debug => Scene.Debug;
+		public FileSystem FileSystem => Scene.FileSystem;
+		public Debug Debug => Scene.Debug;
 		public Factory Factory => Scene.Factory;
 
 		public IDependencyManager Dependency => Scene.Dependency;
@@ -99,33 +99,42 @@ namespace MyEngine
 			return c;
 		}
 
+		public void DestroyAllComponents()
+		{
+			lock (components)
+			{
+				foreach (var component in components)
+				{
+					if (component is IDisposable)
+						(component as IDisposable).Dispose();
+				}
+				components.Clear();
+			}
+		}
+
 		public void DestroyComponent(IComponent component)
 		{
 			lock (components)
 			{
 				if (components.Contains(component))
-				{
 					components.Remove(component);
-				}
 				else
-				{
 					return;
-				}
 			}
-			if (component is System.IDisposable)
-			{
-				(component as System.IDisposable).Dispose();
-			}
+			if (component is IDisposable)
+				(component as IDisposable).Dispose();
 		}
 
-		public void Dispose()
+
+		bool alreadyDestroyed = false;
+		public void Destroy()
 		{
-			foreach (var c in components)
-			{
-				DestroyComponent(c);
-			}
+			if (alreadyDestroyed) return;
+			alreadyDestroyed = true;
+			DestroyAllComponents();
 			Scene.Remove(this);
 		}
+		void IDisposable.Dispose() => Destroy();
 	}
 
 	public enum ChangedFlags

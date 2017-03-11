@@ -230,9 +230,9 @@ namespace MyEngine
 		void RenderMain()
 		{
 			renderThreadTime.FrameBegan();
+			EventSystem.Raise(new MyEngine.Events.FrameStarted());
 
 			this.Title = windowTitle + " " + renderThreadTime;
-
 			Debug.Tick("rendering / main render");
 
 			if (this.Focused) Input.Update();
@@ -240,18 +240,7 @@ namespace MyEngine
 
 			EventSystem.Raise(new MyEngine.Events.InputUpdate(renderThreadTime));
 			EventSystem.Raise(new MyEngine.Events.EventThreadUpdate(renderThreadTime));
-			EventSystem.Raise(new MyEngine.Events.PreRenderUpdate(renderThreadTime));
 
-
-			if (Debug.CommonCVars.PauseRenderPrepare() == false)
-			{
-				renderManagerBackReady.Wait();
-				renderManagerBackReady.Reset();
-				var tmp = renderManagerFront;
-				renderManagerFront = renderManagerBack;
-				renderManagerBack = tmp;
-				renderManagerPrepareNext.Set();
-			}
 
 			frameCounter++;
 			Debug.AddValue("rendering / frames rendered", frameCounter);
@@ -268,6 +257,16 @@ namespace MyEngine
 			ubo.engine.gammaCorrectionFinalColor = 1 / 2.2f;
 
 			//GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit); My.Check();
+			EventSystem.Raise(new MyEngine.Events.PreRenderUpdate(renderThreadTime));
+
+			if (Debug.CommonCVars.PauseRenderPrepare() == false)
+			{
+				renderManagerBackReady.Wait();
+				renderManagerBackReady.Reset();
+				var tmp = renderManagerFront;
+				renderManagerFront = renderManagerBack;
+				renderManagerBack = tmp;
+			}
 
 			{
 				var scene = scenes[0];
@@ -277,9 +276,12 @@ namespace MyEngine
 				if (renderThreadTime.FpsPer1Sec > 30) renderManagerFront.SkyboxCubeMap = scene.skyBox;
 				else renderManagerFront.SkyboxCubeMap = null;
 				renderManagerFront.RenderAll(ubo, camera, dataToRender.Lights, camera.postProcessEffects);
-			}
+			}	
 
-	
+			if (Debug.CommonCVars.PauseRenderPrepare() == false)
+			{
+				renderManagerPrepareNext.Set();
+			}
 
 			EventSystem.Raise(new MyEngine.Events.PostRenderUpdate(renderThreadTime));
 
@@ -287,6 +289,8 @@ namespace MyEngine
 
 			GC.Collect();
 			Mesh.ProcessFinalizerQueue();
+
+			EventSystem.Raise(new MyEngine.Events.FrameEnded());
 		}
 
 

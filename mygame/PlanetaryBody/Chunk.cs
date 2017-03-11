@@ -18,8 +18,11 @@ namespace MyGame.PlanetaryBody
 		/// <summary>
 		/// Planet local position
 		/// </summary>
-		public TriangleD noElevationRange;
-		public List<Chunk> childs { get; } = new List<Chunk>();
+		public TriangleD NoElevationRange { get; private set; }
+		TriangleD realVisibleRange;
+		TriangleD rangeToCalculateScreenSizeOn;
+
+		public List<Chunk> childs { get; } = new System.Collections.Generic.List<Chunk>();
 		public CustomChunkMeshRenderer renderer { get; set; }
 
 		public class CustomChunkMeshRenderer : MeshRenderer
@@ -31,7 +34,7 @@ namespace MyGame.PlanetaryBody
 
 			public override bool ShouldRenderInContext(Camera camera, RenderContext renderContext)
 			{
-				if(base.ShouldRenderInContext(camera, renderContext))
+				if (base.ShouldRenderInContext(camera, renderContext))
 				{
 					var dotToCam = chunk.DotToCamera(camera);
 					if (dotToCam > 0) return true;
@@ -62,26 +65,28 @@ namespace MyGame.PlanetaryBody
 			NoneNoParent = -1,
 		}
 
-		public Chunk(Root planetInfo, Chunk parentChunk, ChildPosition childPosition = ChildPosition.NoneNoParent)
+		public Chunk(Root planetInfo, TriangleD noElevationRange, Chunk parentChunk, ChildPosition childPosition = ChildPosition.NoneNoParent)
 		{
 			this.planetaryBody = planetInfo;
 			this.parentChunk = parentChunk;
 			this.childPosition = childPosition;
+			this.NoElevationRange = noElevationRange;
+			this.rangeToCalculateScreenSizeOn = noElevationRange;
 		}
 
 
-		Triangle[] meshTriangles;
+		TriangleD[] meshTriangles;
 
-		Triangle[] GetMeshTriangles()
+		TriangleD[] GetMeshTriangles()
 		{
 			if (meshTriangles == null)
-				meshTriangles = renderer?.Mesh?.GetMeshTriangles();
+				meshTriangles = renderer?.Mesh?.GetMeshTrianglesD();
 			return meshTriangles;
 		}
 
-		Vector3 CenterPosVec3 => noElevationRange.CenterPos.ToVector3();
+		Vector3d CenterPosVec3 => NoElevationRange.CenterPos;
 
-		public double GetHeight(Vector3 chunkLocalPosition)
+		public double GetHeight(Vector3d chunkLocalPosition)
 		{
 			//var barycentricOnChunk = noElevationRange.CalculateBarycentric(planetLocalPosition);
 			//var u = barycentricOnChunk.X;
@@ -90,7 +95,7 @@ namespace MyGame.PlanetaryBody
 			var triangles = GetMeshTriangles();
 			if (triangles != null)
 			{
-				var ray = new Ray(chunkLocalPosition, -CenterPosVec3.Normalized());
+				var ray = new RayD(-CenterPosVec3.Normalized(), chunkLocalPosition);
 				foreach (var t in triangles)
 				{
 					var hit = ray.CastRay(t);
@@ -112,7 +117,7 @@ namespace MyGame.PlanetaryBody
 		/// <returns></returns>
 		public double DotToCamera(Camera cam)
 		{
-			var dotToCamera = noElevationRange.Normal.Dot(
+			var dotToCamera = NoElevationRange.Normal.Dot(
 				planetaryBody.Transform.Position.Towards(cam.ViewPointPosition).ToVector3d().Normalized()
 			);
 
@@ -123,12 +128,11 @@ namespace MyGame.PlanetaryBody
 		{
 			bool isVisible = true;
 
-
-			var myPos = noElevationRange.CenterPos + planetaryBody.Transform.Position;
+			var myPos = rangeToCalculateScreenSizeOn.CenterPos + planetaryBody.Transform.Position;
 			var dirToCamera = myPos.Towards(cam.ViewPointPosition).ToVector3d();
 
 			// 0 looking at it from side, 1 looking at it from top, -1 looking at it from behind
-			var dotToCamera = noElevationRange.Normal.Dot(dirToCamera);
+			var dotToCamera = rangeToCalculateScreenSizeOn.Normal.Dot(dirToCamera);
 
 			var distanceToCamera = myPos.Distance(cam.ViewPointPosition);
 			if (renderer != null && renderer.Mesh != null)
@@ -136,13 +140,13 @@ namespace MyGame.PlanetaryBody
 				//var localCamPos = planetaryBody.Transform.Position.Towards(cam.ViewPointPosition).ToVector3();
 				//distanceToCamera = renderer.Mesh.Vertices.FindClosest((v) => v.DistanceSqr(localCamPos)).Distance(localCamPos);
 				//isVisible = cam.GetFrustum().VsBounds(renderer.GetCameraSpaceBounds(cam.ViewPointPosition));
-				isVisible = renderer.GetCameraRenderStatus(cam).HasFlag(RenderStatus.Rendered);
+				isVisible = renderer.GetCameraRenderStatusFeedback(cam).HasFlag(RenderStatus.Rendered);
 			}
 
 			double radiusCameraSpace;
 			{
 				// this is world space, doesnt take into consideration rotation, not good
-				var sphere = noElevationRange.ToBoundingSphere();
+				var sphere = rangeToCalculateScreenSizeOn.ToBoundingSphere();
 				var radiusWorldSpace = sphere.radius;
 				var fov = cam.fieldOfView;
 				radiusCameraSpace = radiusWorldSpace * MyMath.Cot(fov / 2) / distanceToCamera;
@@ -199,23 +203,30 @@ namespace MyGame.PlanetaryBody
         }
         */
 
+		public void CalculateRealVisibleRange()
+		{
+			//rangeToCalculateScreenSizeOn = realVisibleRange;
+		}
+
 		void AddChild(Vector3d a, Vector3d b, Vector3d c, ChildPosition cp)
 		{
-			var child = new Chunk(planetaryBody, this, cp);
+			var range = new TriangleD();
+			range.a = a;
+			range.b = b;
+			range.c = c;
+			var child = new Chunk(planetaryBody, range, this, cp);
 			childs.Add(child);
 			child.subdivisionDepth = subdivisionDepth + 1;
-			child.noElevationRange.a = a;
-			child.noElevationRange.b = b;
-			child.noElevationRange.c = c;
+			child.rangeToCalculateScreenSizeOn = range;
 		}
 
 		public void CreteChildren()
 		{
 			if (childs.Count <= 0)
 			{
-				var a = noElevationRange.a;
-				var b = noElevationRange.b;
-				var c = noElevationRange.c;
+				var a = NoElevationRange.a;
+				var b = NoElevationRange.b;
+				var c = NoElevationRange.c;
 				var ab = (a + b).Divide(2.0f).Normalized();
 				var ac = (a + c).Divide(2.0f).Normalized();
 				var bc = (b + c).Divide(2.0f).Normalized();
@@ -251,7 +262,7 @@ namespace MyGame.PlanetaryBody
 			renderer = null;
 		}
 
-		List<int> indiciesList;
+		System.Collections.Generic.List<int> indiciesList;
 		List<int> GetIndiciesList()
 		{
 			/*
@@ -267,7 +278,7 @@ namespace MyGame.PlanetaryBody
 			if (indiciesList != null) return indiciesList;
 
 			var numberOfVerticesOnEdge = NumberOfVerticesOnEdge;
-			indiciesList = new List<int>();
+			indiciesList = new System.Collections.Generic.List<int>();
 			// make triangles indicies list
 			{
 				int lineStartIndex = 0;

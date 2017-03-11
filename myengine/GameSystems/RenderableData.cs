@@ -15,8 +15,8 @@ namespace MyEngine
     
         public IList<ILight> Lights => lights;
 
-        List<IRenderable> renderers = new List<IRenderable>(1000);
-        List<ILight> lights = new List<ILight>(1000);
+		IList<IRenderable> renderers = new UnorderedList<IRenderable>(1000);
+		IList<ILight> lights = new UnorderedList<ILight>(1000);
 
         public void Add(IRenderable renderer)
         {

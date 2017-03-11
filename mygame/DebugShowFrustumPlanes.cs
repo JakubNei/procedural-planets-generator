@@ -14,7 +14,7 @@ namespace MyGame
 {
     public class DebugShowFrustumPlanes : ComponentWithShortcuts
     {
-        List<Entity> gos = new List<Entity>();
+		System.Collections.Generic.List<Entity> gos = new System.Collections.Generic.List<Entity>();
 
         public DebugShowFrustumPlanes(Entity entity) : base(entity)
         {

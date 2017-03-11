@@ -21,11 +21,12 @@ namespace MyGame
 
 		public bool disabledInput = false;
 		public bool speedBasedOnDistanceToPlanet = true;
+		public bool collideWithPlanetSurface = true;
 
 		Quaternion rotation;
 		WorldPos position;
 
-		float cameraSpeed = 10.0f;
+		float cameraSpeedModifier = 10.0f;
 		Point lastMousePos;
 		int scrollWheelValue;
 		Vector3 currentVelocity;
@@ -60,8 +61,8 @@ namespace MyGame
 			var planet = PlanetaryBody.Root.instance;
 
 
-			Debug.AddValue("camera / speed", cameraSpeed.ToString());
-			Debug.AddValue("camera / position", Transform.Position.ToString());
+			Debug.AddValue("camera / speed modifier", cameraSpeedModifier);
+			Debug.AddValue("camera / position", Transform.Position);
 
 			var mouse = Mouse.GetState();
 
@@ -101,9 +102,9 @@ namespace MyGame
 
 			if (Input.LockCursor == false) return;
 
-			if (scrollWheelDelta > 0) cameraSpeed *= 1.3f;
-			if (scrollWheelDelta < 0) cameraSpeed /= 1.3f;
-			cameraSpeed = MyMath.Clamp(cameraSpeed, 1, 100000);
+			if (scrollWheelDelta > 0) cameraSpeedModifier *= 1.3f;
+			if (scrollWheelDelta < 0) cameraSpeedModifier /= 1.3f;
+			cameraSpeedModifier = MyMath.Clamp(cameraSpeedModifier, 1, 100000);
 
 
 			/*
@@ -113,24 +114,31 @@ namespace MyGame
             System.Windows.Forms.Cursor.Position = p;*/
 
 
-
-			float d = cameraSpeed;
+			float currentSpeed = cameraSpeedModifier;
 
 			if (speedBasedOnDistanceToPlanet)
 			{
-				var distanceToPlanet = planet.Center.Distance(this.Transform.Position) - planet.RadiusMax - planet.RadiusVariation * 2;
-				d *= (1 + (float)distanceToPlanet.Abs() / 5.0f);
+				var planetLocalPosition = planet.Transform.Position.Towards(position).ToVector3d();
+				var sphericalPlanetLocalPosition = planet.CalestialToSpherical(planetLocalPosition);
+				var onPlanetSurfaceHeight = planet.GetSurfaceHeight(planetLocalPosition);
+				var onPlanetDistanceToSurface = sphericalPlanetLocalPosition.altitude - onPlanetSurfaceHeight;
+				Debug.AddValue("camera / distance to surface", onPlanetDistanceToSurface);
+
+				if (onPlanetDistanceToSurface > 1)
+					currentSpeed *= (1 + (float)onPlanetDistanceToSurface / 5.0f);
 			}
 
-			if (Input.GetKey(Key.ShiftLeft)) d *= 5;
+			if (Input.GetKey(Key.ShiftLeft)) currentSpeed *= 5;
+
+			Debug.AddValue("camera / real speed", currentSpeed);
 
 			var targetVelocity = Vector3.Zero;
-			if (Input.GetKey(Key.W)) targetVelocity += d * Constants.Vector3Forward;
-			if (Input.GetKey(Key.S)) targetVelocity -= d * Constants.Vector3Forward;
-			if (Input.GetKey(Key.D)) targetVelocity += d * Constants.Vector3Right;
-			if (Input.GetKey(Key.A)) targetVelocity -= d * Constants.Vector3Right;
-			if (Input.GetKey(Key.Space)) targetVelocity += d * Constants.Vector3Up;
-			if (Input.GetKey(Key.ControlLeft)) targetVelocity -= d * Constants.Vector3Up;
+			if (Input.GetKey(Key.W)) targetVelocity += currentSpeed * Constants.Vector3Forward;
+			if (Input.GetKey(Key.S)) targetVelocity -= currentSpeed * Constants.Vector3Forward;
+			if (Input.GetKey(Key.D)) targetVelocity += currentSpeed * Constants.Vector3Right;
+			if (Input.GetKey(Key.A)) targetVelocity -= currentSpeed * Constants.Vector3Right;
+			if (Input.GetKey(Key.Space)) targetVelocity += currentSpeed * Constants.Vector3Up;
+			if (Input.GetKey(Key.ControlLeft)) targetVelocity -= currentSpeed * Constants.Vector3Up;
 
 			//var pos = Matrix4.CreateTranslation(targetVelocity);
 
@@ -233,18 +241,20 @@ namespace MyGame
 
 			position += currentVelocity * (float)deltaTime;
 
-			var collideWithPlanetSurface = false;
 			// make cam on top of the planet
 			if (collideWithPlanetSurface)
 			{
-				var p = planet.Transform.Position.Towards(position).ToVector3d();
-				var camPosS = planet.CalestialToSpherical(p);
-				var h = 1 + planet.GetHeight(p);
-				if (camPosS.altitude < h || WalkOnPlanet.Bool)
+				var planetLocalPosition = planet.Transform.Position.Towards(position).ToVector3d();
+				var sphericalPlanetLocalPosition = planet.CalestialToSpherical(planetLocalPosition);
+				var onPlanetSurfaceHeight = planet.GetSurfaceHeight(planetLocalPosition);
+				var onPlanetDistanceToSurface = sphericalPlanetLocalPosition.altitude - onPlanetSurfaceHeight;
+
+				var h = onPlanetSurfaceHeight + 2;
+				if (sphericalPlanetLocalPosition.altitude <= h || WalkOnPlanet.Bool)
 				{
-					camPosS.altitude = h;
-					position = planet.Transform.Position + planet.SphericalToCalestial(camPosS).ToVector3();
-				}
+					sphericalPlanetLocalPosition.altitude = h;
+					position = planet.Transform.Position + planet.SphericalToCalestial(sphericalPlanetLocalPosition);
+				} 
 			}
 
 

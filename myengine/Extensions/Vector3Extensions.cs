@@ -9,14 +9,6 @@ namespace MyEngine
 {
 	public static partial class Vector3Extensions
 	{
-		public static Vector3 RotateBy(this Vector3 direction, Quaternion rotation)
-		{
-			var rot = Matrix3.CreateFromQuaternion(rotation);
-			Vector3 newDirection;
-			Vector3.Transform(ref direction, ref rot, out newDirection);
-			return newDirection;
-		}
-
 		public static Vector3 CompomentWiseMult(this Vector3 a, Vector3 b)
 		{
 			return new Vector3(a.X * b.X, a.Y * b.Y, a.Z * b.Z);

@@ -21,6 +21,10 @@ namespace MyEngine
 		{
 			return this.origin + this.direction * distance;
 		}
+		public Vector3d GetPoint(double distance)
+		{
+			return this.origin + this.direction * distance;
+		}
 		public override string ToString()
 		{
 			return string.Format("origin: {0}, direction: {1}", origin, direction);

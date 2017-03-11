@@ -80,7 +80,7 @@ namespace MyEngine.Components
 			cameraToRenderStatus[camera] = renderStatus;
 		}
 
-		public virtual RenderStatus GetCameraRenderStatus(Camera camera)
+		public virtual RenderStatus GetCameraRenderStatusFeedback(Camera camera)
 		{
 			return cameraToRenderStatus.GetValue(camera, RenderStatus.Unknown);
 		}

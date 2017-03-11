@@ -6,38 +6,8 @@ using System.Threading.Tasks;
 
 namespace MyEngine.Events
 {
-	public class EventThreadUpdate : DeltaTimeEvent
-	{
-		public EventThreadUpdate(FrameTime deltaTimeManager) : base(deltaTimeManager)
-		{
 
-		}
-	}
-
-	public class PreRenderUpdate : DeltaTimeEvent
-	{
-		public PreRenderUpdate(FrameTime deltaTimeManager) : base(deltaTimeManager)
-		{
-
-		}
-	}
-
-	public class PostRenderUpdate : DeltaTimeEvent
-	{
-		public PostRenderUpdate(FrameTime deltaTimeManager) : base(deltaTimeManager)
-		{
-
-		}
-	}
-	public class InputUpdate : DeltaTimeEvent
-	{
-		public InputUpdate(FrameTime deltaTimeManager) : base(deltaTimeManager)
-		{
-
-		}
-	}
-
-	public class DeltaTimeEvent : IEvent
+	public class FrameTimeEvent : IEvent
 	{
 		public readonly double DeltaTime;
 		public readonly double DeltaTimeOver1Second;
@@ -46,7 +16,7 @@ namespace MyEngine.Events
 
 		public readonly FrameTime FrameTime;
 
-		public DeltaTimeEvent(FrameTime deltaTimeManager)
+		public FrameTimeEvent(FrameTime deltaTimeManager)
 		{
 			this.FrameTime = deltaTimeManager;
 			this.DeltaTime = deltaTimeManager.DeltaTime;
@@ -54,6 +24,47 @@ namespace MyEngine.Events
 			this.DeltaTimeOver10Seconds = deltaTimeManager.DeltaTime10Seconds;
 		}
 	}
+	public class EventThreadUpdate : FrameTimeEvent
+	{
+		public EventThreadUpdate(FrameTime deltaTimeManager) : base(deltaTimeManager)
+		{
+
+		}
+	}
+
+	public class PreRenderUpdate : FrameTimeEvent
+	{
+		public PreRenderUpdate(FrameTime deltaTimeManager) : base(deltaTimeManager)
+		{
+
+		}
+	}
+
+	public class PostRenderUpdate : FrameTimeEvent
+	{
+		public PostRenderUpdate(FrameTime deltaTimeManager) : base(deltaTimeManager)
+		{
+
+		}
+	}
+	public class InputUpdate : FrameTimeEvent
+	{
+		public InputUpdate(FrameTime deltaTimeManager) : base(deltaTimeManager)
+		{
+
+		}
+	}
+
+	public class FrameStarted : IEvent
+	{
+
+	}
+
+	public class FrameEnded : IEvent
+	{
+
+	}
+
 	public class WindowResized : IEvent
 	{
 		public int NewPixelWidth { get; private set; }

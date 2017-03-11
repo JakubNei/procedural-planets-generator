@@ -6,9 +6,8 @@ uniform sampler2D param_snow;
 uniform sampler2D param_perlinNoise;
 uniform sampler2D param_baseHeightMap;
 
-uniform float param_planetRadius;
-uniform float param_finalPosWeight;
-uniform float param_debugWeight;
+uniform float param_planetRadiusMax;
+uniform float param_planetRadiusVariation;
 
 [VertexShader]
 
@@ -99,11 +98,9 @@ void main()
 		o[gl_InvocationID].modelPos = i[gl_InvocationID].modelPos; 
 		o[gl_InvocationID].normal = i[gl_InvocationID].normal; 
 		o[gl_InvocationID].uv = i[gl_InvocationID].uv; 
-		o[gl_InvocationID].tangent = i[gl_InvocationID].tangent; 
-				
+		o[gl_InvocationID].tangent = i[gl_InvocationID].tangent; 				
 
 		// TESS LEVEL BASED ON EYE DISTANCE
-
 		float d0=distance(i[0].worldPos,vec3(0));
 		float d1=distance(i[1].worldPos,vec3(0));
 		float d2=distance(i[2].worldPos,vec3(0));	
@@ -164,11 +161,11 @@ void main()
 	}
 	float AdjustTerrainAt(float x, float y) {
 		float result=0;
-		int octaves=3;
+		int octaves=1;
 		float frequency=1;
-		float height=4;
+		float height=1;
 		for(int i=0; i<octaves; i++) {
-			result=PerlinAt(x*frequency, y*frequency) * height;
+			result+=PerlinAt(x*frequency, y*frequency) * height;
 			height/=2;
 			frequency*=2;
 		}
@@ -189,9 +186,10 @@ void main()
 
 
 		// APPLY TERRAIN MODIFIER
-		vec2 xz=o.uv.xy * param_planetRadius * 50;
-		float x=xz.x;
-		float y=xz.y;
+		vec2 xz = o.uv.xy * param_planetRadiusMax * 10;
+		// vec2 xz = o.uv.xy * 1000000;		
+		float x = xz.x;
+		float y = xz.y;
 
 		o.worldPos += o.normal * AdjustTerrainAt(x, y);
 		
@@ -325,6 +323,9 @@ vec3 getColor() {
 			triPlanar(param_rock, pos, i.normal, 0.5) 
 		) / 3;
 
+	float height = texture2D(param_baseHeightMap, i.uv).x;
+	if(height <= 0) return vec3(0,0,1);
+
 	return rock;
 	//return mix(rock, snow, biomesSplatMap);
 }
@@ -350,8 +351,8 @@ void main()
 
 	//DEBUG
 	//out_color = vec4(vec3(1,0,0),1);
-	out_color = vec4(i.uv.x ,0,0,1);
-	out_color = vec4(texture2D(param_baseHeightMap, i.uv).xyz, 1);
+	//out_color = vec4(i.uv.x ,0,0,1);
+	//out_color = vec4(texture2D(param_baseHeightMap, i.uv).xyz, 1);
 	//out_color = vec4(vec3(param_finalPosWeight,0,0),1);
 	//out_color = vec4(param_debugWeight,0,0,1);
 }
