@@ -17,7 +17,7 @@ namespace MyGame
 {
 	public class ProceduralPlanets
 	{
-		public System.Collections.Generic.List<PlanetaryBody.Root> planets = new System.Collections.Generic.List<PlanetaryBody.Root>();
+		public List<PlanetaryBody.Root> planets = new List<PlanetaryBody.Root>();
 		SceneSystem scene;
 		Factory Factory => scene.Factory;
 		Debug Debug => scene.Debug;

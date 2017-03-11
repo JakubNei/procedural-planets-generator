@@ -70,7 +70,7 @@ namespace MyGame
 			public float checkDistanceRadius;
 		}
 
-		System.Collections.Generic.List<Star> stars = new System.Collections.Generic.List<Star>();
+		List<Star> stars = new List<Star>();
 
 		void Render()
 		{

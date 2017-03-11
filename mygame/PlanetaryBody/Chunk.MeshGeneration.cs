@@ -50,7 +50,7 @@ namespace MyGame.PlanetaryBody
 		{
 			if (skirtIndicies != null) return skirtIndicies;
 
-			var s = new System.Collections.Generic.List<Mesh.VertexIndex>();
+			var s = new List<Mesh.VertexIndex>();
 			// gather the edge vertices indicies
 			{
 				int lineStartIndex = 0;
@@ -77,7 +77,7 @@ namespace MyGame.PlanetaryBody
 			return skirtIndicies;
 		}
 
-		System.Collections.Generic.List<Vector3> verticesList = new System.Collections.Generic.List<Vector3>();
+		List<Vector3> verticesList = new List<Vector3>();
 		List<Vector3> GetVerticesList()
 		{
 			if (verticesList.Count > 0) return verticesList;
@@ -151,8 +151,8 @@ namespace MyGame.PlanetaryBody
 			}
 			*/
 
-			System.Collections.Generic.List<Vector3> vertices = GetVerticesList();
-			System.Collections.Generic.List<int> indicies = GetIndiciesList();
+			var vertices = GetVerticesList();
+			var indicies = GetIndiciesList();
 
 			mesh.Vertices.SetData(vertices);
 			mesh.TriangleIndicies.SetData(indicies);

@@ -22,7 +22,7 @@ namespace MyGame.PlanetaryBody
 		TriangleD realVisibleRange;
 		TriangleD rangeToCalculateScreenSizeOn;
 
-		public List<Chunk> childs { get; } = new System.Collections.Generic.List<Chunk>();
+		public List<Chunk> childs { get; } = new List<Chunk>();
 		public CustomChunkMeshRenderer renderer { get; set; }
 
 		public class CustomChunkMeshRenderer : MeshRenderer
@@ -262,7 +262,7 @@ namespace MyGame.PlanetaryBody
 			renderer = null;
 		}
 
-		System.Collections.Generic.List<int> indiciesList;
+		List<int> indiciesList;
 		List<int> GetIndiciesList()
 		{
 			/*
@@ -278,7 +278,7 @@ namespace MyGame.PlanetaryBody
 			if (indiciesList != null) return indiciesList;
 
 			var numberOfVerticesOnEdge = NumberOfVerticesOnEdge;
-			indiciesList = new System.Collections.Generic.List<int>();
+			indiciesList = new List<int>();
 			// make triangles indicies list
 			{
 				int lineStartIndex = 0;

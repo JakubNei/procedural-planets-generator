@@ -66,7 +66,7 @@ namespace MyGame.PlanetaryBody
 		PerlinD perlin;
 		WorleyD worley;
 
-		public System.Collections.Generic.List<Chunk> rootChunks = new System.Collections.Generic.List<Chunk>();
+		public List<Chunk> rootChunks = new List<Chunk>();
 
 		public Config config;
 
@@ -174,7 +174,7 @@ namespace MyGame.PlanetaryBody
 		}
 
 
-		void AddRootChunk(System.Collections.Generic.List<Vector3d> vertices, int A, int B, int C)
+		void AddRootChunk(List<Vector3d> vertices, int A, int B, int C)
 		{
 			var range = new TriangleD();
 			range.a = vertices[A];
@@ -198,8 +198,8 @@ namespace MyGame.PlanetaryBody
 
 			//detailLevel = (int)ceil(planetInfo.rootChunks[0].range.ToBoundingSphere().radius / 100);
 
-			var vertices = new System.Collections.Generic.List<Vector3d>();
-			var indicies = new System.Collections.Generic.List<uint>();
+			var vertices = new List<Vector3d>();
+			var indicies = new List<uint>();
 
 			var r = this.RadiusMax / 2.0;
 
@@ -312,7 +312,7 @@ namespace MyGame.PlanetaryBody
 		// new SortedList<double, Chunk>(ReverseComparer<double>.Default)
 		class ChunkWeightedList
 		{
-			System.Collections.Generic.List<Tuple<double, Chunk>> l = new System.Collections.Generic.List<Tuple<double, Chunk>>();
+			List<Tuple<double, Chunk>> l = new List<Tuple<double, Chunk>>();
 			public void Add(double weight, Chunk chunk)
 			{
 				l.Add(new Tuple<double, Chunk>(weight, chunk));
@@ -443,7 +443,7 @@ namespace MyGame.PlanetaryBody
 			toCalculateNormals.Clear();
 		}
 
-		System.Collections.Generic.List<Mesh> toCalculateNormals = new System.Collections.Generic.List<Mesh>();
+		List<Mesh> toCalculateNormals = new List<Mesh>();
 
 		public void CalculateNormalsOnGPU(Mesh mesh)
 		{
