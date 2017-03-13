@@ -134,5 +134,34 @@ namespace MyEngine
 			});
 		}
 
+		//List<Entity> gos = new List<Entity>();
+		//public DebugShowFrustumPlanes(Camera cam)
+		//{
+		//	for (int i = 0; i < 6; i++)
+		//	{
+		//		var e = Entity.Scene.AddEntity();
+		//		gos.Add(e);
+		//		var r = e.AddComponent<MeshRenderer>();
+		//		r.Mesh = Factory.GetMesh("internal/cube.obj");
+		//		e.Transform.Scale = new Vector3(10, 10, 1);
+		//	}
+
+		//	//Entity.EventSystem.Register<EventThreadUpdate>(e => Update(e.DeltaTimeNow));
+		//}
+		//void Update(double deltaTime)
+		//{
+		//	var p = Entity.GetComponent<Camera>().GetFrustum();
+
+		//	for (int i = 0; i < 6; i++)
+		//	{
+
+		//		 is broken maybe, furstum culling works but this doesnt make much sense
+
+		//		gos[i].transform.position = p[i].normal * p[i].distance;
+		//		gos[i].Transform.Rotation = QuaternionUtility.LookRotation(p[i].normal);
+		//	}
+		//}
+
+
 	}
 }

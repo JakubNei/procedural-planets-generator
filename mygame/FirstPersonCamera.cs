@@ -124,8 +124,8 @@ namespace MyGame
 				var onPlanetDistanceToSurface = sphericalPlanetLocalPosition.altitude - onPlanetSurfaceHeight;
 				Debug.AddValue("camera / distance to surface", onPlanetDistanceToSurface);
 
-				if (onPlanetDistanceToSurface > 1)
-					currentSpeed *= (1 + (float)onPlanetDistanceToSurface / 5.0f);
+				onPlanetDistanceToSurface = MyMath.Clamp(onPlanetDistanceToSurface, 1, 10000);
+				currentSpeed *= (1 + (float)onPlanetDistanceToSurface / 5.0f);
 			}
 
 			if (Input.GetKey(Key.ShiftLeft)) currentSpeed *= 5;

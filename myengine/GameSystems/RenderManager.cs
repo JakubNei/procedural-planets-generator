@@ -26,11 +26,6 @@ namespace MyEngine
 		IRenderable[] toRender = new IRenderable[10000];
 		//List<IRenderable> toRender = new List<IRenderable>();
 
-		[Dependency]
-		Debug debug;
-
-		[Dependency]
-		Factory factory;
 
 		Shader FinalDrawShader => factory.GetShader("internal/finalDraw.glsl");
 
@@ -39,12 +34,18 @@ namespace MyEngine
 		public bool debugBounds { get { return debug.CommonCVars.DrawDebugBounds().Bool; } }
 		public bool shadowsEnabled { get { return debug.CommonCVars.ShadowsDisabled().Bool == false; } }
 
-		public RenderManager(Events.EventSystem eventSystem)
+		readonly Factory factory;
+		readonly Debug debug;
+
+		public RenderManager(Events.EventSystem eventSystem, Factory factory, Debug debug)
 		{
+			this.factory = factory;
+			this.debug = debug;
+
 			eventSystem.Register<Events.WindowResized>(evt =>
 			{
 				if (GBuffer != null) GBuffer.Dispose();
-				GBuffer = new DeferredGBuffer(evt.NewPixelWidth, evt.NewPixelHeight);
+				GBuffer = new DeferredGBuffer(factory, evt.NewPixelWidth, evt.NewPixelHeight);
 			});
 		}
 
@@ -298,7 +299,7 @@ namespace MyEngine
 			}
 		}
 
-		int lastTotalPossible =0;
+		int lastTotalPossible = 0;
 		public void BuildRenderList(IList<IRenderable> possibleRenderables, Camera camera)
 		{
 			// without Parallel.ForEach = 130 fps
@@ -315,7 +316,7 @@ namespace MyEngine
 			toRenderCount = 0;
 			lock (possibleRenderables)
 			{
-				
+
 				Parallel.ForEach(possibleRenderables, (renderable) =>
 					{
 						if (renderable != null && renderable.ShouldRenderInContext(camera, RenderContext))

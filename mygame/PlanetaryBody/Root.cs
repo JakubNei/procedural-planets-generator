@@ -16,9 +16,7 @@ namespace MyGame.PlanetaryBody
 {
 	public class Root : ComponentWithShortcuts
 	{
-		public double RadiusMax => config.radiusMax;
-		public double RadiusVariation => config.radiusVariation;
-		public Texture2D baseHeightMap => config.baseHeightMap;
+		public double RadiusMin => config.radiusMin;
 
 		public HashSet<Chunk> toBeginGeneration = new HashSet<Chunk>();
 
@@ -38,7 +36,7 @@ namespace MyGame.PlanetaryBody
 				{
 					//var planetCircumference = 2 * Math.PI * radius;
 					//var oneRootChunkCircumference = planetCircumference / 6.0f;
-					var oneRootChunkCircumference = RadiusMax;
+					var oneRootChunkCircumference = RadiusMin;
 
 					subdivisionMaxRecurisonDepth = 0;
 					while (oneRootChunkCircumference > 200)
@@ -143,7 +141,7 @@ namespace MyGame.PlanetaryBody
 			}
 			if (height == -1)
 			{
-				height = RadiusMax;
+				height = RadiusMin;
 				if(chunk == null)
 					Scene.DebugShere(GetPosition(planetLocalPosition, height), 1000, new Vector4(1, 0, 0, 1));
 				else
@@ -186,9 +184,7 @@ namespace MyGame.PlanetaryBody
 
 		public void Initialize()
 		{			
-			PlanetMaterial.Uniforms.Set("param_planetRadiusMax", (float)RadiusMax);
-			PlanetMaterial.Uniforms.Set("param_planetRadiusVariation", (float)RadiusVariation);
-
+			config.SetTo(PlanetMaterial.Uniforms);
 			InitializeRootSegments();
 		}
 
@@ -201,7 +197,7 @@ namespace MyGame.PlanetaryBody
 			var vertices = new List<Vector3d>();
 			var indicies = new List<uint>();
 
-			var r = this.RadiusMax / 2.0;
+			var r = this.RadiusMin / 2.0;
 
 			var t = (1 + MyMath.Sqrt(5.0)) / 2.0 * r;
 			var d = r;
@@ -396,7 +392,7 @@ namespace MyGame.PlanetaryBody
 			nextChunkToGenerate = chunk;
 		}
 
-		UniformsManager computeShaderUniforms = new UniformsManager();
+		UniformsData computeShaderUniforms = new UniformsData();
 		void ExecuteComputeShader(Chunk chunk)
 		{
 			stats.Start();
@@ -407,17 +403,18 @@ namespace MyGame.PlanetaryBody
 
 			if (chunk.renderer == null && mesh != null) throw new Exception("concurency problem");
 
-			computeShaderUniforms.Set("planetRadiusMax", (float)RadiusMax);
-			computeShaderUniforms.Set("planetRadiusVariation", (float)RadiusVariation);
-			computeShaderUniforms.Set("offsetFromPlanetCenter", chunk.renderer.Offset.ToVector3());
-			computeShaderUniforms.Set("numberOfVerticesOnEdge", chunkNumberOfVerticesOnEdge);
-			computeShaderUniforms.Set("cornerPositionA", chunk.NoElevationRange.a.ToVector3());
-			computeShaderUniforms.Set("cornerPositionB", chunk.NoElevationRange.b.ToVector3());
-			computeShaderUniforms.Set("cornerPositionC", chunk.NoElevationRange.c.ToVector3());
-			computeShaderUniforms.Set("indiciesCount", mesh.TriangleIndicies.Count);
-			computeShaderUniforms.Set("param_baseHeightMap", baseHeightMap);
+			config.SetTo(computeShaderUniforms);
 
-			computeShaderUniforms.SendAllUniformsTo(computeShader.Uniforms);
+
+			computeShaderUniforms.Set("param_offsetFromPlanetCenter", chunk.renderer.Offset.ToVector3());
+			computeShaderUniforms.Set("param_numberOfVerticesOnEdge", chunkNumberOfVerticesOnEdge);
+			computeShaderUniforms.Set("param_cornerPositionA", chunk.NoElevationRange.a.ToVector3());
+			computeShaderUniforms.Set("param_cornerPositionB", chunk.NoElevationRange.b.ToVector3());
+			computeShaderUniforms.Set("param_cornerPositionC", chunk.NoElevationRange.c.ToVector3());
+			computeShaderUniforms.Set("param_indiciesCount", mesh.TriangleIndicies.Count);
+
+
+			computeShaderUniforms.SendAllUniformsTo(computeShader  .Uniforms);
 			computeShader.Bind();
 
 			GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 0, mesh.Vertices.VboHandle); MyGL.Check();

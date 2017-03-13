@@ -1,13 +1,12 @@
 [include internal/include.all.shader]
 
+[include shaders/include.planet.glsl]
+
 uniform sampler2D param_biomesSplatMap;
 uniform sampler2D param_rock;
 uniform sampler2D param_snow;
 uniform sampler2D param_perlinNoise;
-uniform sampler2D param_baseHeightMap;
 
-uniform float param_planetRadiusMax;
-uniform float param_planetRadiusVariation;
 
 [VertexShader]
 
@@ -115,7 +114,6 @@ void main()
 
 		//DEBUG
 		//gl_TessLevelInner[0] = gl_TessLevelOuter[0] = gl_TessLevelOuter[1] = gl_TessLevelOuter[2] = 2;
-
 	}
 
 
@@ -186,7 +184,7 @@ void main()
 
 
 		// APPLY TERRAIN MODIFIER
-		vec2 xz = o.uv.xy * param_planetRadiusMax * 10;
+		vec2 xz = o.uv.xy * float(param_radiusMin) * 10;
 		// vec2 xz = o.uv.xy * 1000000;		
 		float x = xz.x;
 		float y = xz.y;
@@ -234,13 +232,14 @@ layout(location = 2) out vec3 out_normal;
 layout(location = 3) out vec4 out_data;
 
 
-
+//#define USE_NON_OPTIMIZED_TRIPLNAR
 
 // TRIPLANAR TEXTURE PROJECTION
 vec3 triPlanar(sampler2D tex, vec3 position, vec3 normal, float scale) {
 
-	vec3 blendWeights = abs(normal);
-	blendWeights = clamp(pow(blendWeights, vec3(10)),0,1);
+//return vec3(0);
+
+	vec3 blendWeights = pow(abs(normal), vec3(20));
 	blendWeights /= blendWeights.x + blendWeights.y + blendWeights.z;
 
 	vec2 coord_x = position.yz * scale;
@@ -248,36 +247,34 @@ vec3 triPlanar(sampler2D tex, vec3 position, vec3 normal, float scale) {
 	vec2 coord_z = position.xy * scale;
 
 
-	vec3 result;
+	vec3 result = vec3(0);
 
-	#define TRILANAR_RESULT(A,B,C) \
-		result = blendWeights.##A * texture2D(tex, coord_##A).xyz; \
-		if(blendWeights.##B>0.05f) result += blendWeights.##B * texture2D(tex, coord_##B).xyz; \
-		//if(blendWeights.##C>0.05f) result = vec3(1,0,0); \
-		//if(blendWeights.##B>0.05f) result = vec3(1,0,0); \
-		//if(blendWeights.##C>0.05f) result += blendWeights.##C * texture2D(tex, coord_##C).xyz; \		
+#ifdef USE_NON_OPTIMIZED_TRIPLNAR
+	
+	result = 
+		blendWeights.x * texture2D(tex, coord_x).xyz +
+		blendWeights.y * texture2D(tex, coord_y).xyz +
+		blendWeights.z * texture2D(tex, coord_z).xyz;
 
-	if(blendWeights.x > blendWeights.y) { // x>y
-		if(blendWeights.x > blendWeights.z) { // x>y,x>z
-			if(blendWeights.y > blendWeights.z) { // x>y,x>z,y>z  x>y>z					
-				TRILANAR_RESULT(x,y,z)
-			} else { // x>y,x>z,z>y  x>z>y
-				TRILANAR_RESULT(x,z,y)
-			}
-		} else { // x>y,z>x  z>x>y 
-			TRILANAR_RESULT(z,x,y)
-		}
-	} else { // y>x
-		if(blendWeights.y > blendWeights.z) { // y>x,y>z 
-			if(blendWeights.x > blendWeights.z) { // y>x,y>z,x>z  y>x>z
-				TRILANAR_RESULT(y,x,z)
-			} else { // y>x,y>z,z>x  y>z>x
-				TRILANAR_RESULT(y,z,x)
-			}
-		} else { // y>x,z>y  z>y>x 
-			TRILANAR_RESULT(z,y,x)
-		}
-	}
+#else
+
+	const float threshold = 0.05f;
+	if(blendWeights.x > threshold) result += blendWeights.x * texture2D(tex, position.yz * scale).xyz;
+	if(blendWeights.y > threshold) result += blendWeights.y * texture2D(tex, position.zx * scale).xyz;
+	if(blendWeights.z > threshold) result += blendWeights.z * texture2D(tex, position.xy * scale).xyz;
+
+#endif
+
+/*
+// debug weights
+int numOfReads = 0;
+if(blendWeights.x > threshold) numOfReads++;
+if(blendWeights.y > threshold) numOfReads++;
+if(blendWeights.z > threshold) numOfReads++;
+if(numOfReads == 1) result = vec3(0,1,0);
+if(numOfReads == 2) result = vec3(0,0,1);
+if(numOfReads == 3) result = vec3(1,0,0);
+/**/
 
 	return result;
 

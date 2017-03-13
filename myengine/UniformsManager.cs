@@ -10,7 +10,7 @@ using OpenTK.Graphics.OpenGL4;
 
 namespace MyEngine
 {
-	public class UniformsManager
+	public class UniformsData
 	{
 		Dictionary<string, Texture> uniformsTexturesData = new Dictionary<string, Texture>();
 		Dictionary<string, object> uniformsObjectData = new Dictionary<string, object>();
@@ -18,7 +18,7 @@ namespace MyEngine
 		HashSet<string> uniformsChanged = new HashSet<string>();
 
 
-		public void SendAllUniformsTo(UniformsManager uniformManager)
+		public void SendAllUniformsTo(UniformsData uniformManager)
 		{
 			foreach (var kvp in uniformsObjectData) uniformManager.Set(kvp.Key, kvp.Value);
 			foreach (var kvp in uniformsTexturesData) uniformManager.Set(kvp.Key, kvp.Value);

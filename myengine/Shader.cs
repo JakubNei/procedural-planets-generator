@@ -27,7 +27,7 @@ namespace MyEngine
             LoadedError,
         }
         public State LoadState { get; private set; }
-        public UniformsManager Uniforms { get; private set; }
+        public UniformsData Uniforms { get; private set; }
 
         public bool shouldReload;
 
@@ -49,7 +49,7 @@ namespace MyEngine
         Shader(MyFile file)
         {
             this.file = file;
-            this.Uniforms = new UniformsManager();
+            this.Uniforms = new UniformsData();
         }
 
         void Load()

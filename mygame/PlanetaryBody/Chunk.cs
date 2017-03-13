@@ -231,9 +231,9 @@ namespace MyGame.PlanetaryBody
 				var ac = (a + c).Divide(2.0f).Normalized();
 				var bc = (b + c).Divide(2.0f).Normalized();
 
-				ab *= planetaryBody.RadiusMax;
-				ac *= planetaryBody.RadiusMax;
-				bc *= planetaryBody.RadiusMax;
+				ab *= planetaryBody.RadiusMin;
+				ac *= planetaryBody.RadiusMin;
+				bc *= planetaryBody.RadiusMin;
 
 				AddChild(a, ab, ac, ChildPosition.Top);
 				AddChild(ab, b, bc, ChildPosition.Left);

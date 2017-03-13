@@ -52,12 +52,12 @@ namespace MyEngine
 			}
 		}
 
-		public virtual UniformsManager Uniforms { get; private set; }
+		public virtual UniformsData Uniforms { get; private set; }
 
 		public Material(Factory factory)
 		{
 			this.factory = factory;
-			Uniforms = new UniformsManager();
+			Uniforms = new UniformsData();
 		}
 
 		public virtual void BeforeBindCallback()

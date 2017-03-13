@@ -70,7 +70,7 @@ namespace MyGame
 		{
 
 			/*{
-				// procedural stars or star dust
+				// procedural stars or space dust
 				var random = new Random();
 				for (int i = 0; i < 1000; i++)
 				{
@@ -108,12 +108,13 @@ namespace MyGame
 
 			// 6371000 earth radius
 			var cfg = new PlanetaryBody.Config();
-			cfg.radiusMax = 1000000;
-			cfg.radiusVariation = 20000;
+			cfg.radiusMin = 1000000;
 			cfg.baseHeightMap = Factory.GetTexture2D("textures/earth_elevation_map.png");
+			cfg.baseHeightMapMultiplier = 20000; //20 km
+			cfg.noiseMultiplier = 500;
 			var planet = AddPlanet();
 			planet.SetConfig(cfg);
-			planet.Transform.Position = new WorldPos(planet.RadiusMax * 3, 0, 0);
+			planet.Transform.Position = new WorldPos(planet.RadiusMin * 3, 0, 0);
 
 			var planetShader = Factory.GetShader("shaders/planet.shader");
 			var planetMaterial = new Material(Factory);
@@ -131,7 +132,7 @@ namespace MyGame
 			Cam.Transform.LookAt(planet.Transform.Position);
 			if (moveCameraToSurfaceOnStart)
 			{
-				Cam.Transform.Position = new WorldPos((float)-planet.RadiusMax, 0, 0) + planet.Transform.Position;
+				Cam.Transform.Position = new WorldPos((float)-planet.RadiusMin, 0, 0) + planet.Transform.Position;
 			}
 		}
 
@@ -146,7 +147,7 @@ namespace MyGame
 
 			var camPos = Cam.Transform.Position;
 
-			var closestPlanet = planets.OrderBy(p => p.Transform.Position.DistanceSqr(camPos) - p.RadiusMax * p.RadiusMax).First();
+			var closestPlanet = planets.OrderBy(p => p.Transform.Position.DistanceSqr(camPos) - p.RadiusMin * p.RadiusMin).First();
 
 			foreach (var p in planets)
 			{

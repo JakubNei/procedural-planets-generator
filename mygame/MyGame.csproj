@@ -5,7 +5,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{4391747C-59FA-429F-AAE9-42D9C80AFBE7}</ProjectGuid>
-    <OutputType>WinExe</OutputType>
+    <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>MyGame</RootNamespace>
     <AssemblyName>MyGame</AssemblyName>
@@ -52,7 +52,6 @@
   <ItemGroup>
     <Compile Include="CommonCVarsExtensions.cs" />
     <Compile Include="DebugKeys.cs" />
-    <Compile Include="DebugShowFrustumPlanes.cs" />
     <Compile Include="FirstPersonCamera.cs" />
     <Compile Include="GameTimeController.cs" />
     <Compile Include="MoveWithArrowKeys.cs" />

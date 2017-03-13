@@ -11,12 +11,6 @@ namespace MyEngine
 {
 	public class DeferredGBuffer : System.IDisposable
 	{
-		[Dependency]
-		Factory factory;
-
-		[Dependency]
-		Debug debug;
-
 		int frameBufferObjectHandle;
 
 		Texture2D[] textures;
@@ -40,11 +34,14 @@ namespace MyEngine
 			Final2 = 5,
 		}
 
-		int width;
-		int height;
 
-		public DeferredGBuffer(int width, int height)
+		readonly Factory factory;
+		readonly int width;
+		readonly int height;
+
+		public DeferredGBuffer(Factory factory, int width, int height)
 		{
+			this.factory = factory;
 			this.width = width;
 			this.height = height;
 
@@ -98,7 +95,7 @@ namespace MyEngine
             buffers = bufs.ToArray();
 
 			var status = GL.CheckFramebufferStatus(FramebufferTarget.DrawFramebuffer); MyGL.Check();
-			if (status != FramebufferErrorCode.FramebufferComplete) debug.Error(status);
+			if (status != FramebufferErrorCode.FramebufferComplete) throw new Exception(status.ToString());
 
             GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0); MyGL.Check(); //unbind
         }

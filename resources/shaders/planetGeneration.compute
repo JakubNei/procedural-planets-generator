@@ -3,11 +3,7 @@
 
 #define M_PI 3.1415926535897932384626433832795
 
-uniform sampler2D param_baseHeightMap;
-
-
-[include internal/include.perlinNoise.glsl]
-[include internal/include.worleyNoise.glsl]
+[include shaders/include.planet.glsl]
 
 
 
@@ -53,19 +49,6 @@ float GetHeightAt(vec3 initialPos)
 	return result;
 
 }
-
-
-
-
-uniform float planetRadiusMax;
-uniform float planetRadiusVariation;
-uniform vec3 offsetFromPlanetCenter;
-uniform int numberOfVerticesOnEdge;
-uniform vec3 cornerPositionA;
-uniform vec3 cornerPositionB;
-uniform vec3 cornerPositionC;
-uniform int indiciesCount;
-
 
  
 struct vec2_struct
@@ -152,6 +135,20 @@ vec3 calestialToSpherical(vec3 c /*calestial*/)
 
 
 
+
+uniform vec3 param_offsetFromPlanetCenter;
+uniform int param_numberOfVerticesOnEdge;
+uniform vec3 param_cornerPositionA;
+uniform vec3 param_cornerPositionB;
+uniform vec3 param_cornerPositionC;
+uniform int param_indiciesCount;
+
+
+
+
+
+
+
 void main() {
 	
 
@@ -161,36 +158,36 @@ void main() {
 	int ix = 0;
 	int iy = 0;
 		
-	int numberOfVerticesOnLine = 1;
-	while(tempId >= numberOfVerticesOnLine && numberOfVerticesOnLine < numberOfVerticesOnEdge)
+	int param_numberOfVerticesOnLine = 1;
+	while(tempId >= param_numberOfVerticesOnLine && param_numberOfVerticesOnLine < param_numberOfVerticesOnEdge)
 	{
-		tempId -= numberOfVerticesOnLine;
-		numberOfVerticesOnLine++;
+		tempId -= param_numberOfVerticesOnLine;
+		param_numberOfVerticesOnLine++;
 		iy++;
 	}
 	ix = tempId;
 
 	float x = 0;
 	float y = 0;
-	if(numberOfVerticesOnLine > 1) x = float(ix) / (numberOfVerticesOnLine-1);
-	if(numberOfVerticesOnEdge > 1) y = float(iy) / (numberOfVerticesOnEdge-1);
+	if(param_numberOfVerticesOnLine > 1) x = float(ix) / (param_numberOfVerticesOnLine-1);
+	if(param_numberOfVerticesOnEdge > 1) y = float(iy) / (param_numberOfVerticesOnEdge-1);
 
 	vec3 p = 
-		cornerPositionA + 
-		(cornerPositionB - cornerPositionA) * y * (1-x) + 
-		(cornerPositionC - cornerPositionA) * y * x;
+		param_cornerPositionA + 
+		(param_cornerPositionB - param_cornerPositionA) * y * (1-x) + 
+		(param_cornerPositionC - param_cornerPositionA) * y * x;
 
 	p = normalize(p);
 	vec2 uv = calestialToSpherical(p).xy;
 
-	float height = 0;
+	double height = param_radiusMin;
 
-	height += texture2D(param_baseHeightMap, uv).r; 
-	height += 0.1*GetHeightAt(p);
+	height += param_baseHeightMapMultiplier * texture2D(param_baseHeightMap, uv).r; 
+	height += param_noiseMultiplier * GetHeightAt(p);
 
 
-	p *= planetRadiusMax + planetRadiusVariation * height;
-	p -= offsetFromPlanetCenter;
+	p *= float(height);
+	p -= param_offsetFromPlanetCenter;
 
 	// DEBUG
 	//vec3 p = fromStruct(positions[id]);
