@@ -23,7 +23,6 @@ namespace MyEngine
 		[Dependency(Register = true)]
 		public Debug Debug { get; private set; }
 
-		[Dependency(Register = true)]
 		public FileSystem FileSystem { get; private set; }
 
 		List<SceneSystem> scenes = new List<SceneSystem>();
@@ -36,7 +35,7 @@ namespace MyEngine
 		[Dependency(Register = true)]
 		public Factory Factory { get; private set; }
 
-		public string windowTitle = "Procedural Planets Generator";
+		public string windowTitle = "Procedural Planet Generator";
 
 		public EngineMain() : base(
 			1400,
@@ -50,10 +49,12 @@ namespace MyEngine
 			GraphicsContextFlags.ForwardCompatible// | GraphicsContextFlags.Debug
 		)
 		{
+			Debug.Info("START"); // to have debug initialized before anything else
+
+			FileSystem = new FileSystem("../Resources/");
+			Dependency.Register(FileSystem);
 			Dependency.Register(this);
 			Dependency.BuildUp(this);
-
-			Debug.Info("START"); // to have debug initialized before anything else
 
 			System.Diagnostics.Process.GetCurrentProcess().PriorityClass = System.Diagnostics.ProcessPriorityClass.RealTime;
 			Thread.CurrentThread.Priority = ThreadPriority.Highest;
@@ -61,17 +62,11 @@ namespace MyEngine
 			VSync = VSyncMode.Off;
 			TargetRenderFrequency = 0;
 
-
-			//Texture2D.InitTexture2D();
 			ubo = new UniformBlock();
 			//new PhysicsUsage.PhysicsManager();
 
 			stopwatchSinceStart.Restart();
 
-			//{
-			//    var winForm = new Panels.DebugValuesTable();
-			//    winForm.Show();
-			//}
 			renderManagerFront = Dependency.Create<RenderManager>();
 			renderManagerBack = Dependency.Create<RenderManager>();
 

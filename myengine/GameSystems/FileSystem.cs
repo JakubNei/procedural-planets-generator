@@ -20,7 +20,7 @@ namespace MyEngine
 			{"shader", typeof(Shader)},
 		};
 
-		public FileSystem(string rootResourceFolderPath = "../../../Resources/")
+		public FileSystem(string rootResourceFolderPath)
 		{
 			this.rootResourceFolderPath = rootResourceFolderPath;
 		}
