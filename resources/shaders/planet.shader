@@ -161,11 +161,12 @@ void main()
 		float result=0;
 		int octaves=1;
 		float frequency=1;
-		float height=1;
+		float height=0.8;
+		const float safe = 100;
 		for(int i=0; i<octaves; i++) {
-			result+=PerlinAt(x*frequency, y*frequency) * height;
-			height/=2;
-			frequency*=2;
+			result += PerlinAt(mod(x*frequency, safe), mod(y*frequency,safe) ) * height;
+			height /= 2;
+			frequency *= 2;
 		}
 		return result;
 	}
