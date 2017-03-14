@@ -124,7 +124,7 @@ namespace MyGame
 				var onPlanetDistanceToSurface = sphericalPlanetLocalPosition.altitude - onPlanetSurfaceHeight;
 				Debug.AddValue("camera / distance to surface", onPlanetDistanceToSurface);
 
-				onPlanetDistanceToSurface = MyMath.Clamp(onPlanetDistanceToSurface, 1, 10000);
+				onPlanetDistanceToSurface = MyMath.Clamp(onPlanetDistanceToSurface, 1, 30000);
 				currentSpeed *= (1 + (float)onPlanetDistanceToSurface / 5.0f);
 			}
 
@@ -226,10 +226,7 @@ namespace MyGame
 					Quaternion.FromAxisAngle(-Vector3.UnitY, yawDelta) *
 					Quaternion.FromAxisAngle(-Vector3.UnitZ, rollDelta);
 
-
 				rotation = rotation * rotDelta;
-
-
 			}
 
 

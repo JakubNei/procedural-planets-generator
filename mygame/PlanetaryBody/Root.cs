@@ -100,9 +100,9 @@ namespace MyGame.PlanetaryBody
 		}
 
 
-		public SpehricalCoord CalestialToSpherical(Vector3d c) => SpehricalCoord.FromCalestial(c);
-		public SpehricalCoord CalestialToSpherical(Vector3 c) => SpehricalCoord.FromCalestial(c);
-		public Vector3d SphericalToCalestial(SpehricalCoord s) => s.ToCalestial();
+		public GeographicCoords CalestialToSpherical(Vector3d c) => GeographicCoords.ToGeographic(c);
+		public GeographicCoords CalestialToSpherical(Vector3 c) => GeographicCoords.ToSpherical(c);
+		public Vector3d SphericalToCalestial(GeographicCoords s) => s.ToPosition();
 
 		public Vector3d GetFinalPos(Vector3d calestialPos, int detailDensity = 1)
 		{
@@ -123,14 +123,17 @@ namespace MyGame.PlanetaryBody
 
 			if(chunk != null)
 			{
-				int safe = 100;
-				while (chunk.childs.Count > 0 && chunk.childs.Any(c => c.isGenerationDone) && safe-- > 0)
+				lock (chunk)
 				{
-					foreach (var child in chunk.childs)
+					int safe = 100;
+					while (chunk.childs.Count > 0 && chunk.childs.Any(c => c.isGenerationDone) && safe-- > 0)
 					{
-						if (child.isGenerationDone && rayFromPlanet.CastRay(child.NoElevationRange).DidHit)
+						foreach (var child in chunk.childs)
 						{
-							chunk = child;
+							if (child.isGenerationDone && rayFromPlanet.CastRay(child.NoElevationRange).DidHit)
+							{
+								chunk = child;
+							}
 						}
 					}
 				}

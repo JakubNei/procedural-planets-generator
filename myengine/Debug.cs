@@ -15,11 +15,8 @@ namespace MyEngine
 
 		List<string> alreadyShown = new List<string>();
 
-		[Dependency]
-		public InputSystem Input { get; private set; }
+		public readonly InputSystem Input;
 
-		[Dependency]
-		IDependencyManager dependency;
 
 
 		private ConcurrentDictionary<string, string> stringValues = new ConcurrentDictionary<string, string>();
@@ -44,8 +41,9 @@ namespace MyEngine
 			}
 		}
 
-		public Debug()
+		public Debug(InputSystem input)
 		{
+			this.Input = input;
             Instance = this;
             CommonCVars = new CommonCVars(this);
 			AddCommonCvars();

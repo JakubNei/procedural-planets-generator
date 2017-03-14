@@ -63,7 +63,7 @@
     <Compile Include="ProceduralSpaceSkybox.cs" />
     <Compile Include="_Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SphericalCoord.cs" />
+    <Compile Include="GeographicCoords.cs" />
     <Compile Include="VisualisePosition.cs" />
     <Compile Include="VisualizeDir.cs" />
   </ItemGroup>

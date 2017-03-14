@@ -20,10 +20,9 @@ namespace MyEngine
 		[Dependency(Register = true)]
 		public InputSystem Input { get; private set; }
 
-		[Dependency(Register = true)]
 		public Debug Debug { get; private set; }
 
-		public FileSystem FileSystem { get; private set; }
+		public FileSystem FileSystem { get; private set; } = new FileSystem("../Resources/");
 
 		List<SceneSystem> scenes = new List<SceneSystem>();
 
@@ -49,11 +48,12 @@ namespace MyEngine
 			GraphicsContextFlags.ForwardCompatible// | GraphicsContextFlags.Debug
 		)
 		{
+			Input = new InputSystem(this);
+			Debug = new Debug(Input);
+
 			Debug.Info("START"); // to have debug initialized before anything else
 
-			FileSystem = new FileSystem("../Resources/");
-			Dependency.Register(FileSystem);
-			Dependency.Register(this);
+			Dependency.Register(FileSystem, Debug, this);
 			Dependency.BuildUp(this);
 
 			System.Diagnostics.Process.GetCurrentProcess().PriorityClass = System.Diagnostics.ProcessPriorityClass.RealTime;

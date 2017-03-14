@@ -20,10 +20,10 @@ float GetHeightAt(vec3 initialPos)
 	
 	{ // base noise
 		vec3 pos = initialPos;
-		int octaves = 2;
-		float freq = 10;
-		float ampModifier = 0.05;
-		float freqModifier = 15;
+		int octaves = 8;
+		float freq = 400;
+		float ampModifier = 0.2;
+		float freqModifier = 5;
 		float amp = 1;
 		pos *= freq;
 		for (int i = 0; i < octaves; i++)
@@ -181,8 +181,10 @@ void main() {
 	vec2 uv = calestialToSpherical(p).xy;
 
 	double height = param_radiusMin;
-
-	height += param_baseHeightMapMultiplier * texture2D(param_baseHeightMap, uv).r; 
+	
+	if(param_baseHeightMapMultiplier > 0)
+		height += param_baseHeightMapMultiplier * texture2D(param_baseHeightMap, uv).r; 
+		
 	height += param_noiseMultiplier * GetHeightAt(p);
 
 
