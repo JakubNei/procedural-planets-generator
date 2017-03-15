@@ -68,10 +68,10 @@
     <Compile Include="CVar.cs" />
     <Compile Include="Collections\DataAccessibleList.cs" />
     <Compile Include="DataBinder.cs" />
-    <Compile Include="DebugForm.cs">
+    <Compile Include="Forms\DebugForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="DebugForm.Designer.cs">
+    <Compile Include="Forms\DebugForm.Designer.cs">
       <DependentUpon>DebugForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Extensions\ColorExtensions.cs" />
@@ -203,12 +203,9 @@
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
-    <Folder Include="Panels\" />
-    <Folder Include="SimulateGLSL\" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="DebugForm.resx">
+    <EmbeddedResource Include="Forms\DebugForm.resx">
       <DependentUpon>DebugForm.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>

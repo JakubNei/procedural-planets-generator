@@ -22,6 +22,9 @@ namespace MyGame.PlanetaryBody
 		TriangleD realVisibleRange;
 		TriangleD rangeToCalculateScreenSizeOn;
 
+
+		public int meshGeneratedWithShaderVersion;
+
 		public List<Chunk> childs { get; } = new List<Chunk>();
 		public CustomChunkMeshRenderer renderer { get; set; }
 

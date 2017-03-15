@@ -29,6 +29,11 @@ namespace MyEngine
         public State LoadState { get; private set; }
         public UniformsData Uniforms { get; private set; }
 
+		/// <summary>
+		/// Increases by one every time the shader is (re)loaded.
+		/// </summary>
+		public int Version { get; private set; } = 1;
+
         public bool shouldReload;
 
         public bool HasTesselation { get; private set; }
@@ -81,8 +86,9 @@ namespace MyEngine
                 LoadState = State.LoadedError;
             }
 
+			Version++;
 
-            fileWatcher.WatchFile(file.RealPath, (string newFilePath) =>
+			fileWatcher.WatchFile(file.RealPath, (string newFilePath) =>
             {
                 fileWatcher.StopAllWatchers();
                 shouldReload = true;
@@ -91,7 +97,7 @@ namespace MyEngine
             Uniforms.MarkAllUniformsAsChanged();
             cache_uniformLocations.Clear();
 
-        }
+		}
 
         /// <summary>
         /// Reloads the shader if marked to reload, binds the shader, uploads all changed uniforms;

@@ -321,8 +321,8 @@ vec3 getColor() {
 			triPlanar(param_rock, pos, i.normal, 0.5) 
 		) / 3;
 
-	float height = texture2D(param_baseHeightMap, i.uv).x;
-	if(height <= 0) return vec3(0,0,1);
+	//float height = texture2D(param_baseHeightMap, i.uv).x;
+	//if(height <= 0) return vec3(0,0,1);
 
 	return rock;
 	//return mix(rock, snow, biomesSplatMap);
@@ -349,10 +349,11 @@ void main()
 
 	//DEBUG
 	//out_color = vec4(vec3(1,0,0),1);
-	//out_color = vec4(i.uv.x ,0,0,1);
+	out_color = vec4(i.uv,0,1);
 	//out_color = vec4(texture2D(param_baseHeightMap, i.uv).xyz, 1);
 	//out_color = vec4(vec3(param_finalPosWeight,0,0),1);
 	//out_color = vec4(param_debugWeight,0,0,1);
+	//out_color = vec4(i.normal,1);
 }
 
 	

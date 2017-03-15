@@ -23,7 +23,7 @@ namespace MyGame.PlanetaryBody
 		/// <summary>
 		/// Is guaranteeed to be odd (1, 3, 5, 7, ...)
 		/// </summary>
-		public int chunkNumberOfVerticesOnEdge = 80;
+		public int chunkNumberOfVerticesOnEdge = 40;
 		public float sizeOnScreenNeededToSubdivide = 1f;
 
 		//public int subdivisionMaxRecurisonDepth = 10;
@@ -298,13 +298,21 @@ namespace MyGame.PlanetaryBody
 				}
 				else
 				{
-					chunk.renderer?.SetRenderingMode(MyRenderingMode.RenderGeometryAndCastShadows);
+					DoRenderChunk(chunk);
 				}
 			}
 			else
 			{
-				chunk.renderer?.SetRenderingMode(MyRenderingMode.RenderGeometryAndCastShadows);
+				DoRenderChunk(chunk);
 			}
+		}
+
+		void DoRenderChunk(Chunk chunk)
+		{
+			chunk.renderer?.SetRenderingMode(MyRenderingMode.RenderGeometryAndCastShadows);
+
+			if (computeShader.Version != chunk.meshGeneratedWithShaderVersion)
+				ToComputeShader(chunk);
 		}
 
 
@@ -389,10 +397,10 @@ namespace MyGame.PlanetaryBody
 		}
 
 
-		Chunk nextChunkToGenerate;
+		Queue<Chunk> chunksToGenerate = new Queue<Chunk>();
 		void ToComputeShader(Chunk chunk)
 		{
-			nextChunkToGenerate = chunk;
+			chunksToGenerate.Enqueue(chunk);
 		}
 
 		UniformsData computeShaderUniforms = new UniformsData();
@@ -432,6 +440,7 @@ namespace MyGame.PlanetaryBody
 
 			chunk.CalculateRealVisibleRange();
 			chunk.isGenerationDone = true;
+			chunk.meshGeneratedWithShaderVersion = computeShader.Version;
 
 			stats.End();
 			stats.Update();
@@ -462,11 +471,8 @@ namespace MyGame.PlanetaryBody
 
 		public void GPUThreadUpdate()
 		{
-			if (nextChunkToGenerate != null)
-			{
-				ExecuteComputeShader(nextChunkToGenerate);
-				nextChunkToGenerate = null;
-			}
+			while (chunksToGenerate.Count > 0)
+				ExecuteComputeShader(chunksToGenerate.Dequeue());
 		}
 
 
