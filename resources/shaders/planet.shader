@@ -3,9 +3,13 @@
 [include shaders/include.planet.glsl]
 
 uniform sampler2D param_biomesSplatMap;
-uniform sampler2D param_rock;
-uniform sampler2D param_snow;
 uniform sampler2D param_perlinNoise;
+
+uniform sampler2D param_rock_d;
+uniform sampler2D param_rock_n;
+
+uniform sampler2D param_snow_d;
+uniform sampler2D param_snow_n;
 
 
 [VertexShader]
@@ -156,19 +160,26 @@ void main()
 
 	float PerlinAt(float x, float y) {		
 		return texture2D(param_perlinNoise, vec2(x,y)).r;
+		//return perlinNoise(vec2(x,y));
 	}
 	float AdjustTerrainAt(float x, float y) {
-		float result=0;
 		int octaves=1;
 		float frequency=1;
-		float height=0.8;
-		const float safe = 100;
+		float height=0.3;
+		float result=-height/2;
+		const float safe = 10000;
 		for(int i=0; i<octaves; i++) {
-			result += PerlinAt(mod(x*frequency, safe), mod(y*frequency,safe) ) * height;
+			result += PerlinAt(x*frequency, y*frequency) * height;
 			height /= 2;
 			frequency *= 2;
 		}
+
 		return result;
+
+		// DEBUG
+		//const float c = 20;
+		//return mod(x, c) > c/2  ? 0.2 : 0;
+		
 	}
 
 
@@ -185,12 +196,15 @@ void main()
 
 
 		// APPLY TERRAIN MODIFIER
-		vec2 xz = o.uv.xy * float(param_radiusMin) * 10;
+		vec2 xz = o.uv.xy * float(param_radiusMin);
 		// vec2 xz = o.uv.xy * 1000000;		
 		float x = xz.x;
 		float y = xz.y;
 
-		o.worldPos += o.normal * AdjustTerrainAt(x, y);
+		vec3 direction;
+		direction = o.normal;
+
+		o.worldPos += direction * AdjustTerrainAt(x, y);
 		
 		//o.worldPos+=o.normal*adjustedHeight;
 		//>>>>//o.normal.y+=adjustedHeight*adjustedHeight;
@@ -201,7 +215,7 @@ void main()
 			t
 		);*/
 
-		o.normal=normalize(o.normal);
+		o.normal = normalize(o.normal);
 		gl_Position = engine.projectionMatrix * engine.viewMatrix * vec4(o.worldPos,1);
 
 	}
@@ -298,7 +312,7 @@ float rand(vec2 co){
 }
 
 
-vec3 getColor() {
+void getColor(out vec3 color, out vec3 normal) {
 
 	float biomesSplatMap = texture2D(param_biomesSplatMap, i.uv).r;
 	//return vec3(i.uv.y<-0.4);
@@ -307,24 +321,29 @@ vec3 getColor() {
 	vec3 pos = i.modelPos;
     //vec3 pos = engine.cameraPosition + i.worldPos;
 
-	vec3 snow = 
+	vec3 snow_d = 
 		(
-			triPlanar(param_snow, pos, i.normal, 0.005) +
-			triPlanar(param_snow, pos, i.normal, 0.05) +
-			triPlanar(param_snow, pos, i.normal, 0.5) 
-		) / 3;
+			triPlanar(param_snow_d, pos, i.normal, 0.05) +
+			triPlanar(param_snow_d, pos, i.normal, 0.5) 
+		) / 2;
 
-	vec3 rock = 
+	vec3 rock_d = 
 		(
-			triPlanar(param_rock, pos, i.normal, 0.005) +
-			triPlanar(param_rock, pos, i.normal, 0.05) +
-			triPlanar(param_rock, pos, i.normal, 0.5) 
-		) / 3;
+			triPlanar(param_rock_d, pos, i.normal, 0.05) +
+			triPlanar(param_rock_d, pos, i.normal, 0.5) 
+		) / 2;
 
-	float height = texture2D(param_baseHeightMap, i.uv).x;
-	if(height <= 0) return vec3(0,0,1);
+	vec3 rock_n = 
+		(
+			triPlanar(param_rock_n, pos, i.normal, 0.05) +
+			triPlanar(param_rock_n, pos, i.normal, 0.5) 
+		) / 2;
 
-	return rock;
+	//float height = texture2D(param_baseHeightMap, i.uv).x;
+	//if(height <= 0) return vec3(0,0,1);
+
+	color = rock_d;
+	normal = rock_n;
 	//return mix(rock, snow, biomesSplatMap);
 }
 
@@ -338,12 +357,23 @@ void main()
 	// BASE COLOR
 	//float pixelDepth = gl_FragCoord.z/gl_FragCoord.w; //distance(EyePosition, i.worldPos);
 	vec3 color = vec3(1,1,1);
-	color = getColor();
+	vec3 normalColorFromTexture;
+	getColor(color, normalColorFromTexture);
+
+
+	vec3 N = i.normal;
+	vec3 T = i.tangent;
+	vec3 T2 = T - N * dot(N, T); // Gram-Schmidt orthogonalization of T
+	vec3 B = normalize(cross(N,T2));
+	//if (dot(B2, B) < 0.0f) B2 *= -1.0f;
+	mat3 normalMatrix = mat3(-T,B,N); // column0, column1, column2		
+	vec3 normalFromTexture = normalize(normalColorFromTexture.xyz*2.0-1.0);
+	out_normal = normalize(normalMatrix * normalFromTexture);
+
 
 
 	out_color = vec4(pow(color,vec3(engine.gammaCorrectionTextureRead)),1);
-	//out_normal = normalize(i.normal);
-	out_normal = i.normal;
+	//out_normal = i.normal;
 	out_position = i.worldPos;
 	out_data = vec4(0);
 
@@ -353,7 +383,8 @@ void main()
 	//out_color = vec4(texture2D(param_baseHeightMap, i.uv).xyz, 1);
 	//out_color = vec4(vec3(param_finalPosWeight,0,0),1);
 	//out_color = vec4(param_debugWeight,0,0,1);
-	//out_color = vec4(i.normal,1);
+	//out_color = vec4(out_normal,1);
+	//out_color = vec4(i.tangent,1);
 }
 
 	

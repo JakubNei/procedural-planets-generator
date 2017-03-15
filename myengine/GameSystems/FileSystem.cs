@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -11,7 +12,8 @@ namespace MyEngine
 		[Dependency]
 		Debug Debug;
 
-		string rootResourceFolderPath;
+		string rootResourceDirectoryPath;
+		DirectoryInfo rootResourceDirectoryInfo;
 
 		public Dictionary<string, Type> extensionToTypeAssociation = new Dictionary<string, Type>()
 		{
@@ -20,32 +22,29 @@ namespace MyEngine
 			{"shader", typeof(Shader)},
 		};
 
-		public FileSystem(string rootResourceFolderPath)
+		public FileSystem(string rootResourceDirectoryPath)
 		{
-			this.rootResourceFolderPath = rootResourceFolderPath;
+			this.rootResourceDirectoryInfo = new DirectoryInfo(rootResourceDirectoryPath);
+			if (!rootResourceDirectoryInfo.Exists) throw new Exception(rootResourceDirectoryInfo + ", root resource folder does not exist");
+			this.rootResourceDirectoryPath = rootResourceDirectoryInfo.FullName;
 		}
 
 		public string CombineDirectory(params string[] pathParts)
 		{
-			return UseCorrectDirectorySeparator(string.Join("/", pathParts));
+			return pathParts.SelectMany(p => p.Split(new[] { '/', '\\' }, StringSplitOptions.RemoveEmptyEntries)).Join(System.IO.Path.DirectorySeparatorChar);
 		}
 
-		public string UseCorrectDirectorySeparator(string path)
-		{
-			path = path.Replace('/', System.IO.Path.DirectorySeparatorChar);
-			path = path.Replace('\\', System.IO.Path.DirectorySeparatorChar);
-			return path;
-		}
+
 
 		public bool FileExists(string virtualPath)
 		{
-			var realPath = CombineDirectory(rootResourceFolderPath, virtualPath);
+			var realPath = CombineDirectory(rootResourceDirectoryPath, virtualPath);
 			return System.IO.File.Exists(realPath);
 		}
 
 		public bool FileExists(string virtualPath, MyFolder startSearchInFolder)
 		{
-			var realPath = CombineDirectory(rootResourceFolderPath, startSearchInFolder.VirtualPath, virtualPath);
+			var realPath = CombineDirectory(rootResourceDirectoryPath, startSearchInFolder.VirtualPath, virtualPath);
 			if (System.IO.File.Exists(realPath))
 			{
 				return true;
@@ -62,17 +61,23 @@ namespace MyEngine
 
 		public MyFile FindFile(string virtualPath)
 		{
-			var realPath = CombineDirectory(rootResourceFolderPath, virtualPath);
-			if (System.IO.File.Exists(realPath))
+			var realPath = CombineDirectory(rootResourceDirectoryPath, virtualPath);
+			if (GlobSearch.IsNeeded(virtualPath))
 			{
-				return new MyFile(this, virtualPath, realPath);
+				var fileInfo = GlobSearch.FindFile(realPath);
+				return new MyFile(this, fileInfo.FullName.RemoveFromBegin(rootResourceDirectoryInfo.FullName.Length + 1), fileInfo.FullName);
 			}
 			else
 			{
-				Debug.Error("File " + virtualPath + " doesnt exits");
-				Debug.Pause();
-				return null;
+				if (System.IO.File.Exists(realPath))
+				{
+					return new MyFile(this, virtualPath, realPath);
+				}
 			}
+
+			Debug.Error("File " + virtualPath + " doesnt exits");
+			Debug.Pause();
+			return null;
 		}
 
 		public List<MyFile> Findfiles(params string[] virtualPaths)
@@ -87,14 +92,14 @@ namespace MyEngine
 
 		public MyFile FindFile(string virtualPath, MyFolder startSearchInFolder)
 		{
-			var realPath = CombineDirectory(rootResourceFolderPath, startSearchInFolder.VirtualPath, virtualPath);
+			var realPath = CombineDirectory(rootResourceDirectoryPath, startSearchInFolder.VirtualPath, virtualPath);
 			if (System.IO.File.Exists(realPath))
 			{
 				return new MyFile(this, CombineDirectory(startSearchInFolder.VirtualPath, virtualPath), realPath);
 			}
 			else
 			{
-				realPath = CombineDirectory(rootResourceFolderPath, virtualPath);
+				realPath = CombineDirectory(rootResourceDirectoryPath, virtualPath);
 				if (System.IO.File.Exists(realPath))
 				{
 					return new MyFile(this, virtualPath, realPath);

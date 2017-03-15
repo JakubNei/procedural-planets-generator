@@ -23,8 +23,8 @@ namespace MyGame.PlanetaryBody
 		/// <summary>
 		/// Is guaranteeed to be odd (1, 3, 5, 7, ...)
 		/// </summary>
-		public int chunkNumberOfVerticesOnEdge = 40;
-		public float sizeOnScreenNeededToSubdivide = 1f;
+		public int chunkNumberOfVerticesOnEdge = 60;
+		public float sizeOnScreenNeededToSubdivide = 0.7f;
 
 		//public int subdivisionMaxRecurisonDepth = 10;
 		int subdivisionMaxRecurisonDepth = -1;
@@ -121,7 +121,7 @@ namespace MyGame.PlanetaryBody
 
 			var chunk = rootChunks.FirstOrDefault(c => rayFromPlanet.CastRay(c.NoElevationRange).DidHit);
 
-			if(chunk != null)
+			if (chunk != null)
 			{
 				lock (chunk)
 				{
@@ -145,7 +145,7 @@ namespace MyGame.PlanetaryBody
 			if (height == -1)
 			{
 				height = RadiusMin;
-				if(chunk == null)
+				if (chunk == null)
 					Scene.DebugShere(GetPosition(planetLocalPosition, height), 1000, new Vector4(1, 0, 0, 1));
 				else
 					Scene.DebugShere(GetPosition(planetLocalPosition, height), 1000, new Vector4(1, 1, 0, 1));
@@ -186,7 +186,7 @@ namespace MyGame.PlanetaryBody
 		}
 
 		public void Initialize()
-		{			
+		{
 			config.SetTo(PlanetMaterial.Uniforms);
 			InitializeRootSegments();
 		}
@@ -397,7 +397,7 @@ namespace MyGame.PlanetaryBody
 		}
 
 
-		Queue<Chunk> chunksToGenerate = new Queue<Chunk>();
+		ConcurrentQueue<Chunk> chunksToGenerate = new ConcurrentQueue<Chunk>();
 		void ToComputeShader(Chunk chunk)
 		{
 			chunksToGenerate.Enqueue(chunk);
@@ -425,7 +425,7 @@ namespace MyGame.PlanetaryBody
 			computeShaderUniforms.Set("param_indiciesCount", mesh.TriangleIndicies.Count);
 
 
-			computeShaderUniforms.SendAllUniformsTo(computeShader  .Uniforms);
+			computeShaderUniforms.SendAllUniformsTo(computeShader.Uniforms);
 			computeShader.Bind();
 
 			GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 0, mesh.Vertices.VboHandle); MyGL.Check();
@@ -445,8 +445,6 @@ namespace MyGame.PlanetaryBody
 			stats.End();
 			stats.Update();
 
-			toCalculateNormals.Add(chunk.renderer.Mesh);
-
 
 			toCalculateNormals.ForEach(CalculateNormalsOnGPU);
 			toCalculateNormals.Clear();
@@ -456,23 +454,24 @@ namespace MyGame.PlanetaryBody
 
 		public void CalculateNormalsOnGPU(Mesh mesh)
 		{
-			Shader calculateNormalsShader = Factory.GetShader("internal/recalculateNormals.compute");
+			Shader calculateNormalsShader = Factory.GetShader("internal/calculateNormalsAndTangents.compute.glsl");
 			if (calculateNormalsShader.Bind())
 			{
-				GL.Uniform1(GL.GetUniformLocation(calculateNormalsShader.ShaderProgramHandle, "indiciesCount"), mesh.TriangleIndicies.Count); MyGL.Check();
+				GL.Uniform1(GL.GetUniformLocation(calculateNormalsShader.ShaderProgramHandle, "param_indiciesCount"), mesh.TriangleIndicies.Count); MyGL.Check();
 				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 0, mesh.Vertices.VboHandle); MyGL.Check();
 				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 1, mesh.Normals.VboHandle); MyGL.Check();
-				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 2, mesh.UVs.VboHandle); MyGL.Check();
-				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 3, mesh.TriangleIndicies.VboHandle); MyGL.Check();
+				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 2, mesh.Tangents.VboHandle); MyGL.Check();
+				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 3, mesh.UVs.VboHandle); MyGL.Check();
+				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 4, mesh.TriangleIndicies.VboHandle); MyGL.Check();
 				GL.DispatchCompute(mesh.Vertices.Count, 1, 1); MyGL.Check();
 			}
 		}
 
-
 		public void GPUThreadUpdate()
 		{
-			while (chunksToGenerate.Count > 0)
-				ExecuteComputeShader(chunksToGenerate.Dequeue());
+			Chunk toGenerate;
+			while (chunksToGenerate.TryDequeue(out toGenerate))
+				ExecuteComputeShader(toGenerate);
 		}
 
 

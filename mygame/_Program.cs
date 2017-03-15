@@ -86,7 +86,7 @@ namespace MyGame
 					entity.Transform.Scale *= 1000;
 					entity.Transform.Position = new WorldPos(-2000, -2000, 100);
 
-					/*var renderer = entity.AddComponent<MeshRenderer>();
+					var renderer = entity.AddComponent<MeshRenderer>();
 					renderer.Mesh = factory.GetMesh("sphere_smooth.obj");
 
 					var mat = renderer.Material = factory.NewMaterial();
@@ -94,7 +94,7 @@ namespace MyGame
 					mat.Uniforms.Set("param_turbulenceColorGradient", factory.GetTexture2D("textures/fire_gradient.png"));
 					mat.Uniforms.Set("param_turbulenceMap", factory.GetTexture2D("textures/turbulence_map.png"));
 					mat.Uniforms.Set("param_surfaceDiffuse", factory.GetTexture2D("textures/sun_surface_d.png"));
-					mat.Uniforms.Set("param_perlinNoise", factory.GetTexture2D("textures/perlin_noise.png"));*/			
+					mat.Uniforms.Set("param_perlinNoise", factory.GetTexture2D("textures/perlin_noise.png"));	
 				}
 
 				{

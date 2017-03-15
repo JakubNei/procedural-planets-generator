@@ -73,13 +73,16 @@ namespace MyEngine
 
 		public Texture2D GetTexture2D(string file)
 		{
-			Texture2D s;
-			if (!allTexture2Ds.TryGetValue(file, out s))
+			var search = new GlobSearch(file);
+			var texture = allTexture2Ds.FirstOrDefault(kvp => search.Matches(kvp.Key)).Value;
+
+			if (texture == null)
 			{
-				s = new Texture2D(this.FileSystem.FindFile(file));
-				allTexture2Ds[file] = s;
+				var f = this.FileSystem.FindFile(file);
+				texture = new Texture2D(f);
+				allTexture2Ds[f.VirtualPath] = texture;
 			}
-			return s;
+			return texture;
 		}
 
 		ConcurrentDictionary<string, Cubemap> allCubeMaps = new ConcurrentDictionary<string, Cubemap>();

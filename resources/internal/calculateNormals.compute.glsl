@@ -2,7 +2,7 @@
 [ComputeShader]
 
 
-uniform int indiciesCount;
+uniform int param_indiciesCount;
 
 struct vec3_struct
 {
@@ -31,7 +31,7 @@ layout( binding=3 ) buffer buffer4 {
 };
 
 
-layout( local_size_x = 1, local_size_y = 1, local_size_z = 1 ) in;
+layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
  
 
 vec3 fromStruct(vec3_struct p)
@@ -53,7 +53,7 @@ vec3 GetNormal(int a, int b, int c)
 	vec3 _a = fromStruct(positions[a]);
 	vec3 _b = fromStruct(positions[b]);
 	vec3 _c = fromStruct(positions[c]);
-	return normalize(cross(_b - _a, _c - _a));
+	return normalize(cross(normalize(_b - _a), normalize(_c - _a)));
 }
 
 
