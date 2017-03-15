@@ -42,11 +42,9 @@ void main()
 	out_normal = vec3(0);
 	out_uv = vec4(0);
 
-
 	//DEBUG
 	//out_color = vec4(i.uv/2+0.5, 1);
-	out_color = vec4(1);
-
+	//out_color = vec4(1);
 }
 
 	

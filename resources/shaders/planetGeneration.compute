@@ -19,13 +19,12 @@ float GetHeightAt(vec3 initialPos)
 	float result = 0;
 	
 	{ // base noise
-		vec2 pos = calestialToSpherical(initialPos).xy;
-		int octaves = 10;
-		float freq = 1;
-		float ampModifier = 0.5;
-		float freqModifier = 2;
-		float amp = 50;
-		result -= amp/2;
+		vec3 pos = initialPos;
+		int octaves = 8;
+		float freq = 400;
+		float ampModifier = 0.2;
+		float freqModifier = 5;
+		float amp = 1;
 		pos *= freq;
 		for (int i = 0; i < octaves; i++)
 		{
@@ -125,7 +124,6 @@ vec3 GetNormal(int a, int b, int c)
 
 
 
-
 uniform vec3 param_offsetFromPlanetCenter;
 uniform int param_numberOfVerticesOnEdge;
 uniform vec3 param_cornerPositionA;
@@ -172,7 +170,8 @@ void main() {
 
 	double height = param_radiusMin;
 	
-	//if(param_baseHeightMapMultiplier > 0) height += param_baseHeightMapMultiplier * texture2D(param_baseHeightMap, uv).r; 
+	if(param_baseHeightMapMultiplier > 0)
+		height += param_baseHeightMapMultiplier * texture2D(param_baseHeightMap, uv).r; 
 		
 	height += param_noiseMultiplier * GetHeightAt(p);
 
