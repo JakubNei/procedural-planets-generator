@@ -8,7 +8,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 
 /// <summary>
-/// Version 2017-03-11
+/// Version 2017-03-18
 /// Many useful extensions I've made over the years.
 /// All in one class.
 /// </summary>
@@ -424,28 +424,28 @@ public static class NeitriExtensions
 		return (double)System.Math.Floor(a);
 	}
 
-	public static double RoundToInt(this double a)
+	public static int RoundToInt(this double a)
 	{
 		return (int)a.Round();
 	}
-	public static double CeilToInt(this double a)
+	public static int CeilToInt(this double a)
 	{
 		return (int)a.Ceil();
 	}
-	public static double FloorToInt(this double a)
+	public static int FloorToInt(this double a)
 	{
 		return (int)a.Floor();
 	}
 
-	public static double RoundToLong(this double a)
+	public static long RoundToLong(this double a)
 	{
 		return (long)a.Round();
 	}
-	public static double CeilToLong(this double a)
+	public static long CeilToLong(this double a)
 	{
 		return (long)a.Ceil();
 	}
-	public static double FloorToLong(this double a)
+	public static long FloorToLong(this double a)
 	{
 		return (long)a.Floor();
 	}

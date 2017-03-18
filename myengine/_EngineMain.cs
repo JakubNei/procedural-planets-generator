@@ -59,7 +59,7 @@ namespace MyEngine
 			System.Diagnostics.Process.GetCurrentProcess().PriorityClass = System.Diagnostics.ProcessPriorityClass.RealTime;
 			Thread.CurrentThread.Priority = ThreadPriority.Highest;
 
-			VSync = VSyncMode.Off;
+			VSync = VSyncMode.On;
 			TargetRenderFrequency = 0;
 
 			ubo = new UniformBlock();
@@ -81,6 +81,12 @@ namespace MyEngine
                 var continuationTask = Task.Factory.ContinueWhenAll(new[] { task1, task2 }, task => Task.Factory.StartNew(RenderMain));
                 continuationTask.Wait();
                 */
+			};
+
+			Debug.CommonCVars.VSync().ToogledByKey(OpenTK.Input.Key.V).OnChanged += (cvar) =>
+			{
+				if(cvar.Bool) VSync = VSyncMode.On;
+				else VSync = VSyncMode.Off;
 			};
 
 			Debug.CommonCVars.Fullscreen().ToogledByKey(OpenTK.Input.Key.F).OnChanged += (cvar) =>

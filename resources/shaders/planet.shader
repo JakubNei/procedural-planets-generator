@@ -2,14 +2,7 @@
 
 [include shaders/include.planet.glsl]
 
-uniform sampler2D param_biomesSplatMap;
 uniform sampler2D param_perlinNoise;
-
-uniform sampler2D param_rock_d;
-uniform sampler2D param_rock_n;
-
-uniform sampler2D param_snow_d;
-uniform sampler2D param_snow_n;
 
 
 [VertexShader]
@@ -34,13 +27,11 @@ void main()
 	vec4 worldPos4 = (model.modelMatrix * vec4(modelPos, 1));	
 	vec3 worldPos3 = worldPos4.xyz / worldPos4.w;
 
-	vec3 normalModelSpace = in_normal;
-
 	gl_Position = model.modelViewProjectionMatrix * vec4(modelPos,1);
 	o.worldPos = worldPos3;
 	o.modelPos = modelPos;
 	o.uv = in_uv;
-	o.normal = (model.modelMatrix * vec4(normalModelSpace,0)).xyz;
+	o.normal = (model.modelMatrix * vec4(in_normal,0)).xyz;
 	o.tangent = (model.modelMatrix * vec4(in_tangent,0)).xyz;
 }
 
@@ -165,7 +156,7 @@ void main()
 	float AdjustTerrainAt(float x, float y) {
 		int octaves=1;
 		float frequency=1;
-		float height=0.3;
+		float height=0.5;
 		float result=-height/2;
 		const float safe = 10000;
 		for(int i=0; i<octaves; i++) {
@@ -273,7 +264,7 @@ vec3 triPlanar(sampler2D tex, vec3 position, vec3 normal, float scale) {
 
 #else
 
-	const float threshold = 0.05f;
+	const float threshold = 0.01;
 	if(blendWeights.x > threshold) result += blendWeights.x * texture2D(tex, position.yz * scale).xyz;
 	if(blendWeights.y > threshold) result += blendWeights.y * texture2D(tex, position.zx * scale).xyz;
 	if(blendWeights.z > threshold) result += blendWeights.z * texture2D(tex, position.xy * scale).xyz;
@@ -312,39 +303,52 @@ float rand(vec2 co){
 }
 
 
+bool TryBiome(vec3 biomeSplatMapSample, vec3 biomesSplatMapColor, sampler2D diffuseMap, sampler2D normalMap, out vec3 color, out vec3 normal)
+{
+	if(distance(biomeSplatMapSample, biomesSplatMapColor) > 0.2) return false;
+	vec3 pos = i.modelPos;
+
+	color = 
+		(
+			triPlanar(diffuseMap, pos, i.normal, 0.05) +
+			triPlanar(diffuseMap, pos, i.normal, 0.5) 
+		) / 2;
+
+	if(length(i.worldPos) < 200) {
+		normal = 
+			(
+				triPlanar(normalMap, pos, i.normal, 0.05) +
+				triPlanar(normalMap, pos, i.normal, 0.5) 
+			) / 2;
+	} else {
+		 normal = vec3(0.5, 0.5, 1);
+	}
+
+	return true;
+}
+
 void getColor(out vec3 color, out vec3 normal) {
 
-	float biomesSplatMap = texture2D(param_biomesSplatMap, i.uv).r;
-	//return vec3(i.uv.y<-0.4);
-	//return vec3(biomesSplatMap);
+	vec3 biomesSplatMapSample = texture2D(param_biomesSplatMap, i.uv).xyz;
 
-	vec3 pos = i.modelPos;
-    //vec3 pos = engine.cameraPosition + i.worldPos;
+	// DEBUG
+	//color = biomesSplatMapSample; return;
 
-	vec3 snow_d = 
-		(
-			triPlanar(param_snow_d, pos, i.normal, 0.05) +
-			triPlanar(param_snow_d, pos, i.normal, 0.5) 
-		) / 2;
 
-	vec3 rock_d = 
-		(
-			triPlanar(param_rock_d, pos, i.normal, 0.05) +
-			triPlanar(param_rock_d, pos, i.normal, 0.5) 
-		) / 2;
 
-	vec3 rock_n = 
-		(
-			triPlanar(param_rock_n, pos, i.normal, 0.05) +
-			triPlanar(param_rock_n, pos, i.normal, 0.5) 
-		) / 2;
 
-	//float height = texture2D(param_baseHeightMap, i.uv).x;
-	//if(height <= 0) return vec3(0,0,1);
+#define TRY_BIOME(A) if(TryBiome(biomesSplatMapSample, param_biome##A##_biomesSplatMapColor, param_biome##A##_diffuseMap, param_biome##A##_normalMap, color, normal)) return;
 
-	color = rock_d;
-	normal = rock_n;
-	//return mix(rock, snow, biomesSplatMap);
+    TRY_BIOME(0)
+    TRY_BIOME(1)
+    TRY_BIOME(2)
+    TRY_BIOME(3)
+    TRY_BIOME(4)
+    TRY_BIOME(5)
+    TRY_BIOME(6)
+    TRY_BIOME(7)
+    TRY_BIOME(8)
+
 }
 
 
@@ -360,15 +364,26 @@ void main()
 	vec3 normalColorFromTexture;
 	getColor(color, normalColorFromTexture);
 
+	float distToCamera = length(i.worldPos);
+	float defaultNormalWeight = smoothstep(100, 200, distToCamera);
 
-	vec3 N = i.normal;
-	vec3 T = i.tangent;
-	vec3 T2 = T - N * dot(N, T); // Gram-Schmidt orthogonalization of T
-	vec3 B = normalize(cross(N,T2));
-	//if (dot(B2, B) < 0.0f) B2 *= -1.0f;
-	mat3 normalMatrix = mat3(-T,B,N); // column0, column1, column2		
-	vec3 normalFromTexture = normalize(normalColorFromTexture.xyz*2.0-1.0);
-	out_normal = normalize(normalMatrix * normalFromTexture);
+	if(defaultNormalWeight < 1) {
+		vec3 N = i.normal;
+		vec3 T = i.tangent;
+		vec3 T2 = T - N * dot(N, T); // Gram-Schmidt orthogonalization of T
+		vec3 B = normalize(cross(N,T2));
+		//if (dot(B2, B) < 0) B2 *= -1;
+		mat3 normalMatrix = mat3(T,B,N); // column0, column1, column2		
+		vec3 normalFromTexture = normalize(normalColorFromTexture.xyz*2.0-1.0);
+		out_normal = 
+			normalize(mix(				
+				normalMatrix * normalFromTexture,
+				i.normal,
+				defaultNormalWeight
+			));
+	} else {		
+		out_normal = i.normal;
+	}
 
 
 
@@ -383,7 +398,6 @@ void main()
 	//out_color = vec4(texture2D(param_baseHeightMap, i.uv).xyz, 1);
 	//out_color = vec4(vec3(param_finalPosWeight,0,0),1);
 	//out_color = vec4(param_debugWeight,0,0,1);
-	//out_color = vec4(out_normal,1);
 	//out_color = vec4(i.tangent,1);
 }
 

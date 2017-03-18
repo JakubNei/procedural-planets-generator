@@ -41,9 +41,9 @@ namespace MyEngine
 
 		public MaterialPBR(Factory factory) : base(factory)
 		{
-			albedoTexture = factory.whiteTexture;
-			metallicTexture = factory.whiteTexture;
-			smoothnessTexture = factory.whiteTexture;
+			albedoTexture = factory.WhiteTexture;
+			metallicTexture = factory.WhiteTexture;
+			smoothnessTexture = factory.WhiteTexture;
 			normalMap = null;
 		}
 
@@ -52,7 +52,7 @@ namespace MyEngine
 			foreach (var p in fieldsToSend)
 			{
 				object val = p.GetValue(this);
-				if (val != null) Uniforms.Set("material." + p.Name, val);
+				if (val != null) Uniforms.GenericSet("material." + p.Name, val);
 			}
 			Uniforms.Set("material.useNormalMapping", normalMap != null);
 			Uniforms.Set("material.useParallaxMapping", depthMap != null);

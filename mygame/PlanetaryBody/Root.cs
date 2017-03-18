@@ -24,28 +24,29 @@ namespace MyGame.PlanetaryBody
 		/// Is guaranteeed to be odd (1, 3, 5, 7, ...)
 		/// </summary>
 		public int chunkNumberOfVerticesOnEdge = 60;
-		public float sizeOnScreenNeededToSubdivide = 0.7f;
+		public float sizeOnScreenNeededToSubdivide = 0.5f;
 
-		//public int subdivisionMaxRecurisonDepth = 10;
-		int subdivisionMaxRecurisonDepth = -1;
+		private int cachedSubdivisionMaxRecurisonDepth = -1;
 		public int SubdivisionMaxRecurisonDepth
 		{
 			get
 			{
-				if (subdivisionMaxRecurisonDepth < 0)
+				return int.MaxValue;
+
+				if (cachedSubdivisionMaxRecurisonDepth < 0)
 				{
 					//var planetCircumference = 2 * Math.PI * radius;
 					//var oneRootChunkCircumference = planetCircumference / 6.0f;
 					var oneRootChunkCircumference = RadiusMin;
 
-					subdivisionMaxRecurisonDepth = 0;
-					while (oneRootChunkCircumference > 200)
+					cachedSubdivisionMaxRecurisonDepth = 0;
+					while (oneRootChunkCircumference > 100)
 					{
 						oneRootChunkCircumference /= 2;
-						subdivisionMaxRecurisonDepth++;
+						cachedSubdivisionMaxRecurisonDepth++;
 					}
 				}
-				return subdivisionMaxRecurisonDepth;
+				return cachedSubdivisionMaxRecurisonDepth;
 			}
 		}
 

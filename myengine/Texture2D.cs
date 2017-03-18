@@ -45,7 +45,7 @@ namespace MyEngine
 			UpdateIsOnGpu();
 		}
 
-		public Texture2D(MyFile file)
+		public Texture2D(MyFile file) 
 		{
 			this.file = file;
 			file.OnFileChanged(() => WantsToBeUploadedToGpu = true);
@@ -142,7 +142,7 @@ namespace MyEngine
 			// We will not upload mipmaps, so disable mipmapping (otherwise the texture will not appear).
 			// We can use GL.GenerateMipmaps() or GL.Ext.GenerateMipmaps() to create
 			// mipmaps automatically. In that case, use TextureMinFilter.LinearMipmapLinear to enable them.
-			if (UsingMipMaps)
+			if (UseMipMaps)
 			{
 				GL.GenerateMipmap(GenerateMipmapTarget.Texture2D); MyGL.Check();
 			}

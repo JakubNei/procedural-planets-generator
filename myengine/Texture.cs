@@ -24,10 +24,11 @@ namespace MyEngine
 	public abstract class Texture
 	{
 		public int anisoLevel;
-		public bool UsingMipMaps { get; protected set; }
+		public bool UseMipMaps { get; set; } = true;
 		public FilterMode filterMode = FilterMode.Trilinear;
 		public float mipMapBias;
 		public TextureWrapMode wrapMode = TextureWrapMode.Repeat;
+
 
 		public virtual int GetNativeTextureID()
 		{
@@ -37,7 +38,7 @@ namespace MyEngine
 
 		protected TextureMinFilter GetTextureMinFilter()
 		{
-			if (UsingMipMaps)
+			if (UseMipMaps)
 			{
 				if (filterMode == FilterMode.Point) return TextureMinFilter.NearestMipmapNearest;
 				else return TextureMinFilter.LinearMipmapLinear;

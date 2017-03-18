@@ -168,11 +168,14 @@ void main() {
 	p = normalize(p);
 	vec2 uv = calestialToSpherical(p).xy;
 
+
+	vec3 biomeSplatMapSample = texture2D(param_biomesSplatMap, uv).xyz;
+
+
 	double height = param_radiusMin;
 	
-	if(param_baseHeightMapMultiplier > 0)
-		height += param_baseHeightMapMultiplier * texture2D(param_baseHeightMap, uv).r; 
-		
+	if(param_baseHeightMapMultiplier > 0) height += param_baseHeightMapMultiplier * texture2D(param_baseHeightMap, uv).r; 
+			
 	height += param_noiseMultiplier * GetHeightAt(p);
 
 

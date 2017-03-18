@@ -110,8 +110,17 @@ namespace MyGame
 			var cfg = new PlanetaryBody.Config();
 			cfg.radiusMin = 1000000;
 			cfg.baseHeightMap = Factory.GetTexture2D("textures/earth_elevation_map.png");
+			cfg.biomesSplatMap = Factory.GetTexture2D("textures/biomes_splat_map.bmp");
+			cfg.biomesSplatMap.filterMode = FilterMode.Point;
 			cfg.baseHeightMapMultiplier = 20000; //20 km
 			cfg.noiseMultiplier = 500;
+			cfg.AddBiome(new Vector3(1, 1, 1), Factory.GetTexture2D("biomes/snow_d.*"), Factory.DefaultNormalMap); // white
+			cfg.AddBiome(new Vector3(1, 1, 0), Factory.GetTexture2D("biomes/sand2_d.*"), Factory.DefaultNormalMap); // yellow
+			cfg.AddBiome(new Vector3(1, 1, 0.5f), Factory.GetTexture2D("biomes/sand_d.*"), Factory.GetTexture2D("biomes/sand_n.*")); // sand
+			cfg.AddBiome(new Vector3(0.5f, 0.5f, 0.5f), Factory.GetTexture2D("biomes/tundra_d.*"), Factory.GetTexture2D("biomes/tundra_n.*")); // grey
+			cfg.AddBiome(new Vector3(0, 0.5f, 0), Factory.GetTexture2D("biomes/forest_d.*"), Factory.GetTexture2D("biomes/forest_n.*")); // green
+			cfg.AddBiome(new Vector3(0.25f, 0.5f, 0.25f), Factory.GetTexture2D("biomes/tundra2_d.*"), Factory.GetTexture2D("biomes/tundra2_n.*")); // green-vomit
+			//cfg.AddBiome(new Vector3(0, 0, 0.5f), Factory.GetTexture2D("biomes/sand_d.*"), Factory.GetTexture2D("biomes/sand_n.*")); // blue
 			var planet = AddPlanet();
 			planet.SetConfig(cfg);
 			planet.Transform.Position = new WorldPos(planet.RadiusMin * 3, 0, 0);
@@ -119,9 +128,6 @@ namespace MyGame
 			var planetShader = Factory.GetShader("shaders/planet.shader");
 			var planetMaterial = new Material(Factory);
 			planetMaterial.GBufferShader = planetShader;
-			planetMaterial.Uniforms.Set("param_rock_d", Factory.GetTexture2D("textures/rock_d.*"));
-			planetMaterial.Uniforms.Set("param_rock_n", Factory.GetTexture2D("textures/rock_n.*"));
-			planetMaterial.Uniforms.Set("param_biomesSplatMap", Factory.GetTexture2D("textures/biomesSplatMap.png"));
 			planetMaterial.Uniforms.Set("param_perlinNoise", Factory.GetTexture2D("textures/perlin_noise.png"));
 			planetMaterial.Uniforms.Set("param_baseHeightMap", cfg.baseHeightMap);
 			planet.PlanetMaterial = planetMaterial;
@@ -136,12 +142,14 @@ namespace MyGame
 			}
 		}
 
+
+
 		bool freezeUpdate = false;
 		void PlanetLogicUpdate()
 		{
 			if (freezeUpdate) return;
 
-			if(runPlanetLogicInOwnThread) canRunNextLogicUpdate.Wait();
+			if (runPlanetLogicInOwnThread) canRunNextLogicUpdate.Wait();
 
 			Debug.Tick("generation / planet logic");
 

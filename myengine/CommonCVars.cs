@@ -33,6 +33,8 @@ namespace MyEngine
 		public static CVar DebugRenderWithLines(this CommonCVars c) => c.GetCVar();
 		public static CVar SortRenderers(this CommonCVars c) => c.GetCVar();
 		public static CVar Fullscreen(this CommonCVars c) => c.GetCVar();
+
+		public static CVar VSync(this CommonCVars c) => c.GetCVar();
 		
 	}
 }

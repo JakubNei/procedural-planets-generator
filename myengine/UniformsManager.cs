@@ -12,35 +12,37 @@ namespace MyEngine
 {
 	public class UniformsData
 	{
-		Dictionary<string, Texture> uniformsTexturesData = new Dictionary<string, Texture>();
-		Dictionary<string, object> uniformsObjectData = new Dictionary<string, object>();
+		Dictionary<string, Texture> uniformTexturesData = new Dictionary<string, Texture>();
+		Dictionary<string, object> uniformStructsData = new Dictionary<string, object>();
 
-		HashSet<string> uniformsChanged = new HashSet<string>();
+		HashSet<string> uniformStructsChanged = new HashSet<string>();
+		HashSet<string> uniformTexturesChanged = new HashSet<string>();
 
 
 		public void SendAllUniformsTo(UniformsData uniformManager)
 		{
-			foreach (var kvp in uniformsObjectData) uniformManager.Set(kvp.Key, kvp.Value);
-			foreach (var kvp in uniformsTexturesData) uniformManager.Set(kvp.Key, kvp.Value);
+			foreach (var kvp in uniformStructsData) uniformManager.GenericSet(kvp.Key, kvp.Value);
+			foreach (var kvp in uniformTexturesData) uniformManager.Set(kvp.Key, kvp.Value);
 		}
 
 		/// <summary>
-		/// Uploads all uniforms markes as changed into GPU at uniform location from shader.
+		/// Uploads all uniforms marked as changed into GPU at uniform locations from shader.
+		/// Again upload all texture uniform locations.
 		/// </summary>
 		/// <param name="shader"></param>
 		public void UploadChangedUniforms(Shader shader)
 		{
-			if (uniformsChanged.Count > 0)
+			if (uniformStructsChanged.Count > 0)
 			{
-				foreach (var name in uniformsChanged)
+				foreach (var name in uniformStructsChanged)
 				{
-					TryUploadStructType(shader, name, uniformsObjectData[name]);
+					TryUploadStructType(shader, name, uniformStructsData[name]);
 				}
-				uniformsChanged.Clear();
+				uniformStructsChanged.Clear();
 			}
 
 			int texturingUnit = 0;
-			foreach (var kvp in uniformsTexturesData)
+			foreach (var kvp in uniformTexturesData)
 			{
 				if (TryUploadStructType(shader, kvp.Key, texturingUnit))
 				{
@@ -48,6 +50,7 @@ namespace MyEngine
 					texturingUnit++;
 				}
 			}
+			if (uniformTexturesChanged.Count > 0) uniformTexturesChanged.Clear();
 		}
 
 
@@ -58,34 +61,41 @@ namespace MyEngine
 		{
 			lock (this)
 			{
-				foreach (var kvp in uniformsObjectData)
-				{
-					uniformsChanged.Add(kvp.Key);
-				}
+				foreach (var kvp in uniformStructsData) uniformStructsChanged.Add(kvp.Key);
+				foreach (var kvp in uniformTexturesData) uniformTexturesChanged.Add(kvp.Key);
 			}
 		}
 
+		public void Set(string name, Texture data) => GenericSet(name, data);
+		public void Set(string name, Matrix4 data) => GenericSet(name, data);
+		public void Set(string name, bool data) => GenericSet(name, data);
+		public void Set(string name, int data) => GenericSet(name, data);
+		public void Set(string name, float data) => GenericSet(name, data);
+		public void Set(string name, double data) => GenericSet(name, data);
+		public void Set(string name, Vector2 data) => GenericSet(name, data);
+		public void Set(string name, Vector3 data) => GenericSet(name, data);
+		public void Set(string name, Vector4 data) => GenericSet(name, data);
 
-
-		public void Set(string name, object o)
+		public void GenericSet<T>(string name, T data)
 		{
 			lock (this)
 			{
-				if (o is Texture)
+				if (data is Texture)
 				{
 					Texture oldTex;
-					if (uniformsTexturesData.TryGetValue(name, out oldTex) == false || oldTex.Equals(o) == false)
+					if (uniformTexturesData.TryGetValue(name, out oldTex) == false || oldTex.Equals(data) == false)
 					{
-						uniformsTexturesData[name] = o as Texture;
+						uniformTexturesData[name] = data as Texture;
+						uniformTexturesChanged.Add(name);
 					}
 				}
 				else
 				{
 					object oldObj = null;
-					if (uniformsObjectData.TryGetValue(name, out oldObj) == false || oldObj.Equals(o) == false)
+					if (uniformStructsData.TryGetValue(name, out oldObj) == false || oldObj.Equals(data) == false)
 					{
-						uniformsObjectData[name] = o;
-						uniformsChanged.Add(name);
+						uniformStructsData[name] = data;
+						uniformStructsChanged.Add(name);
 					}
 				}
 			}
@@ -96,7 +106,7 @@ namespace MyEngine
 			lock (this)
 			{
 				object obj = null;
-				if (uniformsObjectData.TryGetValue(name, out obj))
+				if (uniformStructsData.TryGetValue(name, out obj))
 				{
 					try
 					{
@@ -109,7 +119,7 @@ namespace MyEngine
 				}
 
 				Texture tex;
-				if (uniformsTexturesData.TryGetValue(name, out tex))
+				if (uniformTexturesData.TryGetValue(name, out tex))
 				{
 					try
 					{

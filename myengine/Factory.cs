@@ -15,9 +15,10 @@ namespace MyEngine
 		public Mesh SkyBoxMesh => GetMesh("internal/skybox.obj");
 		public Mesh QuadMesh => GetMesh("internal/quad.obj");
 
-		public Texture2D whiteTexture => GetTexture2D("internal/white.png");
-		public Texture2D greyTexture => GetTexture2D("internal/grey.png");
-		public Texture2D blackTexture => GetTexture2D("internal/black.png");
+		public Texture2D WhiteTexture => GetTexture2D("internal/white.png");
+		public Texture2D GreyTexture => GetTexture2D("internal/grey.png");
+		public Texture2D BlackTexture => GetTexture2D("internal/black.png");
+		public Texture2D DefaultNormalMap => GetTexture2D("internal/normal.png");
 
 		[Dependency]
 		public IDependencyManager Dependency { get; private set; }
@@ -84,6 +85,8 @@ namespace MyEngine
 			}
 			return texture;
 		}
+
+
 
 		ConcurrentDictionary<string, Cubemap> allCubeMaps = new ConcurrentDictionary<string, Cubemap>();
 

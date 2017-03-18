@@ -9,9 +9,6 @@ namespace MyEngine
 {
 	public class FileSystem : GameSystemBase
 	{
-		[Dependency]
-		Debug Debug;
-
 		string rootResourceDirectoryPath;
 		DirectoryInfo rootResourceDirectoryInfo;
 
@@ -75,9 +72,7 @@ namespace MyEngine
 				}
 			}
 
-			Debug.Error("File " + virtualPath + " doesnt exits");
-			Debug.Pause();
-			return null;
+			throw new FileNotFoundException("File " + virtualPath + " doesnt exits");
 		}
 
 		public List<MyFile> Findfiles(params string[] virtualPaths)
@@ -106,9 +101,7 @@ namespace MyEngine
 				}
 				else
 				{
-					Debug.Error("File " + CombineDirectory(startSearchInFolder.VirtualPath, virtualPath) + " doesnt exits");
-					Debug.Pause();
-					return null;
+					throw new FileNotFoundException("File " + CombineDirectory(startSearchInFolder.VirtualPath, virtualPath) + " doesnt exits");
 				}
 			}
 		}

@@ -40,19 +40,19 @@ namespace MyEngine
 
         public int ShaderProgramHandle { get; private set; }
 
-        [Dependency]
-        Debug debug;
+        readonly Debug debug;
 
-        Dictionary<string, int> cache_uniformLocations = new Dictionary<string, int>();
+        Dictionary<string, int> cachedUniformLocations = new Dictionary<string, int>();
 
         MyFile file;
 
         FileChangedWatcher fileWatcher = new FileChangedWatcher();
 
-        static Shader lastBindedShader;
+        static int lastBindedShaderHandle;
 
-        Shader(MyFile file)
+        public Shader(MyFile file, Debug debug)
         {
+			this.debug = debug;
             this.file = file;
             this.Uniforms = new UniformsData();
         }
@@ -81,7 +81,8 @@ namespace MyEngine
             {
                 debug.Info(typeof(Shader) + " " + file + " loaded successfully");
                 LoadState = State.LoadedSuccess;
-            } else
+            }
+			else
             {
                 LoadState = State.LoadedError;
             }
@@ -95,7 +96,7 @@ namespace MyEngine
             });
 
             Uniforms.MarkAllUniformsAsChanged();
-            cache_uniformLocations.Clear();
+            cachedUniformLocations.Clear();
 
 		}
 
@@ -113,16 +114,15 @@ namespace MyEngine
                 debug.Info("Reloading " + file.VirtualPath);
                 Dispose();
                 Load();
-                Uniforms.MarkAllUniformsAsChanged();
                 shouldReload = false;
             }
 
             if (LoadState == State.LoadedError) return false;
 
-            if (lastBindedShader != this)
+            if (lastBindedShaderHandle != ShaderProgramHandle)
             {
                 GL.UseProgram(ShaderProgramHandle); MyGL.Check();
-                lastBindedShader = this;
+				lastBindedShaderHandle = ShaderProgramHandle;
             }
 			Uniforms.UploadChangedUniforms(this);
 			return true;
@@ -207,14 +207,14 @@ namespace MyEngine
         public int GetUniformLocation(string name)
         {
             int location = -1;
-            if (cache_uniformLocations.TryGetValue(name, out location) == false)
+            if (cachedUniformLocations.TryGetValue(name, out location) == false)
             {
                 location = GL.GetUniformLocation(ShaderProgramHandle, name); MyGL.Check();
                 if (location == -1)
                 {
                     debug.Warning(file + ", uniform " + name + " not found ", false);
                 }
-                cache_uniformLocations[name] = location;
+                cachedUniformLocations[name] = location;
             }
             return location;
         }
