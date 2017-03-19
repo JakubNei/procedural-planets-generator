@@ -155,59 +155,23 @@ namespace MyGame.PlanetaryBody
 				radiusCameraSpace = radiusWorldSpace * MyMath.Cot(fov / 2) / distanceToCamera;
 			}
 
-			/*
-            {
-                var a = cam.WorldToScreenPos(realVisibleRange.a + planetaryBody.Transform.Position);
-                var b = cam.WorldToScreenPos(realVisibleRange.b + planetaryBody.Transform.Position);
-                var c = cam.WorldToScreenPos(realVisibleRange.c + planetaryBody.Transform.Position);
-                a.Z = 0;
-                b.Z = 0;
-                c.Z = 0;
-                var aabb = new Bounds();
-                aabb.Encapsulate(a);
-                aabb.Encapsulate(b);
-                aabb.Encapsulate(c);
-                radiusCameraSpace = aabb.Size.Length;
-            }
-            */
-
 
 			var weight = radiusCameraSpace * MyMath.SmoothStep(2, 1, MyMath.Clamp01(dotToCamera));
 			if (isVisible == false) weight *= 0.3f;
 			return weight;
 		}
 
-
-		/*
-        public void RequestMeshGeneration()
-        {
-            if (renderer != null) return;
-
-            var cam = planetaryBody.Entity.Scene.mainCamera;
-
-            GenerationService.RequestGenerationOfMesh(this, GetWeight(planetaryBody.Scene.mainCamera));
-
-            // help from http://stackoverflow.com/questions/3717226/radius-of-projected-sphere
-            
-            //var sphere = noElevationRange.ToBoundingSphere();
-            //var radiusWorldSpace = sphere.radius;
-            //var sphereDistanceToCameraWorldSpace = cam.Transform.Position.Distance(planetaryBody.Transform.Position + sphere.center.ToVector3());
-            //var fov = cam.fieldOfView;
-            //var radiusCameraSpace = radiusWorldSpace * MyMath.Cot(fov / 2) / sphereDistanceToCameraWorldSpace;
-            //var priority = sphereDistanceToCameraWorldSpace / radiusCameraSpace;
-            //if (priority < 0) priority *= -1;
-            //meshGenerationService.RequestGenerationOfMesh(this, priority);
-            
-            //if (parentChunk != null && parentChunk.renderer != null)
-            //{
-            //    var cameraStatus = parentChunk.renderer.GetCameraRenderStatus(planetaryBody.Scene.mainCamera);
-            //    if (cameraStatus.HasFlag(Renderer.RenderStatus.Visible)) priority *= 0.3f;
-            //}
-        }
-        */
-
 		public void CalculateRealVisibleRange()
 		{
+			var a = renderer.Mesh.Vertices[0]; // top vertex
+			var b = renderer.Mesh.Vertices[1]; // bottom left vertex
+			var c = renderer.Mesh.Vertices[2]; // bottom right vertex
+
+			var o = renderer.Offset.ToVector3d();
+			realVisibleRange.a = a.ToVector3d() + o;
+			realVisibleRange.b = b.ToVector3d() + o;
+			realVisibleRange.c = c.ToVector3d() + o;
+
 			//rangeToCalculateScreenSizeOn = realVisibleRange;
 		}
 
@@ -265,58 +229,7 @@ namespace MyGame.PlanetaryBody
 			renderer = null;
 		}
 
-		List<int> indiciesList;
-		List<int> GetIndiciesList()
-		{
-			/*
-
-                 /\  top line
-                /\/\
-               /\/\/\
-              /\/\/\/\ middle lines
-             /\/\/\/\/\
-            /\/\/\/\/\/\ bottom line
-
-            */
-			if (indiciesList != null) return indiciesList;
-
-			var numberOfVerticesOnEdge = NumberOfVerticesOnEdge;
-			indiciesList = new List<int>();
-			// make triangles indicies list
-			{
-				int lineStartIndex = 0;
-				int nextLineStartIndex = 1;
-				indiciesList.Add(0);
-				indiciesList.Add(1);
-				indiciesList.Add(2);
-
-				int numberOfVerticesInBetween = 0;
-				// we skip first triangle as it was done manually
-				// we skip last row of vertices as there are no triangles under it
-				for (int y = 1; y < numberOfVerticesOnEdge - 1; y++)
-				{
-					lineStartIndex = nextLineStartIndex;
-					nextLineStartIndex = lineStartIndex + numberOfVerticesInBetween + 2;
-
-					for (int x = 0; x <= numberOfVerticesInBetween + 1; x++)
-					{
-						indiciesList.Add(lineStartIndex + x);
-						indiciesList.Add(nextLineStartIndex + x);
-						indiciesList.Add(nextLineStartIndex + x + 1);
-
-						if (x <= numberOfVerticesInBetween) // not a last triangle in line
-						{
-							indiciesList.Add(lineStartIndex + x);
-							indiciesList.Add(nextLineStartIndex + x + 1);
-							indiciesList.Add(lineStartIndex + x + 1);
-						}
-					}
-
-					numberOfVerticesInBetween++;
-				}
-			}
-			return indiciesList;
-		}
+	
 
 	}
 }

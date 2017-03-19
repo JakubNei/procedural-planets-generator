@@ -21,7 +21,7 @@ namespace MyGame
 		{
 			this.scene = scene;
 			this.debug = debug;
-			scene.EventSystem.Register<MyEngine.Events.InputUpdate>(e => Update(e.DeltaTime));
+			scene.EventSystem.On<MyEngine.Events.InputUpdate>(e => Update(e.DeltaTime));
 		}
 
 		

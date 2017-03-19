@@ -27,10 +27,12 @@ namespace MyGame
 
 				new DebugKeys(scene, engine.Debug);
 
+				var proceduralPlanets = new ProceduralPlanets(scene);
+
 				{
 					var entity = scene.AddEntity();
 					fpc = entity.AddComponent<FirstPersonCamera>();
-
+					fpc.planets = proceduralPlanets;
 					//var flashLight = entity.AddComponent<Light>();
 					//flashLight.LighType = LightType.Point;				
 
@@ -46,7 +48,7 @@ namespace MyGame
 
 						var gr = entity.AddComponent<GodRays>();
 						gr.lightWorldRadius = 1000;
-						entity.EventSystem.Register((MyEngine.Events.PreRenderUpdate e) =>
+						entity.EventSystem.On<MyEngine.Events.PreRenderUpdate>((e) =>
 						{
 							gr.lightScreenPos = cam.WorldToScreenPos(sunEntity.Transform.Position);
 							gr.lightWorldPos = cam.Transform.Position.Towards(sunEntity.Transform.Position).ToVector3();
@@ -78,8 +80,6 @@ namespace MyGame
                 }
                 */
 
-				var proceduralPlanets = new ProceduralPlanets(scene);
-
 				// SUN
 				{
 					var entity = sunEntity = scene.AddEntity();
@@ -94,7 +94,7 @@ namespace MyGame
 					mat.Uniforms.Set("param_turbulenceColorGradient", factory.GetTexture2D("textures/fire_gradient.png"));
 					mat.Uniforms.Set("param_turbulenceMap", factory.GetTexture2D("textures/turbulence_map.png"));
 					mat.Uniforms.Set("param_surfaceDiffuse", factory.GetTexture2D("textures/sun_surface_d.png"));
-					mat.Uniforms.Set("param_perlinNoise", factory.GetTexture2D("textures/perlin_noise.png"));	
+					mat.Uniforms.Set("param_perlinNoise", factory.GetTexture2D("textures/perlin_noise.png"));
 				}
 
 				{

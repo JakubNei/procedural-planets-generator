@@ -82,6 +82,7 @@
     <Compile Include="PlanetaryBody\Chunk.ParentIndiciesEnumerator.cs" />
     <None Include="OpenTK.dll.config" />
     <None Include="packages.config" />
+    <Compile Include="PlanetaryBody\Root.ChunkHelpers.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

@@ -35,7 +35,7 @@ namespace MyEngine.Components
 
         public Camera(Entity entity) : base(entity)
         {
-            entity.EventSystem.Register<Events.WindowResized>(e => SetSize(e.NewPixelWidth, e.NewPixelHeight));
+            entity.EventSystem.On<Events.WindowResized>(e => SetSize(e.NewPixelWidth, e.NewPixelHeight));
         }
 
         public void SetSize(int newPixelWidth, int newPixelHeight) {

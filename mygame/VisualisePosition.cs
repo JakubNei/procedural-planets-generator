@@ -15,7 +15,7 @@ namespace MyGame
 
 		public VisualizePosition(Entity entity) : base(entity)
 		{
-			Entity.EventSystem.Register<EventThreadUpdate>(e => Update(e.DeltaTime));
+			Entity.EventSystem.On<EventThreadUpdate>(e => Update(e.DeltaTime));
 		}
 
 		/*

@@ -41,7 +41,7 @@ namespace MyGame.PlanetaryBody
 			{
 				get
 				{
-					return parentChunk.planetaryBody.chunkNumberOfVerticesOnEdge;
+					return parentChunk.planetaryBody.ChunkNumberOfVerticesOnEdge;
 				}
 			}
 			Chunk parentChunk;

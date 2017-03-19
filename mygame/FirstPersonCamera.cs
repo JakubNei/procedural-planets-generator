@@ -23,8 +23,6 @@ namespace MyGame
 		public bool speedBasedOnDistanceToPlanet = true;
 		public bool collideWithPlanetSurface = true;
 
-		Quaternion rotation;
-		WorldPos position;
 
 		float cameraSpeedModifier = 10.0f;
 		Point lastMousePos;
@@ -37,14 +35,17 @@ namespace MyGame
 
 		CVar WalkOnPlanet => Debug.GetCVar("walkOnPlanet");
 
+		public ProceduralPlanets planets;
+		const bool moveCameraToSurfaceOnStart = false;
 		public FirstPersonCamera(Entity entity) : base(entity)
 		{
+			EventSystem.On<InputUpdate>(e => Update((float)e.DeltaTime));
+			EventSystem.Once<InputUpdate>(e => Start());
+		}
 
-			rotation = QuaternionUtility.LookRotation(Constants.Vector3Forward, Constants.Vector3Up);
-
+		void Start()
+		{
 			Input.LockCursor = disabledInput;
-
-			Entity.EventSystem.Register<InputUpdate>(e => Update((float)e.DeltaTime));
 
 			WalkOnPlanet.ToogledByKey(Key.G).OnChanged += (cvar) =>
 			{
@@ -53,12 +54,22 @@ namespace MyGame
 					walkOnShere_start = true;
 				}
 			};
+
+			// Transform.Rotation = QuaternionUtility.LookRotation(Constants.Vector3Forward, Constants.Vector3Up);
+
+			var planet = planets.GetClosestPlanet(Transform.Position);
+			Transform.LookAt(planet.Transform.Position);
+			if (moveCameraToSurfaceOnStart)
+				Transform.Position = new WorldPos((float)-planet.RadiusMin, 0, 0) + planet.Transform.Position;
 		}
 
 		void Update(float deltaTime)
 		{
+			var rotation = Transform.Rotation;
+			var position = Transform.Position;
 
-			var planet = PlanetaryBody.Root.instance;
+
+			var planet = planets.GetClosestPlanet(Transform.Position);
 
 
 			Debug.AddValue("camera / speed modifier", cameraSpeedModifier);
@@ -157,20 +168,20 @@ namespace MyGame
 
 			if (Input.GetKeyDown(Key.C))
 			{
-				rotation = this.Transform.Position.Towards(planet.Transform.Position).ToVector3().LookRot();
+				rotation = Transform.Position.Towards(planet.Transform.Position).ToVector3().LookRot();
 			}
 
 			if (WalkOnPlanet.Bool)
 			{
 
-				var up = planet.Center.Towards(this.Transform.Position).ToVector3().Normalized();
+				var up = planet.Center.Towards(Transform.Position).ToVector3().Normalized();
 				var fwd = walkOnSphere_vectorForward;
 
 				if (walkOnShere_start)
 				{
 					walkOnSphere_lastVectorUp = up;
 
-					var pointOnPlanet = planet.Center.Towards(this.Transform.Position).ToVector3d();
+					var pointOnPlanet = planet.Center.Towards(Transform.Position).ToVector3d();
 					var s = planet.CalestialToSpherical(pointOnPlanet);
 					s.latitude += 0.1f;
 					var fwdToPole = pointOnPlanet.Towards(planet.SphericalToCalestial(s)).Normalized().ToVector3().Normalized();
@@ -231,7 +242,7 @@ namespace MyGame
 
 
 
-			Entity.Transform.Rotation = rotation;
+			Transform.Rotation = rotation;
 
 			targetVelocity = targetVelocity.RotateBy(Transform.Rotation);
 			currentVelocity = Vector3.Lerp(currentVelocity, targetVelocity, velocityChangeSpeed * (float)deltaTime);
@@ -251,11 +262,11 @@ namespace MyGame
 				{
 					sphericalPlanetLocalPosition.altitude = h;
 					position = planet.Transform.Position + planet.SphericalToCalestial(sphericalPlanetLocalPosition);
-				} 
+				}
 			}
 
 
-			Entity.Transform.Position = position; // += Entity.Transform.Position.Towards(position).ToVector3d() * deltaTime * 10;
+			Transform.Position = position; // += Entity.Transform.Position.Towards(position).ToVector3d() * deltaTime * 10;
 
 			//Debug.Info(entity.transform.position);
 

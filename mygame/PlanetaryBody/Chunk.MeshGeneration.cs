@@ -16,79 +16,9 @@ namespace MyGame.PlanetaryBody
 	public partial class Chunk
 	{
 		Mesh.VertexIndex[] edgeVerticesIndexes;
-		int NumberOfVerticesOnEdge => planetaryBody.chunkNumberOfVerticesOnEdge;
 
 
-		int numberOfVerticesNeededTotal = -1;
-		int NumberOfVerticesNeededTotal
-		{
-			get
-			{
-				if (numberOfVerticesNeededTotal != -1) return numberOfVerticesNeededTotal;
-
-				numberOfVerticesNeededTotal = 1;
-				{
-					int numberOfVerticesInBetween = 0;
-					for (uint y = 1; y < NumberOfVerticesOnEdge; y++)
-					{
-						numberOfVerticesNeededTotal++;
-						if (numberOfVerticesInBetween > 0)
-						{
-							numberOfVerticesNeededTotal += numberOfVerticesInBetween;
-						}
-						numberOfVerticesNeededTotal++;
-						numberOfVerticesInBetween++;
-					}
-				}
-
-				return numberOfVerticesNeededTotal;
-			}
-		}
-
-		Mesh.VertexIndex[] skirtIndicies = null;
-		Mesh.VertexIndex[] GetEdgeVertices()
-		{
-			if (skirtIndicies != null) return skirtIndicies;
-
-			var s = new List<Mesh.VertexIndex>();
-			// gather the edge vertices indicies
-			{
-				int lineStartIndex = 0;
-				int nextLineStartIndex = 1;
-				int numberOfVerticesInBetween = 0;
-				s.Add(0); // first line
-						  // top and all middle lines
-				for (int i = 1; i < NumberOfVerticesOnEdge - 1; i++)
-				{
-					lineStartIndex = nextLineStartIndex;
-					nextLineStartIndex = lineStartIndex + numberOfVerticesInBetween + 2;
-					s.Add(lineStartIndex);
-					s.Add((lineStartIndex + numberOfVerticesInBetween + 1));
-					numberOfVerticesInBetween++;
-				}
-				// bottom line
-				lineStartIndex = nextLineStartIndex;
-				for (int i = 0; i < NumberOfVerticesOnEdge; i++)
-				{
-					s.Add((lineStartIndex + i));
-				}
-			}
-			skirtIndicies = s.ToArray();
-			return skirtIndicies;
-		}
-
-		List<Vector3> verticesList = new List<Vector3>();
-		List<Vector3> GetVerticesList()
-		{
-			if (verticesList.Count > 0) return verticesList;
-
-			var r = new Random();
-			while (verticesList.Count < NumberOfVerticesNeededTotal)
-				verticesList.Add(new Vector3d(r.NextDouble(), r.NextDouble(), r.NextDouble()).ToVector3()); // WTF WTF WTF WTF FUCK
-																											// THE FUCK IS THIS
-																											// WHY THE FUCK DOES IT NOT WORK WITH ZEROS OR ONES
-			return verticesList;
-		}
+	
 
 
 		public bool generationBegan = false;
@@ -151,8 +81,8 @@ namespace MyGame.PlanetaryBody
 			}
 			*/
 
-			var vertices = GetVerticesList();
-			var indicies = GetIndiciesList();
+			var vertices = planetaryBody.GetVerticesList();
+			var indicies = planetaryBody.GetIndiciesList();
 
 			mesh.Vertices.SetData(vertices);
 			mesh.TriangleIndicies.SetData(indicies);
@@ -169,7 +99,7 @@ namespace MyGame.PlanetaryBody
 			}
 			*/
 
-			edgeVerticesIndexes = GetEdgeVertices();
+			edgeVerticesIndexes = planetaryBody.GetEdgeVertices();
 
 			bool useSkirts = false;
 			//useSkirts = true;

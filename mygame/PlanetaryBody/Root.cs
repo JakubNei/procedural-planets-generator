@@ -14,46 +14,42 @@ using System.Threading;
 
 namespace MyGame.PlanetaryBody
 {
-	public class Root : ComponentWithShortcuts
+	public partial class Root : ComponentWithShortcuts
 	{
 		public double RadiusMin => config.radiusMin;
 
-		public HashSet<Chunk> toBeginGeneration = new HashSet<Chunk>();
+		public int ChunkNumberOfVerticesOnEdge => 60;
+		public float SizeOnScreenNeededToSubdivide => 0.5f;
+		public int SubdivisionMaxRecurisonDepth => int.MaxValue;
 
-		/// <summary>
-		/// Is guaranteeed to be odd (1, 3, 5, 7, ...)
-		/// </summary>
-		public int chunkNumberOfVerticesOnEdge = 60;
-		public float sizeOnScreenNeededToSubdivide = 0.5f;
 
-		private int cachedSubdivisionMaxRecurisonDepth = -1;
-		public int SubdivisionMaxRecurisonDepth
+		int numberOfVerticesNeededTotal = -1;
+		public int NumberOfVerticesNeededTotal
 		{
 			get
 			{
-				return int.MaxValue;
+				if (numberOfVerticesNeededTotal != -1) return numberOfVerticesNeededTotal;
 
-				if (cachedSubdivisionMaxRecurisonDepth < 0)
+				numberOfVerticesNeededTotal = 1;
 				{
-					//var planetCircumference = 2 * Math.PI * radius;
-					//var oneRootChunkCircumference = planetCircumference / 6.0f;
-					var oneRootChunkCircumference = RadiusMin;
-
-					cachedSubdivisionMaxRecurisonDepth = 0;
-					while (oneRootChunkCircumference > 100)
+					int numberOfVerticesInBetween = 0;
+					for (uint y = 1; y < ChunkNumberOfVerticesOnEdge; y++)
 					{
-						oneRootChunkCircumference /= 2;
-						cachedSubdivisionMaxRecurisonDepth++;
+						numberOfVerticesNeededTotal++;
+						if (numberOfVerticesInBetween > 0)
+						{
+							numberOfVerticesNeededTotal += numberOfVerticesInBetween;
+						}
+						numberOfVerticesNeededTotal++;
+						numberOfVerticesInBetween++;
 					}
 				}
-				return cachedSubdivisionMaxRecurisonDepth;
+
+				return numberOfVerticesNeededTotal;
 			}
 		}
 
-
 		public Material PlanetMaterial { get; set; }
-		public double SubdivisionSphereRadiusModifier { get; set; } = 1f;
-		public double StartingRadiusSubdivisionModifier { get; set; } = 1;
 
 		double DebugWeight => DebugKeys.keyIK * 2 - 0.8;
 
@@ -75,14 +71,12 @@ namespace MyGame.PlanetaryBody
 
 		GenerationStats stats;
 
-		public static Root instance;
 		//ProceduralMath proceduralMath;
 		public Root(Entity entity) : base(entity)
 		{
 			//proceduralMath = new ProceduralMath();
 			stats = new GenerationStats(Debug);
 
-			instance = this;
 			perlin = new PerlinD(5646);
 			worley = new WorleyD(894984, WorleyD.DistanceFunction.Euclidian);
 
@@ -194,8 +188,6 @@ namespace MyGame.PlanetaryBody
 
 		private void InitializeRootSegments()
 		{
-			if (chunkNumberOfVerticesOnEdge % 2 == 0) chunkNumberOfVerticesOnEdge++;
-
 			//detailLevel = (int)ceil(planetInfo.rootChunks[0].range.ToBoundingSphere().radius / 100);
 
 			var vertices = new List<Vector3d>();
@@ -263,7 +255,7 @@ namespace MyGame.PlanetaryBody
 
 			if (recursionDepth < SubdivisionMaxRecurisonDepth)
 			{
-				if (sizeOnScreen > sizeOnScreenNeededToSubdivide)
+				if (sizeOnScreen > SizeOnScreenNeededToSubdivide)
 					chunk.CreteChildren();
 				else
 					chunk.DeleteChildren();
@@ -362,10 +354,7 @@ namespace MyGame.PlanetaryBody
 			}
 
 			foreach (var rootChunk in this.rootChunks) Chunks_UpdateVisibility(rootChunk, 0);
-
-
 		}
-
 
 
 		public class GenerationStats
@@ -417,14 +406,12 @@ namespace MyGame.PlanetaryBody
 
 			config.SetTo(computeShaderUniforms);
 
-
 			computeShaderUniforms.Set("param_offsetFromPlanetCenter", chunk.renderer.Offset.ToVector3());
-			computeShaderUniforms.Set("param_numberOfVerticesOnEdge", chunkNumberOfVerticesOnEdge);
+			computeShaderUniforms.Set("param_numberOfVerticesOnEdge", ChunkNumberOfVerticesOnEdge);
 			computeShaderUniforms.Set("param_cornerPositionA", chunk.NoElevationRange.a.ToVector3());
 			computeShaderUniforms.Set("param_cornerPositionB", chunk.NoElevationRange.b.ToVector3());
 			computeShaderUniforms.Set("param_cornerPositionC", chunk.NoElevationRange.c.ToVector3());
 			computeShaderUniforms.Set("param_indiciesCount", mesh.TriangleIndicies.Count);
-
 
 			computeShaderUniforms.SendAllUniformsTo(computeShader.Uniforms);
 			computeShader.Bind();

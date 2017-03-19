@@ -17,7 +17,9 @@ namespace MyEngine.Components
 
         public FileSystem FileSystem => Entity.FileSystem;
 
-        public IDependencyManager Dependency => Entity.Dependency;
+		public Events.EventSystem EventSystem => Entity.EventSystem;
+
+		public IDependencyManager Dependency => Entity.Dependency;
 
 		public ComponentWithShortcuts(Entity entity) : base(entity)
 		{

@@ -6,35 +6,45 @@ using System.Threading.Tasks;
 
 namespace MyEngine.Events
 {
-    public enum EventHandling
-    {
-        StopPropagation,
-        ContinuePropagation,
-    }
-    public interface IEvent
-    {
-    }
+	public enum EventHandling
+	{
+		StopPropagation,
+		ContinuePropagation,
+	}
+	public interface IEvent
+	{
+	}
 
-    // TODO: add WeakReference (weak event pattern) probably WeakEventManager https://msdn.microsoft.com/en-us/library/system.windows.weakeventmanager(v=vs.100).aspx
-    public class EventSystem 
-    {
-        Dictionary<Type, Delegate> typeToCallbacks = new Dictionary<Type, Delegate>();
-        HashSet<Delegate> allDelegates = new HashSet<Delegate>();
-        List<EventSystem> passEventsTo = new List<EventSystem>();
-        public event Action<IEvent> OnAnyEventCalled;
+	// TODO: add WeakReference (weak event pattern) probably WeakEventManager https://msdn.microsoft.com/en-us/library/system.windows.weakeventmanager(v=vs.100).aspx
+	public class EventSystem
+	{
+		Dictionary<Type, Delegate> typeToCallbacksAlways = new Dictionary<Type, Delegate>();
+		HashSet<Delegate> allDelegatesAlways = new HashSet<Delegate>();
+
+		Dictionary<Type, Delegate> typeToCallbacksOnce = new Dictionary<Type, Delegate>();
+
+		List<EventSystem> passEventsTo = new List<EventSystem>();
+		public event Action<IEvent> OnAnyEventCalled;
 
 
-        public void Raise(IEvent evt)
-        {
-            Delegate delegat;
-            var type = evt.GetType();
-            if (typeToCallbacks.TryGetValue(type, out delegat) == true)
-            {
-                delegat.DynamicInvoke(evt);
-            }
+		public void Raise(IEvent evt)
+		{
+			Delegate delegat;
+			var type = evt.GetType();
+			if (typeToCallbacksOnce.TryGetValue(type, out delegat) == true)
+			{
+				delegat.DynamicInvoke(evt);
+				typeToCallbacksOnce.Remove(type);
+			}
+			if (typeToCallbacksAlways.TryGetValue(type, out delegat) == true)
+			{
+				delegat.DynamicInvoke(evt);
+			}
+
+
 			OnAnyEventCalled?.Invoke(evt);
 			foreach (var e in passEventsTo) e.Raise(evt);
-        }
+		}
 
 		/*
 		public Task Raise(IEvent evt)
@@ -66,10 +76,10 @@ namespace MyEngine.Events
 				Task.WaitAll(tasks.ToArray());
 			});
 		}*/
-        public void PassEventsTo(EventSystem eventSystem)
-        {
-            passEventsTo.Add(eventSystem);
-        }
+		public void PassEventsTo(EventSystem eventSystem)
+		{
+			passEventsTo.Add(eventSystem);
+		}
 		/*
         public void Register<T>(Func<T, EventHandling> callback) where T : IEvent
         {
@@ -83,42 +93,59 @@ namespace MyEngine.Events
 		/// </summary>
 		/// <typeparam name="T"></typeparam>
 		/// <param name="callback"></param>
-		public void Register<T>(Action<T> callback) where T : IEvent
-        {
-            lock(allDelegates)
-            {
-                if (allDelegates.Contains(callback)) return;
-                allDelegates.Add(callback);
+		public void On<T>(Action<T> callback) where T : IEvent
+		{
+			lock (allDelegatesAlways)
+			{
+				if (allDelegatesAlways.Contains(callback)) return;
+				allDelegatesAlways.Add(callback);
 
-                Delegate callbackToCombine;
-                var type = typeof(T);
-                if (typeToCallbacks.TryGetValue(type, out callbackToCombine) == false)
-                {
-                    typeToCallbacks[type] = callback;
-                }
-                else {
-                    typeToCallbacks[type] = System.Delegate.Combine(callbackToCombine, callback);
-                }
-            }
-        }
+				Delegate callbackToCombine;
+				var type = typeof(T);
+				if (typeToCallbacksAlways.TryGetValue(type, out callbackToCombine) == false)
+				{
+					typeToCallbacksAlways[type] = callback;
+				}
+				else
+				{
+					typeToCallbacksAlways[type] = System.Delegate.Combine(callbackToCombine, callback);
+				}
+			}
+		}
+		public void Once<T>(Action<T> callback) where T : IEvent
+		{
+			lock (typeToCallbacksOnce)
+			{
+				Delegate callbackToCombine;
+				var type = typeof(T);
+				if (typeToCallbacksOnce.TryGetValue(type, out callbackToCombine) == false)
+				{
+					typeToCallbacksOnce[type] = callback;
+				}
+				else
+				{
+					typeToCallbacksOnce[type] = System.Delegate.Combine(callbackToCombine, callback);
+				}
+			}
+		}
 
-        public void Unregister<T>(Action<T> callback) where T : IEvent
-        {
-            lock(allDelegates)
-            {
-                if (allDelegates.Contains(callback) == false) return;
-                allDelegates.Remove(callback);
+		public void Off<T>(Action<T> callback) where T : IEvent
+		{
+			lock (allDelegatesAlways)
+			{
+				if (allDelegatesAlways.Contains(callback) == false) return;
+				allDelegatesAlways.Remove(callback);
 
-                Delegate callbackToCombineTo;
-                var type = typeof(T);
-                if (typeToCallbacks.TryGetValue(type, out callbackToCombineTo))
-                {                    
-                    System.Delegate.Remove(callbackToCombineTo, callback);
-                }
-            }
-        }
+				Delegate callbackToCombineTo;
+				var type = typeof(T);
+				if (typeToCallbacksAlways.TryGetValue(type, out callbackToCombineTo))
+				{
+					System.Delegate.Remove(callbackToCombineTo, callback);
+				}
+			}
+		}
 
-    }    
+	}
 }
 
 

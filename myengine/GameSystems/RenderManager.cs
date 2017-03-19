@@ -42,7 +42,7 @@ namespace MyEngine
 			this.factory = factory;
 			this.debug = debug;
 
-			eventSystem.Register<Events.WindowResized>(evt =>
+			eventSystem.On<Events.WindowResized>(evt =>
 			{
 				if (GBuffer != null) GBuffer.Dispose();
 				GBuffer = new DeferredGBuffer(factory, evt.NewPixelWidth, evt.NewPixelHeight);

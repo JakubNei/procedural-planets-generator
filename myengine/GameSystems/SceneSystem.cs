@@ -101,7 +101,7 @@ namespace MyEngine
 		{
 			if (debugInitialized) return;
 			debugInitialized = true;
-			EventSystem.Register<Events.PreRenderUpdate>((evt) =>
+			EventSystem.On<Events.PreRenderUpdate>((evt) =>
 			{
 				if (debugEntitiesToCreate.Count > 0)
 				{
@@ -124,7 +124,7 @@ namespace MyEngine
 					}
 				}
 			});
-			EventSystem.Register<Events.FrameEnded>((evt) =>
+			EventSystem.On<Events.FrameEnded>((evt) =>
 			{
 				if (debugEntitites.Count > 0)
 				{

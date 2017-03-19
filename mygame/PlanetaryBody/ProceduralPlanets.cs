@@ -22,8 +22,6 @@ namespace MyGame
 		Factory Factory => scene.Factory;
 		Debug Debug => scene.Debug;
 
-		bool moveCameraToSurfaceOnStart = false;
-
 		Camera Cam { get { return scene.mainCamera; } }
 
 		public bool runPlanetLogicInOwnThread = true;
@@ -50,7 +48,7 @@ namespace MyGame
 				t.Start();
 			}
 
-			scene.EventSystem.Register<PostRenderUpdate>(GPUThreadUpdate);
+			scene.EventSystem.On<PostRenderUpdate>(GPUThreadUpdate);
 
 			scene.Debug.CVar("generation / planet logic update pause").ToogledByKey(Key.P).OnChanged += (v) => freezeUpdate = v.Bool;
 		}
@@ -109,9 +107,10 @@ namespace MyGame
 			// 6371000 earth radius
 			var cfg = new PlanetaryBody.Config();
 			cfg.radiusMin = 1000000;
-			cfg.baseHeightMap = Factory.GetTexture2D("textures/earth_elevation_map.png");
-			cfg.biomesSplatMap = Factory.GetTexture2D("textures/biomes_splat_map.bmp");
-			cfg.biomesSplatMap.filterMode = FilterMode.Point;
+			cfg.baseHeightMap = Factory.GetTexture2D("textures/earth_elevation_map.*");
+			cfg.biomesSplatMap = Factory.GetTexture2D("textures/biomes_splat_map.*");
+			cfg.biomesSplatMap.FilterMode = FilterMode.Point;
+			cfg.biomesSplatMap.UseMipMaps = false;
 			cfg.baseHeightMapMultiplier = 20000; //20 km
 			cfg.noiseMultiplier = 500;
 			cfg.AddBiome(new Vector3(1, 1, 1), Factory.GetTexture2D("biomes/snow_d.*"), Factory.DefaultNormalMap); // white
@@ -128,20 +127,17 @@ namespace MyGame
 			var planetShader = Factory.GetShader("shaders/planet.shader");
 			var planetMaterial = new Material(Factory);
 			planetMaterial.GBufferShader = planetShader;
-			planetMaterial.Uniforms.Set("param_perlinNoise", Factory.GetTexture2D("textures/perlin_noise.png"));
+			planetMaterial.Uniforms.Set("param_perlinNoise", Factory.GetTexture2D("textures/perlin_noise.*"));
 			planetMaterial.Uniforms.Set("param_baseHeightMap", cfg.baseHeightMap);
 			planet.PlanetMaterial = planetMaterial;
 
 			planet.Initialize();
-
-
-			Cam.Transform.LookAt(planet.Transform.Position);
-			if (moveCameraToSurfaceOnStart)
-			{
-				Cam.Transform.Position = new WorldPos((float)-planet.RadiusMin, 0, 0) + planet.Transform.Position;
-			}
 		}
 
+		public PlanetaryBody.Root GetClosestPlanet(WorldPos pos)
+		{
+			return planets.OrderBy(p => p.Transform.Position.DistanceSqr(pos) - p.RadiusMin * p.RadiusMin).FirstOrDefault();
+		}
 
 
 		bool freezeUpdate = false;
@@ -154,8 +150,6 @@ namespace MyGame
 			Debug.Tick("generation / planet logic");
 
 			var camPos = Cam.Transform.Position;
-
-			var closestPlanet = planets.OrderBy(p => p.Transform.Position.DistanceSqr(camPos) - p.RadiusMin * p.RadiusMin).First();
 
 			foreach (var p in planets)
 			{
