@@ -17,7 +17,7 @@ out data {
 	vec3 worldPos;
 	vec3 modelPos;
 	vec3 normal; 
-	vec2 uv; 
+	flat vec2 uv; 
 	vec3 tangent;
 } o;
 
@@ -52,7 +52,7 @@ void main()
 		vec3 worldPos;
 		vec3 modelPos;
 	  	vec3 normal; 
-		vec2 uv; 
+		flat vec2 uv; 
 		vec3 tangent;
 	} i[];
 
@@ -60,7 +60,7 @@ void main()
 		vec3 worldPos;
 		vec3 modelPos;
 	  	vec3 normal; 
-		vec2 uv; 
+		flat vec2 uv; 
 		vec3 tangent;
 	} o[];
 
@@ -124,7 +124,7 @@ void main()
 		vec3 worldPos;
 		vec3 modelPos;
 	  	vec3 normal; 
-		vec2 uv; 
+		flat vec2 uv; 
 		vec3 tangent;
 	} i[];
 
@@ -132,7 +132,7 @@ void main()
 		vec3 worldPos;
 		vec3 modelPos;
 	  	vec3 normal; 
-		vec2 uv; 
+		flat vec2 uv; 
 		vec3 tangent;
 	} o;
 
@@ -228,7 +228,7 @@ in data {
 	vec3 worldPos;
 	vec3 modelPos;
 	vec3 normal; 
-	vec2 uv; 
+	flat vec2 uv; 
 	vec3 tangent;
 } i;
 
@@ -333,9 +333,8 @@ void getColor(out vec3 color, out vec3 normal) {
 
 	// DEBUG
 	//color = biomesSplatMapSample; return;
-
-
-
+	//color = vec3(i.uv.x, 0, 0);	return;
+	
 
 #define TRY_BIOME(A) if(TryBiome(biomesSplatMapSample, param_biome##A##_biomesSplatMapColor, param_biome##A##_diffuseMap, param_biome##A##_normalMap, color, normal)) return;
 
@@ -360,7 +359,7 @@ void main()
 
 	// BASE COLOR
 	//float pixelDepth = gl_FragCoord.z/gl_FragCoord.w; //distance(EyePosition, i.worldPos);
-	vec3 color = vec3(1,1,1);
+	vec3 color;
 	vec3 normalColorFromTexture;
 	getColor(color, normalColorFromTexture);
 

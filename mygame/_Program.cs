@@ -101,7 +101,7 @@ namespace MyGame
 					var entity = scene.AddEntity();
 					var light = entity.AddComponent<Light>();
 					light.LighType = LightType.Directional;
-					light.color = Vector3.One * 1f;
+					light.Color = Vector3.One * 1f;
 					light.Shadows = LightShadows.None;
 
 					// make directional sun light look at the closest planet

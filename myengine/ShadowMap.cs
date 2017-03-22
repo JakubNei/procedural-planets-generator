@@ -11,36 +11,32 @@ namespace MyEngine
 	// http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-16-shadow-mapping/
 	public class ShadowMap : IDisposable
 	{
-		public int frameBufferObjectHandle;
-		public Camera shadowViewCamera;
-		public Texture2D depthMap;
-		int width;
-		int height;
-		Light light;
+		public int FrameBufferObjectHandle { get; private set; }
+		public Camera ShadowViewCamera { get; set; }
+		public Texture2D DepthMap { get; set; }
+		public int Width { get; private set; }
+		public int Height { get; private set; }
+		private Light light;
 
-		[Dependency]
-		Debug debug;
-
-		ShadowMap(Light light, int width, int height)
-
+		public ShadowMap(Light light, int width, int height)
 		{
 			this.light = light;
 
-			shadowViewCamera = light.Entity.AddComponent<Camera>();
-			shadowViewCamera.SetSize(width, height);
-			shadowViewCamera.orthographic = true;
-			shadowViewCamera.orthographicSize = 50;
+			ShadowViewCamera = light.Entity.AddComponent<Camera>();
+			ShadowViewCamera.SetSize(width, height);
+			ShadowViewCamera.orthographic = true;
+			ShadowViewCamera.orthographicSize = 50;
 
-			this.width = width;
-			this.height = height;
+			this.Width = width;
+			this.Height = height;
 
 			// create frame buffer object
-			frameBufferObjectHandle = GL.GenFramebuffer(); MyGL.Check();
-			GL.BindFramebuffer(FramebufferTarget.Framebuffer, frameBufferObjectHandle); MyGL.Check();
+			FrameBufferObjectHandle = GL.GenFramebuffer(); MyGL.Check();
+			GL.BindFramebuffer(FramebufferTarget.Framebuffer, FrameBufferObjectHandle); MyGL.Check();
 
-			depthMap = new Texture2D(GL.GenTexture());
+			DepthMap = new Texture2D(GL.GenTexture());
 
-			GL.BindTexture(TextureTarget.Texture2D, depthMap.GetNativeTextureID()); MyGL.Check();
+			GL.BindTexture(TextureTarget.Texture2D, DepthMap.GetNativeTextureID()); MyGL.Check();
 
 			GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.DepthComponent32f, width, height, 0, PixelFormat.DepthComponent, PixelType.Float, new IntPtr(0)); MyGL.Check();
 
@@ -56,10 +52,10 @@ namespace MyEngine
 			//GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureCompareFunc, (int)All.Lequal);
 			//GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.DepthTextureMode, (int)All.Intensity);
 
-			GL.FramebufferTexture(FramebufferTarget.Framebuffer, FramebufferAttachment.DepthAttachment, depthMap.GetNativeTextureID(), 0); MyGL.Check();
+			GL.FramebufferTexture(FramebufferTarget.Framebuffer, FramebufferAttachment.DepthAttachment, DepthMap.GetNativeTextureID(), 0); MyGL.Check();
 			GL.DrawBuffer(DrawBufferMode.None); MyGL.Check();
 			var status = GL.CheckFramebufferStatus(FramebufferTarget.Framebuffer); MyGL.Check();
-			if (status != FramebufferErrorCode.FramebufferComplete) debug.Error(status);
+			if (status != FramebufferErrorCode.FramebufferComplete) throw new GLError(status);
 
 			GL.ReadBuffer(ReadBufferMode.None); MyGL.Check();
 			GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0); MyGL.Check(); //restore default FBO
@@ -67,8 +63,8 @@ namespace MyEngine
 
 		public void Dispose()
 		{
-			GL.DeleteFramebuffer(frameBufferObjectHandle); MyGL.Check();
-			depthMap.Dispose();
+			GL.DeleteFramebuffer(FrameBufferObjectHandle); MyGL.Check();
+			DepthMap.Dispose();
 		}
 
 		public void Clear()
@@ -80,19 +76,19 @@ namespace MyEngine
 
 		public void FrameBufferForWriting()
 		{
-			GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, frameBufferObjectHandle); MyGL.Check();
+			GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, FrameBufferObjectHandle); MyGL.Check();
 		}
 
 		public void BindUniforms(Shader shader)
 		{
-			var shadowMatrix = this.shadowViewCamera.GetRotationMatrix() * this.shadowViewCamera.GetProjectionMat();
+			var shadowMatrix = this.ShadowViewCamera.GetRotationMatrix() * this.ShadowViewCamera.GetProjectionMat();
 
 			// projection matrix is in range -1 1, but it is rendered into rexture which is in range 0 1
 			// so lets move it from -1 1 into 0 1 range, since we are reading from texture
 			shadowMatrix *= Matrix4.CreateScale(new Vector3(0.5f, 0.5f, 0.5f));
 			shadowMatrix *= Matrix4.CreateTranslation(new Vector3(0.5f, 0.5f, 0.5f));
 
-			shader.Uniforms.Set("shadowMap.level0", depthMap);
+			shader.Uniforms.Set("shadowMap.level0", DepthMap);
 			shader.Uniforms.Set("shadowMap.viewProjectionMatrix", shadowMatrix);
 		}
 

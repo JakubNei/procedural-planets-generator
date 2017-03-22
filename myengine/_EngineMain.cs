@@ -20,7 +20,7 @@ namespace MyEngine
 		[Dependency(Register = true)]
 		public InputSystem Input { get; private set; }
 
-		public Debug Debug { get; private set; }
+		public MyDebug Debug { get; private set; }
 
 		public FileSystem FileSystem { get; private set; } = new FileSystem("../Resources/");
 
@@ -49,7 +49,7 @@ namespace MyEngine
 		)
 		{
 			Input = new InputSystem(this);
-			Debug = new Debug(Input);
+			Debug = new MyDebug(Input);
 
 			Debug.Info("START"); // to have debug initialized before anything else
 
@@ -59,7 +59,6 @@ namespace MyEngine
 			System.Diagnostics.Process.GetCurrentProcess().PriorityClass = System.Diagnostics.ProcessPriorityClass.RealTime;
 			Thread.CurrentThread.Priority = ThreadPriority.Highest;
 
-			VSync = VSyncMode.On;
 			TargetRenderFrequency = 0;
 
 			ubo = new UniformBlock();
@@ -70,9 +69,10 @@ namespace MyEngine
 			renderManagerFront = Dependency.Create<RenderManager>();
 			renderManagerBack = Dependency.Create<RenderManager>();
 
+			TryStartSecondary();
+
 			RenderFrame += (sender, evt) =>
 			{
-				TryStartSecondary();
 				RenderMain();
 
 				/*
@@ -83,11 +83,13 @@ namespace MyEngine
                 */
 			};
 
-			Debug.CommonCVars.VSync().ToogledByKey(OpenTK.Input.Key.V).OnChanged += (cvar) =>
+			VSync = VSyncMode.Off;
+			/*Debug.CommonCVars.VSync().ToogledByKey(OpenTK.Input.Key.V).OnChanged += (cvar) =>
 			{
-				if(cvar.Bool) VSync = VSyncMode.On;
+				if (cvar.Bool) VSync = VSyncMode.On;
 				else VSync = VSyncMode.Off;
 			};
+			Debug.CommonCVars.VSync().InitializeWith(false);*/
 
 			Debug.CommonCVars.Fullscreen().ToogledByKey(OpenTK.Input.Key.F).OnChanged += (cvar) =>
 			{
@@ -99,9 +101,9 @@ namespace MyEngine
 
 		}
 
-		System.Diagnostics.Stopwatch stopwatchSinceStart = new System.Diagnostics.Stopwatch();
+		Stopwatch stopwatchSinceStart = new System.Diagnostics.Stopwatch();
 
-		public static UniformBlock ubo;
+		public static UniformBlock ubo { get; set; }
 
 		public SceneSystem AddScene()
 		{
@@ -112,6 +114,8 @@ namespace MyEngine
 
 		protected override void OnLoad(System.EventArgs e)
 		{
+			Thread.CurrentThread.Priority = ThreadPriority.Highest;
+
 			foreach (StringName r in System.Enum.GetValues(typeof(StringName)))
 			{
 				if (r == StringName.Extensions) break;
@@ -125,7 +129,6 @@ namespace MyEngine
 			//GL.Enable(EnableCap.Multisample); My.Check();
 
 			GL.ClearColor(System.Drawing.Color.Black); MyGL.Check();
-
 		}
 
 		protected override void OnUnload(EventArgs e)
@@ -134,9 +137,12 @@ namespace MyEngine
 
 		protected override void OnResize(EventArgs e)
 		{
-			var resizeEvent = new Events.WindowResized(Width, Height);
-			EventSystem.Raise(resizeEvent);
-			Debug.Info("Window resized to: width:" + resizeEvent.NewPixelWidth + " height:" + resizeEvent.NewPixelHeight);
+			EventSystem.Once<Events.FrameStarted>((evt) =>
+			{
+				var resizeEvent = new Events.WindowResized(Width, Height);
+				Debug.Info("Window resized to: width:" + resizeEvent.NewPixelWidth + " height:" + resizeEvent.NewPixelHeight);
+				EventSystem.Raise(resizeEvent);
+			});
 		}
 
 		protected override void OnUpdateFrame(FrameEventArgs e)
@@ -274,10 +280,11 @@ namespace MyEngine
 				var camera = scene.mainCamera;
 				var dataToRender = scene.DataToRender;
 
-				if (renderThreadTime.FpsPer1Sec > 30) renderManagerFront.SkyboxCubeMap = scene.skyBox;
-				else renderManagerFront.SkyboxCubeMap = null;
+				//if (renderThreadTime.FpsPer1Sec > 30)
+				renderManagerFront.SkyboxCubeMap = scene.skyBox;
+				//else renderManagerFront.SkyboxCubeMap = null;
 				renderManagerFront.RenderAll(ubo, camera, dataToRender.Lights, camera.postProcessEffects);
-			}	
+			}
 
 			if (Debug.CommonCVars.PauseRenderPrepare() == false)
 			{
@@ -291,13 +298,14 @@ namespace MyEngine
 			GC.Collect();
 			Mesh.ProcessFinalizerQueue();
 
-			EventSystem.Raise(new MyEngine.Events.FrameEnded());
+			EventSystem.Raise(new MyEngine.Events.FrameEnded(renderThreadTime));
+
+			//while (renderThreadTime.CurrentFrameElapsedTimeFps > renderThreadTime.TargetFps) Thread.Sleep(5);
 		}
 
 
 		void UpdateGPUMemoryInfo()
 		{
-
 			// http://developer.download.nvidia.com/opengl/specs/GL_NVX_gpu_memory_info.txt
 
 			var GPU_MEMORY_INFO_DEDICATED_VIDMEM_NVX = 0x9047;

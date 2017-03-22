@@ -16,7 +16,7 @@ namespace MyEngine
 {
 	public class SceneSystem : GameSystemBase
 	{
-		public Debug Debug => Engine.Debug;
+		public MyDebug Debug => Engine.Debug;
 		public Factory Factory => Engine.Factory;
 		public FileSystem FileSystem => Engine.FileSystem;
 		public IDependencyManager Dependency => Engine.Dependency;

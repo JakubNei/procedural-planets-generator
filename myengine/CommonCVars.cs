@@ -9,8 +9,8 @@ namespace MyEngine
 {
 	public class CommonCVars
 	{
-		public readonly Debug Debug;
-		public CommonCVars(Debug debug)
+		public readonly MyDebug Debug;
+		public CommonCVars(MyDebug debug)
 		{
 			this.Debug = debug;
 		}

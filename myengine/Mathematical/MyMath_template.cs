@@ -104,18 +104,29 @@ namespace MyEngine
 			return tmp * tmp * (3.0f - 2.0f * tmp);
 		}
 
+		public static Vector3d Lerp(Vector3d start, Vector3d end, double t)
+		{
+			return start * t + end * (1 - t);
+		}
+		public static Vector3d Slerp(Vector3d start, Vector3d end, double t)
+		{
+			var startMagnitude = start.Length;
+			var endMagnitude = end.Length;
+			var startNormalized = start / startMagnitude;
+			var endNormalized = end / endMagnitude;
+			var dot = startNormalized.Dot(endNormalized);
+			dot = Clamp(dot, -1, 1);
+			var theta = Acos(dot) * t;
+			var RelativeVec = endNormalized - startNormalized * dot;
+			RelativeVec.Normalize();
+			return
+				(startNormalized * Cos(theta)) + (RelativeVec * Sin(theta))
+				* Lerp(startMagnitude, endMagnitude, t);
+		}
 
 		public static double Lerp(double edge0, double edge1, double x)
 		{
 			return edge0 * x + edge1 * (1 - x);
-		}
-
-
-		public static Vector3d Slerp(Vector3d start, Vector3d end, double percent)
-		{
-			Vector3d ret;
-			Slerp(ref start, ref end, percent, out ret);
-			return ret;
 		}
 
 		// https://keithmaggio.wordpress.com/2011/02/15/math-magician-lerp-slerp-and-nlerp/
@@ -142,6 +153,8 @@ namespace MyEngine
 										 // The final result.
 			ret = ((startNormalized * Cos(theta)) + (RelativeVec * Sin(theta))) * Lerp(startMagnitude, endMagnitude, percent);
 		}
+
+
 
 		#endregion
 

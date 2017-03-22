@@ -34,17 +34,20 @@ namespace MyEngine
 				if (recalculateBounds)
 				{
 					recalculateBounds = false;
-					if (Vertices.Count > 0)
+					lock (Vertices)
 					{
-						bounds = new Bounds(Vertices[0], Vector3.Zero);
-						for (int i = 0; i < Vertices.Count; i++)
+						if (Vertices.Count > 0)
 						{
-							bounds.Encapsulate(Vertices[i]);
+							bounds = new Bounds(Vertices[0], Vector3.Zero);
+							for (int i = 0; i < Vertices.Count; i++)
+							{
+								bounds.Encapsulate(Vertices[i]);
+							}
 						}
-					}
-					else
-					{
-						bounds = new Bounds(Vector3.Zero, Vector3.Zero);
+						else
+						{
+							bounds = new Bounds(Vector3.Zero, Vector3.Zero);
+						}
 					}
 				}
 				return bounds;

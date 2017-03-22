@@ -93,7 +93,7 @@ namespace MyEngine.Components
 			ubo.model.modelMatrix = modelMat;
 			ubo.model.modelViewMatrix = modelViewMat;
 			ubo.model.modelViewProjectionMatrix = modelViewMat * camera.GetProjectionMat();
-			ubo.modelUBO.UploadData();
+			ubo.modelUBO.UploadToGPU();
 			Mesh.Draw(Material.GBufferShader.HasTesselation);
 		}
 

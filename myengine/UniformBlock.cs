@@ -112,7 +112,7 @@ namespace MyEngine
             }
 
 
-            public void UploadData()
+            public void UploadToGPU()
             {
                 T d = getData();
                 GL.BindBuffer(BufferTarget.UniformBuffer, bufferUBO); MyGL.Check();

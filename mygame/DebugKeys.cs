@@ -15,9 +15,9 @@ namespace MyGame
 	public class DebugKeys
 	{
 		SceneSystem scene;
-		Debug debug;
+		MyDebug debug;
 
-		public DebugKeys(SceneSystem scene, Debug debug)
+		public DebugKeys(SceneSystem scene, MyDebug debug)
 		{
 			this.scene = scene;
 			this.debug = debug;

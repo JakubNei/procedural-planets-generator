@@ -41,7 +41,6 @@ namespace MyEngine.Events
 				delegat.DynamicInvoke(evt);
 			}
 
-
 			OnAnyEventCalled?.Invoke(evt);
 			foreach (var e in passEventsTo) e.Raise(evt);
 		}

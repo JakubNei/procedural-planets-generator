@@ -37,7 +37,7 @@ namespace MyEngine.Components
 
 	public class Light : ComponentWithShortcuts, IDisposable, ILight
 	{
-		public LightType LighType = LightType.Point;
+		public LightType LighType { get; set; } = LightType.Point;
 
 		public LightShadows Shadows
 		{
@@ -49,15 +49,15 @@ namespace MyEngine.Components
 			{
 				m_shadows = value;
 				const int shadowMapResolution = 1000;
-				if (HasShadows && ShadowMap == null) ShadowMap = Dependency.Create<ShadowMap>(this, shadowMapResolution, shadowMapResolution);
+				if (HasShadows && ShadowMap == null) ShadowMap = new ShadowMap(this, shadowMapResolution, shadowMapResolution);
 			}
 		}
 
 		LightShadows m_shadows = LightShadows.None;
 
-		public Vector3 color = Vector3.One;
-		public float spotExponent;
-		public float spotCutOff;
+		public Vector3 Color { get; set; } = Vector3.One;
+		public float SpotExponent { get; set; }
+		public float SpotCutOff { get; set; }
 
 		public ShadowMap ShadowMap { get; private set; }
 		public bool HasShadows { get { return this.Shadows != LightShadows.None && this.LighType == LightType.Directional; } }
@@ -69,7 +69,7 @@ namespace MyEngine.Components
 
 		public void UploadUBOdata(Camera camera, UniformBlock ubo, int lightIndex)
 		{
-			ubo.light.color = this.color;
+			ubo.light.color = this.Color;
 
 			if (LighType == LightType.Directional) ubo.light.position = Vector3.Zero;
 			else ubo.light.position = camera.ViewPointPosition.Towards(this.Entity.Transform.Position).ToVector3();
@@ -77,13 +77,13 @@ namespace MyEngine.Components
 			if (LighType == LightType.Point) ubo.light.direction = Vector3.Zero;
 			else ubo.light.direction = this.Entity.Transform.Forward;
 
-			ubo.light.spotExponent = this.spotExponent;
-			ubo.light.spotCutOff = this.spotCutOff;
+			ubo.light.spotExponent = this.SpotExponent;
+			ubo.light.spotCutOff = this.SpotCutOff;
 
 			ubo.light.hasShadows = HasShadows ? 1 : 0;
 			ubo.light.lightIndex = lightIndex;
 
-			ubo.lightUBO.UploadData();
+			ubo.lightUBO.UploadToGPU();
 		}
 
 		public void Dispose()

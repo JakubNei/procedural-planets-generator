@@ -14,7 +14,7 @@ namespace MyEngine
 
 		bool _bool;
 
-		Debug debug;
+		MyDebug debug;
 
 		public bool Bool
 		{
@@ -27,6 +27,7 @@ namespace MyEngine
 				if (_bool != value)
 				{
 					_bool = value;
+					debug.Info(name + " changed to: " + value);
 					OnChanged?.Invoke(this);
 				}
 			}
@@ -38,14 +39,22 @@ namespace MyEngine
 
 		public event Action<CVar> OnChanged;
 
-		public CVar(Debug debug)
+		public CVar(MyDebug debug)
 		{
 			this.debug = debug;
 		}
 
+		public void InitializeWith(bool value)
+		{
+			_bool = value;
+			debug.Info(name + " changed to: " + value);
+			OnChanged?.Invoke(this);
+		}
+
 		public bool EatBoolIfTrue()
 		{
-			if(Bool) {
+			if (Bool)
+			{
 				Bool = false;
 				return true;
 			}
@@ -54,7 +63,7 @@ namespace MyEngine
 
 		public CVar ToogledByKey(OpenTK.Input.Key key)
 		{
-			debug.Info($"{key} to toggled {name}");
+			debug.Info($"{key} to toggle {name}");
 			toogleKey = key;
 			return this;
 		}

@@ -9,9 +9,9 @@ using System.Windows.Forms;
 
 namespace MyEngine
 {
-	public class Debug
+	public class MyDebug
 	{
-        public static Debug Instance { get; private set; }
+        public static MyDebug Instance { get; private set; }
 
 		List<string> alreadyShown = new List<string>();
 
@@ -25,8 +25,8 @@ namespace MyEngine
 
 		class TraceListener : System.Diagnostics.TraceListener
 		{
-			Debug debug;
-			public TraceListener(Debug debug)
+			MyDebug debug;
+			public TraceListener(MyDebug debug)
 			{
 				this.debug = debug;
 			}
@@ -41,7 +41,7 @@ namespace MyEngine
 			}
 		}
 
-		public Debug(InputSystem input)
+		public MyDebug(InputSystem input)
 		{
 			this.Input = input;
             Instance = this;
@@ -190,7 +190,6 @@ namespace MyEngine
 					if (Input.GetKeyDown(cvar.toogleKey))
 					{
 						cvar.Bool = !cvar.Bool;
-						Info($"{cvar.name} toogled to  {cvar.Bool}");
 					}
 				}
 			}

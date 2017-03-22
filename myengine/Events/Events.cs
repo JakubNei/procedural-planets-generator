@@ -16,42 +16,38 @@ namespace MyEngine.Events
 
 		public readonly FrameTime FrameTime;
 
-		public FrameTimeEvent(FrameTime deltaTimeManager)
+		public FrameTimeEvent(FrameTime frameTime)
 		{
-			this.FrameTime = deltaTimeManager;
-			this.DeltaTime = deltaTimeManager.DeltaTime;
-			this.DeltaTimeOver1Second = deltaTimeManager.DeltaTime1Second;
-			this.DeltaTimeOver10Seconds = deltaTimeManager.DeltaTime10Seconds;
+			this.FrameTime = frameTime;
+			this.DeltaTime = frameTime.DeltaTime;
+			this.DeltaTimeOver1Second = frameTime.DeltaTime1Second;
+			this.DeltaTimeOver10Seconds = frameTime.DeltaTime10Seconds;
 		}
 	}
 	public class EventThreadUpdate : FrameTimeEvent
 	{
 		public EventThreadUpdate(FrameTime deltaTimeManager) : base(deltaTimeManager)
 		{
-
 		}
 	}
 
 	public class PreRenderUpdate : FrameTimeEvent
 	{
-		public PreRenderUpdate(FrameTime deltaTimeManager) : base(deltaTimeManager)
+		public PreRenderUpdate(FrameTime frameTime) : base(frameTime)
 		{
-
 		}
 	}
 
 	public class PostRenderUpdate : FrameTimeEvent
 	{
-		public PostRenderUpdate(FrameTime deltaTimeManager) : base(deltaTimeManager)
+		public PostRenderUpdate(FrameTime frameTime) : base(frameTime)
 		{
-
 		}
 	}
 	public class InputUpdate : FrameTimeEvent
 	{
-		public InputUpdate(FrameTime deltaTimeManager) : base(deltaTimeManager)
+		public InputUpdate(FrameTime frameTime) : base(frameTime)
 		{
-
 		}
 	}
 
@@ -60,9 +56,11 @@ namespace MyEngine.Events
 
 	}
 
-	public class FrameEnded : IEvent
+	public class FrameEnded : FrameTimeEvent
 	{
-
+		public FrameEnded(FrameTime frameTime) : base(frameTime)
+		{
+		}
 	}
 
 	public class WindowResized : IEvent

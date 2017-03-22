@@ -137,10 +137,13 @@ namespace MyEngine
 				var countOfFloats = countOfVector3s * 3;
 				var data = new float[countOfFloats];
 				Marshal.Copy(ptr, data, 0, countOfFloats);
-				this.Clear();
-				for (int i = 0; i < countOfFloats; i += 3)
+				lock (this)
 				{
-					this.Add(new Vector3(data[i], data[i + 1], data[i + 2]));
+					this.Clear();
+					for (int i = 0; i < countOfFloats; i += 3)
+					{
+						this.Add(new Vector3(data[i], data[i + 1], data[i + 2]));
+					}
 				}
 			}
 		}
@@ -156,10 +159,13 @@ namespace MyEngine
 				var countOfFloats = countOfVector3s * 3;
 				var data = new float[countOfFloats];
 				Marshal.Copy(ptr, data, 0, countOfFloats);
-				this.Clear();
-				for (int i = 0; i < countOfFloats; i += 2)
+				lock (this)
 				{
-					this.Add(new Vector2(data[i], data[i + 1]));
+					this.Clear();
+					for (int i = 0; i < countOfFloats; i += 2)
+					{
+						this.Add(new Vector2(data[i], data[i + 1]));
+					}
 				}
 			}
 		}
@@ -176,8 +182,11 @@ namespace MyEngine
 				var countOfFloats = countOfVector3s * 3;
 				var data = new int[countOfFloats];
 				Marshal.Copy(ptr, data, 0, countOfFloats);
-				this.Clear();
-				this.AddRange(data);
+				lock (this)
+				{
+					this.Clear();
+					this.AddRange(data);
+				}
 			}
 		}
 

@@ -11,6 +11,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
+using System.Diagnostics;
 
 namespace MyGame.PlanetaryBody
 {
@@ -19,8 +20,8 @@ namespace MyGame.PlanetaryBody
 		public double RadiusMin => config.radiusMin;
 
 		public int ChunkNumberOfVerticesOnEdge => 60;
-		public float SizeOnScreenNeededToSubdivide => 0.5f;
-		public int SubdivisionMaxRecurisonDepth => int.MaxValue;
+		public float SizeOnScreenNeededToSubdivide => 0.3f;
+		public int SubdivisionMaxRecurisonDepth => 100;
 
 
 		int numberOfVerticesNeededTotal = -1;
@@ -84,9 +85,7 @@ namespace MyGame.PlanetaryBody
 
 			Debug.CommonCVars.SmoothChunksEdgeNormals().ToogledByKey(OpenTK.Input.Key.N);
 
-
-			computeShader = Factory.GetShader("shaders/planetGeneration.compute");
-
+			InitializeJobTemplate();
 		}
 
 		public void SetConfig(Config config)
@@ -265,6 +264,10 @@ namespace MyGame.PlanetaryBody
 					Chunks_GatherWeights(list, child, recursionDepth + 1);
 				}
 			}
+			else
+			{
+				Debug.Warning("recursion depth is over: " + SubdivisionMaxRecurisonDepth, false);
+			}
 		}
 
 
@@ -296,6 +299,7 @@ namespace MyGame.PlanetaryBody
 			}
 			else
 			{
+				Debug.Warning("recursion depth is over: " + SubdivisionMaxRecurisonDepth, false);
 				DoRenderChunk(chunk);
 			}
 		}
@@ -305,7 +309,7 @@ namespace MyGame.PlanetaryBody
 			chunk.renderer?.SetRenderingMode(MyRenderingMode.RenderGeometryAndCastShadows);
 
 			if (computeShader.Version != chunk.meshGeneratedWithShaderVersion)
-				ToComputeShader(chunk);
+				EnqueueChunkForGeneration(chunk);
 		}
 
 
@@ -350,20 +354,22 @@ namespace MyGame.PlanetaryBody
 							toGenerate = neighbour;
 
 
-				ToComputeShader(toGenerate);
+				EnqueueChunkForGeneration(toGenerate);
 			}
 
 			foreach (var rootChunk in this.rootChunks) Chunks_UpdateVisibility(rootChunk, 0);
 		}
 
 
+
+
 		public class GenerationStats
 		{
 			ulong countChunksGenerated;
 			TimeSpan timeSpentGenerating;
-			Debug debug;
+			MyDebug debug;
 			System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
-			public GenerationStats(Debug debug)
+			public GenerationStats(MyDebug debug)
 			{
 				this.debug = debug;
 			}
@@ -386,59 +392,303 @@ namespace MyGame.PlanetaryBody
 			}
 		}
 
-
-		ConcurrentQueue<Chunk> chunksToGenerate = new ConcurrentQueue<Chunk>();
-		void ToComputeShader(Chunk chunk)
+		public class ProfilerEvent
 		{
-			chunksToGenerate.Enqueue(chunk);
+			string name;
+			public ProfilerEvent(string name)
+			{
+				this.name = name;
+			}
+			public ProfilerEvent MakeChild(string name = null)
+			{
+				return new ProfilerEvent(name);
+			}
+			public void Start()
+			{
+
+			}
+			public void Stop()
+			{
+
+			}
 		}
+
 
 		UniformsData computeShaderUniforms = new UniformsData();
-		void ExecuteComputeShader(Chunk chunk)
+
+
+		public enum WhereToRun
 		{
-			stats.Start();
-
-			chunk.CreateRendererAndBasicMesh();
-			var mesh = chunk.renderer.Mesh;
-			mesh.EnsureIsOnGpu();
-
-			if (chunk.renderer == null && mesh != null) throw new Exception("concurency problem");
-
-			config.SetTo(computeShaderUniforms);
-
-			computeShaderUniforms.Set("param_offsetFromPlanetCenter", chunk.renderer.Offset.ToVector3());
-			computeShaderUniforms.Set("param_numberOfVerticesOnEdge", ChunkNumberOfVerticesOnEdge);
-			computeShaderUniforms.Set("param_cornerPositionA", chunk.NoElevationRange.a.ToVector3());
-			computeShaderUniforms.Set("param_cornerPositionB", chunk.NoElevationRange.b.ToVector3());
-			computeShaderUniforms.Set("param_cornerPositionC", chunk.NoElevationRange.c.ToVector3());
-			computeShaderUniforms.Set("param_indiciesCount", mesh.TriangleIndicies.Count);
-
-			computeShaderUniforms.SendAllUniformsTo(computeShader.Uniforms);
-			computeShader.Bind();
-
-			GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 0, mesh.Vertices.VboHandle); MyGL.Check();
-			GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 1, mesh.Normals.VboHandle); MyGL.Check();
-			GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 2, mesh.UVs.VboHandle); MyGL.Check();
-			GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 3, mesh.TriangleIndicies.VboHandle); MyGL.Check();
-			GL.DispatchCompute(mesh.Vertices.Count, 1, 1); MyGL.Check();
-			toCalculateNormals.Add(mesh);
-
-			mesh.Vertices.DownloadDataFromGpuToRam();
-			mesh.RecalculateBounds();
-
-			chunk.CalculateRealVisibleRange();
-			chunk.isGenerationDone = true;
-			chunk.meshGeneratedWithShaderVersion = computeShader.Version;
-
-			stats.End();
-			stats.Update();
-
-
-			toCalculateNormals.ForEach(CalculateNormalsOnGPU);
-			toCalculateNormals.Clear();
+			GPUThread,
+			DoesNotMatter,
 		}
 
-		List<Mesh> toCalculateNormals = new List<Mesh>();
+		public class JobRunner
+		{
+			List<IJob> jobs = new List<IJob>();
+			Dictionary<IJob, double> timesOutOfTime = new Dictionary<IJob, double>();
+			public void AddJob(IJob job)
+			{
+				lock (jobs)
+					jobs.Add(job);
+			}
+			public void GPUThreadTick(FrameTime ft, Func<double> secondLeftToUse)
+			{
+				int jobsRan = 1;
+
+				while (jobs.Count > 0 && secondLeftToUse() > 0 && jobsRan > 0)
+				{
+
+					IJob[] orderedJobs;
+					lock (jobs)
+						orderedJobs = jobs.OrderByDescending(j => j.NextGPUThreadTickWillTakeSeconds()).ToArray();
+
+					jobsRan = 0;
+
+					var s = secondLeftToUse();
+					var aa = ft.CurrentFrameElapsedTimeFps;
+					if (aa < 60)
+					{
+						var a = 5;
+					}
+
+					foreach (var job in orderedJobs)
+					{
+						if (job.ShouldExecute)
+						{
+							var t = timesOutOfTime.GetValue(job, 1);
+							if (job.NextGPUThreadTickWillTakeSeconds() <= secondLeftToUse())
+							{
+								job.GPUThreadTick();
+								jobsRan++;
+							}
+							else
+							{
+								timesOutOfTime[job] = t + 1;
+							}
+						}
+
+						if (job.ShouldRemove)
+						{
+							timesOutOfTime.Remove(job);
+						}
+					}
+					lock (jobs)
+						jobs.RemoveAll((j) => j.ShouldRemove);
+				}
+				MyDebug.Instance.AddValue("jobs count", jobs.Count);
+			}
+		}
+
+		public interface IJob
+		{
+			bool ShouldExecute { get; }
+			bool ShouldRemove { get; }
+			double NextGPUThreadTickWillTakeSeconds();
+			void GPUThreadTick();
+		}
+
+		public class JobTemplate<TData>
+		{
+			class JobTask
+			{
+				public Action<TData> action;
+				public WhereToRun whereToRun;
+
+				public TimeSpan timeTaken;
+
+				public bool firstRunDone;
+				public ulong timesExecuted;
+				public double avergeSeconds
+				{
+					get
+					{
+						if (timesExecuted == 0) return 0;
+						if (firstRunDone == false) return 0;
+						return timeTaken.TotalSeconds / timesExecuted;
+					}
+				}
+			}
+			List<JobTask> tasksToRun = new List<JobTask>();
+
+			public string Name { get; set; }
+			public JobTemplate()
+			{
+
+			}
+			public void AddTask(Action<TData> action)
+			{
+				AddTask(WhereToRun.DoesNotMatter, action);
+			}
+			public void AddTask(WhereToRun whereToRun, Action<TData> action)
+			{
+				tasksToRun.Add(new JobTask() { action = action, whereToRun = whereToRun });
+			}
+			public IJob MakeInstanceWithData(TData data)
+			{
+				return new JobInstance(this, data);
+			}
+			class JobInstance : IJob
+			{
+				public bool ShouldExecute => !ShouldRemove;
+				public bool ShouldRemove => IsFinished || IsAborted || IsFaulted;
+
+				public bool IsFinished => currentTaskIndex >= parent.tasksToRun.Count && (lastTask == null || lastTask.IsCompleted);
+				public bool IsAborted { get; private set; }
+				public bool IsFaulted { get; private set; }
+				public Exception Exception { get; private set; }
+
+				Task lastTask;
+				int currentTaskIndex;
+
+				readonly TData data;
+				readonly JobTemplate<TData> parent;
+
+				public JobInstance(JobTemplate<TData> parent, TData data)
+				{
+					this.parent = parent;
+					this.data = data;
+				}
+
+				public void GPUThreadTick()
+				{
+					if (!ShouldExecute) return;
+					if (lastTask != null && lastTask.IsCompleted == false) return;
+					lastTask = null;
+
+					var jobTask = parent.tasksToRun[currentTaskIndex];
+
+					if (jobTask.action != null)
+					{
+						Action action = () =>
+						{
+							var stopWatch = Stopwatch.StartNew();
+							try
+							{
+								jobTask.action(data);
+							}
+							catch (Exception e)
+							{
+								IsFaulted = true;
+								Exception = e;
+							}
+							if (jobTask.firstRunDone)
+							{
+								jobTask.timeTaken += stopWatch.Elapsed;
+								jobTask.timesExecuted++;
+							}
+							else
+							{
+								jobTask.firstRunDone = true;
+							}
+						};
+						if (jobTask.whereToRun == WhereToRun.GPUThread)
+							action();
+						else
+							lastTask = Task.Run(action);
+					}
+
+					currentTaskIndex++;
+				}
+				public void Abort()
+				{
+					IsAborted = true;
+				}
+
+				public double NextGPUThreadTickWillTakeSeconds()
+				{
+					if (IsFinished) return 0;
+					var jobTask = parent.tasksToRun[currentTaskIndex];
+					if (jobTask.whereToRun == WhereToRun.GPUThread) return jobTask.avergeSeconds / 10;
+					return 0;
+				}
+			}
+
+		}
+
+
+		JobRunner jobRunner = new JobRunner();
+		ProfilerEvent profiler = new ProfilerEvent("chunk generation");
+
+		JobTemplate<Chunk> generationJobTemplate;
+
+		void InitializeJobTemplate()
+		{
+			generationJobTemplate = new JobTemplate<Chunk>();
+
+			generationJobTemplate.AddTask(WhereToRun.GPUThread, (chunk) =>
+			{
+				chunk.CreateRendererAndBasicMesh();
+			});
+			generationJobTemplate.AddTask(WhereToRun.GPUThread, (chunk) =>
+			{
+				var mesh = chunk.renderer.Mesh;
+				mesh.EnsureIsOnGpu();
+			});
+			//if (chunk.renderer == null && mesh != null) throw new Exception("concurency problem");
+
+
+			computeShader = Factory.GetShader("shaders/planetGeneration.compute");
+
+			generationJobTemplate.AddTask(WhereToRun.GPUThread, (chunk) =>
+			{
+				var mesh = chunk.renderer.Mesh;
+				config.SetTo(computeShaderUniforms);
+
+				computeShaderUniforms.Set("param_offsetFromPlanetCenter", chunk.renderer.Offset.ToVector3());
+				computeShaderUniforms.Set("param_numberOfVerticesOnEdge", ChunkNumberOfVerticesOnEdge);
+				computeShaderUniforms.Set("param_cornerPositionA", chunk.NoElevationRange.a.ToVector3());
+				computeShaderUniforms.Set("param_cornerPositionB", chunk.NoElevationRange.b.ToVector3());
+				computeShaderUniforms.Set("param_cornerPositionC", chunk.NoElevationRange.c.ToVector3());
+				computeShaderUniforms.Set("param_indiciesCount", mesh.TriangleIndicies.Count);
+
+				computeShaderUniforms.SendAllUniformsTo(computeShader.Uniforms);
+				computeShader.Bind();
+
+				stats.Start();
+
+				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 0, mesh.Vertices.VboHandle); MyGL.Check();
+				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 1, mesh.Normals.VboHandle); MyGL.Check();
+				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 2, mesh.UVs.VboHandle); MyGL.Check();
+				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 3, mesh.TriangleIndicies.VboHandle); MyGL.Check();
+				GL.DispatchCompute(mesh.Vertices.Count, 1, 1); MyGL.Check();
+
+				stats.End();
+				stats.Update();
+			});
+
+			generationJobTemplate.AddTask(WhereToRun.GPUThread, (chunk) =>
+			{
+				var mesh = chunk.renderer.Mesh;
+				mesh.Vertices.DownloadDataFromGpuToRam();
+			});
+
+			generationJobTemplate.AddTask((chunk) =>
+			{
+				var mesh = chunk.renderer.Mesh;
+				mesh.RecalculateBounds();
+			});
+
+			generationJobTemplate.AddTask((chunk) =>
+			{
+				chunk.CalculateRealVisibleRange();
+				chunk.isGenerationDone = true;
+				chunk.meshGeneratedWithShaderVersion = computeShader.Version;
+			});
+
+			generationJobTemplate.AddTask(WhereToRun.GPUThread, (chunk) =>
+			{
+				var mesh = chunk.renderer.Mesh;
+				CalculateNormalsOnGPU(mesh);
+			});
+		}
+
+		void EnqueueChunkForGeneration(Chunk chunk)
+		{
+			var job = generationJobTemplate.MakeInstanceWithData(chunk);
+			jobRunner.AddJob(job);
+		}
+
 
 		public void CalculateNormalsOnGPU(Mesh mesh)
 		{
@@ -455,11 +705,9 @@ namespace MyGame.PlanetaryBody
 			}
 		}
 
-		public void GPUThreadUpdate()
+		public void GPUThreadTick(FrameTime t)
 		{
-			Chunk toGenerate;
-			while (chunksToGenerate.TryDequeue(out toGenerate))
-				ExecuteComputeShader(toGenerate);
+			jobRunner.GPUThreadTick(t, () => 1 / t.TargetFps - t.CurrentFrameElapsedSeconds);
 		}
 
 

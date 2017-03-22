@@ -17,7 +17,7 @@ namespace MyEngine
 		Queue<DateTime> frameTimes1sec = new Queue<DateTime>();
 		Queue<DateTime> frameTimes10sec = new Queue<DateTime>();
 
-		public void Update(Debug debug)
+		public void Update(MyDebug debug)
 		{
 			var now = DateTime.Now;
 			frameTimes1sec.Enqueue(now);

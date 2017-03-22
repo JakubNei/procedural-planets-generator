@@ -20,7 +20,7 @@ namespace MyGame
 		public List<PlanetaryBody.Root> planets = new List<PlanetaryBody.Root>();
 		SceneSystem scene;
 		Factory Factory => scene.Factory;
-		Debug Debug => scene.Debug;
+		MyDebug Debug => scene.Debug;
 
 		Camera Cam { get { return scene.mainCamera; } }
 
@@ -48,7 +48,7 @@ namespace MyGame
 				t.Start();
 			}
 
-			scene.EventSystem.On<PostRenderUpdate>(GPUThreadUpdate);
+			scene.EventSystem.On<FrameEnded>(GPUThreadUpdate);
 
 			scene.Debug.CVar("generation / planet logic update pause").ToogledByKey(Key.P).OnChanged += (v) => freezeUpdate = v.Bool;
 		}
@@ -119,7 +119,8 @@ namespace MyGame
 			cfg.AddBiome(new Vector3(0.5f, 0.5f, 0.5f), Factory.GetTexture2D("biomes/tundra_d.*"), Factory.GetTexture2D("biomes/tundra_n.*")); // grey
 			cfg.AddBiome(new Vector3(0, 0.5f, 0), Factory.GetTexture2D("biomes/forest_d.*"), Factory.GetTexture2D("biomes/forest_n.*")); // green
 			cfg.AddBiome(new Vector3(0.25f, 0.5f, 0.25f), Factory.GetTexture2D("biomes/tundra2_d.*"), Factory.GetTexture2D("biomes/tundra2_n.*")); // green-vomit
-			//cfg.AddBiome(new Vector3(0, 0, 0.5f), Factory.GetTexture2D("biomes/sand_d.*"), Factory.GetTexture2D("biomes/sand_n.*")); // blue
+			cfg.AddBiome(new Vector3(0, 0, 1), Factory.GetTexture2D("biomes/water_d.*"), Factory.DefaultNormalMap); // blue
+
 			var planet = AddPlanet();
 			planet.SetConfig(cfg);
 			planet.Transform.Position = new WorldPos(planet.RadiusMin * 3, 0, 0);
@@ -165,13 +166,13 @@ namespace MyGame
 
 		void GPUThreadUpdate(FrameTimeEvent r)
 		{
-			if (r.FrameTime.CurrentFrameElapsedTimeFps < 60 /*|| r.FrameTime.Fps < r.FrameTime.FpsPer10Sec*/) return;
+			//if (r.FrameTime.CurrentFrameElapsedTimeFps < r.TargetFps /*|| r.FrameTime.Fps < r.FrameTime.FpsPer10Sec*/) return;
 
 			if (!runPlanetLogicInOwnThread) PlanetLogicUpdate();
 
 			foreach (var p in planets)
 			{
-				p.GPUThreadUpdate();
+				p.GPUThreadTick(r.FrameTime);
 			}
 
 			if (runPlanetLogicInOwnThread) canRunNextLogicUpdate.Set();

@@ -35,9 +35,9 @@ namespace MyEngine
 		public bool shadowsEnabled { get { return debug.CommonCVars.ShadowsDisabled().Bool == false; } }
 
 		readonly Factory factory;
-		readonly Debug debug;
+		readonly MyDebug debug;
 
-		public RenderManager(Events.EventSystem eventSystem, Factory factory, Debug debug)
+		public RenderManager(Events.EventSystem eventSystem, Factory factory, MyDebug debug)
 		{
 			this.factory = factory;
 			this.debug = debug;
@@ -101,7 +101,7 @@ namespace MyEngine
 						ubo.model.modelMatrix = modelMat;
 						ubo.model.modelViewMatrix = modelViewMat;
 						ubo.model.modelViewProjectionMatrix = modelViewMat * camera.GetProjectionMat();
-						ubo.modelUBO.UploadData();
+						ubo.modelUBO.UploadToGPU();
 						factory.SkyBoxMesh.Draw(false);
 					}
 					GL.DepthMask(true); MyGL.Check();

@@ -76,7 +76,7 @@ namespace MyEngine.Components
             ubo.engine.ambientColor = this.ambientColor;
             ubo.engine.cameraPosition = this.ViewPointPosition.ToVector3();
             GL.Viewport(0, 0, pixelWidth, pixelHeight); MyGL.Check();
-            ubo.engineUBO.UploadData();
+            ubo.engineUBO.UploadToGPU();
         }
 
         public void AddPostProcessEffect(IPostProcessEffect shader)

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,7 +12,9 @@ namespace MyEngine
 	{
 		Queue<DateTime> frameTimes1sec = new Queue<DateTime>();
 		Queue<DateTime> frameTimes10sec = new Queue<DateTime>();
-		System.Diagnostics.Stopwatch eventThreadTime = new System.Diagnostics.Stopwatch();
+		Stopwatch eventThreadTime = new Stopwatch();
+
+		public double TargetFps => 60 + 10;
 
 		/// <summary>
 		/// Delta Time from last frame.
@@ -27,13 +30,14 @@ namespace MyEngine
 		public double FpsPer1Sec { get; private set; }
 		public double FpsPer10Sec { get; private set; }
 
-		public double CurrentFrameElapsedSeconds => eventThreadTime.ElapsedMilliseconds / 1000.0f;
+		public double CurrentFrameElapsedSeconds => eventThreadTime.ElapsedTicks / (double)Stopwatch.Frequency;
 		public double CurrentFrameElapsedTimeFps => 1 / CurrentFrameElapsedSeconds;
 
 		public void FrameBegan()
 		{
-			DeltaTime = eventThreadTime.ElapsedMilliseconds / 1000.0;
+			DeltaTime = eventThreadTime.ElapsedTicks / (double)Stopwatch.Frequency;
 			eventThreadTime.Restart();
+
 			if (DeltaTime > 0)
 				Fps = 1 / DeltaTime;
 			else

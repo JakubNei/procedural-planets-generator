@@ -28,7 +28,7 @@ namespace MyEngine
 			FileSystem FileSystem;
 
 			[Dependency]
-			Debug debug;
+			MyDebug debug;
 
 			[Dependency]
 			Factory factory;

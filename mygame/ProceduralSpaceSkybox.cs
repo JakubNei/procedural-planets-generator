@@ -22,7 +22,7 @@ namespace MyGame
 
 		SceneSystem scene;
 		Factory Factory => scene.Factory;
-		Debug Debug => scene.Debug;
+		MyDebug Debug => scene.Debug;
 
 		public Cubemap cubemap { get; private set; }
 

@@ -15,9 +15,9 @@ namespace MyEngine
 
 		
 		readonly FileSystem FileSystem;
-        readonly Debug debug;
+        readonly MyDebug debug;
 
-		public ShaderBuilder(FileSystem fileSystem, Debug debug)
+		public ShaderBuilder(FileSystem fileSystem, MyDebug debug)
 		{
             FileSystem = fileSystem;
             this.debug = debug;

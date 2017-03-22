@@ -21,7 +21,7 @@ namespace MyEngine
 		public InputSystem Input { get; private set; }
 
 		public FileSystem FileSystem => Scene.FileSystem;
-		public Debug Debug => Scene.Debug;
+		public MyDebug Debug => Scene.Debug;
 		public Factory Factory => Scene.Factory;
 
 		public IDependencyManager Dependency => Scene.Dependency;

@@ -13,7 +13,7 @@ namespace MyEngine.Components
 		public SceneSystem Scene => Entity.Scene;
 
 		public Factory Factory => Entity.Factory;
-		public Debug Debug => Entity.Debug;
+		public MyDebug Debug => Entity.Debug;
 
         public FileSystem FileSystem => Entity.FileSystem;
 
