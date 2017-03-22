@@ -16,12 +16,11 @@ namespace MyGame.PlanetaryBody
 	public partial class Chunk
 	{
 		Mesh.VertexIndex[] edgeVerticesIndexes;
-
-
 	
 
 
 		public bool generationBegan = false;
+
 		public void CreateRendererAndBasicMesh()
 		{
 			lock (this)

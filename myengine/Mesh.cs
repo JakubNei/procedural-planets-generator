@@ -38,15 +38,12 @@ namespace MyEngine
 					{
 						if (Vertices.Count > 0)
 						{
-							bounds = new Bounds(Vertices[0], Vector3.Zero);
-							for (int i = 0; i < Vertices.Count; i++)
-							{
-								bounds.Encapsulate(Vertices[i]);
-							}
+							bounds = new Bounds(Vertices[0]);
+							bounds.Encapsulate(Vertices);
 						}
 						else
 						{
-							bounds = new Bounds(Vector3.Zero, Vector3.Zero);
+							bounds = new Bounds(Vector3.Zero);
 						}
 					}
 				}

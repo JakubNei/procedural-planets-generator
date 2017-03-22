@@ -316,7 +316,6 @@ namespace MyEngine
 			toRenderCount = 0;
 			lock (possibleRenderables)
 			{
-
 				Parallel.ForEach(possibleRenderables, (renderable) =>
 					{
 						if (renderable != null && renderable.ShouldRenderInContext(camera, RenderContext))
@@ -331,7 +330,7 @@ namespace MyEngine
 							{
 								var bounds = renderable.GetCameraSpaceBounds(camPos);
 								if (
-									frustum.VsSphere(bounds.Center, bounds.Extents.Length)
+									frustum.VsSphere(bounds.Center, bounds.Extents.LengthFast)
 									&& frustum.VsBounds(bounds)
 								)
 								{

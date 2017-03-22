@@ -17,7 +17,6 @@ namespace MyEngine
 {
 	public class EngineMain : IDisposable
 	{
-		[Dependency(Register = true)]
 		public InputSystem Input { get; private set; }
 
 		public MyDebug Debug { get; private set; }
@@ -28,7 +27,6 @@ namespace MyEngine
 
 		public IDependencyManager Dependency { get; private set; } = new Neitri.DependencyInjection.DependencyManager();
 
-		[Dependency(Register = true)]
 		public Events.EventSystem EventSystem { get; private set; }
 
 		[Dependency(Register = true)]
@@ -38,9 +36,10 @@ namespace MyEngine
 		public string WindowTitle { get { return gameWindow.Title; } set { gameWindow.Title = value; } }
 		public WindowState WindowState { get { return gameWindow.WindowState; } set { gameWindow.WindowState = value; } }
 		public bool CursorVisible { get { return gameWindow.CursorVisible; } set { gameWindow.CursorVisible = value; } }
+		public bool ExitRequested { get; private set; }
 		public bool Focused => gameWindow.Focused;
 
-		public bool ShouldContinueRunning => gameWindow.IsStoppingOrStopped == false;
+		public bool ShouldContinueRunning => gameWindow.IsStoppingOrStopped == false && ExitRequested == false;
 
 
 		// to simulate OpenTk.GameWindow functionalty, see it's source https://github.com/mono/opentk/blob/master/Source/OpenTK/GameWindow.cs
@@ -72,10 +71,11 @@ namespace MyEngine
 
 			Input = new InputSystem(this);
 			Debug = new MyDebug(Input);
+			EventSystem = new Events.EventSystem();
 
 			Debug.Info("START"); // to have debug initialized before anything else
 
-			Dependency.Register(FileSystem, Debug, this);
+			Dependency.Register(FileSystem, Debug, Input, EventSystem, this);
 			Dependency.BuildUp(this);
 
 			System.Diagnostics.Process.GetCurrentProcess().PriorityClass = System.Diagnostics.ProcessPriorityClass.RealTime;
@@ -88,7 +88,7 @@ namespace MyEngine
 		}
 		public void Exit()
 		{
-			gameWindow.Exit();
+			ExitRequested = true;
 		}
 
 		Stopwatch stopwatchSinceStart = new System.Diagnostics.Stopwatch();
@@ -114,7 +114,6 @@ namespace MyEngine
 			renderManagerFront = Dependency.Create<RenderManager>();
 			renderManagerBack = Dependency.Create<RenderManager>();
 
-			TryStartSecondary();
 
 			/*Debug.CommonCVars.VSync().ToogledByKey(OpenTK.Input.Key.V).OnChanged += (cvar) =>
 			{
@@ -154,11 +153,14 @@ namespace MyEngine
 
 			gameWindow.Visible = true;
 
+			StartOtherThreads(); 
+
 			while (ShouldContinueRunning)
 			{
 				MainLoop();
 			}
 
+			gameWindow.Exit();
 		}
 
 
@@ -176,18 +178,14 @@ namespace MyEngine
 
 
 
-		bool secondaryAlreadyStarted = false;
 
-		void TryStartSecondary()
+		void StartOtherThreads()
 		{
-			if (secondaryAlreadyStarted) return;
-			secondaryAlreadyStarted = true;
-
 			//StartSecondaryThread(EventThreadMain);
-			StartSecondaryThread(BuildRenderListMain);
+			StartThreadLoop(BuildRenderListMain);
 		}
 
-		void StartSecondaryThread(Action action)
+		void StartThreadLoop(Action action)
 		{
 			var t = new Thread(() =>
 			{
@@ -271,9 +269,7 @@ namespace MyEngine
 			UpdateGPUMemoryInfo();
 
 			if (Debug.CommonCVars.ReloadAllShaders().EatBoolIfTrue())
-			{
 				Factory.ReloadAllShaders();
-			}
 
 			ubo.engine.totalElapsedSecondsSinceEngineStart = (float)stopwatchSinceStart.Elapsed.TotalSeconds;
 			ubo.engine.gammaCorrectionTextureRead = 2.2f;
@@ -289,6 +285,7 @@ namespace MyEngine
 				var tmp = renderManagerFront;
 				renderManagerFront = renderManagerBack;
 				renderManagerBack = tmp;
+				renderManagerPrepareNext.Set();
 			}
 
 			{
@@ -302,15 +299,12 @@ namespace MyEngine
 				renderManagerFront.RenderAll(ubo, camera, dataToRender.Lights, camera.postProcessEffects);
 			}
 
-			if (Debug.CommonCVars.PauseRenderPrepare() == false)
-			{
-				renderManagerPrepareNext.Set();
-			}
+			if (ShouldContinueRunning == false) return;
+
+			gameWindow.SwapBuffers();
 
 			EventSystem.Raise(new MyEngine.Events.PostRenderUpdate(renderThreadTime));
 
-			if (ShouldContinueRunning == false) return;
-			gameWindow.SwapBuffers();
 
 			GC.Collect();
 			Mesh.ProcessFinalizerQueue();

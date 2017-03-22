@@ -19,21 +19,24 @@ namespace MyEngine
 		//const double offset = 0.5;
 
 
-		public static readonly WorldPos Zero = new WorldPos();
+		public static WorldPos Zero => new WorldPos();
 
-		public WorldPos(double x, double y, double z) : this()
+		public WorldPos(double x, double y, double z)
 		{
 			insideSectorPosition = new Vector3d(x, y, z);
+			sectorX = 0; sectorY = 0; sectorZ = 0;
 			MoveSectorIfNeeded();
 		}
-		public WorldPos(Vector3d pos) : this()
+		public WorldPos(Vector3d pos)
 		{
 			insideSectorPosition = pos;
+			sectorX = 0; sectorY = 0; sectorZ = 0;
 			MoveSectorIfNeeded();
 		}
-		public WorldPos(Vector3 pos) : this()
+		public WorldPos(Vector3 pos)
 		{
 			insideSectorPosition = pos.ToVector3d();
+			sectorX = 0; sectorY = 0; sectorZ = 0;
 			MoveSectorIfNeeded();
 		}
 
@@ -106,7 +109,7 @@ namespace MyEngine
 		}
 		public WorldPos Towards(ref WorldPos other)
 		{
-			return other.Subtract(ref this);
+			return other.Subtract(this);
 		}
 
 		public WorldPos Subtract(WorldPos other)

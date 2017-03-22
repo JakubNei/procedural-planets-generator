@@ -24,29 +24,27 @@ namespace MyEngine.Components
 		/// <summary>
 		/// Offset position from parent entity.
 		/// </summary>
-		public WorldPos Offset { get; set; }
+		public WorldPos Offset { get; set; } = new WorldPos();
 
-		Mesh m_mesh;
+		Mesh mesh;
 
 		public Mesh Mesh
 		{
 			set
 			{
-				if (m_mesh != value)
+				if (mesh != value)
 				{
 					lock (this)
 					{
-						m_mesh = value;
+						mesh = value;
 					}
 				}
 			}
 			get
 			{
-				return m_mesh;
+				return mesh;
 			}
 		}
-
-		public event Action OnMashDataChanged;
 
 		static readonly Vector3[] extentsTransformsToEdges = {
 																 new Vector3( 1, 1, 1),
@@ -66,14 +64,11 @@ namespace MyEngine.Components
 		}
 
 		public override Bounds GetCameraSpaceBounds(WorldPos viewPointPos)
-		{
+		{			
 			var relativePos = (viewPointPos - Offset).Towards(Entity.Transform.Position).ToVector3();
-			if (Mesh == null)
-			{
-				return new Bounds(relativePos);
-			}
 
-			// without rotation and scale
+			if (Mesh == null) return new Bounds(relativePos);
+
 			var boundsCenter = relativePos + Mesh.Bounds.Center;
 			var bounds = new Bounds(boundsCenter);
 
@@ -81,9 +76,23 @@ namespace MyEngine.Components
 			for (int i = 0; i < 8; i++)
 			{
 				bounds.Encapsulate(boundsCenter + boundsExtents.CompomentWiseMult(extentsTransformsToEdges[i]));
-			}
+			}	
 
 			return bounds;
+			
+			/*
+			// maybe optimized way, that does not use rotation
+
+			var relativePos = (viewPointPos - Offset).Towards(Entity.Transform.Position).ToVector3();
+
+			if (Mesh == null) return new Bounds(relativePos);
+
+			var boundsCenter = relativePos + Mesh.Bounds.Center;
+			var bounds = new Bounds(boundsCenter);
+			bounds.Extents = Mesh.Bounds.Extents * Entity.Transform.Scale;
+
+			return bounds;
+			*/
 		}
 
 		public override void UploadUBOandDraw(Camera camera, UniformBlock ubo)
