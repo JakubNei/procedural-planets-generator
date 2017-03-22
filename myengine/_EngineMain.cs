@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace MyEngine
 {
-	public class EngineMain : GameWindow
+	public class EngineMain : IDisposable
 	{
 		[Dependency(Register = true)]
 		public InputSystem Input { get; private set; }
@@ -34,20 +34,42 @@ namespace MyEngine
 		[Dependency(Register = true)]
 		public Factory Factory { get; private set; }
 
-		public string windowTitle = "Procedural Planet Generator";
+		const string defaultWindowTitle = "Procedural Planet Generator";
+		public string WindowTitle { get { return gameWindow.Title; } set { gameWindow.Title = value; } }
+		public WindowState WindowState { get { return gameWindow.WindowState; } set { gameWindow.WindowState = value; } }
+		public bool CursorVisible { get { return gameWindow.CursorVisible; } set { gameWindow.CursorVisible = value; } }
+		public bool Focused => gameWindow.Focused;
 
-		public EngineMain() : base(
-			1400,
-			900,
-			new GraphicsMode(),
-			"initializing",
-			GameWindowFlags.Default,
-			DisplayDevice.Default,
-			4,
-			3,
-			GraphicsContextFlags.ForwardCompatible// | GraphicsContextFlags.Debug
-		)
+		public bool ShouldContinueRunning => gameWindow.IsStoppingOrStopped == false;
+
+
+		// to simulate OpenTk.GameWindow functionalty, see it's source https://github.com/mono/opentk/blob/master/Source/OpenTK/GameWindow.cs
+		private MyGameWindow gameWindow;
+		class MyGameWindow : GameWindow
 		{
+			public bool IsStoppingOrStopped => IsDisposed || IsExiting;
+			public MyGameWindow(int width, int height, GraphicsMode mode, string title, GameWindowFlags options, DisplayDevice device, int major, int minor, GraphicsContextFlags flags)
+			   : base(width, height, mode, title, options, device, major, minor, flags)
+			{
+			}
+		}
+
+
+		public EngineMain()
+		{
+			gameWindow = new MyGameWindow(
+				1400,
+				900,
+				new GraphicsMode(),
+				"initializing",
+				GameWindowFlags.Default,
+				DisplayDevice.Default,
+				4,
+				3,
+				GraphicsContextFlags.ForwardCompatible/*| GraphicsContextFlags.Debug*/
+			);
+			gameWindow.VSync = VSyncMode.Off;
+
 			Input = new InputSystem(this);
 			Debug = new MyDebug(Input);
 
@@ -58,8 +80,31 @@ namespace MyEngine
 
 			System.Diagnostics.Process.GetCurrentProcess().PriorityClass = System.Diagnostics.ProcessPriorityClass.RealTime;
 			Thread.CurrentThread.Priority = ThreadPriority.Highest;
+		}
 
-			TargetRenderFrequency = 0;
+		public void Run()
+		{
+			OnStart();
+		}
+		public void Exit()
+		{
+			gameWindow.Exit();
+		}
+
+		Stopwatch stopwatchSinceStart = new System.Diagnostics.Stopwatch();
+
+		public static UniformBlock ubo { get; set; }
+
+		public SceneSystem NewScene()
+		{
+			var scene = new SceneSystem(this);
+			EventSystem.PassEventsTo(scene.EventSystem);
+			scenes.Add(scene);
+			return scene;
+		}
+
+		void OnStart()
+		{
 
 			ubo = new UniformBlock();
 			//new PhysicsUsage.PhysicsManager();
@@ -71,19 +116,6 @@ namespace MyEngine
 
 			TryStartSecondary();
 
-			RenderFrame += (sender, evt) =>
-			{
-				RenderMain();
-
-				/*
-                var task1 = Task.Factory.StartNew(BuildRenderListMain);
-                var task2 = Task.Factory.StartNew(EventThreadMain);
-                var continuationTask = Task.Factory.ContinueWhenAll(new[] { task1, task2 }, task => Task.Factory.StartNew(RenderMain));
-                continuationTask.Wait();
-                */
-			};
-
-			VSync = VSyncMode.Off;
 			/*Debug.CommonCVars.VSync().ToogledByKey(OpenTK.Input.Key.V).OnChanged += (cvar) =>
 			{
 				if (cvar.Bool) VSync = VSyncMode.On;
@@ -99,22 +131,9 @@ namespace MyEngine
 					WindowState = WindowState.Normal;
 			};
 
-		}
+			WindowTitle = defaultWindowTitle;
 
-		Stopwatch stopwatchSinceStart = new System.Diagnostics.Stopwatch();
 
-		public static UniformBlock ubo { get; set; }
-
-		public SceneSystem AddScene()
-		{
-			var s = new SceneSystem(this);
-			AddScene(s);
-			return s;
-		}
-
-		protected override void OnLoad(System.EventArgs e)
-		{
-			Thread.CurrentThread.Priority = ThreadPriority.Highest;
 
 			foreach (StringName r in System.Enum.GetValues(typeof(StringName)))
 			{
@@ -129,39 +148,33 @@ namespace MyEngine
 			//GL.Enable(EnableCap.Multisample); My.Check();
 
 			GL.ClearColor(System.Drawing.Color.Black); MyGL.Check();
+
+			gameWindow.Resize += (sender, e) => OnResize();
+			OnResize();
+
+			gameWindow.Visible = true;
+
+			while (ShouldContinueRunning)
+			{
+				MainLoop();
+			}
+
 		}
 
-		protected override void OnUnload(EventArgs e)
-		{
-		}
 
-		protected override void OnResize(EventArgs e)
+		void OnResize()
 		{
 			EventSystem.Once<Events.FrameStarted>((evt) =>
 			{
-				var resizeEvent = new Events.WindowResized(Width, Height);
+				var resizeEvent = new Events.WindowResized(gameWindow.Width, gameWindow.Height);
 				Debug.Info("Window resized to: width:" + resizeEvent.NewPixelWidth + " height:" + resizeEvent.NewPixelHeight);
 				EventSystem.Raise(resizeEvent);
 			});
 		}
 
-		protected override void OnUpdateFrame(FrameEventArgs e)
-		{
 
-		}
 
-		public void AddScene(SceneSystem scene)
-		{
-			EventSystem.PassEventsTo(scene.EventSystem);
-			scenes.Add(scene);
-		}
 
-		public override void Exit()
-		{
-			if (IsDisposed) return;
-			if (IsExiting) return;
-			base.Exit();
-		}
 
 		bool secondaryAlreadyStarted = false;
 
@@ -178,7 +191,7 @@ namespace MyEngine
 		{
 			var t = new Thread(() =>
 			{
-				while (this.IsDisposed == false && this.IsExiting == false)
+				while (ShouldContinueRunning)
 				{
 					action();
 				}
@@ -234,12 +247,14 @@ namespace MyEngine
 
 		ulong frameCounter;
 
-		void RenderMain()
+		void MainLoop()
 		{
 			renderThreadTime.FrameBegan();
 			EventSystem.Raise(new MyEngine.Events.FrameStarted());
 
-			this.Title = windowTitle + " " + renderThreadTime;
+			gameWindow.ProcessEvents();
+
+			this.WindowTitle = defaultWindowTitle + " " + renderThreadTime;
 			Debug.Tick("rendering / main render");
 
 			if (this.Focused) Input.Update();
@@ -248,6 +263,7 @@ namespace MyEngine
 			EventSystem.Raise(new MyEngine.Events.InputUpdate(renderThreadTime));
 			EventSystem.Raise(new MyEngine.Events.EventThreadUpdate(renderThreadTime));
 
+			if (ShouldContinueRunning == false) return;
 
 			frameCounter++;
 			Debug.AddValue("rendering / frames rendered", frameCounter);
@@ -293,7 +309,8 @@ namespace MyEngine
 
 			EventSystem.Raise(new MyEngine.Events.PostRenderUpdate(renderThreadTime));
 
-			SwapBuffers();
+			if (ShouldContinueRunning == false) return;
+			gameWindow.SwapBuffers();
 
 			GC.Collect();
 			Mesh.ProcessFinalizerQueue();
@@ -321,6 +338,11 @@ namespace MyEngine
 			int total = totalAvailableKb / 1024;
 			int used = (totalAvailableKb - currentAvailableKb) / 1024;
 			Debug.AddValue("rendering / GPU memory used", $"{used}/{total} mb");
+		}
+
+		public void Dispose()
+		{
+			gameWindow.Dispose();
 		}
 	}
 }

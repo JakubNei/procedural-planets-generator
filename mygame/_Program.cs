@@ -22,7 +22,7 @@ namespace MyGame
 			//string[] args = System.Environment.GetCommandLineArgs();
 			using (var engine = new EngineMain())
 			{
-				var scene = engine.AddScene();
+				var scene = engine.NewScene();
 				var factory = engine.Factory;
 
 				new DebugKeys(scene, engine.Debug);
