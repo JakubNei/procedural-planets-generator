@@ -36,17 +36,20 @@ namespace MyEngine
 
 		public Texture2D(int width, int height)
 		{
+			UseMipMaps = true;
 			bmp = new Bitmap(width, height);
 		}
 
 		public Texture2D(int textureHandle)
 		{
+			UseMipMaps = true;
 			this.textureHandle = textureHandle;
 			UpdateIsOnGpu();
 		}
 
 		public Texture2D(MyFile file) 
 		{
+			UseMipMaps = true;
 			this.file = file;
 			file.OnFileChanged(() => WantsToBeUploadedToGpu = true);
 			WantsToBeUploadedToGpu = true;

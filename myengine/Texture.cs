@@ -23,7 +23,7 @@ namespace MyEngine
 	}
 	public abstract class Texture
 	{
-		public bool UseMipMaps { get; set; } = true;
+		public bool UseMipMaps { get; set; }
 		public FilterMode FilterMode { get; set; } = FilterMode.Trilinear;
 		public TextureWrapMode WrapMode { get; set; } = TextureWrapMode.Repeat;
 

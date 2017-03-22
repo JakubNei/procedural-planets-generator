@@ -130,6 +130,8 @@ namespace MyEngine
 					WindowState = WindowState.Normal;
 			};
 
+			Debug.CommonCVars.SortRenderers().Bool = true;
+
 			WindowTitle = defaultWindowTitle;
 
 
@@ -306,7 +308,7 @@ namespace MyEngine
 			EventSystem.Raise(new MyEngine.Events.PostRenderUpdate(renderThreadTime));
 
 
-			GC.Collect();
+			//GC.Collect();
 			Mesh.ProcessFinalizerQueue();
 
 			EventSystem.Raise(new MyEngine.Events.FrameEnded(renderThreadTime));

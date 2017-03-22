@@ -21,12 +21,6 @@ namespace MyEngine
 		public DeferredGBuffer GBuffer { get; private set; }
 
 		public Cubemap SkyboxCubeMap { get; set; }
-
-		int toRenderCount = 0;
-		IRenderable[] toRender = new IRenderable[10000];
-		//List<IRenderable> toRender = new List<IRenderable>();
-
-
 		Shader FinalDrawShader => factory.GetShader("internal/finalDraw.glsl");
 
 		public bool drawLines { get { return debug.CommonCVars.DebugRenderWithLines().Bool; } }
@@ -299,6 +293,10 @@ namespace MyEngine
 			}
 		}
 
+		const int maxToRenderAtOnce = 10000;
+		int toRenderCount = 0;
+		IRenderable[] toRender = new IRenderable[maxToRenderAtOnce];
+		float[] distancesToCamera = new float[maxToRenderAtOnce];
 		int lastTotalPossible = 0;
 		public void BuildRenderList(IList<IRenderable> possibleRenderables, Camera camera)
 		{
@@ -310,7 +308,6 @@ namespace MyEngine
 			var frustum = camera.GetFrustum();
 			var camPos = camera.Transform.Position;
 			var totalPossible = possibleRenderables.Count;
-
 			if (lastTotalPossible > totalPossible) Array.Clear(toRender, totalPossible, lastTotalPossible - totalPossible);
 
 			toRenderCount = 0;
@@ -325,18 +322,20 @@ namespace MyEngine
 								renderable.SetCameraRenderStatusFeedback(camera, RenderStatus.RenderedAndVisible);
 								var newIndex = Interlocked.Increment(ref toRenderCount);
 								toRender[newIndex - 1] = renderable;
+								distancesToCamera[newIndex - 1] = 0;
 							}
 							else
 							{
 								var bounds = renderable.GetCameraSpaceBounds(camPos);
 								if (
 									frustum.VsSphere(bounds.Center, bounds.Extents.LengthFast)
-									&& frustum.VsBounds(bounds)
+									//&& frustum.VsBounds(bounds)
 								)
 								{
 									renderable.SetCameraRenderStatusFeedback(camera, RenderStatus.RenderedAndVisible);
 									var newIndex = Interlocked.Increment(ref toRenderCount);
 									toRender[newIndex - 1] = renderable;
+									distancesToCamera[newIndex - 1] = bounds.Center.LengthSquared;
 								}
 								else
 								{
@@ -351,30 +350,23 @@ namespace MyEngine
 
 			if (debug.CommonCVars.SortRenderers())
 			{
-				var comparer = new RenderableDistanceComparer(camera.ViewPointPosition);
-				Array.Sort(toRender, 0, toRenderCount, comparer); // sorts renderables so the closest to camere are first
+				Array.Sort(distancesToCamera, toRender, 0, toRenderCount, Comparer<float>.Default); // sorts renderables so the closest to camere are first
 			}
 		}
 
-		class RenderableDistanceComparer : IComparer<IRenderable>
-		{
-			WorldPos viewPointPosition;
-
-			public RenderableDistanceComparer(WorldPos viewPointPosition)
-			{
-				this.viewPointPosition = viewPointPosition;
-			}
-
-			//Less than zero = x is less than y.
-			//Zero = x equals y.
-			//Greater than zero = x is greater than y.
-			public int Compare(IRenderable x, IRenderable y)
-			{
-				if (ReferenceEquals(y, x)) return 0;
-				var distX = x.GetCameraSpaceBounds(viewPointPosition).Center.LengthFast;
-				var distY = y.GetCameraSpaceBounds(viewPointPosition).Center.LengthFast;
-				return distX.CompareTo(distY);
-			}
-		}
+		//IComparer<IRenderable> renderableDistanceComparer = new RenderableDistanceComparer();
+		//class RenderableDistanceComparer : IComparer<IRenderable>
+		//{
+		//	//Less than zero = x is less than y.
+		//	//Zero = x equals y.
+		//	//Greater than zero = x is greater than y.
+		//	public int Compare(IRenderable x, IRenderable y)
+		//	{
+		//		if (ReferenceEquals(y, x)) return 0;
+		//		var distX = x.GetCameraSpaceBounds(viewPointPosition).Center.LengthFast;
+		//		var distY = y.GetCameraSpaceBounds(viewPointPosition).Center.LengthFast;
+		//		return distX.CompareTo(distY);
+		//	}
+		//}
 	}
 }

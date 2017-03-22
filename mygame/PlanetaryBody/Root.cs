@@ -19,8 +19,8 @@ namespace MyGame.PlanetaryBody
 	{
 		public double RadiusMin => config.radiusMin;
 
-		public int ChunkNumberOfVerticesOnEdge => 60;
-		public float SizeOnScreenNeededToSubdivide => 0.3f;
+		public int ChunkNumberOfVerticesOnEdge => 90;
+		public float SizeOnScreenNeededToSubdivide => 0.5f;
 		public int SubdivisionMaxRecurisonDepth => 100;
 
 
