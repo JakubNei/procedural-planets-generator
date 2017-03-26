@@ -43,5 +43,15 @@ namespace MyEngine
 			Vector3d.Transform(ref direction, ref rot, out newDirection);
 			return newDirection;
 		}
+
+
+		public static Vector3 Mult(this Vector3d v3, ref Matrix4 mat)
+		{
+			var v4 = new Vector4(v3.ToVector3(), 1);
+			v4 = v4 * mat;
+			return new Vector3(v4 / v4.W);
+		}
+
+
 	}
 }

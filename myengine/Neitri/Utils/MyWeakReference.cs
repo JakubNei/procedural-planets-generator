@@ -46,7 +46,7 @@ namespace Neitri.Base
 		{
 			get
 			{
-				T target = (T)wr.Target;
+				T target = wr.Target as T;
 				return target;
 			}
 		}

@@ -181,7 +181,7 @@ namespace MyEngine
 		}
 
 
-		public void Update()
+		public void InputUpdate()
 		{
 			foreach (var cvar in nameToCVar.Values)
 			{
@@ -193,7 +193,10 @@ namespace MyEngine
 					}
 				}
 			}
+		}
 
+		public void LogicUpdate()
+		{
 			if (debugForm?.Visible == true)
 			{
 				stringValuesWatcher.UpdateBy(stringValues);

@@ -25,6 +25,13 @@ namespace MyEngine
 
 		ConcurrentDictionary<string, Shader> allShaders = new ConcurrentDictionary<string, Shader>();
 
+		public static Factory Instance { get; private set; }
+
+		public Factory()
+		{
+			Instance = this;
+		}
+
 		public Shader GetShader(string file)
 		{
 			Shader s;

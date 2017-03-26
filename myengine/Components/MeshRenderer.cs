@@ -5,6 +5,7 @@ using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 
@@ -63,8 +64,8 @@ namespace MyEngine.Components
 			RenderingMode = MyRenderingMode.RenderGeometryAndCastShadows;
 		}
 
-		public override Bounds GetCameraSpaceBounds(WorldPos viewPointPos)
-		{			
+		public override Bounds GetFloatingOriginSpaceBounds(WorldPos viewPointPos)
+		{
 			var relativePos = (viewPointPos - Offset).Towards(Entity.Transform.Position).ToVector3();
 
 			if (Mesh == null) return new Bounds(relativePos);
@@ -76,10 +77,10 @@ namespace MyEngine.Components
 			for (int i = 0; i < 8; i++)
 			{
 				bounds.Encapsulate(boundsCenter + boundsExtents.CompomentWiseMult(extentsTransformsToEdges[i]));
-			}	
+			}
 
 			return bounds;
-			
+
 			/*
 			// maybe optimized way, that does not use rotation
 
@@ -97,11 +98,11 @@ namespace MyEngine.Components
 
 		public override void UploadUBOandDraw(Camera camera, UniformBlock ubo)
 		{
-			var modelMat = this.Entity.Transform.GetLocalToWorldMatrix(camera.Transform.Position - Offset);
-			var modelViewMat = modelMat * camera.GetRotationMatrix();
-			ubo.model.modelMatrix = modelMat;
-			ubo.model.modelViewMatrix = modelViewMat;
-			ubo.model.modelViewProjectionMatrix = modelViewMat * camera.GetProjectionMat();
+			var modelMatrix = this.Entity.Transform.GetLocalToWorldMatrix(camera.Transform.Position - Offset);
+			var modelViewMatrix = modelMatrix * camera.GetRotationMatrix();
+			ubo.model.modelMatrix = modelMatrix;
+			ubo.model.modelViewMatrix = modelViewMatrix;
+			ubo.model.modelViewProjectionMatrix = modelViewMatrix * camera.GetProjectionMatrix();
 			ubo.modelUBO.UploadToGPU();
 			Mesh.Draw(Material.GBufferShader.HasTesselation);
 		}
@@ -109,6 +110,38 @@ namespace MyEngine.Components
 		public override bool ShouldRenderInContext(Camera camera, RenderContext renderContext)
 		{
 			return Mesh != null && Material != null && Material.DepthGrabShader != null && base.ShouldRenderInContext(camera, renderContext);
+		}
+
+		public Matrix4 GetModelViewProjectionMatrix(Camera camera)
+		{
+			var modelMatrix = this.Entity.Transform.GetLocalToWorldMatrix(camera.Transform.Position - Offset);
+			var modelViewMatrix = modelMatrix * camera.GetRotationMatrix();
+			var modelViewProjectionMatrix = modelViewMatrix * camera.GetProjectionMatrix();
+			return modelViewProjectionMatrix;
+		}
+
+		public override IEnumerable<Vector3> GetCameraSpaceOccluderTriangles(Camera camera)
+		{
+			return null;
+
+			// bad way, rasterizing whole mesh is slow, we gotta rasterize some mesh approximation like bounding box, or convex hull instead
+			// dont know how to create correct complete occluder and correct minimal approximation
+			/*
+			var mvp = GetModelViewProjectionMatrix(camera);
+			for (int i = 0; i < mesh.TriangleIndicies.Count - 3; i += 3)
+			{
+				yield return mesh.Vertices[mesh.TriangleIndicies[i]].Multiply(ref mvp);
+				yield return mesh.Vertices[mesh.TriangleIndicies[i + 1]].Multiply(ref mvp);
+				yield return mesh.Vertices[mesh.TriangleIndicies[i + 2]].Multiply(ref mvp);
+			}
+			*/
+		}
+
+		public override CameraSpaceBounds GetCameraSpaceBounds(Camera camera)
+		{
+			var mvp = GetModelViewProjectionMatrix(camera);
+			var b = new CameraSpaceBounds();
+			return b;
 		}
 	}
 }

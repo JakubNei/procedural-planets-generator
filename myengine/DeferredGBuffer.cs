@@ -34,14 +34,12 @@ namespace MyEngine
 			Final2 = 5,
 		}
 
-
-		readonly Factory factory;
+		Factory Factory => Factory.Instance;
 		readonly int width;
 		readonly int height;
 
-		public DeferredGBuffer(Factory factory, int width, int height)
+		public DeferredGBuffer(int width, int height)
 		{
-			this.factory = factory;
 			this.width = width;
 			this.height = height;
 
@@ -218,7 +216,7 @@ namespace MyEngine
 
 		void DebugDrawTexture(Texture2D texture, Vector4 positionScale, Vector4 positionOffset, float valueScale = 1, float valueOffset = 0)
 		{
-			var debugDrawTextureShader = factory.GetShader("internal/debugDrawTexture.shader");
+			var debugDrawTextureShader = Factory.GetShader("internal/debugDrawTexture.shader");
 
 			GL.Disable(EnableCap.DepthTest); MyGL.Check();
 			GL.Disable(EnableCap.CullFace); MyGL.Check();
@@ -237,7 +235,7 @@ namespace MyEngine
 
 			debugDrawTextureShader.Bind();
 
-			var quadMesh = factory.GetMesh("internal/quad.obj");
+			var quadMesh = Factory.GetMesh("internal/quad.obj");
 			quadMesh.Draw();
 		}
 

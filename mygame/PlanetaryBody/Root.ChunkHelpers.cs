@@ -14,8 +14,8 @@ using System.Threading;
 
 namespace MyGame.PlanetaryBody
 {
-    public partial class Root
-    {
+	public partial class Root
+	{
 
 		List<Vector3> verticesList = new List<Vector3>();
 		public List<Vector3> GetVerticesList()
@@ -31,19 +31,30 @@ namespace MyGame.PlanetaryBody
 		}
 
 		List<int> indiciesList;
+		/// <summary>
+		/// top vertex index
+		/// </summary>
 		public int AIndex => 0;
-		public int BIndex;
-		public int CIndex;
+		/// <summary>
+		/// bottom left vertex index
+		/// </summary>
+		public int BIndex => (ChunkNumberOfVerticesOnEdge - 1) * ChunkNumberOfVerticesOnEdge / 2;
+		/// <summary>
+		/// bottom right vertex index
+		/// </summary>
+		public int CIndex => BIndex + (ChunkNumberOfVerticesOnEdge - 1);
+
 		public List<int> GetIndiciesList()
 		{
 			/*
-
+			     A
                  /\  top line
                 /\/\
                /\/\/\
               /\/\/\/\ middle lines
              /\/\/\/\/\
             /\/\/\/\/\/\ bottom line
+		   B           C
 
             */
 			if (indiciesList != null) return indiciesList;

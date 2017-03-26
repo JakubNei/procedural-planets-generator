@@ -66,6 +66,7 @@ namespace MyEngine
 			}
 			WantsToBeUploadedToGpu = true;
 		}
+		
 
 		public Color GetPixel(int x, int y)
 		{

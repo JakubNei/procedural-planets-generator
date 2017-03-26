@@ -1,5 +1,6 @@
 ﻿using Neitri;
 using Neitri.Base;
+using OpenTK;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -40,15 +41,19 @@ namespace MyEngine.Components
 	public interface IRenderable
 	{
 		Material Material { get; }
-		bool ForcePassFrustumCulling { get; }
+		bool ForcePassCulling { get; }
 
 		bool ShouldRenderInContext(Camera camera, RenderContext renderContext);
 
-		Bounds GetCameraSpaceBounds(WorldPos viewPointPos);
+		Bounds GetFloatingOriginSpaceBounds(WorldPos viewPointPos);
 
 		void UploadUBOandDraw(Camera camera, UniformBlock ubo);
 
 		void SetCameraRenderStatusFeedback(Camera camera, RenderStatus renderStatus);
+
+		IEnumerable<Vector3> GetCameraSpaceOccluderTriangles(Camera camera);
+
+		CameraSpaceBounds GetCameraSpaceBounds(Camera camera);
 	}
 
 	public abstract class Renderer : ComponentWithShortcuts, IRenderable, IDisposable
@@ -58,7 +63,7 @@ namespace MyEngine.Components
 
 		Dictionary<Camera, RenderStatus> cameraToRenderStatus = new Dictionary<Camera, RenderStatus>();
 
-		public virtual bool ForcePassFrustumCulling { get; set; }
+		public virtual bool ForcePassCulling { get; set; }
 
 		MyWeakReference<RenderableData> dataToRender;
 
@@ -68,8 +73,8 @@ namespace MyEngine.Components
 			dataToRender.Target?.Add(this);
 		}
 
-        public void SetRenderingMode(MyRenderingMode renderingMode) => RenderingMode = renderingMode;
-		public abstract Bounds GetCameraSpaceBounds(WorldPos viewPointPos);
+		public void SetRenderingMode(MyRenderingMode renderingMode) => RenderingMode = renderingMode;
+		public abstract Bounds GetFloatingOriginSpaceBounds(WorldPos viewPointPos);
 
 		public virtual void UploadUBOandDraw(Camera camera, UniformBlock ubo)
 		{
@@ -101,5 +106,8 @@ namespace MyEngine.Components
 		{
 			return Entity.Name;
 		}
+
+		public abstract IEnumerable<Vector3> GetCameraSpaceOccluderTriangles(Camera camera);
+		public abstract CameraSpaceBounds GetCameraSpaceBounds(Camera camera);
 	}
 }

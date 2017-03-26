@@ -26,13 +26,7 @@ namespace MyEngine
 
 		public IDependencyManager Dependency => Scene.Dependency;
 
-		public IReadOnlyList<IComponent> Components
-		{
-			get
-			{
-				return components.AsReadOnly();
-			}
-		}
+		public IReadOnlyList<IComponent> Components => components.AsReadOnly();
 
 		List<IComponent> components = new List<IComponent>();
 

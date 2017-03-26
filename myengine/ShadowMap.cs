@@ -24,8 +24,8 @@ namespace MyEngine
 
 			ShadowViewCamera = light.Entity.AddComponent<Camera>();
 			ShadowViewCamera.SetSize(width, height);
-			ShadowViewCamera.orthographic = true;
-			ShadowViewCamera.orthographicSize = 50;
+			ShadowViewCamera.Orthographic = true;
+			ShadowViewCamera.OrthographicSize = 50;
 
 			this.Width = width;
 			this.Height = height;
@@ -81,7 +81,7 @@ namespace MyEngine
 
 		public void BindUniforms(Shader shader)
 		{
-			var shadowMatrix = this.ShadowViewCamera.GetRotationMatrix() * this.ShadowViewCamera.GetProjectionMat();
+			var shadowMatrix = this.ShadowViewCamera.GetRotationMatrix() * this.ShadowViewCamera.GetProjectionMatrix();
 
 			// projection matrix is in range -1 1, but it is rendered into rexture which is in range 0 1
 			// so lets move it from -1 1 into 0 1 range, since we are reading from texture

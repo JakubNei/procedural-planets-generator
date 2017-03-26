@@ -5,6 +5,7 @@ using System.Diagnostics;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL4;
+using Neitri;
 
 namespace MyEngine.Components
 {
@@ -16,19 +17,20 @@ namespace MyEngine.Components
 		Vector3 scale = Vector3.One;
 		Quaternion rotation = Quaternion.Identity;
 
+		public event Action OnRotationChanged;
+
 		public Transform(Entity entity) : base(entity)
 		{
 		}
 
 		public WorldPos Position { set { position = value; } get { return position; } }
 		public Vector3 Scale { set { scale = value; } get { return scale; } }
-		public Quaternion Rotation { set { rotation = value; } get { return rotation; } }
+		public Quaternion Rotation { set { rotation = value; OnRotationChanged.Raise(); } get { return rotation; } }
 
 
 		public Vector3 Right { get { return Constants.Vector3Right.RotateBy(Rotation); } }
 		public Vector3 Up { get { return Constants.Vector3Up.RotateBy(Rotation); } }
 		public Vector3 Forward { get { return Constants.Vector3Forward.RotateBy(Rotation); } set { this.Rotation = value.LookRot(); } }
-
 
 		public Matrix4 GetLocalToWorldMatrix(WorldPos viewPointPos)
 		{

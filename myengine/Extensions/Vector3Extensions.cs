@@ -40,6 +40,19 @@ namespace MyEngine
 			Vector3.Dot(ref a, ref b, out result);
 			return result;
 		}
+		public static float Dot(this Vector3 a, ref Vector3 b)
+		{
+			float result;
+			Vector3.Dot(ref a, ref b, out result);
+			return result;
+		}
+
+		public static Vector3 Multiply(this Vector3 v3, ref Matrix4 mat)
+		{
+			var v4 = new Vector4(v3, 1);
+			v4 = v4 * mat;
+			return new Vector3(v4 / v4.W);
+		}
 
 		public static Vector3 Multiply(this Vector3 a, float scale)
 		{

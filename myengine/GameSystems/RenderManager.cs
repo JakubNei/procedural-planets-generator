@@ -21,44 +21,51 @@ namespace MyEngine
 		public DeferredGBuffer GBuffer { get; private set; }
 
 		public Cubemap SkyboxCubeMap { get; set; }
-		Shader FinalDrawShader => factory.GetShader("internal/finalDraw.glsl");
+		Shader FinalDrawShader => Factory.GetShader("internal/finalDraw.glsl");
 
-		public bool drawLines { get { return debug.CommonCVars.DebugRenderWithLines().Bool; } }
-		public bool enablePostProcessEffects { get { return debug.CommonCVars.EnablePostProcessEffects().Bool; } }
-		public bool debugBounds { get { return debug.CommonCVars.DrawDebugBounds().Bool; } }
-		public bool shadowsEnabled { get { return debug.CommonCVars.ShadowsDisabled().Bool == false; } }
+		public bool DrawLines { get { return debug.CommonCVars.DebugRenderWithLines().Bool; } }
+		public bool EnablePostProcessEffects { get { return debug.CommonCVars.EnablePostProcessEffects().Bool; } }
+		public bool DebugBounds { get { return debug.CommonCVars.DrawDebugBounds().Bool; } }
+		public bool ShadowsEnabled { get { return debug.CommonCVars.ShadowsDisabled().Bool == false; } }
 
-		readonly Factory factory;
+		Factory Factory => Factory.Instance;
 		readonly MyDebug debug;
 
-		public RenderManager(Events.EventSystem eventSystem, Factory factory, MyDebug debug)
+		public RenderManager(Events.EventSystem eventSystem, MyDebug debug)
 		{
-			this.factory = factory;
 			this.debug = debug;
 
 			eventSystem.On<Events.WindowResized>(evt =>
 			{
 				if (GBuffer != null) GBuffer.Dispose();
-				GBuffer = new DeferredGBuffer(factory, evt.NewPixelWidth, evt.NewPixelHeight);
+				GBuffer = new DeferredGBuffer(evt.NewPixelWidth, evt.NewPixelHeight);
 			});
+			rasterizer = new SoftwareDepthRasterizer(200, 100);
+
+
+
+			debug.GetCVar("show rasterizer contents").ToogledByKey(OpenTK.Input.Key.M).OnChanged += (c) =>
+			{
+				if (c.Bool) rasterizer?.Show();
+				else rasterizer?.Hide();
+			};
 		}
 
 		public void RenderAll(UniformBlock ubo, Camera camera, IList<ILight> allLights, IEnumerable<IPostProcessEffect> postProcessEffect)
 		{
-			camera.UploadDataToUBO(ubo); // bind camera view params
-										 //GL.BeginQuery(QueryTarget.)
+			camera.UploadCameraDataToUBO(ubo); // bind camera view params and matrices only once
 
 			RenderGBuffer(ubo, camera);
+
 			RenderLights(ubo, camera, allLights);
-			if (drawLines)
-			{
-				GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill); MyGL.Check();
-			}
+
+			if (DrawLines) GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill); MyGL.Check();
+
 			RenderPostProcessEffects(ubo, postProcessEffect);
 
 
 			GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, 0); MyGL.Check();
-			GL.Viewport(0, 0, camera.pixelWidth, camera.pixelHeight); MyGL.Check();
+			GL.Viewport(0, 0, camera.PixelWidth, camera.PixelHeight); MyGL.Check();
 
 			// FINAL DRAW TO SCREEN
 			{
@@ -70,53 +77,22 @@ namespace MyEngine
 				FinalDrawShader.Uniforms.Set("finalDrawTexture", GBuffer.finalTextureToRead);
 				if (FinalDrawShader.Bind())
 				{
-					factory.QuadMesh.Draw();
+					Factory.QuadMesh.Draw();
 				}
 			}
 
-			if (debugBounds)
-			{
-				if (factory.GetShader("internal/debugDrawBounds.shader").Bind())
-				{
-					GL.DepthMask(false); MyGL.Check();
-					GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line); MyGL.Check();
-					GL.Disable(EnableCap.DepthTest); MyGL.Check();
-					GL.Disable(EnableCap.CullFace); MyGL.Check();
-					GL.Disable(EnableCap.Blend); MyGL.Check();
-					var camPos = camera.ViewPointPosition;
-					for (int i = 0; i < toRenderCount; i++)
-					{
-						var renderable = toRender[i];
-						var bounds = renderable.GetCameraSpaceBounds(camPos);
-
-						var modelMat = Matrix4.CreateScale(bounds.Extents) * Matrix4.CreateTranslation(bounds.Center);
-						var modelViewMat = modelMat * camera.GetRotationMatrix();
-
-						ubo.model.modelMatrix = modelMat;
-						ubo.model.modelViewMatrix = modelViewMat;
-						ubo.model.modelViewProjectionMatrix = modelViewMat * camera.GetProjectionMat();
-						ubo.modelUBO.UploadToGPU();
-						factory.SkyBoxMesh.Draw(false);
-					}
-					GL.DepthMask(true); MyGL.Check();
-					GL.PolygonMode(MaterialFace.Front, PolygonMode.Fill); MyGL.Check();
-					GL.Enable(EnableCap.DepthTest); MyGL.Check();
-					GL.Enable(EnableCap.CullFace); MyGL.Check();
-					GL.Disable(EnableCap.Blend); MyGL.Check();
-				}
-			}
+			if (DebugBounds) RenderDebugBounds(ubo, camera);
 
 			if (debug.CommonCVars.DebugDrawNormalBufferContents().Bool) GBuffer.DebugDrawNormal();
 			if (debug.CommonCVars.DebugDrawGBufferContents().Bool) GBuffer.DebugDrawContents();
 			//if (drawShadowMapContents) DebugDrawTexture(shadowMap.depthMap, new Vector4(0.5f, 0.5f, 1, 1), new Vector4(0.5f,0.5f,0,1), 1, 0);
-
 
 			ErrorCode glError;
 			while ((glError = GL.GetError()) != ErrorCode.NoError)
 				debug.Error("GL Error: " + glError, false);
 		}
 
-		public void RenderGBuffer(UniformBlock ubo, Camera camera)
+		private void RenderGBuffer(UniformBlock ubo, Camera camera)
 		{
 			// G BUFFER GRAB PASS
 			{
@@ -133,16 +109,16 @@ namespace MyEngine
 					GL.DepthRange(0.999, 1); MyGL.Check();
 					GL.DepthMask(false); MyGL.Check();
 
-					var shader = factory.GetShader("internal/deferred.skybox.shader");
+					var shader = Factory.GetShader("internal/deferred.skybox.shader");
 					shader.Uniforms.Set("skyboxCubeMap", SkyboxCubeMap);
 					shader.Bind();
 
-					factory.SkyBoxMesh.Draw();
+					Factory.SkyBoxMesh.Draw();
 					GL.DepthRange(0, 1); MyGL.Check();
 				}
 
 
-				if (drawLines)
+				if (DrawLines)
 				{
 					GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line); MyGL.Check();
 				}
@@ -158,9 +134,9 @@ namespace MyEngine
 					GL.Enable(EnableCap.CullFace); MyGL.Check();
 					GL.Disable(EnableCap.Blend); MyGL.Check();
 					GL.CullFace(CullFaceMode.Back); MyGL.Check();
-					for (int i = 0; i < toRenderCount; i++)
+					for (int i = 0; i < toRenderRenderablesCount; i++)
 					{
-						var renderable = toRender[i];
+						var renderable = ToRenderRenderables[i];
 						renderable.Material.BeforeBindCallback();
 						renderable.Material.Uniforms.SendAllUniformsTo(renderable.Material.GBufferShader.Uniforms);
 						renderable.Material.GBufferShader.Bind();
@@ -174,7 +150,7 @@ namespace MyEngine
 			}
 		}
 
-		public void RenderLights(UniformBlock ubo, Camera camera, IList<ILight> allLights)
+		private void RenderLights(UniformBlock ubo, Camera camera, IList<ILight> allLights)
 		{
 			#region Lights rendering
 
@@ -221,7 +197,7 @@ namespace MyEngine
 
 					#endregion SHADOW MAAPING
 
-					camera.UploadDataToUBO(ubo); // bind camera view params
+					camera.UploadCameraDataToUBO(ubo); // bind camera view params
 
 					// G BUFFER LIGHT PASS
 
@@ -234,7 +210,7 @@ namespace MyEngine
 
 						light.UploadUBOdata(camera, ubo, lightIndex);
 
-						var shader = factory.GetShader("internal/deferred.oneLight.shader");
+						var shader = Factory.GetShader("internal/deferred.oneLight.shader");
 						GBuffer.BindForLightPass(shader);
 
 						if (lightIndex == 0)
@@ -242,7 +218,7 @@ namespace MyEngine
 							GL.Clear(ClearBufferMask.ColorBufferBit); MyGL.Check();
 						}
 
-						if (shadowsEnabled && light.HasShadows)
+						if (ShadowsEnabled && light.HasShadows)
 						{
 							shadowMap.BindUniforms(shader);
 						}
@@ -255,7 +231,7 @@ namespace MyEngine
 							//GL.BlendFunc(BlendingFactorSrc.SrcColor, BlendingFactorDest.SrcColor);
 							GL.BlendEquation(BlendEquationMode.FuncAdd); MyGL.Check();
 							GL.BlendFunc(BlendingFactorSrc.One, BlendingFactorDest.One); MyGL.Check();
-							factory.QuadMesh.Draw();
+							Factory.QuadMesh.Draw();
 							GL.Disable(EnableCap.Blend); MyGL.Check();
 
 						}
@@ -268,10 +244,10 @@ namespace MyEngine
 			#endregion Lights rendering
 		}
 
-		public void RenderPostProcessEffects(UniformBlock ubo, IEnumerable<IPostProcessEffect> postProcessEffects)
+		private void RenderPostProcessEffects(UniformBlock ubo, IEnumerable<IPostProcessEffect> postProcessEffects)
 		{
 			// POST PROCESS EFFECTs
-			if (enablePostProcessEffects)
+			if (EnablePostProcessEffects)
 			{
 				GL.Disable(EnableCap.DepthTest); MyGL.Check();
 				GL.Disable(EnableCap.CullFace); MyGL.Check();
@@ -286,16 +262,55 @@ namespace MyEngine
 					pe.BeforeBindCallBack();
 					GBuffer.BindForPostProcessEffects(pe);
 					pe.Shader.Bind();
-					factory.QuadMesh.Draw();
+					Factory.QuadMesh.Draw();
 				}
 				GBuffer.Unbind();
 
 			}
 		}
 
+		private void RenderDebugBounds(UniformBlock ubo, Camera camera)
+		{
+			if (Factory.GetShader("internal/debugDrawBounds.shader").Bind())
+			{
+				GL.DepthMask(false); MyGL.Check();
+				GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line); MyGL.Check();
+				GL.Disable(EnableCap.DepthTest); MyGL.Check();
+				GL.Disable(EnableCap.CullFace); MyGL.Check();
+				GL.Disable(EnableCap.Blend); MyGL.Check();
+				var camPos = camera.ViewPointPosition;
+				for (int i = 0; i < toRenderRenderablesCount; i++)
+				{
+					var renderable = ToRenderRenderables[i];
+					var bounds = renderable.GetFloatingOriginSpaceBounds(camPos);
+
+					var modelMat = Matrix4.CreateScale(bounds.Extents) * Matrix4.CreateTranslation(bounds.Center);
+					var modelViewMat = modelMat * camera.GetRotationMatrix();
+
+					ubo.model.modelMatrix = modelMat;
+					ubo.model.modelViewMatrix = modelViewMat;
+					ubo.model.modelViewProjectionMatrix = modelViewMat * camera.GetProjectionMatrix();
+					ubo.modelUBO.UploadToGPU();
+					Factory.SkyBoxMesh.Draw(false);
+				}
+				GL.DepthMask(true); MyGL.Check();
+				GL.PolygonMode(MaterialFace.Front, PolygonMode.Fill); MyGL.Check();
+				GL.Enable(EnableCap.DepthTest); MyGL.Check();
+				GL.Enable(EnableCap.CullFace); MyGL.Check();
+				GL.Disable(EnableCap.Blend); MyGL.Check();
+			}
+		}
+
+		SoftwareDepthRasterizer rasterizer;
+
+
 		const int maxToRenderAtOnce = 10000;
-		int toRenderCount = 0;
-		IRenderable[] toRender = new IRenderable[maxToRenderAtOnce];
+
+		IRenderable[] passedFrustumCulling = new IRenderable[maxToRenderAtOnce];
+		IRenderable[] passedRasterizationCulling = new IRenderable[maxToRenderAtOnce];
+		IRenderable[] ToRenderRenderables => passedRasterizationCulling;
+		int toRenderRenderablesCount = 0;
+
 		float[] distancesToCamera = new float[maxToRenderAtOnce];
 		int lastTotalPossible = 0;
 		public void BuildRenderList(IList<IRenderable> possibleRenderables, Camera camera)
@@ -308,50 +323,81 @@ namespace MyEngine
 			var frustum = camera.GetFrustum();
 			var camPos = camera.Transform.Position;
 			var totalPossible = possibleRenderables.Count;
-			if (lastTotalPossible > totalPossible) Array.Clear(toRender, totalPossible, lastTotalPossible - totalPossible);
 
-			toRenderCount = 0;
+			// clear references to IRenderables in part of the array that will not be used, there is a chance that it might hang onto references thus stopping GC from collecting IRenderables
+			if (lastTotalPossible > totalPossible)
+			{
+				Array.Clear(passedFrustumCulling, totalPossible, lastTotalPossible - totalPossible);
+				Array.Clear(passedRasterizationCulling, totalPossible, lastTotalPossible - totalPossible);
+			}
+			lastTotalPossible = totalPossible;
+
+			rasterizer.Clear();
+
+			int passedFrustumCullingIndex = 0;
+
 			lock (possibleRenderables)
 			{
 				Parallel.ForEach(possibleRenderables, (renderable) =>
+				{
+					if (renderable != null && renderable.ShouldRenderInContext(camera, RenderContext))
 					{
-						if (renderable != null && renderable.ShouldRenderInContext(camera, RenderContext))
+						if (renderable.ForcePassCulling)
 						{
-							if (renderable.ForcePassFrustumCulling)
+							renderable.SetCameraRenderStatusFeedback(camera, RenderStatus.RenderedAndVisible);
+							var newIndex = Interlocked.Increment(ref passedFrustumCullingIndex);
+							passedFrustumCulling[newIndex - 1] = renderable;
+							rasterizer?.AddTriangles(renderable.GetCameraSpaceOccluderTriangles(camera));
+						}
+						else
+						{
+							var bounds = renderable.GetFloatingOriginSpaceBounds(camPos);
+							if (
+								frustum.VsSphere(bounds.Center, bounds.Extents.LengthSquared)
+								&& frustum.VsBounds(bounds)
+							)
 							{
 								renderable.SetCameraRenderStatusFeedback(camera, RenderStatus.RenderedAndVisible);
-								var newIndex = Interlocked.Increment(ref toRenderCount);
-								toRender[newIndex - 1] = renderable;
-								distancesToCamera[newIndex - 1] = 0;
+								var newIndex = Interlocked.Increment(ref passedFrustumCullingIndex);
+								passedFrustumCulling[newIndex - 1] = renderable;
+								rasterizer?.AddTriangles(renderable.GetCameraSpaceOccluderTriangles(camera));
 							}
 							else
 							{
-								var bounds = renderable.GetCameraSpaceBounds(camPos);
-								if (
-									frustum.VsSphere(bounds.Center, bounds.Extents.LengthFast)
-									//&& frustum.VsBounds(bounds)
-								)
-								{
-									renderable.SetCameraRenderStatusFeedback(camera, RenderStatus.RenderedAndVisible);
-									var newIndex = Interlocked.Increment(ref toRenderCount);
-									toRender[newIndex - 1] = renderable;
-									distancesToCamera[newIndex - 1] = bounds.Center.LengthSquared;
-								}
-								else
-								{
-									renderable.SetCameraRenderStatusFeedback(camera, RenderStatus.NotRendered);
-								}
+								renderable.SetCameraRenderStatusFeedback(camera, RenderStatus.NotRendered);
 							}
 						}
 					}
-				);
+				});
 			}
-			debug.AddValue("rendering / meshes rendered", toRenderCount + "/" + totalPossible);
+
+
+
+			debug.AddValue("rendering / meshes / total possible", totalPossible);
+			debug.AddValue("rendering / meshes / passed frustum culling", passedFrustumCullingIndex);
+
+			int passedRasterizationCullingIndex = 0;
+			Parallel.For(0, passedFrustumCullingIndex, (i) =>
+			  {
+				  var renderable = passedFrustumCulling[i];
+				  var bounds = renderable.GetCameraSpaceBounds(camera);
+				  if (rasterizer.BoundsVisible(bounds))
+				  {
+					  var newIndex = Interlocked.Increment(ref passedRasterizationCullingIndex);
+					  passedRasterizationCulling[newIndex - 1] = renderable;
+					  distancesToCamera[newIndex - 1] = bounds.depth;
+				  }
+			  });
+
+			debug.AddValue("rendering / meshes / passed rasterization culling", passedRasterizationCullingIndex);
+
 
 			if (debug.CommonCVars.SortRenderers())
 			{
-				Array.Sort(distancesToCamera, toRender, 0, toRenderCount, Comparer<float>.Default); // sorts renderables so the closest to camere are first
+				Array.Sort(distancesToCamera, passedRasterizationCulling, 0, passedRasterizationCullingIndex, Comparer<float>.Default); // sort renderables so closest to camera are first
 			}
+
+			toRenderRenderablesCount = passedRasterizationCullingIndex;
 		}
 
 		//IComparer<IRenderable> renderableDistanceComparer = new RenderableDistanceComparer();

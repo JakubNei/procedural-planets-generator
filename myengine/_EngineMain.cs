@@ -155,7 +155,7 @@ namespace MyEngine
 
 			gameWindow.Visible = true;
 
-			StartOtherThreads(); 
+			StartOtherThreads();
 
 			while (ShouldContinueRunning)
 			{
@@ -165,14 +165,20 @@ namespace MyEngine
 			gameWindow.Exit();
 		}
 
-
+		ulong resizeEventVersion = 0;
 		void OnResize()
 		{
+			resizeEventVersion++;
+			var myVersion = resizeEventVersion;
+			// we want to call this only during render thread, because someone might be playing with GL context, for example RenderManager
 			EventSystem.Once<Events.FrameStarted>((evt) =>
 			{
-				var resizeEvent = new Events.WindowResized(gameWindow.Width, gameWindow.Height);
-				Debug.Info("Window resized to: width:" + resizeEvent.NewPixelWidth + " height:" + resizeEvent.NewPixelHeight);
-				EventSystem.Raise(resizeEvent);
+				if (myVersion == resizeEventVersion)
+				{
+					var resizeEvent = new Events.WindowResized(gameWindow.Width, gameWindow.Height);
+					Debug.Info("Window resized to: width:" + resizeEvent.NewPixelWidth + " height:" + resizeEvent.NewPixelHeight);
+					EventSystem.Raise(resizeEvent);
+				}
 			});
 		}
 
@@ -252,13 +258,26 @@ namespace MyEngine
 			renderThreadTime.FrameBegan();
 			EventSystem.Raise(new MyEngine.Events.FrameStarted());
 
-			gameWindow.ProcessEvents();
+			try
+			{
+				gameWindow.ProcessEvents();
+			}
+			catch (Exception e)
+			{
+				Debug.Error(e);
+			}
 
 			this.WindowTitle = defaultWindowTitle + " " + renderThreadTime;
 			Debug.Tick("rendering / main render");
 
-			if (this.Focused) Input.Update();
-			Debug.Update();
+			// if window is not focused we dont want to have our character and camera responding to keyboard and mouse inputs
+			if (this.Focused)
+			{
+				Input.Update();
+				Debug.InputUpdate();
+			}
+
+			Debug.LogicUpdate();
 
 			EventSystem.Raise(new MyEngine.Events.InputUpdate(renderThreadTime));
 			EventSystem.Raise(new MyEngine.Events.EventThreadUpdate(renderThreadTime));
@@ -313,6 +332,7 @@ namespace MyEngine
 
 			EventSystem.Raise(new MyEngine.Events.FrameEnded(renderThreadTime));
 
+			// TEST
 			//while (renderThreadTime.CurrentFrameElapsedTimeFps > renderThreadTime.TargetFps) Thread.Sleep(5);
 		}
 

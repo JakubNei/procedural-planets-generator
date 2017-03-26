@@ -16,12 +16,19 @@ namespace MyGame.PlanetaryBody
 	public partial class Chunk
 	{
 		/// <summary>
-		/// Planet local position
+		/// Planet local position range
 		/// </summary>
 		public TriangleD NoElevationRange { get; private set; }
+		/// <summary>
+		/// Planet local position range
+		/// </summary>
 		TriangleD realVisibleRange;
+		/// <summary>
+		/// Planet local position range
+		/// </summary>
 		TriangleD rangeToCalculateScreenSizeOn;
 
+		List<Vector3> occluderTringles = new List<Vector3>();
 
 		public int meshGeneratedWithShaderVersion;
 
@@ -46,7 +53,21 @@ namespace MyGame.PlanetaryBody
 				}
 				return false;
 			}
+			
+			public override IEnumerable<Vector3> GetCameraSpaceOccluderTriangles(Camera camera)
+			{
+				if (chunk.isGenerationDone)
+				{
+					var mvp = GetModelViewProjectionMatrix(camera);
+					return chunk.occluderTringles.Select(v3 => v3.Multiply(ref mvp));
+				}
+				else
+				{
+					return null;
+				}
+			}
 		}
+
 
 		public bool isGenerationDone;
 
@@ -151,7 +172,7 @@ namespace MyGame.PlanetaryBody
 				// this is world space, doesnt take into consideration rotation, not good
 				var sphere = rangeToCalculateScreenSizeOn.ToBoundingSphere();
 				var radiusWorldSpace = sphere.radius;
-				var fov = cam.fieldOfView;
+				var fov = cam.FieldOfView;
 				radiusCameraSpace = radiusWorldSpace * MyMath.Cot(fov / 2) / distanceToCamera;
 			}
 
@@ -163,16 +184,30 @@ namespace MyGame.PlanetaryBody
 
 		public void CalculateRealVisibleRange()
 		{
-			var a = renderer.Mesh.Vertices[0]; // top vertex
-			var b = renderer.Mesh.Vertices[1]; // bottom left vertex
-			var c = renderer.Mesh.Vertices[2]; // bottom right vertex
+			var a = renderer.Mesh.Vertices[planetaryBody.AIndex];
+			var b = renderer.Mesh.Vertices[planetaryBody.BIndex];
+			var c = renderer.Mesh.Vertices[planetaryBody.CIndex];
 
 			var o = renderer.Offset.ToVector3d();
 			realVisibleRange.a = a.ToVector3d() + o;
 			realVisibleRange.b = b.ToVector3d() + o;
 			realVisibleRange.c = c.ToVector3d() + o;
 
-			//rangeToCalculateScreenSizeOn = realVisibleRange;
+			rangeToCalculateScreenSizeOn = realVisibleRange;
+
+			occluderTringles.Clear();
+
+			occluderTringles.Add(a);
+			occluderTringles.Add(Vector3.Zero);
+			occluderTringles.Add(b);
+
+			occluderTringles.Add(b);
+			occluderTringles.Add(Vector3.Zero);
+			occluderTringles.Add(c);
+
+			occluderTringles.Add(c);
+			occluderTringles.Add(Vector3.Zero);
+			occluderTringles.Add(a);
 		}
 
 		void AddChild(Vector3d a, Vector3d b, Vector3d c, ChildPosition cp)
@@ -229,7 +264,7 @@ namespace MyGame.PlanetaryBody
 			renderer = null;
 		}
 
-	
+
 
 	}
 }

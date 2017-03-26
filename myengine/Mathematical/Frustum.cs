@@ -83,15 +83,12 @@ namespace MyEngine
 		}
 
 		
-		public bool VsSphere(Vector3 location, float radius)
+		public bool VsSphere(Vector3 location, float radiusSquared)
 		{
 			for (int p = 0; p < 6; p++)
 			{
 				float d = _frustum[p, 0] * location.X + _frustum[p, 1] * location.Y + _frustum[p, 2] * location.Z + _frustum[p, 3];
-				if (d <= -radius)
-				{
-					return false;
-				}
+				if (d <= -radiusSquared) return false;
 			}
 			return true;
 		}

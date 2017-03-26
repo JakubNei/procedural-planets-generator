@@ -672,7 +672,6 @@ namespace MyGame.PlanetaryBody
 			generationJobTemplate.AddTask((chunk) =>
 			{
 				chunk.CalculateRealVisibleRange();
-				chunk.isGenerationDone = true;
 				chunk.meshGeneratedWithShaderVersion = computeShader.Version;
 			});
 
@@ -680,6 +679,7 @@ namespace MyGame.PlanetaryBody
 			{
 				var mesh = chunk.renderer.Mesh;
 				CalculateNormalsOnGPU(mesh);
+				chunk.isGenerationDone = true;
 			});
 		}
 

@@ -22,7 +22,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -35,11 +35,15 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="MIConvexHull, Version=1.0.16.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MIConvexHull.1.1.17.0214\lib\portable-net45+wp8+win8\MIConvexHull.dll</HintPath>
+    </Reference>
     <Reference Include="OpenTK, Version=2.0.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
       <HintPath>..\packages\OpenTK.2.0.0\lib\net20\OpenTK.dll</HintPath>
       <Private>True</Private>
@@ -106,7 +110,7 @@
       <DependentUpon>MyMath_template.tt</DependentUpon>
     </Compile>
     <Compile Include="Mathematical\PerlinD.cs" />
-    <Compile Include="Mathematical\SoftwareOcclusionCuller.cs" />
+    <Compile Include="Mathematical\SoftwareDepthRasterizer.cs" />
     <Compile Include="Mathematical\WorldPos.cs" />
     <Compile Include="Mathematical\WorleyD.cs" />
     <Compile Include="Mesh.Utils.cs" />
@@ -166,6 +170,12 @@
     <Compile Include="Components\ComponentWithShortcuts.cs" />
     <Compile Include="ObjLoader.cs" />
     <Compile Include="TickStats.cs" />
+    <Compile Include="Forms\ImageViewer.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\ImageViewer.Designer.cs">
+      <DependentUpon>ImageViewer.cs</DependentUpon>
+    </Compile>
     <Compile Include="_EngineMain.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Factory.cs" />
@@ -190,6 +200,7 @@
     <Compile Include="UniformsManager.cs" />
     <Compile Include="Extensions\Vector3Extensions.cs" />
     <Compile Include="Mathematical\Worley.cs" />
+    <Content Include="MIConvexHull.xml" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -209,6 +220,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Forms\DebugForm.resx">
       <DependentUpon>DebugForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\ImageViewer.resx">
+      <DependentUpon>ImageViewer.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
