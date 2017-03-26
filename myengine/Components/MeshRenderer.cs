@@ -67,33 +67,25 @@ namespace MyEngine.Components
 		public override Bounds GetFloatingOriginSpaceBounds(WorldPos viewPointPos)
 		{
 			var relativePos = (viewPointPos - Offset).Towards(Entity.Transform.Position).ToVector3();
-
 			if (Mesh == null) return new Bounds(relativePos);
 
 			var boundsCenter = relativePos + Mesh.Bounds.Center;
 			var bounds = new Bounds(boundsCenter);
 
-			var boundsExtents = (Mesh.Bounds.Extents * Entity.Transform.Scale).RotateBy(Entity.Transform.Rotation);
-			for (int i = 0; i < 8; i++)
+			if (Transform.Rotation == Quaternion.Identity)
 			{
-				bounds.Encapsulate(boundsCenter + boundsExtents.CompomentWiseMult(extentsTransformsToEdges[i]));
+				bounds.Extents = Mesh.Bounds.Extents * Entity.Transform.Scale;
+			}
+			else
+			{
+				var boundsExtents = (Mesh.Bounds.Extents * Entity.Transform.Scale).RotateBy(Entity.Transform.Rotation);
+				for (int i = 0; i < 8; i++)
+				{
+					bounds.Encapsulate(boundsCenter + boundsExtents.CompomentWiseMult(extentsTransformsToEdges[i]));
+				}
 			}
 
 			return bounds;
-
-			/*
-			// maybe optimized way, that does not use rotation
-
-			var relativePos = (viewPointPos - Offset).Towards(Entity.Transform.Position).ToVector3();
-
-			if (Mesh == null) return new Bounds(relativePos);
-
-			var boundsCenter = relativePos + Mesh.Bounds.Center;
-			var bounds = new Bounds(boundsCenter);
-			bounds.Extents = Mesh.Bounds.Extents * Entity.Transform.Scale;
-
-			return bounds;
-			*/
 		}
 
 		public override void UploadUBOandDraw(Camera camera, UniformBlock ubo)
@@ -139,8 +131,34 @@ namespace MyEngine.Components
 
 		public override CameraSpaceBounds GetCameraSpaceBounds(Camera camera)
 		{
-			var mvp = GetModelViewProjectionMatrix(camera);
 			var b = new CameraSpaceBounds();
+			if (Mesh == null) return b;
+
+			b.maxX = float.MinValue;
+			b.maxY = float.MinValue;
+			b.depthFurthest = float.MinValue;
+
+			b.minX = float.MaxValue;
+			b.minY = float.MaxValue;
+			b.depthClosest = float.MaxValue;
+
+			var mvp = GetModelViewProjectionMatrix(camera);
+
+			for (int i = 0; i < 8; i++)
+			{
+				var meshSpaceBoundsVertex = Mesh.Bounds.Center + Mesh.Bounds.Extents.CompomentWiseMult(extentsTransformsToEdges[i]);
+				var cameraSpaceBoundVertex = meshSpaceBoundsVertex.Multiply(ref mvp);
+
+				b.maxX = Math.Max(b.maxX, cameraSpaceBoundVertex.X);
+				b.minX = Math.Min(b.minY, cameraSpaceBoundVertex.X);
+
+				b.maxY = Math.Max(b.maxY, cameraSpaceBoundVertex.Y);
+				b.minY = Math.Min(b.minY, cameraSpaceBoundVertex.Y);
+
+				b.depthFurthest = Math.Max(b.depthFurthest, cameraSpaceBoundVertex.Z);
+				b.depthClosest = Math.Min(b.depthClosest, cameraSpaceBoundVertex.Z);
+			}
+
 			return b;
 		}
 	}

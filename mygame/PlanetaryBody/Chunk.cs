@@ -41,21 +41,24 @@ namespace MyGame.PlanetaryBody
 			public CustomChunkMeshRenderer(Entity entity) : base(entity)
 			{
 			}
-
+			/*
 			public override bool ShouldRenderInContext(Camera camera, RenderContext renderContext)
 			{
 				if (base.ShouldRenderInContext(camera, renderContext))
 				{
-					var dotToCam = chunk.DotToCamera(camera);
-					if (dotToCam > 0) return true;
-
+					// 1 looking at it from top, 0 looking from side, -1 looking from bottom
+					var dotToCamera = chunk.rangeToCalculateScreenSizeOn.Normal.Dot(
+						-camera.ViewPointPosition.Towards(chunk.rangeToCalculateScreenSizeOn.CenterPos + chunk.planetaryBody.Transform.Position).ToVector3d().Normalized()
+					);
+					if (dotToCamera > -0.2f) return true;
 					return false;
 				}
 				return false;
 			}
-			
+			*/
 			public override IEnumerable<Vector3> GetCameraSpaceOccluderTriangles(Camera camera)
 			{
+				if (chunk.occluderTringles.Count == 0 && chunk.isGenerationDone) throw new Exception("this should not happen");
 				if (chunk.isGenerationDone)
 				{
 					var mvp = GetModelViewProjectionMatrix(camera);
@@ -134,19 +137,6 @@ namespace MyGame.PlanetaryBody
 		}
 
 
-		/// <summary>
-		/// 1 looking at it from top, 0 looking from side, -1 looking from bottom
-		/// </summary>
-		/// <param name="cam"></param>
-		/// <returns></returns>
-		public double DotToCamera(Camera cam)
-		{
-			var dotToCamera = NoElevationRange.Normal.Dot(
-				planetaryBody.Transform.Position.Towards(cam.ViewPointPosition).ToVector3d().Normalized()
-			);
-
-			return dotToCamera;
-		}
 
 		public double GetSizeOnScreen(Camera cam)
 		{

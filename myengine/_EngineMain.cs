@@ -130,7 +130,6 @@ namespace MyEngine
 					WindowState = WindowState.Normal;
 			};
 
-			Debug.CommonCVars.SortRenderers().Bool = true;
 
 			WindowTitle = defaultWindowTitle;
 

@@ -44,11 +44,18 @@ namespace MyEngine
 			this.debug = debug;
 		}
 
-		public void InitializeWith(bool value)
+		public CVar OnChangedAdd(Action<CVar> action)
+		{
+			OnChanged += action;
+			return this;
+		}
+
+		public CVar InitializeWith(bool value)
 		{
 			_bool = value;
 			debug.Info(name + " changed to: " + value);
 			OnChanged?.Invoke(this);
+			return this;
 		}
 
 		public bool EatBoolIfTrue()
@@ -59,6 +66,12 @@ namespace MyEngine
 				return true;
 			}
 			return false;
+		}
+
+		public CVar Toogle()
+		{
+			Bool = !Bool;
+			return this;
 		}
 
 		public CVar ToogledByKey(OpenTK.Input.Key key)

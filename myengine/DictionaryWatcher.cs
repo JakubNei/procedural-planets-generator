@@ -20,7 +20,7 @@ namespace MyEngine
 		/// <summary>
 		/// Guarantees that OnAdded was called on same TKey before.
 		/// </summary>
-		public event Action<TKey> OnRemoved;
+		public event Action<TKey, TItem> OnRemoved;
 		/// <summary>
 		/// Guarantees that OnAdded was called on same TKey before.
 		/// </summary>
@@ -57,7 +57,7 @@ namespace MyEngine
 			foreach (var keyRemoved in keysRemoved)
 			{
 				currentValues.Remove(keyRemoved);
-				OnRemoved.Raise(keyRemoved);
+				OnRemoved.Raise(keyRemoved, source[keyRemoved]);
 			}
 
 		}

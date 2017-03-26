@@ -103,68 +103,15 @@ namespace MyEngine
 			t.Update(this);
             return t;
 		}
-
-		public class Profiler
-		{
-			private readonly string name;
-			public Profiler(string name)
-			{
-				this.name = name;
-			}
-			public void Start()
-			{
-
-			}
-			public void Stop()
-			{
-
-			}
-	
-		}
-		public Profiler ProfileStart(string name)
-		{
-			return new Profiler(name);
-		}
-
-		public void ProfileStop(string name)
-		{
-
-		}
-
+		
 
 		DebugForm debugForm;
-		DictionaryWatcher<string, string> stringValuesWatcher;
-		DictionaryWatcher<string, CVar, string> ckeyValuesWatcher;
 
 		void AddCommonCvars()
 		{
 			CommonCVars.ShowDebugForm().ToogledByKey(OpenTK.Input.Key.F1).OnChanged += (cvar) =>
 			{
-				if (debugForm == null)
-				{
-					debugForm = new DebugForm();
-					{
-						var items = debugForm.listView1.Items;
-						stringValuesWatcher = new DictionaryWatcher<string, string>();
-						stringValuesWatcher.OnAdded += (key, value) => items.Add(new ListViewItem(new string[] { key, value }) { Tag = key });
-						stringValuesWatcher.OnUpdated += (key, value) => items.OfType<ListViewItem>().First(i => (string)i.Tag == key).SubItems[1].Text = value;
-						stringValuesWatcher.OnRemoved += (key) => items.Remove(items.OfType<ListViewItem>().First(i => (string)i.Tag == key));
-					}
-					{
-						var items = debugForm.listView2.Items;
-						ckeyValuesWatcher = new DictionaryWatcher<string, CVar, string>();
-						ckeyValuesWatcher.comparisonValueSelector = (item) => item.Bool.ToString();
-						ckeyValuesWatcher.OnAdded += (key, item) => items.Add(new ListViewItem(new string[] { item.toogleKey.ToString(), item.name, item.Bool.ToString() }) { Tag = key });
-						ckeyValuesWatcher.OnUpdated += (key, item) =>
-						{
-							var subItems = items.OfType<ListViewItem>().First(i => (string)i.Tag == key).SubItems;
-							subItems[0].Text = item.toogleKey.ToString();
-							subItems[2].Text = item.Bool.ToString();
-						};
-						ckeyValuesWatcher.OnRemoved += (key) => items.Remove(items.OfType<ListViewItem>().First(i => (string)i.Tag == key));
-					}
-				}
-
+				if (debugForm == null) debugForm = new DebugForm();					
 				if (cvar.Bool) debugForm.Show();
 				else debugForm.Hide();
 			};
@@ -176,7 +123,6 @@ namespace MyEngine
 			CommonCVars.DebugDrawGBufferContents().ToogledByKey(OpenTK.Input.Key.F9);
 			CommonCVars.DebugDrawNormalBufferContents().ToogledByKey(OpenTK.Input.Key.F10);
 			CommonCVars.DebugRenderWithLines().ToogledByKey(OpenTK.Input.Key.F11);
-			CommonCVars.SortRenderers().ToogledByKey(OpenTK.Input.Key.F12);
 
 		}
 
@@ -198,14 +144,11 @@ namespace MyEngine
 		public void LogicUpdate()
 		{
 			if (debugForm?.Visible == true)
-			{
-				stringValuesWatcher.UpdateBy(stringValues);
-				ckeyValuesWatcher.UpdateBy(nameToCVar);
-			}
+				debugForm.UpdateBy(stringValues, nameToCVar);
 		}
 
 
-		void Log(object obj, bool canRepeat)
+		private void Log(object obj, bool canRepeat)
 		{
 			var s = obj.ToString();
 			if (canRepeat || !alreadyShown.Contains(s))

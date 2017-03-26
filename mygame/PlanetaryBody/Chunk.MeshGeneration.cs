@@ -19,14 +19,14 @@ namespace MyGame.PlanetaryBody
 	
 
 
-		public bool generationBegan = false;
+		public bool GenerationBegan { get; private set; } = false;
 
 		public void CreateRendererAndBasicMesh()
 		{
 			lock (this)
 			{
-				if (generationBegan) return;// throw new Exception("generation already began");
-				generationBegan = true;
+				if (GenerationBegan) return;// throw new Exception("generation already began");
+				GenerationBegan = true;
 			}
 
 			var offsetCenter = NoElevationRange.CenterPos;

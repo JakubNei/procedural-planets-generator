@@ -30,7 +30,12 @@ namespace MyGame.PlanetaryBody
 			return verticesList;
 		}
 
-		List<int> indiciesList;
+
+
+
+
+		public int NumberOfVerticesNeededTotal => (((ChunkNumberOfVerticesOnEdge - 1) * ChunkNumberOfVerticesOnEdge) / 2) + ChunkNumberOfVerticesOnEdge;
+
 		/// <summary>
 		/// top vertex index
 		/// </summary>
@@ -38,11 +43,13 @@ namespace MyGame.PlanetaryBody
 		/// <summary>
 		/// bottom left vertex index
 		/// </summary>
-		public int BIndex => (ChunkNumberOfVerticesOnEdge - 1) * ChunkNumberOfVerticesOnEdge / 2;
+		public int BIndex => ((ChunkNumberOfVerticesOnEdge - 1) * ChunkNumberOfVerticesOnEdge) / 2;
 		/// <summary>
 		/// bottom right vertex index
 		/// </summary>
 		public int CIndex => BIndex + (ChunkNumberOfVerticesOnEdge - 1);
+
+		List<int> indiciesList;
 
 		public List<int> GetIndiciesList()
 		{

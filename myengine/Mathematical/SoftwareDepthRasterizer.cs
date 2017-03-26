@@ -13,13 +13,21 @@ namespace MyEngine
 {
 	public struct CameraSpaceBounds
 	{
-		public float depth;
+		public float depthClosest;
+		public float depthFurthest;
 		public float minX;
 		public float maxX;
 		public float minY;
 		public float maxY;
 	}
 
+	/// <summary>
+	/// idea from: http://www.frostbite.com/wp-content/uploads/2013/05/CullingTheBattlefield.pdf
+	/// better explained by dice guy blog post: http://blog.selfshadow.com/publications/practical-visibility/
+	/// good conversation: https://www.gamedev.net/resources/_/technical/graphics-programming-and-theory/coverage-buffer-as-main-occlusion-culling-technique-r4103
+	/// rasterizer code from from: http://forum.devmaster.net/t/advanced-rasterization/6145
+	/// further rasterizer ideas from: https://www.gamedev.net/topic/637373-software-occlusion-culling-rasterizer-what-about-small-cracks/
+	/// </summary>
 	public class SoftwareDepthRasterizer
 	{
 		readonly ushort width;
@@ -30,8 +38,7 @@ namespace MyEngine
 		readonly float halfHeight;
 
 		float[] depthBuffer;
-
-		float[] clearedDepthBuffer;
+		float[] clearDepthBuffer;
 
 		public SoftwareDepthRasterizer(ushort width, ushort height)
 		{
@@ -42,15 +49,15 @@ namespace MyEngine
 			this.halfWidth = width / 2.0f;
 			this.halfHeight = height / 2.0f;
 			depthBuffer = new float[width * height];
-			clearedDepthBuffer = new float[width * height];
-			for (int i = 0; i < clearedDepthBuffer.Length; i++)
-				clearedDepthBuffer[i] = 0;// float.MaxValue;
+			clearDepthBuffer = new float[depthBuffer.Length];
+			for (int i = 0; i < clearDepthBuffer.Length; i++)
+				clearDepthBuffer[i] = float.MaxValue;
 		}
 
 		public void Clear()
 		{
 			UpdateDebugView();
-			Array.Copy(clearedDepthBuffer, depthBuffer, depthBuffer.Length);
+			Array.Copy(clearDepthBuffer, depthBuffer, depthBuffer.Length);
 		}
 
 
@@ -78,7 +85,7 @@ namespace MyEngine
 
 
 		// http://stackoverflow.com/a/33558594/782022
-		static int iround(float num) => (int)(num + 0.5f);
+		static int RoundToInt(float num) => (int)(num + 0.5f);
 		static int min(int a, int b, int c)
 		{
 			if (a <= b && a <= c) return a;
@@ -110,20 +117,21 @@ namespace MyEngine
 		}
 
 
+
+		float PrepareX(float x) => (x + 1) * halfWidth;
+		float PrepareY(float y) => (y + 1) * halfHeight;
+
 		// based on half-space function approach
-		// base code from: http://forum.devmaster.net/t/advanced-rasterization/6145
-		// further ideas from: https://www.gamedev.net/topic/637373-software-occlusion-culling-rasterizer-what-about-small-cracks/
-		// inspiration from: http://www.frostbite.com/wp-content/uploads/2013/05/CullingTheBattlefield.pdf
 		public void AddTriangle(ref Vector3 v1, ref Vector3 v2, ref Vector3 v3)
 		{
 			// 28.4 fixed-point coordinates
-			int Y1 = iround(16.0f * (v1.Y + 1) * halfHeight);
-			int Y2 = iround(16.0f * (v2.Y + 1) * halfHeight);
-			int Y3 = iround(16.0f * (v3.Y + 1) * halfHeight);
+			int Y1 = RoundToInt(16.0f * PrepareY(v1.Y));
+			int Y2 = RoundToInt(16.0f * PrepareY(v2.Y));
+			int Y3 = RoundToInt(16.0f * PrepareY(v3.Y));
 
-			int X1 = iround(16.0f * (v1.X + 1) * halfWidth);
-			int X2 = iround(16.0f * (v2.X + 1) * halfWidth);
-			int X3 = iround(16.0f * (v3.X + 1) * halfWidth);
+			int X1 = RoundToInt(16.0f * PrepareX(v1.X));
+			int X2 = RoundToInt(16.0f * PrepareX(v2.X));
+			int X3 = RoundToInt(16.0f * PrepareX(v3.X));
 
 			// Deltas
 			int DX12 = X1 - X2;
@@ -150,6 +158,7 @@ namespace MyEngine
 			int maxy = (max(Y1, Y2, Y3) + 0xF) >> 4;
 
 
+
 			if (minx < 0 && maxx < 0) return;
 			if (miny < 0 && maxy < 0) return;
 			if (minx > width && maxx > width) return;
@@ -159,6 +168,8 @@ namespace MyEngine
 			if (maxx >= widthMinusOne) maxx = widthMinusOne;
 			if (miny < 0) miny = 0;
 			if (maxy >= heightMinusOne) maxy = heightMinusOne;
+
+
 
 			float maxz = max(v1.Z, v2.Z, v3.Z);
 			int depthIndex = miny * width;
@@ -189,11 +200,8 @@ namespace MyEngine
 					if (CX1 > 0 && CX2 > 0 && CX3 > 0)
 					{
 						var index = depthIndex + x;
-						if (index > 0 && index < depthBuffer.Length)
-						{
-							if (depthBuffer[index] == 0 || depthBuffer[index] > maxz)
-								depthBuffer[index] = maxz;
-						}
+						if (depthBuffer[index] > maxz)
+							depthBuffer[index] = maxz;
 					}
 
 					CX1 -= FDY12;
@@ -209,10 +217,46 @@ namespace MyEngine
 			}
 		}
 
-
-		public bool BoundsVisible(CameraSpaceBounds bounds)
+		/// <summary>
+		/// Returns true if at least one pixel of bounds rectangle is visible.
+		/// </summary>
+		/// <param name="bounds"></param>
+		/// <returns></returns>
+		public bool AreBoundsVisible(CameraSpaceBounds bounds)
 		{
-			return true;
+			int minx = RoundToInt(PrepareX(bounds.minX));
+			int maxx = RoundToInt(PrepareX(bounds.maxX));
+
+			int miny = RoundToInt(PrepareY(bounds.minY));
+			int maxy = RoundToInt(PrepareY(bounds.maxY));
+
+
+			if (minx < 0 && maxx < 0) return false;
+			if (miny < 0 && maxy < 0) return false;
+			if (minx > width && maxx > width) return false;
+			if (miny > height && maxy > height) return false;
+
+			if (minx < 0) minx = 0;
+			if (maxx >= widthMinusOne) maxx = widthMinusOne;
+			if (miny < 0) miny = 0;
+			if (maxy >= heightMinusOne) maxy = heightMinusOne;
+
+
+
+			int depthIndex = miny * width;
+
+			for (int y = miny; y < maxy; y++)
+			{
+				for (int x = minx; x < maxx; x++)
+				{
+					var index = depthIndex + x;
+					if (depthBuffer[index] > bounds.depthClosest)
+						return true;
+				}
+				depthIndex += width;
+			}
+
+			return false;
 		}
 
 		// http://gamedev.stackexchange.com/questions/23743/whats-the-most-efficient-way-to-find-barycentric-coordinates
@@ -238,10 +282,10 @@ namespace MyEngine
 		ImageViewer viewer;
 		public void UpdateDebugView()
 		{
-			if (viewer != null)
+			if (viewer?.Visible == true)
 			{
-				var min = depthBuffer.Where(d => d != 0).DefaultIfEmpty(0).Min();
-				var max = depthBuffer.Where(d => d != 0).DefaultIfEmpty(float.MaxValue).Max();
+				var min = depthBuffer.Where(d => d != float.MaxValue).DefaultIfEmpty(0).Min();
+				var max = depthBuffer.Where(d => d != float.MaxValue).DefaultIfEmpty(1).Max();
 				viewer.SetData(width, height, (x, y) =>
 				{
 					var d = depthBuffer[(heightMinusOne - y) * width + x];

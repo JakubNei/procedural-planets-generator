@@ -14,7 +14,7 @@ namespace MyEngine
 		Queue<DateTime> frameTimes10sec = new Queue<DateTime>();
 		Stopwatch eventThreadTime = new Stopwatch();
 
-		public double TargetFps => 10;
+		public double TargetFps => 60;
 
 		/// <summary>
 		/// Delta Time from last frame.

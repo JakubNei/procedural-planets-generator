@@ -1,4 +1,7 @@
-﻿namespace MyEngine
+﻿using System.Linq;
+using System.Windows.Forms;
+
+namespace MyEngine
 {
 	partial class DebugForm
 	{
@@ -19,6 +22,8 @@
 			}
 			base.Dispose(disposing);
 		}
+
+
 
 		#region Windows Form Designer generated code
 
@@ -72,6 +77,7 @@
 			this.listView1.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             columnName,
             columnValue});
+			this.listView1.FullRowSelect = true;
 			this.listView1.GridLines = true;
 			this.listView1.Location = new System.Drawing.Point(1, 0);
 			this.listView1.Name = "listView1";
@@ -87,6 +93,7 @@
             columnHeader1,
             columnHeader2,
             columnHeader3});
+			this.listView2.FullRowSelect = true;
 			this.listView2.GridLines = true;
 			this.listView2.Location = new System.Drawing.Point(1, 343);
 			this.listView2.Name = "listView2";
@@ -95,6 +102,7 @@
 			this.listView2.TabIndex = 1;
 			this.listView2.UseCompatibleStateImageBehavior = false;
 			this.listView2.View = System.Windows.Forms.View.Details;
+			this.listView2.MouseClick += new System.Windows.Forms.MouseEventHandler(this.listView2_MouseClick);
 			// 
 			// DebugForm
 			// 
@@ -110,8 +118,7 @@
 		}
 		 
 		#endregion
-
-		public System.Windows.Forms.ListView listView1;
-		public System.Windows.Forms.ListView listView2;
+		private ListView listView2;
+		private ListView listView1;
 	}
 }

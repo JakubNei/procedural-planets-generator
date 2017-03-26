@@ -19,36 +19,30 @@ namespace MyGame.PlanetaryBody
 	{
 		public double RadiusMin => config.radiusMin;
 
-		public int ChunkNumberOfVerticesOnEdge => 90;
-		public float SizeOnScreenNeededToSubdivide => 0.5f;
-		public int SubdivisionMaxRecurisonDepth => 100;
+		public int ChunkNumberOfVerticesOnEdge => 50;
+		public float SizeOnScreenNeededToSubdivide => 0.3f;
 
-
-		int numberOfVerticesNeededTotal = -1;
-		public int NumberOfVerticesNeededTotal
+		int subdivisionMaxRecurisonDepthCached = -1;
+		public int SubdivisionMaxRecurisonDepth
 		{
 			get
 			{
-				if (numberOfVerticesNeededTotal != -1) return numberOfVerticesNeededTotal;
-
-				numberOfVerticesNeededTotal = 1;
+				if (subdivisionMaxRecurisonDepthCached == -1)
 				{
-					int numberOfVerticesInBetween = 0;
-					for (uint y = 1; y < ChunkNumberOfVerticesOnEdge; y++)
+					var planetCircumference = 2 * Math.PI * RadiusMin;
+					var oneRootChunkCircumference = planetCircumference / 6.0f;
+
+					subdivisionMaxRecurisonDepthCached = 0;
+					while (oneRootChunkCircumference > 100)
 					{
-						numberOfVerticesNeededTotal++;
-						if (numberOfVerticesInBetween > 0)
-						{
-							numberOfVerticesNeededTotal += numberOfVerticesInBetween;
-						}
-						numberOfVerticesNeededTotal++;
-						numberOfVerticesInBetween++;
+						oneRootChunkCircumference /= 2;
+						subdivisionMaxRecurisonDepthCached++;
 					}
 				}
-
-				return numberOfVerticesNeededTotal;
+				return subdivisionMaxRecurisonDepthCached;
 			}
 		}
+
 
 		public Material PlanetMaterial { get; set; }
 
@@ -247,7 +241,7 @@ namespace MyGame.PlanetaryBody
 			var cam = Entity.Scene.mainCamera;
 			var sizeOnScreen = chunk.GetSizeOnScreen(cam);
 
-			if (!chunk.generationBegan)
+			if (!chunk.GenerationBegan)
 			{
 				list.Add(sizeOnScreen, chunk);
 			}
@@ -344,13 +338,13 @@ namespace MyGame.PlanetaryBody
 
 			if (toGenerate != null)
 			{
-				while (toGenerate.parentChunk != null && !toGenerate.parentChunk.generationBegan) // we have to generate our parent first
+				while (toGenerate.parentChunk != null && !toGenerate.parentChunk.GenerationBegan) // we have to generate our parent first
 					toGenerate = toGenerate.parentChunk;
 
 				// if we want to show this chunk, our neighbours have the same weight, because we cant be shown without our neighbours
 				if (toGenerate.parentChunk != null)
 					foreach (var neighbour in toGenerate.parentChunk.childs)
-						if (!neighbour.generationBegan)
+						if (!neighbour.GenerationBegan)
 							toGenerate = neighbour;
 
 
@@ -432,60 +426,51 @@ namespace MyGame.PlanetaryBody
 				lock (jobs)
 					jobs.Add(job);
 			}
+			public void RemoveNotStarted()
+			{
+				lock (jobs)
+					jobs.RemoveAll(j => j.IsStarted == false);
+			}
 			public void GPUThreadTick(FrameTime ft, Func<double> secondLeftToUse)
 			{
-				int jobsRan = 1;
-
-				while (jobs.Count > 0 && secondLeftToUse() > 0 && jobsRan > 0)
+				while (jobs.Count > 0 && secondLeftToUse() > 0)
 				{
+					int jobsRan = 0;
 
 					IJob[] orderedJobs;
 					lock (jobs)
-						orderedJobs = jobs.OrderByDescending(j => j.NextGPUThreadTickWillTakeSeconds()).ToArray();
-
-					jobsRan = 0;
-
-					var s = secondLeftToUse();
-					var aa = ft.CurrentFrameElapsedTimeFps;
-					if (aa < 60)
 					{
-						var a = 5;
+						jobs.RemoveAll(j => j.ShouldRemove);
+						orderedJobs = jobs.OrderByDescending(j => j.NextGPUThreadTickWillTakeSeconds()).ToArray();
 					}
 
 					foreach (var job in orderedJobs)
 					{
 						if (job.ShouldExecute)
 						{
-							var t = timesOutOfTime.GetValue(job, 1);
-							if (job.NextGPUThreadTickWillTakeSeconds() <= secondLeftToUse())
-							{
-								job.GPUThreadTick();
+							while (job.NextGPUThreadTickWillTakeSeconds() < secondLeftToUse() && job.GPUThreadTick())
 								jobsRan++;
-							}
-							else
-							{
-								timesOutOfTime[job] = t + 1;
-							}
-						}
-
-						if (job.ShouldRemove)
-						{
-							timesOutOfTime.Remove(job);
 						}
 					}
+
 					lock (jobs)
-						jobs.RemoveAll((j) => j.ShouldRemove);
+						jobs.RemoveAll(j => j.ShouldRemove);
+
+					if (jobsRan == 0) break;
 				}
+
+
 				MyDebug.Instance.AddValue("jobs count", jobs.Count);
 			}
 		}
 
 		public interface IJob
 		{
+			bool IsStarted { get; }
 			bool ShouldExecute { get; }
 			bool ShouldRemove { get; }
 			double NextGPUThreadTickWillTakeSeconds();
-			void GPUThreadTick();
+			bool GPUThreadTick();
 		}
 
 		public class JobTemplate<TData>
@@ -503,9 +488,9 @@ namespace MyGame.PlanetaryBody
 				{
 					get
 					{
-						if (timesExecuted == 0) return 0;
-						if (firstRunDone == false) return 0;
-						return timeTaken.TotalSeconds / timesExecuted;
+						if (firstRunDone && timesExecuted > 0)
+							return timeTaken.TotalSeconds / timesExecuted;
+						return 0;
 					}
 				}
 			}
@@ -533,6 +518,7 @@ namespace MyGame.PlanetaryBody
 				public bool ShouldExecute => !ShouldRemove;
 				public bool ShouldRemove => IsFinished || IsAborted || IsFaulted;
 
+				public bool IsStarted => currentTaskIndex > 0;
 				public bool IsFinished => currentTaskIndex >= parent.tasksToRun.Count && (lastTask == null || lastTask.IsCompleted);
 				public bool IsAborted { get; private set; }
 				public bool IsFaulted { get; private set; }
@@ -550,10 +536,10 @@ namespace MyGame.PlanetaryBody
 					this.data = data;
 				}
 
-				public void GPUThreadTick()
+				public bool GPUThreadTick()
 				{
-					if (!ShouldExecute) return;
-					if (lastTask != null && lastTask.IsCompleted == false) return;
+					if (!ShouldExecute) return false;
+					if (lastTask != null && lastTask.IsCompleted == false) return false;
 					lastTask = null;
 
 					var jobTask = parent.tasksToRun[currentTaskIndex];
@@ -589,6 +575,7 @@ namespace MyGame.PlanetaryBody
 					}
 
 					currentTaskIndex++;
+					return true;
 				}
 				public void Abort()
 				{
@@ -599,7 +586,7 @@ namespace MyGame.PlanetaryBody
 				{
 					if (IsFinished) return 0;
 					var jobTask = parent.tasksToRun[currentTaskIndex];
-					if (jobTask.whereToRun == WhereToRun.GPUThread) return jobTask.avergeSeconds / 10;
+					if (jobTask.whereToRun == WhereToRun.GPUThread) return jobTask.avergeSeconds;
 					return 0;
 				}
 			}
@@ -682,6 +669,7 @@ namespace MyGame.PlanetaryBody
 				chunk.isGenerationDone = true;
 			});
 		}
+
 
 		void EnqueueChunkForGeneration(Chunk chunk)
 		{
