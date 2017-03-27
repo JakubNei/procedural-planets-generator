@@ -112,7 +112,7 @@ namespace MyEngine
 			this.Controls.Add(this.listView2);
 			this.Controls.Add(this.listView1);
 			this.Name = "DebugForm";
-			this.Text = "DebugForm";
+			this.Text = "Debug form";
 			this.ResumeLayout(false);
 
 		}

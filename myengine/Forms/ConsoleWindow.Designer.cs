@@ -1,4 +1,4 @@
-﻿namespace MumApp1
+﻿namespace MyEngine
 {
 	partial class ConsoleWindow
 	{
@@ -57,7 +57,7 @@
 			this.ClientSize = new System.Drawing.Size(710, 358);
 			this.Controls.Add(this.consoleText);
 			this.Name = "ConsoleWindow";
-			this.Text = "Přetáhní na me soubor";
+			this.Text = "Console window";
 			this.ResumeLayout(false);
 
 		}

@@ -139,7 +139,7 @@ namespace MyGame
 		}
 
 
-		bool FreezeUpdate => scene.Debug.CVar("generation / planet logic pause update");
+		bool FreezeUpdate => scene.Debug.GetCVar("generation / planet logic pause update");
 		void PlanetLogicUpdate()
 		{
 			if (FreezeUpdate) return;

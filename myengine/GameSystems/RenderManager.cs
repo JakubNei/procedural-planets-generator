@@ -32,11 +32,12 @@ namespace MyEngine
 		Factory Factory => Factory.Instance;
 		readonly MyDebug debug;
 
-		CVar enableCulling => debug.GetCVar("enable culling");
-		CVar enableRasterizerRasterization => debug.GetCVar("enable rasterizer rasterization");
-		CVar enableRasterizerCulling => debug.GetCVar("enable rasterizer culling");
+		CVar enableCulling => debug.GetCVar("enable culling", true);
+		CVar enableRasterizerRasterization => debug.GetCVar("enable rasterizer rasterization", true);
+		CVar enableRasterizerCulling => debug.GetCVar("enable rasterizer culling", true);
 		CVar showRasterizerContents => debug.GetCVar("show rasterizer contents");
-		CVar sortRenderables => debug.GetCVar("sort renderables");
+		CVar sortRenderables => debug.GetCVar("sort renderables", true);
+		CVar doParallelize => debug.GetCVar("parallelize render prepare", true);
 
 		public RenderManager(Events.EventSystem eventSystem, MyDebug debug)
 		{
@@ -48,21 +49,17 @@ namespace MyEngine
 				GBuffer = new DeferredGBuffer(evt.NewPixelWidth, evt.NewPixelHeight);
 			});
 
-			enableRasterizerRasterization.OnChangedAdd((c) =>
+			enableRasterizerRasterization.OnChangedAndNow((c) =>
 			{
 				if (c.Bool) rasterizer = new SoftwareDepthRasterizer(200, 100);
 				else rasterizer = null;
-			}).InitializeWith(true);
+			});
 
-			showRasterizerContents.OnChangedAdd((c) =>
+			showRasterizerContents.OnChangedAndNow((c) =>
 			{
 				if (c.Bool) rasterizer?.Show();
 				else rasterizer?.Hide();
 			});
-
-			enableCulling.InitializeWith(true);
-			enableRasterizerCulling.InitializeWith(true);
-			sortRenderables.InitializeWith(true);
 		}
 
 		public void RenderAll(UniformBlock ubo, Camera camera, IList<ILight> allLights, IEnumerable<IPostProcessEffect> postProcessEffect)
@@ -357,7 +354,7 @@ namespace MyEngine
 				int passedFrustumCullingIndex = 0;
 				lock (possibleRenderables)
 				{
-					Parallel.ForEach(possibleRenderables, (renderable) =>
+					void Work(IRenderable renderable)
 					{
 						if (renderable != null && renderable.ShouldRenderInContext(camera, RenderContext))
 						{
@@ -385,7 +382,9 @@ namespace MyEngine
 								}
 							}
 						}
-					});
+					}
+					if (doParallelize) Parallel.ForEach(possibleRenderables, Work);
+					else possibleRenderables.ForEach(Work);
 				}
 
 				debug.AddValue("rendering / meshes / passed frustum culling", passedFrustumCullingIndex);
@@ -394,35 +393,37 @@ namespace MyEngine
 				{
 
 					int passedRasterizationCullingIndex = 0;
-					Parallel.For(0, passedFrustumCullingIndex, (i) =>
-					  {
-						  var renderable = passedFrustumCulling[i];
-						  if (renderable.ForcePassCulling)
-						  {
-							  renderable.SetCameraRenderStatusFeedback(camera, RenderStatus.RenderedAndVisible);
-							  var newIndex = Interlocked.Increment(ref passedRasterizationCullingIndex);
-							  passedRasterizationCulling[newIndex - 1] = renderable;
-							  distancesToCamera[newIndex - 1] = 0;
-						  }
-						  else
-						  {
-							  var bounds = renderable.GetCameraSpaceBounds(camera);
-							  if (rasterizer.AreBoundsVisible(bounds))
-							  {
-								  renderable.SetCameraRenderStatusFeedback(camera, RenderStatus.RenderedAndVisible);
-								  var newIndex = Interlocked.Increment(ref passedRasterizationCullingIndex);
-								  passedRasterizationCulling[newIndex - 1] = renderable;
-								  distancesToCamera[newIndex - 1] = bounds.depthClosest;
-							  }
-							  else
-							  {
-								  renderable.SetCameraRenderStatusFeedback(camera, RenderStatus.NotRendered);
-							  }
-						  }
-					  });
+
+					void Work(IRenderable renderable)
+					{
+						if (renderable.ForcePassCulling)
+						{
+							renderable.SetCameraRenderStatusFeedback(camera, RenderStatus.RenderedAndVisible);
+							var newIndex = Interlocked.Increment(ref passedRasterizationCullingIndex);
+							passedRasterizationCulling[newIndex - 1] = renderable;
+							distancesToCamera[newIndex - 1] = 0;
+						}
+						else
+						{
+							var bounds = renderable.GetCameraSpaceBounds(camera);
+							if (rasterizer.AreBoundsVisible(bounds))
+							{
+								renderable.SetCameraRenderStatusFeedback(camera, RenderStatus.RenderedAndVisible);
+								var newIndex = Interlocked.Increment(ref passedRasterizationCullingIndex);
+								passedRasterizationCulling[newIndex - 1] = renderable;
+								distancesToCamera[newIndex - 1] = bounds.depthClosest;
+							}
+							else
+							{
+								renderable.SetCameraRenderStatusFeedback(camera, RenderStatus.NotRendered);
+							}
+						}
+					}
+
+					if (doParallelize) Parallel.For(0, passedFrustumCullingIndex, (i) => Work(passedFrustumCulling[i]));
+					else for (int i = 0; i < passedFrustumCullingIndex; i++) Work(passedFrustumCulling[i]);
 
 					debug.AddValue("rendering / meshes / passed rasterization culling", passedRasterizationCullingIndex);
-
 
 					if (sortRenderables)
 					{
@@ -435,15 +436,17 @@ namespace MyEngine
 				}
 				else
 				{
-					toRenderRenderables = passedFrustumCulling.Where(renderable => renderable != null && renderable.ShouldRenderInContext(camera, RenderContext)).ToArray();
-					toRenderRenderablesCount = passedFrustumCullingIndex;
+					var a = passedFrustumCulling.Where(renderable => renderable != null && renderable.ShouldRenderInContext(camera, RenderContext)).ToArray();
+					toRenderRenderables = a;
+					toRenderRenderablesCount = a.Length;
 				}
 
 			}
 			else
 			{
-				toRenderRenderables = possibleRenderables.ToArray();
-				toRenderRenderablesCount = possibleRenderablesCount;
+				var a = possibleRenderables.Where(renderable => renderable != null && renderable.ShouldRenderInContext(camera, RenderContext)).ToArray();
+				toRenderRenderables = a;
+				toRenderRenderablesCount = a.Length;
 			}
 
 

@@ -35,7 +35,6 @@ namespace MyEngine
 
 
 		public OpenTK.Input.Key toogleKey = OpenTK.Input.Key.Unknown;
-		public bool hasDefaultValue = false;
 
 		public event Action<CVar> OnChanged;
 
@@ -44,12 +43,17 @@ namespace MyEngine
 			this.debug = debug;
 		}
 
-		public CVar OnChangedAdd(Action<CVar> action)
+		public CVar OnChangedAndNow(Action<CVar> action)
 		{
-			OnChanged += action;
+			if (action != null)
+			{
+				OnChanged += action;
+				action.Invoke(this);
+			}
 			return this;
 		}
 
+		/*
 		public CVar InitializeWith(bool value)
 		{
 			_bool = value;
@@ -57,6 +61,7 @@ namespace MyEngine
 			OnChanged?.Invoke(this);
 			return this;
 		}
+		*/
 
 		public bool EatBoolIfTrue()
 		{

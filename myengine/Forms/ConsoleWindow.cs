@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace MumApp1
+namespace MyEngine
 {
 	public partial class ConsoleWindow : Form
 	{
@@ -35,11 +35,8 @@ namespace MumApp1
 		public event Action OnStart;
 		public event Action OnExit;
 
-		public static ConsoleWindow Instance { get; private set; }
-
 		public ConsoleWindow()
 		{
-			Instance = this;
 			InitializeComponent();
 		}
 

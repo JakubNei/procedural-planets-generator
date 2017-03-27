@@ -41,7 +41,7 @@ namespace MyEngine
 
 		public bool ShouldContinueRunning => gameWindow.IsStoppingOrStopped == false && ExitRequested == false;
 
-		CVar FpsThrottling => Debug.CVar("fps throttling enabled", true);
+		CVar FpsThrottling => Debug.GetCVar("fps throttling enabled", true);
 
 		// to simulate OpenTk.GameWindow functionalty, see it's source https://github.com/mono/opentk/blob/master/Source/OpenTK/GameWindow.cs
 		private MyGameWindow gameWindow;

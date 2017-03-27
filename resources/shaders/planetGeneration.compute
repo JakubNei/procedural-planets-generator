@@ -139,7 +139,7 @@ void main() {
 	
 
 
-	int verticeIndex = int(gl_GlobalInvocationId.x) + param_verticesStartIndexOffset;
+	int verticeIndex = int(gl_GlobalInvocationID.x) + param_verticesStartIndexOffset;
 	int tempVerticeIndex = verticeIndex;
 	int ix = 0;
 	int iy = 0;

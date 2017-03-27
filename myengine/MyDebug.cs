@@ -62,19 +62,15 @@ namespace MyEngine
 
 		Dictionary<string, CVar> nameToCVar = new Dictionary<string, CVar>();
 
-		public CVar CVar(string name, bool defaultValue = false)
+		public CVar GetCVar(string name, bool defaultValue = false)
 		{
 			CVar result;
 			if (!nameToCVar.TryGetValue(name, out result))
 			{
 				result = new CVar(this);
+				result.Bool = defaultValue;
 				result.name = name;
 				nameToCVar[name] = result;
-			}
-			if (result.hasDefaultValue == false)
-			{
-				result.Bool = defaultValue;
-				result.hasDefaultValue = true;
 			}
 			return result;
 		}
