@@ -9,6 +9,6 @@ namespace MyGame
 {
 	public static class CommonCVarsExtensions
 	{
-		public static CVar SmoothChunksEdgeNormals(this CommonCVars c) => c.GetCVar();
+		//public static CVar SmoothChunksEdgeNormals(this CommonCVars c) => c.GetCVar();
 	}
 }

@@ -130,9 +130,7 @@ uniform vec3 param_cornerPositionA;
 uniform vec3 param_cornerPositionB;
 uniform vec3 param_cornerPositionC;
 uniform int param_indiciesCount;
-
-
-
+uniform int param_verticesStartIndexOffset;
 
 
 
@@ -141,19 +139,19 @@ void main() {
 	
 
 
-	int id = int(gl_GlobalInvocationID.x);
-	int tempId = id;
+	int verticeIndex = int(gl_GlobalInvocationId.x) + param_verticesStartIndexOffset;
+	int tempVerticeIndex = verticeIndex;
 	int ix = 0;
 	int iy = 0;
 		
 	int param_numberOfVerticesOnLine = 1;
-	while(tempId >= param_numberOfVerticesOnLine && param_numberOfVerticesOnLine < param_numberOfVerticesOnEdge)
+	while(tempVerticeIndex >= param_numberOfVerticesOnLine && param_numberOfVerticesOnLine < param_numberOfVerticesOnEdge)
 	{
-		tempId -= param_numberOfVerticesOnLine;
+		tempVerticeIndex -= param_numberOfVerticesOnLine;
 		param_numberOfVerticesOnLine++;
 		iy++;
 	}
-	ix = tempId;
+	ix = tempVerticeIndex;
 
 	float x = 0;
 	float y = 0;
@@ -169,8 +167,6 @@ void main() {
 
 	p = normalize(p);
 
-	vec3 biomeSplatMapSample = texture2D(param_biomesSplatMap, uv).xyz;
-
 
 	double height = param_radiusMin;
 	
@@ -183,10 +179,10 @@ void main() {
 	p -= param_offsetFromPlanetCenter;
 
 	// DEBUG
-	//vec3 p = fromStruct(positions[id]);
+	//vec3 p = fromStruct(positions[verticeIndex]);
 	//p.x += 0.01f;
 
-	positions[id] = toStruct(p);
-	uvs[id] = toStruct(uv);
+	positions[verticeIndex] = toStruct(p);
+	uvs[verticeIndex] = toStruct(uv);
 }
 

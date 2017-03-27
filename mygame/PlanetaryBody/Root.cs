@@ -62,8 +62,6 @@ namespace MyGame.PlanetaryBody
 
 		public Shader computeShader;
 
-		//public Chunk.MeshGenerationService MeshGenerationService { get; private set; }
-
 		GenerationStats stats;
 
 		//ProceduralMath proceduralMath;
@@ -75,9 +73,6 @@ namespace MyGame.PlanetaryBody
 			perlin = new PerlinD(5646);
 			worley = new WorleyD(894984, WorleyD.DistanceFunction.Euclidian);
 
-			//MeshGenerationService = new Chunk.MeshGenerationService(entity.Debug);
-
-			Debug.CommonCVars.SmoothChunksEdgeNormals().ToogledByKey(OpenTK.Input.Key.N);
 
 			InitializeJobTemplate();
 		}
@@ -96,7 +91,6 @@ namespace MyGame.PlanetaryBody
 		{
 			return calestialPos.Normalized() * GetSurfaceHeight(calestialPos);
 		}
-
 
 
 		public double GetSurfaceHeight(Vector3d planetLocalPosition, int detailDensity = 1)
@@ -130,17 +124,23 @@ namespace MyGame.PlanetaryBody
 
 				height = chunk.GetHeight(chunkLocalPosition);
 			}
-			if (height == -1)
+
+
+			const bool getSurfaceHeightDebug = false;
+			if (getSurfaceHeightDebug)
 			{
-				height = RadiusMin;
-				if (chunk == null)
-					Scene.DebugShere(GetPosition(planetLocalPosition, height), 1000, new Vector4(1, 0, 0, 1));
+				if (height == -1)
+				{
+					height = RadiusMin;
+					if (chunk == null)
+						Scene.DebugShere(GetPosition(planetLocalPosition, height), 1000, new Vector4(1, 0, 0, 1));
+					else
+						Scene.DebugShere(GetPosition(planetLocalPosition, height), 1000, new Vector4(1, 1, 0, 1));
+				}
 				else
-					Scene.DebugShere(GetPosition(planetLocalPosition, height), 1000, new Vector4(1, 1, 0, 1));
-			}
-			else
-			{
-				Scene.DebugShere(GetPosition(planetLocalPosition, height), 1000, new Vector4(0, 1, 0, 1));
+				{
+					Scene.DebugShere(GetPosition(planetLocalPosition, height), 1000, new Vector4(0, 1, 0, 1));
+				}
 			}
 
 
@@ -477,7 +477,8 @@ namespace MyGame.PlanetaryBody
 		{
 			class JobTask
 			{
-				public Action<TData> action;
+				public Action<TData> normalAction;
+				public Action<TData, int, int> splittableAction; // splitCount, splitIndex
 				public WhereToRun whereToRun;
 
 				public TimeSpan timeTaken;
@@ -501,13 +502,15 @@ namespace MyGame.PlanetaryBody
 			{
 
 			}
-			public void AddTask(Action<TData> action)
+			public void AddSplittableTask(Action<TData, int, int> action) => AddSplittableTask(WhereToRun.DoesNotMatter, action);
+			public void AddSplittableTask(WhereToRun whereToRun, Action<TData, int, int> action)
 			{
-				AddTask(WhereToRun.DoesNotMatter, action);
+				tasksToRun.Add(new JobTask() { splittableAction = action, whereToRun = whereToRun });
 			}
+			public void AddTask(Action<TData> action) => AddTask(WhereToRun.DoesNotMatter, action);
 			public void AddTask(WhereToRun whereToRun, Action<TData> action)
 			{
-				tasksToRun.Add(new JobTask() { action = action, whereToRun = whereToRun });
+				tasksToRun.Add(new JobTask() { normalAction = action, whereToRun = whereToRun });
 			}
 			public IJob MakeInstanceWithData(TData data)
 			{
@@ -544,14 +547,14 @@ namespace MyGame.PlanetaryBody
 
 					var jobTask = parent.tasksToRun[currentTaskIndex];
 
-					if (jobTask.action != null)
+					if (jobTask.normalAction != null)
 					{
 						Action action = () =>
 						{
 							var stopWatch = Stopwatch.StartNew();
 							try
 							{
-								jobTask.action(data);
+								jobTask.normalAction(data);
 							}
 							catch (Exception e)
 							{
@@ -617,7 +620,7 @@ namespace MyGame.PlanetaryBody
 
 			computeShader = Factory.GetShader("shaders/planetGeneration.compute");
 
-			generationJobTemplate.AddTask(WhereToRun.GPUThread, (chunk) =>
+			generationJobTemplate.AddTask(WhereToRun.GPUThread, chunk =>
 			{
 				var mesh = chunk.renderer.Mesh;
 				config.SetTo(computeShaderUniforms);
@@ -628,6 +631,7 @@ namespace MyGame.PlanetaryBody
 				computeShaderUniforms.Set("param_cornerPositionB", chunk.NoElevationRange.b.ToVector3());
 				computeShaderUniforms.Set("param_cornerPositionC", chunk.NoElevationRange.c.ToVector3());
 				computeShaderUniforms.Set("param_indiciesCount", mesh.TriangleIndicies.Count);
+				computeShaderUniforms.Set("param_verticesStartIndexOffset", 0);
 
 				computeShaderUniforms.SendAllUniformsTo(computeShader.Uniforms);
 				computeShader.Bind();

@@ -223,12 +223,15 @@ void main()
 
 
 [FragmentShader]
+#line 227
 
 in data {
 	vec3 worldPos;
 	vec3 modelPos;
 	vec3 normal; 
-	flat vec2 uv; 
+	// has to be not interpolated, if it is interpolated there will be artefact on meridian
+	// the interpolation on meridian from 1 to 0 will cause whole splat map to be quickly interpolated on several meters
+	flat vec2 uv;
 	vec3 tangent;
 } i;
 
@@ -303,50 +306,74 @@ float rand(vec2 co){
 }
 
 
-bool TryBiome(vec3 biomeSplatMapSample, vec3 biomesSplatMapColor, sampler2D diffuseMap, sampler2D normalMap, out vec3 color, out vec3 normal)
+vec3 getBiomeColor(sampler2D diffuseMap)
 {
-	if(distance(biomeSplatMapSample, biomesSplatMapColor) > 0.2) return false;
 	vec3 pos = i.modelPos;
-
-	color = 
+	return
 		(
 			triPlanar(diffuseMap, pos, i.normal, 0.05) +
 			triPlanar(diffuseMap, pos, i.normal, 0.5) 
 		) / 2;
-
-	if(length(i.worldPos) < 200) {
-		normal = 
-			(
-				triPlanar(normalMap, pos, i.normal, 0.05) +
-				triPlanar(normalMap, pos, i.normal, 0.5) 
-			) / 2;
-	} else {
-		 normal = vec3(0.5, 0.5, 1);
-	}
-
-	return true;
+}
+vec3 getBiomeNormal(sampler2D normalMap)
+{
+	vec3 pos = i.modelPos;
+	return  
+		(
+			triPlanar(normalMap, pos, i.normal, 0.05) +
+			triPlanar(normalMap, pos, i.normal, 0.5) 
+		) / 2;
 }
 
-void getColor(out vec3 color, out vec3 normal) {
 
-	vec3 biomesSplatMapSample = texture2D(param_biomesSplatMap, i.uv).xyz;
+float getChannel(vec4 color, int channel)
+{
+	if(channel == 0) return color.x;
+	if(channel == 1) return color.y;
+	if(channel == 2) return color.z;
+	return color.w;
+}
+
+#define NORMAL_MAPPING_DISTANCE 1000.0
+
+void getColor(out vec3 color, out vec3 normal) {
 
 	// DEBUG
 	//color = biomesSplatMapSample; return;
 	//color = vec3(i.uv.x, 0, 0);	return;
-	
+	/*
+	AddBiome( \
+		color, \
+		normal, \
+		getChannel(texture2D(param_biomesSplatMap##ID##, i.uv), CHANNEL), \
+		param_biome##ID##CHANNEL##_diffuseMap, \
+		param_biome##ID##CHANNEL##_normalMap \
+	);
+	*/
 
-#define TRY_BIOME(A) if(TryBiome(biomesSplatMapSample, param_biome##A##_biomesSplatMapColor, param_biome##A##_diffuseMap, param_biome##A##_normalMap, color, normal)) return;
+	bool calculateNormal = length(i.worldPos) < NORMAL_MAPPING_DISTANCE;
 
-    TRY_BIOME(0)
-    TRY_BIOME(1)
-    TRY_BIOME(2)
-    TRY_BIOME(3)
-    TRY_BIOME(4)
-    TRY_BIOME(5)
-    TRY_BIOME(6)
-    TRY_BIOME(7)
-    TRY_BIOME(8)
+	float amount;
+
+#define ADD_BIOME(ID, CHANNEL) \
+	amount = getChannel(texture2D(param_biomesSplatMap##ID##, i.uv), CHANNEL); \
+	if(amount > 0) { \
+		color += amount * getBiomeColor(param_biome##ID##CHANNEL##_diffuseMap); \
+		if(calculateNormal) \
+			normal += amount * getBiomeNormal(param_biome##ID##CHANNEL##_normalMap); \
+	}
+
+    ADD_BIOME(0,0)
+    ADD_BIOME(0,1)
+    ADD_BIOME(0,2)
+    ADD_BIOME(0,3)
+    ADD_BIOME(1,0)
+    ADD_BIOME(1,1)
+    ADD_BIOME(1,2)
+    ADD_BIOME(1,3)
+
+    if(!calculateNormal)
+    	normal = vec3(0.5, 0.5, 1);
 
 }
 
@@ -364,7 +391,7 @@ void main()
 	getColor(color, normalColorFromTexture);
 
 	float distToCamera = length(i.worldPos);
-	float defaultNormalWeight = smoothstep(100, 200, distToCamera);
+	float defaultNormalWeight = smoothstep(NORMAL_MAPPING_DISTANCE * 0.9, NORMAL_MAPPING_DISTANCE, distToCamera);
 
 	if(defaultNormalWeight < 1) {
 		vec3 N = i.normal;
@@ -392,7 +419,7 @@ void main()
 	out_data = vec4(0);
 
 	//DEBUG
-	//out_color = vec4(vec3(1,0,0),1);
+	//out_color = vec4(vec3(defaultNormalWeight,0,0),1);
 	//out_color = vec4(i.uv,0,1);
 	//out_color = vec4(texture2D(param_baseHeightMap, i.uv).xyz, 1);
 	//out_color = vec4(vec3(param_finalPosWeight,0,0),1);

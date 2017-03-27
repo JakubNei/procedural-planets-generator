@@ -41,6 +41,7 @@ namespace MyEngine
 
 		public bool ShouldContinueRunning => gameWindow.IsStoppingOrStopped == false && ExitRequested == false;
 
+		CVar FpsThrottling => Debug.CVar("fps throttling enabled", true);
 
 		// to simulate OpenTk.GameWindow functionalty, see it's source https://github.com/mono/opentk/blob/master/Source/OpenTK/GameWindow.cs
 		private MyGameWindow gameWindow;
@@ -331,8 +332,16 @@ namespace MyEngine
 
 			EventSystem.Raise(new MyEngine.Events.FrameEnded(renderThreadTime));
 
-			// TEST
-			//while (renderThreadTime.CurrentFrameElapsedTimeFps > renderThreadTime.TargetFps) Thread.Sleep(5);
+			if (FpsThrottling)
+			{
+				var targetFps = renderThreadTime.TargetFps * 1.2;
+				var secondsWeCanSleep = 1 / targetFps - renderThreadTime.CurrentFrameElapsedSeconds;
+				if (secondsWeCanSleep > 0)
+				{
+					Debug.AddValue("theoretical unthrottled fps", renderThreadTime.CurrentFrameElapsedTimeFps + " fps");
+					Thread.Sleep((1000 * secondsWeCanSleep).FloorToInt());
+				}
+			}
 		}
 
 

@@ -12,7 +12,6 @@ namespace MyGame.PlanetaryBody
 	{
 		public double radiusMin;
 		public double noiseMultiplier;
-		public Texture2D biomesSplatMap;
 
 		public Texture2D baseHeightMap;
 		public double baseHeightMapMultiplier;
@@ -20,18 +19,29 @@ namespace MyGame.PlanetaryBody
 
 		public class BiomeData
 		{
-			public Vector3 biomesMapColor;
 			public Texture2D diffuse;
 			public Texture2D normal;
 		}
 
-		private List<BiomeData> biomes = new List<BiomeData>();
-
-		public void AddBiome(Vector3 biomesMapColor, Texture2D diffuse, Texture2D normal)
+		private Dictionary<int, Texture2D> splatMaps = new Dictionary<int, Texture2D>();
+		/// <summary>
+		/// Every splat map has 4 channels, every channel controls biome intensity.
+		/// splatMapTexture = splatMaps[floor(biome.id / 4)];
+		/// splatMapChannel = splatMaps[biome.id % 4];
+		/// </summary>
+		/// <param name="id"></param>
+		/// <param name="splatMap"></param>
+		public void AddControlSplatMap(int id, Texture2D splatMap)
 		{
-			biomes.Add(new BiomeData()
+			splatMaps.Add(id, splatMap);
+		}
+
+		private Dictionary<int, BiomeData> biomes = new Dictionary<int, BiomeData>();
+
+		public void AddBiome(int id, Texture2D diffuse, Texture2D normal)
+		{
+			biomes.Add(id, new BiomeData()
 			{
-				biomesMapColor = biomesMapColor,
 				diffuse = diffuse,
 				normal = normal,
 			});
@@ -41,17 +51,21 @@ namespace MyGame.PlanetaryBody
 		{
 			uniforms.Set("param_radiusMin", (double)radiusMin);
 			uniforms.Set("param_noiseMultiplier", (double)noiseMultiplier);
-			uniforms.Set("param_biomesSplatMap", biomesSplatMap);
 
 			uniforms.Set("param_baseHeightMap", baseHeightMap);
 			uniforms.Set("param_baseHeightMapMultiplier", (double)baseHeightMapMultiplier);
 
-			for (int i = 0; i < biomes.Count; i++)
+			foreach(var splatMap in splatMaps)
 			{
-				var biome = biomes[i];
-				uniforms.Set("param_biome" + i + "_biomesSplatMapColor", biome.biomesMapColor);
-				uniforms.Set("param_biome" + i + "_diffuseMap", biome.diffuse);
-				uniforms.Set("param_biome" + i + "_normalMap", biome.normal);
+				uniforms.Set("param_biomesSplatMap" + splatMap.Key, splatMap.Value);
+			}
+
+			foreach(var biome in biomes)
+			{
+				var splatMapTextureId = (biome.Key / 4.0).FloorToInt();
+				var splatMapTextureChannel = biome.Key % 4;
+				uniforms.Set("param_biome" + splatMapTextureId + "" + splatMapTextureChannel + "_diffuseMap", biome.Value.diffuse);
+				uniforms.Set("param_biome" + splatMapTextureId + "" + splatMapTextureChannel + "_normalMap", biome.Value.normal);
 			}
 		}
 	}

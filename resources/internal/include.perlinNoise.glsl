@@ -46,7 +46,7 @@ vec4 taylorInvSqrt(vec4 r)
 }
 
 float perlinNoise(vec3 v)
-  { 
+{ 
   const vec2  C = vec2(1.0/6.0, 1.0/3.0) ;
   const vec4  D = vec4(0.0, 0.5, 1.0, 2.0);
 
@@ -140,7 +140,7 @@ float perlinNoise(vec3 v)
 
 
 float perlinNoise(vec2 v)
-  {
+{
   const vec4 C = vec4(0.211324865405187,  // (3.0-sqrt(3.0))/6.0
                       0.366025403784439,  // 0.5*(sqrt(3.0)-1.0)
                      -0.577350269189626,  // -1.0 + 2.0 * C.x
