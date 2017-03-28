@@ -14,8 +14,9 @@ namespace MyEngine.Components
 
 		public Factory Factory => Entity.Factory;
 		public MyDebug Debug => Entity.Debug;
+		public ILog Log => Debug.Log;
 
-        public FileSystem FileSystem => Entity.FileSystem;
+		public FileSystem FileSystem => Entity.FileSystem;
 
 		public Events.EventSystem EventSystem => Entity.EventSystem;
 

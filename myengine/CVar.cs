@@ -36,7 +36,7 @@ namespace MyEngine
 
 		public OpenTK.Input.Key toogleKey = OpenTK.Input.Key.Unknown;
 
-		public event Action<CVar> OnChanged;
+		private event Action<CVar> OnChanged;
 
 		public CVar(string name, CVarFactory factory)
 		{
@@ -76,6 +76,14 @@ namespace MyEngine
 			factory.Log.Info($"{key} to toggle {Name}");
 			toogleKey = key;
 			return this;
+		}
+
+		public string ToSaveString()
+		{
+			if(toogleKey == OpenTK.Input.Key.Unknown)
+				return Name + " = " + Bool;
+			else
+				return Name + " = " + Bool + " = "+ toogleKey;
 		}
 
 		public static implicit operator bool(CVar cvar) => cvar.Bool;

@@ -23,7 +23,7 @@ namespace MyEngine
 		public FileSystem FileSystem => Scene.FileSystem;
 		public MyDebug Debug => Scene.Debug;
 		public Factory Factory => Scene.Factory;
-
+		public ILog Log => Debug.Log;
 		public IDependencyManager Dependency => Scene.Dependency;
 
 		public IReadOnlyList<IComponent> Components => components.AsReadOnly();
@@ -79,7 +79,7 @@ namespace MyEngine
 			{
 				if (GetComponent<T>() != null)
 				{
-					Debug.Warning("Attempting to add " + typeof(T) + " component, but " + typeof(ComponentSettingAttribute) + " allows only one component of this type per " + typeof(Entity) + ".");
+					Log.Warn("Attempting to add " + typeof(T) + " component, but " + typeof(ComponentSettingAttribute) + " allows only one component of this type per " + typeof(Entity) + ".");
 					return null;
 				}
 			}

@@ -20,7 +20,7 @@ namespace MyEngine
 		public InputSystem Input { get; private set; }
 
 		public MyDebug Debug { get; private set; }
-
+		public ILog Log => Debug.Log;
 		public FileSystem FileSystem { get; private set; } = new FileSystem("../Resources/");
 
 		List<SceneSystem> scenes = new List<SceneSystem>();
@@ -42,6 +42,7 @@ namespace MyEngine
 		public bool ShouldContinueRunning => gameWindow.IsStoppingOrStopped == false && ExitRequested == false;
 
 		CVar FpsThrottling => Debug.GetCVar("fps throttling enabled", true);
+		CVar PauseRenderPrepare => Debug.GetCVar("pause render prepare");
 
 		// to simulate OpenTk.GameWindow functionalty, see it's source https://github.com/mono/opentk/blob/master/Source/OpenTK/GameWindow.cs
 		private MyGameWindow gameWindow;
@@ -74,7 +75,7 @@ namespace MyEngine
 			Debug = new MyDebug(Input, FileSystem);
 			EventSystem = new Events.EventSystem();
 
-			Debug.Info("START"); // to have debug initialized before anything else
+			Log.Info("START"); // to have debug initialized before anything else
 
 			Dependency.Register(FileSystem, Debug, Input, EventSystem, this);
 			Dependency.BuildUp(this);
@@ -123,13 +124,13 @@ namespace MyEngine
 			};
 			Debug.CommonCVars.VSync().InitializeWith(false);*/
 
-			Debug.CommonCVars.Fullscreen().ToogledByKey(OpenTK.Input.Key.F).OnChanged += (cvar) =>
+			Debug.GetCVar("fullscreen").OnChangedAndNow((cvar) =>
 			{
 				if (cvar.Bool && WindowState != WindowState.Fullscreen)
 					WindowState = WindowState.Fullscreen;
 				else
 					WindowState = WindowState.Normal;
-			};
+			});
 
 
 			WindowTitle = defaultWindowTitle;
@@ -140,7 +141,7 @@ namespace MyEngine
 			{
 				if (r == StringName.Extensions) break;
 				var str = GL.GetString(r); MyGL.Check();
-				Debug.Info(r.ToString() + ": " + str);
+				Log.Info(r.ToString() + ": " + str);
 			}
 
 			// Other state
@@ -176,7 +177,7 @@ namespace MyEngine
 				if (myVersion == resizeEventVersion)
 				{
 					var resizeEvent = new Events.WindowResized(gameWindow.Width, gameWindow.Height);
-					Debug.Info("Window resized to: width:" + resizeEvent.NewPixelWidth + " height:" + resizeEvent.NewPixelHeight);
+					Log.Info("Window resized to: width:" + resizeEvent.NewPixelWidth + " height:" + resizeEvent.NewPixelHeight);
 					EventSystem.Raise(resizeEvent);
 				}
 			});
@@ -217,7 +218,7 @@ namespace MyEngine
 		{
 			renderManagerPrepareNext.Wait();
 			renderManagerPrepareNext.Reset();
-			if (Debug.CommonCVars.PauseRenderPrepare())
+			if (PauseRenderPrepare)
 			{
 				Debug.AddValue("rendering / render prepare", "paused");
 			}
@@ -264,7 +265,7 @@ namespace MyEngine
 			}
 			catch (Exception e)
 			{
-				Debug.Error(e);
+				Log.Error(e);
 			}
 
 			this.WindowTitle = defaultWindowTitle + " " + renderThreadTime;
@@ -289,7 +290,7 @@ namespace MyEngine
 
 			UpdateGPUMemoryInfo();
 
-			if (Debug.CommonCVars.ReloadAllShaders().EatBoolIfTrue())
+			if (Debug.GetCVar("reload all shaders").EatBoolIfTrue())
 				Factory.ReloadAllShaders();
 
 			ubo.engine.totalElapsedSecondsSinceEngineStart = (float)stopwatchSinceStart.Elapsed.TotalSeconds;
@@ -299,7 +300,7 @@ namespace MyEngine
 			//GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit); My.Check();
 			EventSystem.Raise(new MyEngine.Events.PreRenderUpdate(renderThreadTime));
 
-			if (Debug.CommonCVars.PauseRenderPrepare() == false)
+			if (PauseRenderPrepare == false)
 			{
 				renderManagerBackReady.Wait();
 				renderManagerBackReady.Reset();

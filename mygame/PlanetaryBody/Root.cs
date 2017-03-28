@@ -260,7 +260,7 @@ namespace MyGame.PlanetaryBody
 			}
 			else
 			{
-				Debug.Warning("recursion depth is over: " + SubdivisionMaxRecurisonDepth);
+				Log.Warn("recursion depth is over: " + SubdivisionMaxRecurisonDepth);
 			}
 		}
 
@@ -293,7 +293,7 @@ namespace MyGame.PlanetaryBody
 			}
 			else
 			{
-				Debug.Warning("recursion depth is over: " + SubdivisionMaxRecurisonDepth);
+				Log.Warn("recursion depth is over: " + SubdivisionMaxRecurisonDepth);
 				DoRenderChunk(chunk);
 			}
 		}

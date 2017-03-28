@@ -19,7 +19,7 @@ namespace MyEngine
 			return Debug.GetCVar(name);
 		}
 	}
-
+	/*
 	public static class CommonCVarsExtensions
 	{
 		public static CVar ShowDebugForm(this CommonCVars c) => c.GetCVar();
@@ -32,8 +32,7 @@ namespace MyEngine
 		public static CVar DebugDrawNormalBufferContents(this CommonCVars c) => c.GetCVar();
 		public static CVar DebugRenderWithLines(this CommonCVars c) => c.GetCVar();
 		public static CVar Fullscreen(this CommonCVars c) => c.GetCVar();
-
-		public static CVar VSync(this CommonCVars c) => c.GetCVar();
-		
+		public static CVar VSync(this CommonCVars c) => c.GetCVar();		
 	}
+	*/
 }

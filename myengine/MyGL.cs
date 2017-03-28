@@ -11,24 +11,24 @@ using OpenTK;
 
 namespace MyEngine
 {
-    public static class MyGL
-    {
+	public static class MyGL
+	{
 		//[Conditional("DEBUG")]
-        public static void Check()
-        {
+		public static void Check()
+		{
 			return;
 
-            ErrorCode err;
-            while ((err = GL.GetError()) != ErrorCode.NoError)
-            {
-                MyDebug.Instance.Error("GL Error: " + err);
-                throw new Exception("GL Error: " + err);
-            }
-        }
+			ErrorCode err;
+			while ((err = GL.GetError()) != ErrorCode.NoError)
+			{
+				MyDebug.Instance.Log.Error("GL Error: " + err);
+				throw new Exception("GL Error: " + err);
+			}
+		}
 
-        public static void Uniform3(int location, Vector3d vec)
-        {
-            GL.Uniform3(location, vec.X, vec.Y, vec.Z);
-        }
-    }
+		public static void Uniform3(int location, Vector3d vec)
+		{
+			GL.Uniform3(location, vec.X, vec.Y, vec.Z);
+		}
+	}
 }

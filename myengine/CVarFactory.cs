@@ -37,11 +37,11 @@ namespace MyEngine
 			}
 
 
-			var reader = new StreamReader(configFile, Encoding.Unicode);
+			var reader = new StreamReader(configFile, Encoding.UTF8);
 			var text = reader.ReadToEnd();
 			reader.Close();
 
-			var lines = text.Split(new char[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+			var lines = text.Split(new char[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
 
 			int i = 0;
 			foreach (var eLine in lines)
@@ -50,7 +50,7 @@ namespace MyEngine
 				var line = eLine.Trim();
 				if (line.StartsWith("/") || line.StartsWith("#")) continue; // comment
 				var parts = line.Split(new char[] { '=' });
-				if (parts.Length != 2)
+				if (parts.Length < 2)
 				{
 					Log.Warn("found badly formatted line #" + i + " = " + line);
 					continue;
@@ -60,9 +60,17 @@ namespace MyEngine
 				var value = parts[1].Trim();
 
 				bool.TryParse(value, out bool typedValue);
+ 
+				var cvar = GetCVar(name, typedValue);
 
-				Log.Info("loaded cvar: '" + name + " = " + value + "'");
-				GetCVar(name, typedValue);
+				if (parts.Length > 2)
+				{
+					var key = parts[2].Trim();
+					if (Enum.TryParse<OpenTK.Input.Key>(key, out OpenTK.Input.Key keyTyped))
+						cvar.ToogledByKey(keyTyped);
+				}
+
+				Log.Info("loaded cvar: '" + cvar.ToSaveString() + "'");
 			}
 		}
 
@@ -82,10 +90,11 @@ namespace MyEngine
 			}
 			if (configFile.Length > 0)
 				configFile.Position = configFile.Length - 1; // to the end
-			var writer = new StreamWriter(configFile, Encoding.Unicode);
+			var writer = new StreamWriter(configFile, Encoding.UTF8);
 
-			var line = cvar.Name + " = " + cvar.Bool;
-			writer.WriteLine(line);
+			var line = cvar.ToSaveString();
+			writer.WriteLine();
+			writer.Write(line);
 
 			writer.Flush();
 			writer.Close();

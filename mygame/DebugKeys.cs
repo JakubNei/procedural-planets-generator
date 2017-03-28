@@ -9,6 +9,7 @@ using OpenTK.Input;
 
 using MyEngine;
 using MyEngine.Components;
+using Neitri;
 
 namespace MyGame
 {
@@ -16,6 +17,7 @@ namespace MyGame
 	{
 		SceneSystem scene;
 		MyDebug debug;
+		public ILog Log => debug.Log;
 
 		public DebugKeys(SceneSystem scene, MyDebug debug)
 		{
@@ -42,7 +44,7 @@ namespace MyGame
 			if (newKeyTG != keyTG)
 			{
 				keyTG = newKeyTG;
-				debug.Info("keyTG = " + keyTG);
+				Log.Info("keyTG = " + keyTG);
 			}
 
 			var newKeyZH = keyZH;
@@ -52,7 +54,7 @@ namespace MyGame
 			if (newKeyZH != keyZH)
 			{
 				keyZH = newKeyZH;
-				debug.Info("keyZH = " + keyZH);
+				Log.Info("keyZH = " + keyZH);
 			}
 			*/
 			var newKeyUJ = keyUJ;
@@ -62,7 +64,7 @@ namespace MyGame
 			if (newKeyUJ != keyUJ)
 			{
 				keyUJ = newKeyUJ;
-				debug.Info("keyUJ = " + keyUJ);
+				Log.Info("keyUJ = " + keyUJ);
 			}
 
 			var newKeyIK = keyIK;
@@ -72,7 +74,7 @@ namespace MyGame
 			if (newKeyIK != keyIK)
 			{
 				keyIK = newKeyIK;
-				debug.Info("keyIK = " + keyIK);
+				Log.Info("keyIK = " + keyIK);
 			}
 			/*
 			var newKeyOL = keyOL;
@@ -82,7 +84,7 @@ namespace MyGame
 			if (newKeyOL != keyOL)
 			{
 				keyOL = newKeyOL;
-				debug.Info("keyOL = " + keyOL);
+				Log.Info("keyOL = " + keyOL);
 			}			
 			*/
 		}

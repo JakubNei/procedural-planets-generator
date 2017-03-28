@@ -24,6 +24,8 @@ namespace MyEngine
 
 		class LoadJob
 		{
+			public ILog Log => debug.Log;
+
 			[Dependency]
 			FileSystem FileSystem;
 
@@ -149,7 +151,7 @@ namespace MyEngine
 
 				if (appendToEntity != null) return EndObjPart(appendToEntity);
 
-				debug.Info("Loaded " + file + " vertices:" + verticesMesh.Count + " faces:" + triangleIndiciesMesh.Count / 3);
+				Log.Info("Loaded " + file + " vertices:" + verticesMesh.Count + " faces:" + triangleIndiciesMesh.Count / 3);
 
 				return EndMesh();
 			}
@@ -162,7 +164,7 @@ namespace MyEngine
 				mesh.UVs.SetData(uvsMesh);
 				mesh.TriangleIndicies.SetData(triangleIndiciesMesh);
 
-				if (failedParse > 0) debug.Warning("Failed to parse data " + failedParse + " times");
+				if (failedParse > 0) Log.Warn("Failed to parse data " + failedParse + " times");
 				failedParse = 0;
 
 				if (gotNormal) mesh.Normals.SetData(normalsMesh);

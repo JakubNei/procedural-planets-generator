@@ -41,7 +41,7 @@ namespace MyEngine
 		public int ShaderProgramHandle { get; private set; }
 
 		readonly MyDebug debug;
-
+		public ILog Log => debug.Log;
 		Dictionary<string, int> cachedUniformLocations = new Dictionary<string, int>();
 
 		MyFile file;
@@ -67,7 +67,7 @@ namespace MyEngine
 
 			if (builder.buildResults.Count == 0)
 			{
-				debug.Error("no shader parts were found, possible part markers are: " + Enum.GetNames(typeof(ShaderType)).Select(s => "[" + s + "]").Join(" "));
+				Log.Error("no shader parts were found, possible part markers are: " + Enum.GetNames(typeof(ShaderType)).Select(s => "[" + s + "]").Join(" "));
 			}
 
 			foreach (var r in builder.buildResults)
@@ -79,7 +79,7 @@ namespace MyEngine
 
 			if (success)
 			{
-				debug.Info(typeof(Shader) + " " + file + " loaded successfully");
+				Log.Info(typeof(Shader) + " " + file + " loaded successfully");
 				LoadState = State.LoadedSuccess;
 				Version++;
 			}
@@ -118,7 +118,7 @@ namespace MyEngine
 			}
 			else if (shouldReload)
 			{
-				debug.Info("Reloading " + file.VirtualPath);
+				Log.Info("Reloading " + file.VirtualPath);
 				Dispose();
 				Load();
 				shouldReload = false;
@@ -151,7 +151,7 @@ namespace MyEngine
 			GL.GetShaderInfoLog(handle, out logInfo); MyGL.Check();
 			if (logInfo.Length > 0)
 			{
-				debug.Error($"Error occured during compilation of {type} from '{resource}'\n{logInfo}");
+				Log.Error($"Error occured during compilation of {type} from '{resource}'\n{logInfo}");
 			}
 
 			int statusCode = 0;
@@ -159,7 +159,7 @@ namespace MyEngine
 			if (statusCode != 1)
 			{
 				var error = GL.GetShaderInfoLog(handle); MyGL.Check();
-				//debug.Error(type.ToString() + " :: " + source + "\n" + error + "\n in file: " + resource);
+				//Log.Error(type.ToString() + " :: " + source + "\n" + error + "\n in file: " + resource);
 				return false;
 			}
 
@@ -176,7 +176,7 @@ namespace MyEngine
 			if (statusCode != 1)
 			{
 				var infoLog = GL.GetProgramInfoLog(ShaderProgramHandle); MyGL.Check();
-				debug.Error(n + "\n" + infoLog);
+				Log.Error(n + "\n" + infoLog);
 			}
 		}
 
@@ -204,7 +204,7 @@ namespace MyEngine
 			var location = GL.GetUniformBlockIndex(ShaderProgramHandle, name); MyGL.Check();
 			if (location == -1)
 			{
-				debug.Warning(file + ", uniform block index " + name + " not found ");
+				Log.Warn(file + ", uniform block index " + name + " not found ");
 				return false;
 			}
 			GL.UniformBlockBinding(ShaderProgramHandle, location, uniformBufferIndex); MyGL.Check();
@@ -219,7 +219,7 @@ namespace MyEngine
 				location = GL.GetUniformLocation(ShaderProgramHandle, name); MyGL.Check();
 				if (location == -1)
 				{
-					debug.Warning(file + ", uniform " + name + " not found ");
+					Log.Warn(file + ", uniform " + name + " not found ");
 				}
 				cachedUniformLocations[name] = location;
 			}

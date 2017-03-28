@@ -1,4 +1,5 @@
 ﻿using MyEngine;
+using Neitri;
 using OpenTK;
 using System;
 using System.Collections.Generic;
@@ -23,6 +24,7 @@ namespace MyGame
 		SceneSystem scene;
 		Factory Factory => scene.Factory;
 		MyDebug Debug => scene.Debug;
+		ILog Log => Debug.Log;
 
 		public Cubemap cubemap { get; private set; }
 
@@ -77,7 +79,7 @@ namespace MyGame
 			//var projection = Matrix4.CreatePerspectiveFieldOfView(60, 1, 0, 100);
 			var time = new System.Diagnostics.Stopwatch();
 			time.Start();
-			Debug.Info("start");
+			Log.Info("start");
 
 			var faces = new[] {
 				new {
@@ -143,7 +145,7 @@ namespace MyGame
 				}
 			}
 
-			Debug.Info("done in " + time.Elapsed.TotalSeconds + " seconds");
+			Log.Info("done in " + time.Elapsed.TotalSeconds + " seconds");
 		}
 	}
 }

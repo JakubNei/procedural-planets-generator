@@ -26,19 +26,15 @@ namespace MyEngine
 
 		class TraceListener : System.Diagnostics.TraceListener
 		{
-			MyDebug debug;
-			public TraceListener(MyDebug debug)
-			{
-				this.debug = debug;
-			}
+			public ILog Log { get; set; }
 			public override void Write(string message)
 			{
-				debug.Info(message);
+				Log.Info(message);
 			}
 
 			public override void WriteLine(string message)
 			{
-				debug.Info(message);
+				Log.Info(message);
 			}
 		}
 
@@ -54,7 +50,7 @@ namespace MyEngine
 			CommonCVars = new CommonCVars(this);
 			AddCommonCvars();
 
-			System.Diagnostics.Debug.Listeners.Add(new TraceListener(this));
+			System.Diagnostics.Debug.Listeners.Add(new TraceListener() { Log = Log });
 		}
 
 
@@ -67,6 +63,7 @@ namespace MyEngine
 		Dictionary<string, TickStats> nameToTickStat = new Dictionary<string, TickStats>();
 
 		CVarFactory cvars;
+
 		public CVar GetCVar(string name, bool defaultValue = false) => cvars.GetCVar(name, defaultValue);
 
 		public CVar GetCVar(string name) => cvars.GetCVar(name);
@@ -90,21 +87,12 @@ namespace MyEngine
 
 		void AddCommonCvars()
 		{
-			CommonCVars.ShowDebugForm().ToogledByKey(OpenTK.Input.Key.F1).OnChanged += (cvar) =>
+			CommonCVars.GetCVar("debug show debug form").ToogledByKey(OpenTK.Input.Key.F1).OnChangedAndNow((cvar) =>
 			{
 				if (debugForm == null) debugForm = new DebugForm();
 				if (cvar.Bool) debugForm.Show();
 				else debugForm.Hide();
-			};
-			CommonCVars.PauseRenderPrepare().ToogledByKey(OpenTK.Input.Key.F4);
-			CommonCVars.ReloadAllShaders().ToogledByKey(OpenTK.Input.Key.F5);
-			CommonCVars.ShadowsDisabled().ToogledByKey(OpenTK.Input.Key.F6);
-			CommonCVars.DrawDebugBounds().ToogledByKey(OpenTK.Input.Key.F7);
-			CommonCVars.EnablePostProcessEffects().ToogledByKey(OpenTK.Input.Key.F8);
-			CommonCVars.DebugDrawGBufferContents().ToogledByKey(OpenTK.Input.Key.F9);
-			CommonCVars.DebugDrawNormalBufferContents().ToogledByKey(OpenTK.Input.Key.F10);
-			CommonCVars.DebugRenderWithLines().ToogledByKey(OpenTK.Input.Key.F11);
-
+			});
 		}
 
 
@@ -129,20 +117,6 @@ namespace MyEngine
 		}
 
 
-		public void Info(object obj)
-		{
-			Log.Info(obj);
-		}
-
-		public void Warning(object obj)
-		{
-			Log.Warn(obj);
-		}
-
-		public void Error(object obj)
-		{
-			Log.Error(obj);
-		}
 
 		public void Pause()
 		{

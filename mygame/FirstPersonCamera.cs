@@ -33,7 +33,7 @@ namespace MyGame
 		Vector3 walkOnSphere_vectorForward;
 		bool walkOnShere_start;
 
-		CVar WalkOnPlanet => Debug.GetCVar("walkOnPlanet");
+		CVar WalkOnPlanet => Debug.GetCVar("walk on planet");
 
 		public ProceduralPlanets planets;
 		const bool moveCameraToSurfaceOnStart = false;
@@ -47,13 +47,13 @@ namespace MyGame
 		{
 			Input.LockCursor = disabledInput;
 
-			WalkOnPlanet.ToogledByKey(Key.G).OnChanged += (cvar) =>
+			WalkOnPlanet.ToogledByKey(Key.G).OnChangedAndNow((cvar) =>
 			{
 				if (cvar.Bool)
 				{
 					walkOnShere_start = true;
 				}
-			};
+			});
 
 			// Transform.Rotation = QuaternionUtility.LookRotation(Constants.Vector3Forward, Constants.Vector3Up);
 
@@ -268,7 +268,7 @@ namespace MyGame
 
 			Transform.Position = position; // += Entity.Transform.Position.Towards(position).ToVector3d() * deltaTime * 10;
 
-			//Debug.Info(entity.transform.position);
+			//Log.Info(entity.transform.position);
 
 
 		}

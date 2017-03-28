@@ -24,14 +24,14 @@ namespace MyEngine
 		public Cubemap SkyboxCubeMap { get; set; }
 		Shader FinalDrawShader => Factory.GetShader("internal/finalDraw.glsl");
 
-		public bool DrawLines { get { return debug.CommonCVars.DebugRenderWithLines().Bool; } }
-		public bool EnablePostProcessEffects { get { return debug.CommonCVars.EnablePostProcessEffects().Bool; } }
-		public bool DebugBounds { get { return debug.CommonCVars.DrawDebugBounds().Bool; } }
-		public bool ShadowsEnabled { get { return debug.CommonCVars.ShadowsDisabled().Bool == false; } }
+		public bool DrawLines { get { return debug.GetCVar("debug draw lines"); } }
+		public bool EnablePostProcessEffects { get { return debug.GetCVar("enable post process effects"); } }
+		public bool DebugBounds { get { return debug.GetCVar("debug draw mesh bouding boxes"); } }
+		public bool ShadowsEnabled { get { return debug.GetCVar("shadows enabled"); } }
 
 		Factory Factory => Factory.Instance;
 		readonly MyDebug debug;
-
+		ILog Log => debug.Log;
 		CVar enableCulling => debug.GetCVar("enable culling", true);
 		CVar enableRasterizerRasterization => debug.GetCVar("enable rasterizer rasterization", true);
 		CVar enableRasterizerCulling => debug.GetCVar("enable rasterizer culling", true);
@@ -94,13 +94,13 @@ namespace MyEngine
 
 			if (DebugBounds) RenderDebugBounds(ubo, camera);
 
-			if (debug.CommonCVars.DebugDrawNormalBufferContents().Bool) GBuffer.DebugDrawNormal();
-			if (debug.CommonCVars.DebugDrawGBufferContents().Bool) GBuffer.DebugDrawContents();
+			if (debug.GetCVar("debug draw normal buffer contents")) GBuffer.DebugDrawNormal();
+			if (debug.GetCVar("debug draw gbuffer contents")) GBuffer.DebugDrawContents();
 			//if (drawShadowMapContents) DebugDrawTexture(shadowMap.depthMap, new Vector4(0.5f, 0.5f, 1, 1), new Vector4(0.5f,0.5f,0,1), 1, 0);
 
 			ErrorCode glError;
 			while ((glError = GL.GetError()) != ErrorCode.NoError)
-				debug.Error("GL Error: " + glError);
+				Log.Error("GL Error: " + glError);
 		}
 
 		private void RenderGBuffer(UniformBlock ubo, Camera camera)

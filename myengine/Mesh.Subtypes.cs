@@ -270,7 +270,7 @@ namespace MyEngine
 				var size = NumberOfElements * DataSizeOfOneElementInBytes;
 				GL.BufferData(GL_BufferTarget, size, arr, BufferUsageHint.StaticDraw); MyGL.Check(); // BufferUsageHint explained: http://www.informit.com/articles/article.aspx?p=1377833&seqNum=7
 				GL.GetBufferParameter(GL_BufferTarget, BufferParameterName.BufferSize, out sizeFromGpu); MyGL.Check();
-				// if (size != sizeFromGpu) Debug.Error(myName + " size mismatch size=" + GL_BufferTarget + " sizeFromGpu=" + sizeFromGpu);
+				// if (size != sizeFromGpu) Log.Error(myName + " size mismatch size=" + GL_BufferTarget + " sizeFromGpu=" + sizeFromGpu);
 				GL.BindBuffer(GL_BufferTarget, 0);
 			}
 
