@@ -6,16 +6,28 @@ using System.Threading.Tasks;
 
 namespace MyEngine
 {
+	public enum CvarValueType
+	{
+		NotSet,
+		Bool,
+		Number,
+	}
 
 	public class CVar
 	{
 		//public dynamic Value { get; set; }
 		public readonly string Name;
 
-		bool _bool;
+
 
 		CVarFactory factory;
 
+
+		public CvarValueType ValueType { get; private set; }
+
+		public bool HasValue => ValueType != CvarValueType.NotSet;
+
+		bool _bool = false;
 		public bool Bool
 		{
 			get
@@ -24,6 +36,7 @@ namespace MyEngine
 			}
 			set
 			{
+				ValueType = CvarValueType.Bool;
 				if (_bool != value)
 				{
 					_bool = value;
@@ -33,8 +46,27 @@ namespace MyEngine
 			}
 		}
 
+		float _number = 0;
+		public float Number
+		{
+			get
+			{
+				return _number;
+			}
+			set
+			{
+				ValueType = CvarValueType.Number;
+				if (_number != value)
+				{
+					_number = value;
+					factory.Log.Equals(Name + " changed to: " + value);
+					OnChanged?.Invoke(this);
+				}
+			}
+		}
 
-		public OpenTK.Input.Key toogleKey = OpenTK.Input.Key.Unknown;
+
+		public OpenTK.Input.Key ToogleKey { get; set; } = OpenTK.Input.Key.Unknown;
 
 		private event Action<CVar> OnChanged;
 
@@ -73,17 +105,9 @@ namespace MyEngine
 
 		public CVar ToogledByKey(OpenTK.Input.Key key)
 		{
-			factory.Log.Info($"{key} to toggle {Name}");
-			toogleKey = key;
+			factory.Log.Info($"{key} to toggle '{Name}'");
+			ToogleKey = key;
 			return this;
-		}
-
-		public string ToSaveString()
-		{
-			if(toogleKey == OpenTK.Input.Key.Unknown)
-				return Name + " = " + Bool;
-			else
-				return Name + " = " + Bool + " = "+ toogleKey;
 		}
 
 		public static implicit operator bool(CVar cvar) => cvar.Bool;

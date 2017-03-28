@@ -15,8 +15,18 @@ namespace MyEngine
 
 		public IReadOnlyDictionary<string, CVar> NameToCvar => nameToCVar;
 
-		bool doSaveChangesOnNewCvar = false;
+		bool doSaveNewCvars = false;
 		public readonly ILog Log;
+
+
+		struct LineHolder
+		{
+			public string dataPart;
+			public string commentPart;
+			public CVar associatedCvar;
+		}
+		List<LineHolder> lines = new List<LineHolder>();
+
 
 		Func<Stream> configFileFactory;
 		public CVarFactory(Func<Stream> configFileFactory, ILog log)
@@ -24,7 +34,7 @@ namespace MyEngine
 			this.Log = log;
 			this.configFileFactory = configFileFactory;
 			TryReadConfig();
-			doSaveChangesOnNewCvar = true;
+			doSaveNewCvars = true;
 		}
 
 		void TryReadConfig()
@@ -36,83 +46,130 @@ namespace MyEngine
 				return;
 			}
 
-
+			configFile.Position = 0;
 			var reader = new StreamReader(configFile, Encoding.UTF8);
-			var text = reader.ReadToEnd();
+			var allText = reader.ReadToEnd();
 			reader.Close();
 
-			var lines = text.Split(new char[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+			var textLines = allText.Split(new char[] { '\r' });
 
-			int i = 0;
-			foreach (var eLine in lines)
+			int lineNumber = 0;
+			foreach (var _line in textLines)
 			{
-				i++;
-				var line = eLine.Trim();
-				if (line.StartsWith("/") || line.StartsWith("#")) continue; // comment
-				var parts = line.Split(new char[] { '=' });
-				if (parts.Length < 2)
+				lineNumber++;
+
+				CVar cvar = null;
+				string dataPart = _line.Trim();
+				string commentPart = "";
+
+				var commentIndex = dataPart.IndexOfAny(new char[] { '#' }); // ab#c
+				if (commentIndex != -1) // 2
 				{
-					Log.Warn("found badly formatted line #" + i + " = " + line);
-					continue;
+					commentPart = dataPart.Trim().Substring(commentIndex); // #c
+					dataPart = dataPart.Trim().Substring(0, commentIndex); // ab
 				}
 
-				var name = parts[0].Trim();
-				var value = parts[1].Trim();
-
-				bool.TryParse(value, out bool typedValue);
- 
-				var cvar = GetCVar(name, typedValue);
-
-				if (parts.Length > 2)
+				if (dataPart.IsNullOrEmptyOrWhiteSpace() == false)
 				{
-					var key = parts[2].Trim();
-					if (Enum.TryParse<OpenTK.Input.Key>(key, out OpenTK.Input.Key keyTyped))
-						cvar.ToogledByKey(keyTyped);
+					var dataParts = dataPart.Split(new char[] { '=' });
+					if (dataParts.Length < 2)
+					{
+						Log.Warn("found badly formatted data on line " + lineNumber + " '" + dataPart + "'");
+						continue;
+					}
+
+					var name = dataParts[0].Trim();
+					cvar = GetCVar(name);
+
+					var value = dataParts[1].Trim();
+					if (value == "not set")
+					{
+
+					}
+					else if (bool.TryParse(value, out bool typedBoolValue))
+					{
+						cvar.Bool = typedBoolValue;
+					}
+					else if (float.TryParse(value, out float typedFloatValue))
+					{
+						cvar.Number = typedFloatValue;
+					}
+
+					if (dataParts.Length > 2)
+					{
+						var toggleKey = dataParts[2].Trim();
+						if (Enum.TryParse<OpenTK.Input.Key>(toggleKey, out OpenTK.Input.Key keyTyped))
+							cvar.ToogledByKey(keyTyped);
+						else
+							Log.Warn("invalid toggle key for cvar: " + toggleKey);
+					}
+
+					Log.Info("loaded cvar: '" + ToSaveString(cvar) + "'");
 				}
 
-				Log.Info("loaded cvar: '" + cvar.ToSaveString() + "'");
+				lines.Add(new LineHolder() { associatedCvar = cvar, commentPart = commentPart, dataPart = dataPart });
 			}
+
+			SaveData();
+		}
+		private string ToSaveString(CVar cvar)
+		{
+			var s = cvar.Name + " = ";
+
+			if (cvar.ValueType == CvarValueType.NotSet) s += "not set";
+			else if (cvar.ValueType == CvarValueType.Bool) s += cvar.Bool;
+			else if (cvar.ValueType == CvarValueType.Number) s += cvar.Number;
+
+			if (cvar.ToogleKey != OpenTK.Input.Key.Unknown) s += " = " + cvar.ToogleKey;
+
+			return s;
 		}
 
+
+		private void SaveData()
+		{
+			var configFile = configFileFactory();
+			if (!configFile.CanSeek)
+			{
+				Log.Fatal("can not seek config file");
+				return;
+			}
+			if (!configFile.CanWrite)
+			{
+				Log.Fatal("can not write to config file");
+				return;
+			}
+
+			configFile.Position = 0;
+			var w = new StreamWriter(configFile, Encoding.UTF8);
+
+			foreach (var line in lines)
+			{
+				var l = "";
+				if (line.associatedCvar != null) l += ToSaveString(line.associatedCvar) + " ";
+				l += line.commentPart;
+				w.WriteLine(l);
+			}
+			w.Flush();
+			if (w.BaseStream.Length > w.BaseStream.Position)
+			{
+				var c = w.BaseStream.Length - w.BaseStream.Position;
+				while (c-- > 0)
+					w.Flush();
+				w.Flush();
+			}
+			w.Close();
+		}
 
 		private void SaveNewCvar(CVar cvar)
 		{
-			var configFile = configFileFactory();
-			if (!configFile.CanWrite)
+			lines.Add(new LineHolder()
 			{
-				Log.Fatal("can not save new cvar");
-				return;
-			}
-			if (!configFile.CanSeek)
-			{
-				Log.Fatal("can not seek");
-				return;
-			}
-			if (configFile.Length > 0)
-				configFile.Position = configFile.Length - 1; // to the end
-			var writer = new StreamWriter(configFile, Encoding.UTF8);
-
-			var line = cvar.ToSaveString();
-			writer.WriteLine();
-			writer.Write(line);
-
-			writer.Flush();
-			writer.Close();
-
-			Log.Info("saved cvar: '" + line + "'");
-		}
-
-		public CVar GetCVar(string name, bool defaultValue = false)
-		{
-			CVar cvar;
-			if (!nameToCVar.TryGetValue(name, out cvar))
-			{
-				cvar = new CVar(name, this);
-				cvar.Bool = defaultValue;
-				nameToCVar[name] = cvar;
-				if (doSaveChangesOnNewCvar) SaveNewCvar(cvar);
-			}
-			return cvar;
+				dataPart = ToSaveString(cvar),
+				associatedCvar = cvar,
+				commentPart = "",
+			});
+			SaveData();
 		}
 
 		public CVar GetCVar(string name)
@@ -122,10 +179,36 @@ namespace MyEngine
 			{
 				cvar = new CVar(name, this);
 				nameToCVar[name] = cvar;
-				if (doSaveChangesOnNewCvar) SaveNewCvar(cvar);
+				if (doSaveNewCvars) SaveNewCvar(cvar);
 			}
 			return cvar;
 		}
+		public CVar GetCVar(string name, bool defaultValue = false)
+		{
+			CVar cvar;
+			if (!nameToCVar.TryGetValue(name, out cvar))
+			{
+				cvar = new CVar(name, this);
+				cvar.Bool = defaultValue;
+				nameToCVar[name] = cvar;
+				if (doSaveNewCvars) SaveNewCvar(cvar);
+			}
+			return cvar;
+		}
+		public CVar GetCVar(string name, float defaultValue = 0)
+		{
+			CVar cvar;
+			if (!nameToCVar.TryGetValue(name, out cvar))
+			{
+				cvar = new CVar(name, this);
+				cvar.Number = defaultValue;
+				nameToCVar[name] = cvar;
+				if (doSaveNewCvars) SaveNewCvar(cvar);
+			}
+			return cvar;
+		}
+
+
 
 	}
 }

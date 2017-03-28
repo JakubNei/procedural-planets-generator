@@ -60,7 +60,7 @@ namespace MyEngine
 				cvarValuesWatcher.OnAdded += (key, item) =>
 				{
 					items.Add(new ListViewItem(new string[] {
-								item.toogleKey == OpenTK.Input.Key.Unknown ? string.Empty : item.toogleKey.ToString(),
+								item.ToogleKey == OpenTK.Input.Key.Unknown ? string.Empty : item.ToogleKey.ToString(),
 								item.Name,
 								item.Bool.ToString()
 							})
@@ -69,7 +69,7 @@ namespace MyEngine
 				cvarValuesWatcher.OnUpdated += (key, item) =>
 				{
 					var subItems = items.OfType<ListViewItem>().First(i => i.Tag == item).SubItems;
-					subItems[0].Text = item.toogleKey.ToString();
+					subItems[0].Text = item.ToogleKey.ToString();
 					subItems[2].Text = item.Bool.ToString();
 				};
 				cvarValuesWatcher.OnRemoved += (key, item) => items.Remove(items.OfType<ListViewItem>().First(i => i.Tag == item));

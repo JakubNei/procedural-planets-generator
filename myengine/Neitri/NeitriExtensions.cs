@@ -8,7 +8,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 
 /// <summary>
-/// Version 2017-03-18
+/// Version 2017-03-28
 /// Many useful extensions I've made over the years.
 /// All in one class.
 /// </summary>
@@ -461,7 +461,7 @@ public static class NeitriExtensions
 
 	#region string extensions
 
-	static readonly Regex oneOrMoreWhiteSpaces = new Regex(@"\s+");
+	static readonly Regex oneOrMoreWhiteSpaces = new Regex(@"^\s+$", RegexOptions.Compiled);
 
 	/// <summary>
 	/// Counts the amount of occurence of <paramref name="needle"/> in <paramref name="haystack"/>;
@@ -529,10 +529,17 @@ public static class NeitriExtensions
 	{
 		return string.IsNullOrEmpty(s);
 	}
-
+	public static bool IsWhiteSpace(this string s)
+	{
+		return oneOrMoreWhiteSpaces.IsMatch(s);
+	}
 	public static bool IsNullOrWhiteSpace(this string s)
 	{
-		return s == null || oneOrMoreWhiteSpaces.IsMatch(s);
+		return s == null || IsWhiteSpace(s);
+	}
+	public static bool IsNullOrEmptyOrWhiteSpace(this string s)
+	{
+		return s == null || s.Length == 0 || IsWhiteSpace(s);
 	}
 
 	public static string RemoveWhiteSpaces(this string str)

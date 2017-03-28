@@ -64,9 +64,10 @@ namespace MyEngine
 
 		CVarFactory cvars;
 
+		public CVar GetCVar(string name) => GetCVar(name, false);
 		public CVar GetCVar(string name, bool defaultValue = false) => cvars.GetCVar(name, defaultValue);
+		public CVar GetCVar(string name, float defaultValue = 0) => cvars.GetCVar(name, defaultValue);
 
-		public CVar GetCVar(string name) => cvars.GetCVar(name);
 
 
 		public TickStats Tick(string name)
@@ -100,9 +101,9 @@ namespace MyEngine
 		{
 			foreach (var cvar in cvars.NameToCvar.Values)
 			{
-				if (cvar.toogleKey != OpenTK.Input.Key.Unknown)
+				if (cvar.ToogleKey != OpenTK.Input.Key.Unknown)
 				{
-					if (Input.GetKeyDown(cvar.toogleKey))
+					if (Input.GetKeyDown(cvar.ToogleKey))
 					{
 						cvar.Bool = !cvar.Bool;
 					}

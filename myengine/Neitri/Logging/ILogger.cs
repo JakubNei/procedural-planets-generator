@@ -46,7 +46,7 @@ namespace Neitri
 		public virtual void End(string differentEndMessage = null)
 		{
 			if (!started) return;
-			if (differentEndMessage.IsNullOrWhiteSpace()) this.Trace("end");
+			if (differentEndMessage.IsNullOrEmptyOrWhiteSpace()) this.Trace("end");
 			else this.Trace("end - " + differentEndMessage);
 			started = false;
 		}
@@ -93,7 +93,7 @@ namespace Neitri
 			this.Type = type;
 			this.message = message.ToString();
 			this.Caller = caller;
-			if (!caller.IsNullOrWhiteSpace()) message += " [" + caller + "]";
+			if (!caller.IsNullOrEmptyOrWhiteSpace()) message += " [" + caller + "]";
 		}
 
 		public string Caller { get; }
