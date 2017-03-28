@@ -43,7 +43,7 @@ namespace MyEngine
 
 
 		DictionaryWatcher<string, string> stringValuesWatcher;
-		DictionaryWatcher<string, CVar, string> cvarValuesWatcher;
+		DictionaryWatcher<string, CVar> cvarValuesWatcher;
 
 		void InitializeDataWatchers()
 		{
@@ -56,13 +56,12 @@ namespace MyEngine
 			}
 			{
 				var items = listView2.Items;
-				cvarValuesWatcher = new DictionaryWatcher<string, CVar, string>();
-				cvarValuesWatcher.comparisonValueSelector = (item) => item.Bool.ToString();
+				cvarValuesWatcher = new DictionaryWatcher<string, CVar>();
 				cvarValuesWatcher.OnAdded += (key, item) =>
 				{
 					items.Add(new ListViewItem(new string[] {
 								item.toogleKey == OpenTK.Input.Key.Unknown ? string.Empty : item.toogleKey.ToString(),
-								item.name,
+								item.Name,
 								item.Bool.ToString()
 							})
 					{ Tag = item });
@@ -78,7 +77,7 @@ namespace MyEngine
 		}
 
 
-		public void UpdateBy(IDictionary<string, string> stringValues, IDictionary<string, CVar> nameToCVar)
+		public void UpdateBy(IEnumerable<KeyValuePair<string, string>> stringValues, IEnumerable<KeyValuePair<string, CVar>> nameToCVar)
 		{
 			stringValuesWatcher.UpdateBy(stringValues);
 			cvarValuesWatcher.UpdateBy(nameToCVar);

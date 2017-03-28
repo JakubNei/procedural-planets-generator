@@ -31,7 +31,7 @@ namespace MyEngine
 			{
 				try
 				{
-					return new FileStream(RealPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+					return new FileStream(RealPath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
 				}
 				catch (Exception e)
 				{

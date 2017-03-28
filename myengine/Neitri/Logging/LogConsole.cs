@@ -10,6 +10,15 @@ namespace Neitri.Logging
 		Thread thread;
 		ManualResetEvent doLog = new ManualResetEvent(false);
 
+
+		public Func<LogEntry, string> messageFormatter = (logEntry) =>
+		{
+			return string.Format("[{0}] {1}",
+				logEntry.Caller,
+				logEntry.Message
+			);
+		};
+
 		public LogConsole()
 		{
 			thread = new Thread(() =>
@@ -69,11 +78,7 @@ namespace Neitri.Logging
 			entries.Enqueue(new Entry()
 			{
 				color = color,
-				message = string.Format("[{0}][{1}] {2}",
-					DateTime.Now.ToString("HH:mm:ss.fff"),
-					logEntry.Type.ToString().Substring(0, 1),
-					logEntry.Message
-				)
+				message = messageFormatter(logEntry),
 			});
 
 			doLog.Set();

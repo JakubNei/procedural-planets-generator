@@ -71,6 +71,7 @@
     <Compile Include="Constants.cs" />
     <Compile Include="CVar.cs" />
     <Compile Include="Collections\DataAccessibleList.cs" />
+    <Compile Include="CVarFactory.cs" />
     <Compile Include="DataBinder.cs" />
     <Compile Include="Forms\ConsoleWindow.cs">
       <SubType>Form</SubType>
@@ -125,7 +126,7 @@
     <Compile Include="Neitri\GlobSearch.cs" />
     <Compile Include="Neitri\IBinarySerializer.cs" />
     <Compile Include="Neitri\DependencyInjection\IDependencyManager.cs" />
-    <Compile Include="Neitri\Logging\ILogging.cs" />
+    <Compile Include="Neitri\Logging\ILogger.cs" />
     <Compile Include="Neitri\DependencyInjection\IOnDependencyResolved.cs" />
     <Compile Include="Neitri\Logging\LogAggregator.cs" />
     <Compile Include="Neitri\Logging\LogConsole.cs" />

@@ -10,11 +10,11 @@ namespace MyEngine
 	public class CVar
 	{
 		//public dynamic Value { get; set; }
-		public string name;
+		public readonly string Name;
 
 		bool _bool;
 
-		MyDebug debug;
+		CVarFactory factory;
 
 		public bool Bool
 		{
@@ -27,7 +27,7 @@ namespace MyEngine
 				if (_bool != value)
 				{
 					_bool = value;
-					debug.Info(name + " changed to: " + value);
+					factory.Log.Equals(Name + " changed to: " + value);
 					OnChanged?.Invoke(this);
 				}
 			}
@@ -38,9 +38,10 @@ namespace MyEngine
 
 		public event Action<CVar> OnChanged;
 
-		public CVar(MyDebug debug)
+		public CVar(string name, CVarFactory factory)
 		{
-			this.debug = debug;
+			this.Name = name;
+			this.factory = factory;
 		}
 
 		public CVar OnChangedAndNow(Action<CVar> action)
@@ -53,15 +54,6 @@ namespace MyEngine
 			return this;
 		}
 
-		/*
-		public CVar InitializeWith(bool value)
-		{
-			_bool = value;
-			debug.Info(name + " changed to: " + value);
-			OnChanged?.Invoke(this);
-			return this;
-		}
-		*/
 
 		public bool EatBoolIfTrue()
 		{
@@ -81,7 +73,7 @@ namespace MyEngine
 
 		public CVar ToogledByKey(OpenTK.Input.Key key)
 		{
-			debug.Info($"{key} to toggle {name}");
+			factory.Log.Info($"{key} to toggle {Name}");
 			toogleKey = key;
 			return this;
 		}

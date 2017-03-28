@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Neitri;
+using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
@@ -9,93 +10,6 @@ namespace Neitri
 		void Log(LogEntry logEntry);
 	}
 
-	public static class LogEndExtensions
-	{
-		public static void Trace<T>(this ILog log, T value, [CallerMemberName] string caller = null)
-		{
-			log.Log(new LogEntry(
-				LogEntry.LogType.Trace,
-				value,
-				caller
-			));
-		}
-
-		public static void Debug<T>(this ILog log, T value, [CallerMemberName] string caller = null)
-		{
-			log.Log(new LogEntry(
-				LogEntry.LogType.Debug,
-				value,
-				caller
-			));
-		}
-
-		public static void Info<T>(this ILog log, T value, [CallerMemberName] string caller = null)
-		{
-			log.Log(new LogEntry(
-				LogEntry.LogType.Info,
-				value,
-				caller
-			));
-		}
-
-		public static void Warn<T>(this ILog log, T value, [CallerMemberName] string caller = null)
-		{
-			log.Log(new LogEntry(
-				LogEntry.LogType.Warn,
-				value,
-				caller
-			));
-		}
-
-		public static void Error<T>(this ILog log, T value, [CallerMemberName] string caller = null)
-		{
-			log.Log(new LogEntry(
-				LogEntry.LogType.Error,
-				value,
-				caller
-			));
-		}
-
-		public static void Fatal<T>(this ILog log, T value, [CallerMemberName] string caller = null)
-		{
-			log.Log(new LogEntry(
-				LogEntry.LogType.Fatal,
-				value,
-				caller
-			));
-		}
-
-		public static void FatalException(this ILog log, Exception e)
-		{
-			log.Fatal(e);
-			var ae = e as AggregateException;
-			if (ae != null) foreach (var _e in ae.InnerExceptions) log.FatalException(_e);
-		}
-
-		public static LogScope Scope<T>(this ILog log, T value)
-		{
-			return new LogScope(log, value.ToString());
-		}
-
-		public static LogScope ScopeStart<T>(this ILog log, T value)
-		{
-			var scope = Scope<T>(log, value);
-			scope.Start();
-			return scope;
-		}
-
-		public static LogScope Profile<T>(this ILog log, T value)
-		{
-			return new LogProfile(log, value.ToString());
-		}
-
-		public static LogScope ProfileStart<T>(this ILog log, T value)
-		{
-			var scope = Profile<T>(log, value);
-			scope.Start();
-			return scope;
-		}
-	}
 
 	public class LogScope : ILog, IDisposable
 	{
@@ -178,9 +92,11 @@ namespace Neitri
 		{
 			this.Type = type;
 			this.message = message.ToString();
+			this.Caller = caller;
 			if (!caller.IsNullOrWhiteSpace()) message += " [" + caller + "]";
 		}
 
+		public string Caller { get; }
 		public string OneLetterType => Type.ToString().Substring(0, 1);
 		public LogType Type { get; }
 		string message;
@@ -196,5 +112,94 @@ namespace Neitri
 		}
 
 		public short IndentLevel { get; set; }
+	}
+
+}
+
+public static class ILoggerExtensions
+{
+	public static void Trace<T>(this ILog log, T value, [CallerMemberName] string caller = null)
+	{
+		log.Log(new LogEntry(
+			LogEntry.LogType.Trace,
+			value,
+			caller
+		));
+	}
+
+	public static void Debug<T>(this ILog log, T value, [CallerMemberName] string caller = null)
+	{
+		log.Log(new LogEntry(
+			LogEntry.LogType.Debug,
+			value,
+			caller
+		));
+	}
+
+	public static void Info<T>(this ILog log, T value, [CallerMemberName] string caller = null)
+	{
+		log.Log(new LogEntry(
+			LogEntry.LogType.Info,
+			value,
+			caller
+		));
+	}
+
+	public static void Warn<T>(this ILog log, T value, [CallerMemberName] string caller = null)
+	{
+		log.Log(new LogEntry(
+			LogEntry.LogType.Warn,
+			value,
+			caller
+		));
+	}
+
+	public static void Error<T>(this ILog log, T value, [CallerMemberName] string caller = null)
+	{
+		log.Log(new LogEntry(
+			LogEntry.LogType.Error,
+			value,
+			caller
+		));
+	}
+
+	public static void Fatal<T>(this ILog log, T value, [CallerMemberName] string caller = null)
+	{
+		log.Log(new LogEntry(
+			LogEntry.LogType.Fatal,
+			value,
+			caller
+		));
+	}
+
+	public static void FatalException(this ILog log, Exception e)
+	{
+		log.Fatal(e);
+		var ae = e as AggregateException;
+		if (ae != null) foreach (var _e in ae.InnerExceptions) log.FatalException(_e);
+	}
+
+	public static LogScope Scope<T>(this ILog log, T value)
+	{
+		return new LogScope(log, value.ToString());
+	}
+
+	public static LogScope ScopeStart<T>(this ILog log, T value)
+	{
+		var scope = Scope<T>(log, value);
+		scope.Start();
+		return scope;
+	}
+
+	public static LogScope Profile<T>(this ILog log, T value)
+	{
+		return new LogProfile(log, value.ToString());
+	}
+
+	public static LogScope ProfileStart<T>(this ILog log, T value)
+	{
+		var scope = Profile<T>(log, value);
+		scope.Start();
+		return scope;
 	}
 }

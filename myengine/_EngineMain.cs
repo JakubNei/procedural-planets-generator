@@ -71,7 +71,7 @@ namespace MyEngine
 			gameWindow.VSync = VSyncMode.Off;
 
 			Input = new InputSystem(this);
-			Debug = new MyDebug(Input);
+			Debug = new MyDebug(Input, FileSystem);
 			EventSystem = new Events.EventSystem();
 
 			Debug.Info("START"); // to have debug initialized before anything else

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
@@ -11,7 +12,7 @@ namespace MyEngine
 {
 	public class MyDebug
 	{
-        public static MyDebug Instance { get; private set; }
+		public static MyDebug Instance { get; private set; }
 
 		List<string> alreadyShown = new List<string>();
 
@@ -41,11 +42,16 @@ namespace MyEngine
 			}
 		}
 
-		public MyDebug(InputSystem input)
+		public readonly ILog Log;
+
+		public MyDebug(InputSystem input, FileSystem fs)
 		{
+			Log = new Neitri.Logging.LogConsole();
 			this.Input = input;
-            Instance = this;
-            CommonCVars = new CommonCVars(this);
+			Instance = this;
+
+			cvars = new CVarFactory(() => File.Open(fs.GetPhysicalPath("cvars.config"), FileMode.OpenOrCreate), Log);
+			CommonCVars = new CommonCVars(this);
 			AddCommonCvars();
 
 			System.Diagnostics.Debug.Listeners.Add(new TraceListener(this));
@@ -60,32 +66,11 @@ namespace MyEngine
 
 		Dictionary<string, TickStats> nameToTickStat = new Dictionary<string, TickStats>();
 
-		Dictionary<string, CVar> nameToCVar = new Dictionary<string, CVar>();
+		CVarFactory cvars;
+		public CVar GetCVar(string name, bool defaultValue = false) => cvars.GetCVar(name, defaultValue);
 
-		public CVar GetCVar(string name, bool defaultValue = false)
-		{
-			CVar result;
-			if (!nameToCVar.TryGetValue(name, out result))
-			{
-				result = new CVar(this);
-				result.Bool = defaultValue;
-				result.name = name;
-				nameToCVar[name] = result;
-			}
-			return result;
-		}
+		public CVar GetCVar(string name) => cvars.GetCVar(name);
 
-		public CVar GetCVar(string name)
-		{
-			CVar result;
-			if (!nameToCVar.TryGetValue(name, out result))
-			{
-				result = new CVar(this);
-				result.name = name;
-				nameToCVar[name] = result;
-			}
-			return result;
-		}
 
 		public TickStats Tick(string name)
 		{
@@ -97,9 +82,9 @@ namespace MyEngine
 				nameToTickStat[name] = t;
 			}
 			t.Update(this);
-            return t;
+			return t;
 		}
-		
+
 
 		DebugForm debugForm;
 
@@ -107,7 +92,7 @@ namespace MyEngine
 		{
 			CommonCVars.ShowDebugForm().ToogledByKey(OpenTK.Input.Key.F1).OnChanged += (cvar) =>
 			{
-				if (debugForm == null) debugForm = new DebugForm();					
+				if (debugForm == null) debugForm = new DebugForm();
 				if (cvar.Bool) debugForm.Show();
 				else debugForm.Hide();
 			};
@@ -125,7 +110,7 @@ namespace MyEngine
 
 		public void InputUpdate()
 		{
-			foreach (var cvar in nameToCVar.Values)
+			foreach (var cvar in cvars.NameToCvar.Values)
 			{
 				if (cvar.toogleKey != OpenTK.Input.Key.Unknown)
 				{
@@ -140,46 +125,23 @@ namespace MyEngine
 		public void LogicUpdate()
 		{
 			if (debugForm?.Visible == true)
-				debugForm.UpdateBy(stringValues, nameToCVar);
+				debugForm.UpdateBy(stringValues, cvars.NameToCvar);
 		}
 
 
-		private void Log(object obj, bool canRepeat)
+		public void Info(object obj)
 		{
-			var s = obj.ToString();
-			if (canRepeat || !alreadyShown.Contains(s))
-			{
-				var t = new StackTrace(2);
-				var f = t.GetFrame(0);
-				var m = f.GetMethod();
-
-				if (!canRepeat) alreadyShown.Add(s);
-				Console.WriteLine("[" + m.DeclaringType.Name + "." + m.Name + "] " + s);
-			}
+			Log.Info(obj);
 		}
 
-		public void Info(object obj, bool canRepeat = true, bool pause = false)
+		public void Warning(object obj)
 		{
-			Console.ForegroundColor = ConsoleColor.Gray;
-			Console.BackgroundColor = ConsoleColor.Black;
-			Log(obj, canRepeat);
-			if (pause) Pause();
+			Log.Warn(obj);
 		}
 
-		public void Warning(object obj, bool canRepeat = true, bool pause = false)
+		public void Error(object obj)
 		{
-			Console.ForegroundColor = ConsoleColor.Yellow;
-			Console.BackgroundColor = ConsoleColor.Black;
-			Log(obj, canRepeat);
-			if (pause) Pause();
-		}
-
-		public void Error(object obj, bool canRepeat = true, bool pause = false)
-		{
-			Console.ForegroundColor = ConsoleColor.Red;
-			Console.BackgroundColor = ConsoleColor.Black;
-			Log(obj, canRepeat);
-			if (pause) Pause();
+			Log.Error(obj);
 		}
 
 		public void Pause()

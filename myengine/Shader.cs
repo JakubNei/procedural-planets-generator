@@ -204,7 +204,7 @@ namespace MyEngine
 			var location = GL.GetUniformBlockIndex(ShaderProgramHandle, name); MyGL.Check();
 			if (location == -1)
 			{
-				debug.Warning(file + ", uniform block index " + name + " not found ", false);
+				debug.Warning(file + ", uniform block index " + name + " not found ");
 				return false;
 			}
 			GL.UniformBlockBinding(ShaderProgramHandle, location, uniformBufferIndex); MyGL.Check();
@@ -219,7 +219,7 @@ namespace MyEngine
 				location = GL.GetUniformLocation(ShaderProgramHandle, name); MyGL.Check();
 				if (location == -1)
 				{
-					debug.Warning(file + ", uniform " + name + " not found ", false);
+					debug.Warning(file + ", uniform " + name + " not found ");
 				}
 				cachedUniformLocations[name] = location;
 			}

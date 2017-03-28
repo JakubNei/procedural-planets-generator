@@ -6,15 +6,8 @@ using System.Threading.Tasks;
 
 namespace MyEngine
 {
-	public class DictionaryWatcher<TKey, TItem> : DictionaryWatcher<TKey, TItem, TItem>
-	{
-		public DictionaryWatcher()
-		{
-			comparisonValueSelector = (item) => item;
-		}
-	}
 
-	public class DictionaryWatcher<TKey, TItem, TEqualityComparisonValue>
+	public class DictionaryWatcher<TKey, TItem>
 	{
 		public event Action<TKey, TItem> OnAdded;
 		/// <summary>
@@ -26,38 +19,34 @@ namespace MyEngine
 		/// </summary>
 		public event Action<TKey, TItem> OnUpdated;
 
-		public Func<TEqualityComparisonValue, TEqualityComparisonValue, bool> equalityComparer = (a, b) => a.Equals(b);
-		public Func<TItem, TEqualityComparisonValue> comparisonValueSelector;
 
+		Dictionary<TKey, TItem> currentValues = new Dictionary<TKey, TItem>();
 
-		Dictionary<TKey, TEqualityComparisonValue> currentValues = new Dictionary<TKey, TEqualityComparisonValue>();
-
-		public void UpdateBy(IDictionary<TKey, TItem> source)
+		public void UpdateBy(IEnumerable<KeyValuePair<TKey, TItem>> source)
 		{
 			foreach (var kvp in source)
 			{
-				TEqualityComparisonValue sourceValue = comparisonValueSelector(kvp.Value);
-				TEqualityComparisonValue currentValue;
+				TItem currentValue;
 				if (currentValues.TryGetValue(kvp.Key, out currentValue))
 				{
-					if (equalityComparer(currentValue, sourceValue) == false)
+					if (currentValue.Equals(kvp.Value) == false)
 					{
-						currentValues[kvp.Key] = sourceValue;
+						currentValues[kvp.Key] = kvp.Value;
 						OnUpdated.Raise(kvp.Key, kvp.Value);
 					}
 				}
 				else
 				{
-					currentValues[kvp.Key] = sourceValue;
+					currentValues[kvp.Key] = kvp.Value;
 					OnAdded.Raise(kvp.Key, kvp.Value);
 				}
 			}
 
-			var keysRemoved = currentValues.Keys.Except(source.Keys).ToArray();
+			var keysRemoved = currentValues.Keys.Except(source.Select(kvp => kvp.Key)).ToArray();
 			foreach (var keyRemoved in keysRemoved)
 			{
+				OnRemoved.Raise(keyRemoved, currentValues[keyRemoved]);
 				currentValues.Remove(keyRemoved);
-				OnRemoved.Raise(keyRemoved, source[keyRemoved]);
 			}
 
 		}

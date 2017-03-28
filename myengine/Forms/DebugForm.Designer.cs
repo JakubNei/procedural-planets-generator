@@ -65,7 +65,7 @@ namespace MyEngine
 			// columnHeader2
 			// 
 			columnHeader2.Text = "Name";
-			columnHeader2.Width = 158;
+			columnHeader2.Width = 318;
 			// 
 			// columnHeader3
 			// 

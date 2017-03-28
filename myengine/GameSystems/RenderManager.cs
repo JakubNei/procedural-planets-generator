@@ -100,7 +100,7 @@ namespace MyEngine
 
 			ErrorCode glError;
 			while ((glError = GL.GetError()) != ErrorCode.NoError)
-				debug.Error("GL Error: " + glError, false);
+				debug.Error("GL Error: " + glError);
 		}
 
 		private void RenderGBuffer(UniformBlock ubo, Camera camera)

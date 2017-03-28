@@ -56,22 +56,37 @@ namespace MyEngine
 			return false;
 		}
 
-		public MyFile FindFile(string virtualPath)
+
+		public string GetPhysicalPath(string virtualPath)
+		{
+			var realPath = CombineDirectory(rootResourceDirectoryPath, virtualPath);
+			return realPath;
+		}
+
+		public bool TryFindFile(string virtualPath, out MyFile file)
 		{
 			var realPath = CombineDirectory(rootResourceDirectoryPath, virtualPath);
 			if (GlobSearch.IsNeeded(virtualPath))
 			{
 				var fileInfo = GlobSearch.FindFile(realPath);
-				return new MyFile(this, fileInfo.FullName.RemoveFromBegin(rootResourceDirectoryInfo.FullName.Length + 1), fileInfo.FullName);
+				file = new MyFile(this, fileInfo.FullName.RemoveFromBegin(rootResourceDirectoryInfo.FullName.Length + 1), fileInfo.FullName);
+				return true;
 			}
 			else
 			{
 				if (System.IO.File.Exists(realPath))
 				{
-					return new MyFile(this, virtualPath, realPath);
+					file = new MyFile(this, virtualPath, realPath);
+					return true;
 				}
 			}
+			file = null;
+			return false;
+		}
 
+		public MyFile FindFile(string virtualPath)
+		{
+			if (TryFindFile(virtualPath, out MyFile file)) return file;
 			throw new FileNotFoundException("File " + virtualPath + " doesnt exits");
 		}
 
