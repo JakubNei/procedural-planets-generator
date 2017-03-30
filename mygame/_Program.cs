@@ -37,7 +37,7 @@ namespace MyGame
 					//flashLight.LighType = LightType.Point;				
 
 
-					var cam = scene.mainCamera = entity.AddComponent<Camera>();
+					var cam = scene.MainCamera = entity.AddComponent<Camera>();
 					cam.NearClipPlane = 1000; // 0.5f
 					cam.FarClipPlane = 5000000;
 					cam.Recalculate();

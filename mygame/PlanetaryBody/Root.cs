@@ -238,7 +238,7 @@ namespace MyGame.PlanetaryBody
 
 		void Chunks_GatherWeights(ChunkWeightedList list, Chunk chunk, int recursionDepth)
 		{
-			var cam = Entity.Scene.mainCamera;
+			var cam = Entity.Scene.MainCamera;
 			var sizeOnScreen = chunk.GetSizeOnScreen(cam);
 
 			if (!chunk.GenerationBegan)
@@ -270,7 +270,7 @@ namespace MyGame.PlanetaryBody
 		// we have to show all 4 childs at once
 		void Chunks_UpdateVisibility(Chunk chunk, int recursionDepth)
 		{
-			var cam = Entity.Scene.mainCamera;
+			var cam = Entity.Scene.MainCamera;
 
 			if (recursionDepth < SubdivisionMaxRecurisonDepth)
 			{

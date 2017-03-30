@@ -22,7 +22,7 @@ namespace MyGame
 		Factory Factory => scene.Factory;
 		MyDebug Debug => scene.Debug;
 
-		Camera Cam { get { return scene.mainCamera; } }
+		Camera Cam { get { return scene.MainCamera; } }
 
 		public bool runPlanetLogicInOwnThread = true;
 

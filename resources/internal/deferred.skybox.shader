@@ -13,8 +13,10 @@ out data {
 
 void main()
 {
-	gl_Position = engine.viewProjectionMatrix * vec4(in_position, 1);
-		
+	
+	// we want the skybox to always show regardless of nearClipPlane and farClipPlane, thus we multiple its size by nearClipPlane
+	gl_Position = engine.viewProjectionMatrix * vec4(in_position * engine.nearClipPlane * 2, 1);
+
 	o.uv = in_position;
 }
 

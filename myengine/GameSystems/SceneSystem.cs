@@ -35,9 +35,9 @@ namespace MyEngine
 		public EngineMain Engine { get; private set; }
 
 
-		public Camera mainCamera;
+		public Camera MainCamera { get; set; }
 
-		SparseList<Entity> entities = new SparseList<Entity>(1000);
+		UnorderedList<Entity> entities = new UnorderedList<Entity>(1000);
 
 		public SceneSystem(EngineMain engine)
 		{

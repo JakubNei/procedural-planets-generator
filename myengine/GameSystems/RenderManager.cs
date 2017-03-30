@@ -25,17 +25,19 @@ namespace MyEngine
 		public Cubemap SkyboxCubeMap { get; set; }
 		Shader FinalDrawShader => Factory.GetShader("internal/finalDraw.glsl");
 
-		public bool DrawLines { get { return Debug.GetCVar("debug draw lines"); } }
-		public bool EnablePostProcessEffects { get { return Debug.GetCVar("enable post process effects"); } }
-		public bool DebugBounds { get { return Debug.GetCVar("debug draw mesh bouding boxes"); } }
-		public bool ShadowsEnabled { get { return Debug.GetCVar("shadows enabled"); } }
+		CVar DrawLines => Debug.GetCVar("debug draw lines");
+		CVar EnablePostProcessEffects => Debug.GetCVar("enable post process effects");
+		CVar DebugBounds => Debug.GetCVar("debug draw mesh bouding boxes");
+		CVar ShadowsEnabled => Debug.GetCVar("shadows enabled");
 
-		CVar enableCulling => Debug.GetCVar("enable culling", true);
-		CVar enableRasterizerRasterization => Debug.GetCVar("enable rasterizer rasterization", true);
-		CVar enableRasterizerCulling => Debug.GetCVar("enable rasterizer culling", true);
-		CVar showRasterizerContents => Debug.GetCVar("show rasterizer contents");
-		CVar sortRenderables => Debug.GetCVar("sort renderables", true);
-		CVar doParallelize => Debug.GetCVar("parallelize render prepare", true);
+		CVar EnableCulling => Debug.GetCVar("enable culling", true);
+		CVar EnableRasterizerRasterization => Debug.GetCVar("enable rasterizer rasterization", true);
+		CVar EnableRasterizerCulling => Debug.GetCVar("enable rasterizer culling", true);
+		CVar ShowRasterizerContents => Debug.GetCVar("show rasterizer contents");
+		CVar SortRenderables => Debug.GetCVar("sort renderables", true);
+		CVar DoParallelize => Debug.GetCVar("parallelize render prepare", true);
+
+		CVar RenderOnlyFront => Debug.GetCVar("renderer render only front of triangles", true);
 
 		public RenderManager()
 		{
@@ -45,13 +47,13 @@ namespace MyEngine
 				GBuffer = new DeferredGBuffer(evt.NewPixelWidth, evt.NewPixelHeight);
 			});
 
-			enableRasterizerRasterization.OnChangedAndNow((c) =>
+			EnableRasterizerRasterization.OnChangedAndNow((c) =>
 			{
 				if (c.Bool) rasterizer = new SoftwareDepthRasterizer(200, 100);
 				else rasterizer = null;
 			});
 
-			showRasterizerContents.OnChangedAndNow((c) =>
+			ShowRasterizerContents.OnChangedAndNow((c) =>
 			{
 				if (c.Bool) rasterizer?.Show();
 				else rasterizer?.Hide();
@@ -66,7 +68,7 @@ namespace MyEngine
 
 			RenderLights(ubo, camera, allLights);
 
-			if (DrawLines) GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill); MyGL.Check();
+			if (DrawLines) GL.PolygonMode(MaterialFace.Front, PolygonMode.Fill); MyGL.Check();
 
 			RenderPostProcessEffects(ubo, postProcessEffect);
 
@@ -105,15 +107,15 @@ namespace MyEngine
 			{
 				GBuffer.BindAllFrameBuffersForDrawing();
 
-				GL.Enable(EnableCap.DepthTest); MyGL.Check();
 				GL.DepthMask(true); MyGL.Check();
-				GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit); MyGL.Check();
+				GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit); MyGL.Check();
 
 				// SKYBOX PASS
 
 				if (SkyboxCubeMap != null)
 				{
-					GL.DepthRange(0.999, 1); MyGL.Check();
+					//GL.DepthRange(0.999, 1); MyGL.Check();
+					GL.Disable(EnableCap.DepthTest); MyGL.Check();
 					GL.DepthMask(false); MyGL.Check();
 
 					var shader = Factory.GetShader("internal/deferred.skybox.shader");
@@ -121,7 +123,6 @@ namespace MyEngine
 					shader.Bind();
 
 					Factory.SkyBoxMesh.Draw();
-					GL.DepthRange(0, 1); MyGL.Check();
 				}
 
 
@@ -131,7 +132,7 @@ namespace MyEngine
 				}
 				else
 				{
-					if (Debug.GetCVar("renderer render only front of triangles", true))
+					if (RenderOnlyFront)
 					{
 						GL.PolygonMode(MaterialFace.Front, PolygonMode.Fill); MyGL.Check();
 					}
@@ -144,10 +145,18 @@ namespace MyEngine
 				// RENDER ALL OBJECTS
 				{
 					GL.DepthMask(true); MyGL.Check();
+					GL.Enable(EnableCap.DepthTest); MyGL.Check();
 
-					GL.Enable(EnableCap.CullFace); MyGL.Check();
+					if (RenderOnlyFront)
+					{
+						GL.Enable(EnableCap.CullFace); MyGL.Check();
+						GL.CullFace(CullFaceMode.Back); MyGL.Check();
+					}
+					else
+					{
+						GL.Disable(EnableCap.CullFace); MyGL.Check();
+					}
 					GL.Disable(EnableCap.Blend); MyGL.Check();
-					GL.CullFace(CullFaceMode.Back); MyGL.Check();
 					for (int i = 0; i < toRenderRenderablesCount; i++)
 					{
 						var renderable = toRenderRenderables[i];
@@ -354,7 +363,7 @@ namespace MyEngine
 			rasterizer?.Clear();
 
 
-			if (enableCulling)
+			if (EnableCulling)
 			{
 
 				int passedFrustumCullingIndex = 0;
@@ -389,7 +398,7 @@ namespace MyEngine
 						}
 					}
 
-					if (doParallelize)
+					if (DoParallelize)
 					{
 						Parallel.For(0, possibleRenderables.Count, i =>
 						{
@@ -413,7 +422,7 @@ namespace MyEngine
 
 				Debug.AddValue("rendering / meshes / passed frustum culling", passedFrustumCullingIndex);
 
-				if (rasterizer != null && enableRasterizerCulling)
+				if (rasterizer != null && EnableRasterizerCulling)
 				{
 
 					int passedRasterizationCullingIndex = 0;
@@ -445,7 +454,7 @@ namespace MyEngine
 					}
 
 
-					if (doParallelize)
+					if (DoParallelize)
 					{
 						Parallel.For(0, passedFrustumCullingIndex, (i) =>
 						{
@@ -462,7 +471,7 @@ namespace MyEngine
 
 					Debug.AddValue("rendering / meshes / passed rasterization culling", passedRasterizationCullingIndex);
 
-					if (sortRenderables)
+					if (SortRenderables)
 					{
 						// sort renderables so closest to camera are first
 						Array.Sort(distancesToCamera, passedRasterizationCulling, 0, passedRasterizationCullingIndex, Comparer<float>.Default);

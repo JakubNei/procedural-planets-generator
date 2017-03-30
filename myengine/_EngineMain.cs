@@ -244,7 +244,7 @@ namespace MyEngine
 				Debug.Tick("rendering / render prepare");
 				foreach (var scene in scenes)
 				{
-					var camera = scene.mainCamera;
+					var camera = scene.MainCamera;
 					var dataToRender = scene.DataToRender;
 					if (camera != null && dataToRender != null)
 					{
@@ -336,7 +336,7 @@ namespace MyEngine
 
 			{
 				var scene = scenes[0];
-				var camera = scene.mainCamera;
+				var camera = scene.MainCamera;
 				var dataToRender = scene.DataToRender;
 
 				//if (renderThreadTime.FpsPer1Sec > 30)

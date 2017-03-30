@@ -33,6 +33,7 @@ namespace MyGame
 		Vector3 walkOnSphere_vectorForward;
 		bool walkOnShere_start;
 
+		Camera cam => Scene.MainCamera;
 		CVar WalkOnPlanet => Debug.GetCVar("walk on planet");
 
 		public ProceduralPlanets planets;
@@ -120,18 +121,10 @@ namespace MyGame
 			if (scrollWheelDelta > 0) cameraSpeedModifier *= 1.3f;
 			if (scrollWheelDelta < 0) cameraSpeedModifier /= 1.3f;
 			cameraSpeedModifier = MyMath.Clamp(cameraSpeedModifier, 1, 100000);
-
-
-			/*
-            var p = System.Windows.Forms.Cursor.Position;
-            p.X -= mouseDelta.X;
-            p.Y -= mouseDelta.Y;
-            System.Windows.Forms.Cursor.Position = p;*/
-
-
 			float currentSpeed = cameraSpeedModifier;
 
-			if (speedBasedOnDistanceToPlanet)
+
+
 			{
 				var planetLocalPosition = planet.Transform.Position.Towards(position).ToVector3d();
 				var sphericalPlanetLocalPosition = planet.CalestialToSpherical(planetLocalPosition);
@@ -139,9 +132,22 @@ namespace MyGame
 				var onPlanetDistanceToSurface = sphericalPlanetLocalPosition.altitude - onPlanetSurfaceHeight;
 				Debug.AddValue("camera / distance to surface", onPlanetDistanceToSurface);
 
-				onPlanetDistanceToSurface = MyMath.Clamp(onPlanetDistanceToSurface, 1, 30000);
-				currentSpeed *= (1 + (float)onPlanetDistanceToSurface / 5.0f);
+				{
+					var s = MyMath.SmoothStep(1, 30000, (float)onPlanetDistanceToSurface);
+					cam.NearClipPlane = 1000 * s + 0.5f;
+					cam.FarClipPlane = 5000000 * s + 100000;
+					cam.Recalculate();
+				}
+
+				if (speedBasedOnDistanceToPlanet)
+				{
+					var s = MyMath.Clamp(onPlanetDistanceToSurface, 1, 30000);
+					currentSpeed *= (1 + (float)s / 5.0f);
+				}
+
 			}
+
+
 
 			if (Input.GetKey(Key.ShiftLeft)) currentSpeed *= 5;
 
