@@ -32,6 +32,11 @@ namespace MyGame.PlanetaryBody
 
 		public int meshGeneratedWithShaderVersion;
 
+		public bool isGenerationDone;
+
+
+
+		public Chunk parentChunk;
 		public List<Chunk> Children { get; } = new List<Chunk>();
 		public CustomChunkMeshRenderer Renderer { get; set; }
 
@@ -67,18 +72,22 @@ namespace MyGame.PlanetaryBody
 					return null;
 				}
 			}
+
+			public override void SetRenderingMode(MyRenderingMode renderingMode)
+			{
+				if (renderingMode.HasFlag(MyRenderingMode.RenderGeometry) && chunk.isGenerationDone == false)
+					Log.Warn("trying to render chunk " + chunk?.Renderer?.Mesh?.Name + " that did not finish generation");
+				base.SetRenderingMode(renderingMode);
+			}
 		}
 
 
-		public bool isGenerationDone;
 
 
 		int subdivisionDepth;
 		Root planetaryBody;
 
 
-
-		public Chunk parentChunk;
 		ChildPosition childPosition;
 
 		public enum ChildPosition

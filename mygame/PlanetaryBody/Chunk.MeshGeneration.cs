@@ -16,7 +16,7 @@ namespace MyGame.PlanetaryBody
 	public partial class Chunk
 	{
 
-		uint numbetOfChunksGenerated = 0;
+		static ulong numberOfChunksGenerated = 0;
 		public bool GenerationBegan { get; private set; } = false;
 
 		public void CreateRendererAndBasicMesh()
@@ -26,11 +26,11 @@ namespace MyGame.PlanetaryBody
 				if (GenerationBegan) return;// throw new Exception("generation already began");
 				GenerationBegan = true;
 			}
-			numbetOfChunksGenerated++;
+			numberOfChunksGenerated++;
 
 			var offsetCenter = NoElevationRange.CenterPos;
 			var mesh = new Mesh();
-			mesh.Name = "PlanetaryBodyChunk depth:" + subdivisionDepth + " #" + numbetOfChunksGenerated;
+			mesh.Name = "PlanetaryBodyChunk depth:" + subdivisionDepth + " #" + numberOfChunksGenerated;
 
 
 			var normals = mesh.Normals;
