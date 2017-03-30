@@ -16,12 +16,14 @@ namespace MyEngine
 {
 	public class SceneSystem : GameSystemBase
 	{
+
+		public InputSystem Input => Engine.Input;
 		public MyDebug Debug => Engine.Debug;
 		public Factory Factory => Engine.Factory;
+		public ILog Log => Engine.Log;
 		public FileSystem FileSystem => Engine.FileSystem;
-		public IDependencyManager Dependency => Engine.Dependency;
+		public Events.EventSystem EventSystem => Engine.EventSystem;
 
-		public IList<Entity> Entities => entities;
 
 
 		public Cubemap skyBox;
@@ -30,10 +32,8 @@ namespace MyEngine
 		//public ISynchronizeInvoke SynchronizeInvoke { get; private set; }
 		//DeferredSynchronizeInvoke.Owner deferredSynchronizeInvokeOwner;
 
-		public EventSystem EventSystem { get; private set; }
 		public EngineMain Engine { get; private set; }
 
-		public InputSystem Input => Engine.Input;
 
 		public Camera mainCamera;
 
@@ -42,16 +42,7 @@ namespace MyEngine
 		public SceneSystem(EngineMain engine)
 		{
 			this.Engine = engine;
-			this.EventSystem = new EventSystem();
 			this.DataToRender = new RenderableData();
-			this.EventSystem.OnAnyEventCalled += (IEvent evt) =>
-			{
-				foreach (var e in entities)
-				{
-					e.EventSystem.Raise(evt);
-				}
-			};
-
 
 			//deferredSynchronizeInvokeOwner = new DeferredSynchronizeInvoke.Owner();
 			/*
@@ -116,7 +107,7 @@ namespace MyEngine
 						e.Transform.Scale = new Vector3(size, size, size);
 						var r = e.AddComponent<MeshRenderer>();
 						r.Mesh = Factory.GetMesh("sphere.obj");
-						var m = new MaterialPBR(Factory);
+						var m = new MaterialPBR();
 						r.Material = m;
 						m.GBufferShader = Factory.GetShader("internal/deferred.gBuffer.PBR.shader");
 						m.albedo = color;

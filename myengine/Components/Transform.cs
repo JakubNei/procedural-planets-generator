@@ -19,9 +19,6 @@ namespace MyEngine.Components
 
 		public event Action OnRotationChanged;
 
-		public Transform(Entity entity) : base(entity)
-		{
-		}
 
 		public WorldPos Position { set { position = value; } get { return position; } }
 		public Vector3 Scale { set { scale = value; } get { return scale; } }

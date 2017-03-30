@@ -9,12 +9,10 @@ namespace MyEngine
 {
 	public partial class ObjLoader
 	{
-		[Dependency]
-		IDependencyManager dependency;
 
 		public Mesh Load(MyFile resource, Entity appendToEntity = null)
 		{
-			var loadJob = dependency.Create<LoadJob>();
+			var loadJob = new LoadJob();
 			var mesh = loadJob.Parse(resource, appendToEntity);
 			mesh.file = resource;
 			return mesh;
@@ -24,16 +22,9 @@ namespace MyEngine
 
 		class LoadJob
 		{
-			public ILog Log => debug.Log;
+			public ILog Log => Singletons.Log;
+			public FileSystem FileSystem => Singletons.FileSystem;
 
-			[Dependency]
-			FileSystem FileSystem;
-
-			[Dependency]
-			MyDebug debug;
-
-			[Dependency]
-			Factory factory;
 
 			List<Vector3> verticesObj = new List<Vector3>();
 			List<Vector3> normalsObj = new List<Vector3>();
@@ -135,7 +126,7 @@ namespace MyEngine
 							case "mtllib":
 								if (FileSystem.FileExists(parameters[1], file.Folder))
 								{
-									materialLibrary = new MaterialLibrary(FileSystem.FindFile(parameters[1], file.Folder), FileSystem, factory);
+									materialLibrary = new MaterialLibrary(FileSystem.FindFile(parameters[1], file.Folder));
 								}
 								break;
 

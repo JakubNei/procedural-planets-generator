@@ -14,22 +14,23 @@ using MyEngine.Components;
 
 namespace MyEngine.Components
 {
-    public class SSAO : PostProcessEffect
-    {
-        public SSAO(Entity entity) : base(entity)
-        {
+	public class SSAO : PostProcessEffect
+	{
+		public override void OnAddedToEntity(Entity entity)
+		{
+			base.OnAddedToEntity(entity);
 
-            //var shader = Factory.GetShader("postProcessEffects/SSAO.shader");
+			//var shader = Factory.GetShader("postProcessEffects/SSAO.shader");
 
-            //shader.Uniform.Set("testColor", new Vector3(0, 1, 0));
+			//shader.Uniform.Set("testColor", new Vector3(0, 1, 0));
 
-            //Camera.main.AddPostProcessEffect(shader);
-            Entity.EventSystem.On<EventThreadUpdate>(e => Update(e.DeltaTime));
-        }
+			//Camera.main.AddPostProcessEffect(shader);
+			Entity.EventSystem.On<EventThreadUpdate>(e => Update(e.DeltaTime));
+		}
 
-        void Update(double deltaTime)
-        {
-            
-        }
-    }
+		void Update(double deltaTime)
+		{
+
+		}
+	}
 }

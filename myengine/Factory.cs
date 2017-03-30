@@ -7,7 +7,7 @@ using System.Text;
 
 namespace MyEngine
 {
-	public class Factory
+	public class Factory : SingletonsPropertyAccesor
 	{
 		public Shader DefaultGBufferShader => GetShader("internal/deferred.gBuffer.PBR.shader");
 		public Shader DefaultDepthGrabShader => GetShader("internal/depthGrab.default.shader");
@@ -20,24 +20,16 @@ namespace MyEngine
 		public Texture2D BlackTexture => GetTexture2D("internal/black.png");
 		public Texture2D DefaultNormalMap => GetTexture2D("internal/normal.png");
 
-		[Dependency]
-		public IDependencyManager Dependency { get; private set; }
 
 		ConcurrentDictionary<string, Shader> allShaders = new ConcurrentDictionary<string, Shader>();
 
-		public static Factory Instance { get; private set; }
-
-		public Factory()
-		{
-			Instance = this;
-		}
 
 		public Shader GetShader(string file)
 		{
 			Shader s;
 			if (!allShaders.TryGetValue(file, out s))
 			{
-				s = Dependency.Create<Shader>(FileSystem.FindFile(file));
+				s = new Shader(FileSystem.FindFile(file));
 				allShaders[file] = s;
 			}
 			return s;
@@ -53,14 +45,11 @@ namespace MyEngine
 
 		public Material NewMaterial()
 		{
-			return Dependency.Create<Material>();
+			return new Material();
 		}
 
-		[Dependency(Register = true)]
-		ObjLoader objLoader;
 
-		[Dependency]
-		FileSystem FileSystem;
+		ObjLoader objLoader = new ObjLoader();
 
 		ConcurrentDictionary<string, Mesh> allMeshes = new ConcurrentDictionary<string, Mesh>();
 

@@ -13,8 +13,10 @@ namespace MyGame
 		Entity target;
 		Vector3 targetsLocalPosition;
 
-		public VisualizePosition(Entity entity) : base(entity)
+		public override void OnAddedToEntity(Entity entity)
 		{
+			base.OnAddedToEntity(entity);
+		
 			Entity.EventSystem.On<EventThreadUpdate>(e => Update(e.DeltaTime));
 		}
 

@@ -14,8 +14,10 @@ namespace MyEngine.Components
 		public Vector3 lightWorldPos;
 		public float lightWorldRadius;
 
-		public GodRays(Entity entity) : base(entity)
+		public override void OnAddedToEntity(Entity entity)
 		{
+			base.OnAddedToEntity(entity);
+
 			Shader = Factory.GetShader("postProcessEffects/godRays.glsl");
 		}
 

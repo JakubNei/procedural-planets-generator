@@ -124,7 +124,7 @@ namespace MyGame
 			planet.Transform.Position = new WorldPos(planet.RadiusMin * 3, 0, 0);
 
 			var planetShader = Factory.GetShader("shaders/planet.shader");
-			var planetMaterial = new Material(Factory);
+			var planetMaterial = new Material();
 			planetMaterial.GBufferShader = planetShader;
 			planetMaterial.Uniforms.Set("param_perlinNoise", Factory.GetTexture2D("textures/perlin_noise.*"));
 			planetMaterial.Uniforms.Set("param_baseHeightMap", cfg.baseHeightMap);

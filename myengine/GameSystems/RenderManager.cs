@@ -15,8 +15,9 @@ using System.Threading.Tasks;
 
 namespace MyEngine
 {
-	public class RenderManager
+	public class RenderManager : SingletonsPropertyAccesor
 	{
+
 		public RenderContext RenderContext { get; set; } = RenderContext.Geometry;
 
 		public DeferredGBuffer GBuffer { get; private set; }
@@ -24,26 +25,21 @@ namespace MyEngine
 		public Cubemap SkyboxCubeMap { get; set; }
 		Shader FinalDrawShader => Factory.GetShader("internal/finalDraw.glsl");
 
-		public bool DrawLines { get { return debug.GetCVar("debug draw lines"); } }
-		public bool EnablePostProcessEffects { get { return debug.GetCVar("enable post process effects"); } }
-		public bool DebugBounds { get { return debug.GetCVar("debug draw mesh bouding boxes"); } }
-		public bool ShadowsEnabled { get { return debug.GetCVar("shadows enabled"); } }
+		public bool DrawLines { get { return Debug.GetCVar("debug draw lines"); } }
+		public bool EnablePostProcessEffects { get { return Debug.GetCVar("enable post process effects"); } }
+		public bool DebugBounds { get { return Debug.GetCVar("debug draw mesh bouding boxes"); } }
+		public bool ShadowsEnabled { get { return Debug.GetCVar("shadows enabled"); } }
 
-		Factory Factory => Factory.Instance;
-		readonly MyDebug debug;
-		ILog Log => debug.Log;
-		CVar enableCulling => debug.GetCVar("enable culling", true);
-		CVar enableRasterizerRasterization => debug.GetCVar("enable rasterizer rasterization", true);
-		CVar enableRasterizerCulling => debug.GetCVar("enable rasterizer culling", true);
-		CVar showRasterizerContents => debug.GetCVar("show rasterizer contents");
-		CVar sortRenderables => debug.GetCVar("sort renderables", true);
-		CVar doParallelize => debug.GetCVar("parallelize render prepare", true);
+		CVar enableCulling => Debug.GetCVar("enable culling", true);
+		CVar enableRasterizerRasterization => Debug.GetCVar("enable rasterizer rasterization", true);
+		CVar enableRasterizerCulling => Debug.GetCVar("enable rasterizer culling", true);
+		CVar showRasterizerContents => Debug.GetCVar("show rasterizer contents");
+		CVar sortRenderables => Debug.GetCVar("sort renderables", true);
+		CVar doParallelize => Debug.GetCVar("parallelize render prepare", true);
 
-		public RenderManager(Events.EventSystem eventSystem, MyDebug debug)
+		public RenderManager()
 		{
-			this.debug = debug;
-
-			eventSystem.On<Events.WindowResized>(evt =>
+			EventSystem.On<Events.WindowResized>(evt =>
 			{
 				if (GBuffer != null) GBuffer.Dispose();
 				GBuffer = new DeferredGBuffer(evt.NewPixelWidth, evt.NewPixelHeight);
@@ -94,8 +90,8 @@ namespace MyEngine
 
 			if (DebugBounds) RenderDebugBounds(ubo, camera);
 
-			if (debug.GetCVar("debug draw normal buffer contents")) GBuffer.DebugDrawNormal();
-			if (debug.GetCVar("debug draw gbuffer contents")) GBuffer.DebugDrawContents();
+			if (Debug.GetCVar("debug draw normal buffer contents")) GBuffer.DebugDrawNormal();
+			if (Debug.GetCVar("debug draw gbuffer contents")) GBuffer.DebugDrawContents();
 			//if (drawShadowMapContents) DebugDrawTexture(shadowMap.depthMap, new Vector4(0.5f, 0.5f, 1, 1), new Vector4(0.5f,0.5f,0,1), 1, 0);
 
 			ErrorCode glError;
@@ -324,7 +320,7 @@ namespace MyEngine
 
 		float[] distancesToCamera = new float[maxToRenderAtOnce];
 		int lastTotalPossible = 0;
-		public void BuildRenderList(IList<IRenderable> possibleRenderables, Camera camera)
+		public void PrepareRender(RenderableData data, Camera camera)
 		{
 			// without Parallel.ForEach = 130 fps
 			// with ConcurrentBag = 180 fps
@@ -333,10 +329,12 @@ namespace MyEngine
 
 			var frustum = camera.GetFrustum();
 			var camPos = camera.Transform.Position;
+
+			var possibleRenderables = data.Renderers;
 			var possibleRenderablesCount = possibleRenderables.Count;
 
 
-			debug.AddValue("rendering / meshes / total possible", possibleRenderablesCount);
+			Debug.AddValue("rendering / meshes / total possible", possibleRenderablesCount);
 
 			// clear references to IRenderables in part of the array that will not be used, there is a chance that it might hang onto references thus stopping GC from collecting IRenderables
 			if (lastTotalPossible > possibleRenderablesCount)
@@ -351,12 +349,12 @@ namespace MyEngine
 
 			if (enableCulling)
 			{
+
 				int passedFrustumCullingIndex = 0;
-				lock (possibleRenderables)
 				{
 					void Work(IRenderable renderable)
 					{
-						if (renderable != null && renderable.ShouldRenderInContext(camera, RenderContext))
+						if (renderable.ShouldRenderInContext(camera, RenderContext))
 						{
 							if (renderable.ForcePassCulling)
 							{
@@ -383,11 +381,30 @@ namespace MyEngine
 							}
 						}
 					}
-					if (doParallelize) Parallel.ForEach(possibleRenderables, Work);
-					else possibleRenderables.ForEach(Work);
+
+					if (doParallelize)
+					{
+						Parallel.For(0, possibleRenderables.Count, i =>
+						{
+							IRenderable renderable;
+							if (possibleRenderables.TryGetAtIndex(i, out renderable))
+								Work(renderable);
+						});
+					}
+					else
+					{
+						for (int i = 0; i < possibleRenderables.Count; i++)
+						{
+							IRenderable renderable;
+							if (possibleRenderables.TryGetAtIndex(i, out renderable))
+								Work(renderable);
+						}
+					}
+
 				}
 
-				debug.AddValue("rendering / meshes / passed frustum culling", passedFrustumCullingIndex);
+
+				Debug.AddValue("rendering / meshes / passed frustum culling", passedFrustumCullingIndex);
 
 				if (rasterizer != null && enableRasterizerCulling)
 				{
@@ -420,10 +437,23 @@ namespace MyEngine
 						}
 					}
 
-					if (doParallelize) Parallel.For(0, passedFrustumCullingIndex, (i) => Work(passedFrustumCulling[i]));
-					else for (int i = 0; i < passedFrustumCullingIndex; i++) Work(passedFrustumCulling[i]);
 
-					debug.AddValue("rendering / meshes / passed rasterization culling", passedRasterizationCullingIndex);
+					if (doParallelize)
+					{
+						Parallel.For(0, passedFrustumCullingIndex, (i) =>
+						{
+							Work(passedFrustumCulling[i]);
+						});
+					}
+					else
+					{
+						for (int i = 0; i < passedFrustumCullingIndex; i++)
+						{
+							Work(passedFrustumCulling[i]);
+						}
+					}
+
+					Debug.AddValue("rendering / meshes / passed rasterization culling", passedRasterizationCullingIndex);
 
 					if (sortRenderables)
 					{

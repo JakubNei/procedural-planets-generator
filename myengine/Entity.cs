@@ -13,18 +13,23 @@ namespace MyEngine
 {
 	public class Entity : System.IDisposable
 	{
-		public EventSystem EventSystem { get; private set; }
+
+
+		public InputSystem Input => Scene.Input;
+		public MyDebug Debug => Scene.Debug;
+		public Factory Factory => Scene.Factory;
+		public ILog Log => Scene.Log;
+		public FileSystem FileSystem => Scene.FileSystem;
+		public Events.EventSystem EventSystem => Scene.EventSystem;
+
+
+
 
 		public Transform Transform { get; private set; }
 
 		public SceneSystem Scene { get; private set; }
-		public InputSystem Input { get; private set; }
 
-		public FileSystem FileSystem => Scene.FileSystem;
-		public MyDebug Debug => Scene.Debug;
-		public Factory Factory => Scene.Factory;
-		public ILog Log => Debug.Log;
-		public IDependencyManager Dependency => Scene.Dependency;
+
 
 		public IReadOnlyList<IComponent> Components => components.AsReadOnly();
 
@@ -35,9 +40,7 @@ namespace MyEngine
 		public Entity(SceneSystem scene, string name = "")
 		{
 			this.Scene = scene;
-			this.Input = Scene.Input;
 			this.Name = name;
-			EventSystem = new EventSystem();
 			this.Transform = this.AddComponent<Transform>();
 		}
 
@@ -72,7 +75,7 @@ namespace MyEngine
 			return ret;
 		}
 
-		public T AddComponent<T>() where T : Component
+		public T AddComponent<T>() where T : Component, new()
 		{
 			var componentSettingAttribute = typeof(T).GetCustomAttribute<ComponentSettingAttribute>(true);
 			if (componentSettingAttribute != null && componentSettingAttribute.allowMultiple == false)
@@ -84,12 +87,11 @@ namespace MyEngine
 				}
 			}
 
-			T c = Dependency.Create<T>(this);
+			T c = new T();
 			//T c = System.Activator.CreateInstance(typeof(T), this) as T;
 			lock (components)
-			{
 				components.Add(c);
-			}
+			c.OnAddedToEntity(this);
 			return c;
 		}
 

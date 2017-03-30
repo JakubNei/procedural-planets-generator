@@ -58,9 +58,13 @@ namespace MyEngine.Components
 																 new Vector3(-1,-1,-1),
 															 };
 
-		public MeshRenderer(Entity entity) : base(entity)
+
+		public override void OnAddedToEntity(Entity entity)
 		{
-			Material = Dependency.Create<Material>();
+			base.OnAddedToEntity(entity);
+
+
+			Material = new Material();
 			RenderingMode = MyRenderingMode.RenderGeometryAndCastShadows;
 		}
 

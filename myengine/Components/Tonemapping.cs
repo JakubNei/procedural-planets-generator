@@ -8,8 +8,10 @@ namespace MyEngine.Components
 {
 	public class Tonemapping : PostProcessEffect
 	{
-		public Tonemapping(Entity entity) : base(entity)
+		public override void OnAddedToEntity(Entity entity)
 		{
+			base.OnAddedToEntity(entity);
+
 			Shader = Factory.GetShader("postProcessEffects/tonemapping.glsl");
 		}
 	}

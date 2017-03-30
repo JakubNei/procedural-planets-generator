@@ -8,6 +8,7 @@ namespace MyEngine.Components
 {
     public interface IComponent
     {
+		void OnAddedToEntity(Entity entity);
         Entity Entity { get; }
     }
 }

@@ -62,8 +62,10 @@ namespace MyEngine.Components
 		public ShadowMap ShadowMap { get; private set; }
 		public bool HasShadows { get { return this.Shadows != LightShadows.None && this.LighType == LightType.Directional; } }
 
-		public Light(Entity entity) : base(entity)
+
+		public override void OnAddedToEntity(Entity entity)
 		{
+			base.OnAddedToEntity(entity);
 			entity.Scene.DataToRender.Add(this);
 		}
 

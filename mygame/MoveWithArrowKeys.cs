@@ -29,9 +29,6 @@ namespace MyGame
         int scrollWheelValue;
         Vector3 currentVelocity;
 
-        public MoveWithArrowKeys(Entity entity) : base(entity)
-        {
-        }
 
         public void Update(double deltaTime)
         {

@@ -138,6 +138,18 @@ namespace MyEngine
 			}
 		}
 
+
+		public bool TryGetAtIndex(int index, out T val)
+		{
+			if ((uint)index >= (uint)_size)
+			{
+				val = default(T);
+				return false;
+			}
+			val = _items[index];
+			return true;
+		}
+
 		private static bool IsCompatibleObject(object value)
 		{
 			// Non-null values are fine.  Only accept nulls if T is a class or Nullable<U>.
@@ -176,7 +188,7 @@ namespace MyEngine
 
 		public void Resize(int newSize)
 		{
-			if(Capacity < newSize) Capacity = newSize;
+			if (Capacity < newSize) Capacity = newSize;
 			_size = newSize;
 		}
 
@@ -214,7 +226,7 @@ namespace MyEngine
 				return false;
 			}
 		}
-		
+
 
 		// Copies this List into array, which must be of a 
 		// compatible array type.  
@@ -223,7 +235,7 @@ namespace MyEngine
 		{
 			CopyTo(array, 0);
 		}
-		
+
 		// Copies a section of this list to the given array at the given index.
 		// 
 		// The method uses the Array.Copy method to copy the elements.
@@ -262,7 +274,7 @@ namespace MyEngine
 				Capacity = newCapacity;
 			}
 		}
-		
+
 
 		// Returns an enumerator for this list with the given
 		// permission for removal of elements. If modifications made to the list 
@@ -284,7 +296,7 @@ namespace MyEngine
 		{
 			return new Enumerator(this);
 		}
-		
+
 
 		// Returns the index of the first occurrence of a given value in a range of
 		// this list. The list is searched forwards from beginning to end.
@@ -300,7 +312,7 @@ namespace MyEngine
 			Contract.Ensures(Contract.Result<int>() < Count);
 			return Array.IndexOf(_items, item, 0, _size);
 		}
-		
+
 
 		// Returns the index of the first occurrence of a given value in a range of
 		// this list. The list is searched forwards, starting at index
@@ -364,7 +376,7 @@ namespace MyEngine
 			_size++;
 			_version++;
 		}
-		
+
 
 		// Inserts the elements of the given collection at a given index. If
 		// required, the capacity of the list is increased to twice the previous
@@ -523,7 +535,7 @@ namespace MyEngine
 
 			return false;
 		}
-		
+
 
 		// Removes the element at the given index. The size of the list is
 		// decreased by one.

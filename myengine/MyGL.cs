@@ -21,7 +21,7 @@ namespace MyEngine
 			ErrorCode err;
 			while ((err = GL.GetError()) != ErrorCode.NoError)
 			{
-				MyDebug.Instance.Log.Error("GL Error: " + err);
+				Singletons.Log.Error("GL Error: " + err);
 				throw new Exception("GL Error: " + err);
 			}
 		}

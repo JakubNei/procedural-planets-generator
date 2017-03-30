@@ -15,12 +15,10 @@ namespace MyEngine
 
 		
 		readonly FileSystem FileSystem;
-        readonly MyDebug debug;
 
-		public ShaderBuilder(FileSystem fileSystem, MyDebug debug)
+		public ShaderBuilder(FileSystem fileSystem)
 		{
             FileSystem = fileSystem;
-            this.debug = debug;
 		}
 
 		void Prepend(MyFile name)

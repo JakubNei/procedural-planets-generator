@@ -8,22 +8,16 @@ namespace MyEngine.Components
 	public abstract class ComponentWithShortcuts : Component
 	{
 		public InputSystem Input => Entity.Input;
-		public Transform Transform => Entity.Transform;
-
-		public SceneSystem Scene => Entity.Scene;
-
-		public Factory Factory => Entity.Factory;
 		public MyDebug Debug => Entity.Debug;
-		public ILog Log => Debug.Log;
-
+		public Factory Factory => Entity.Factory;
+		public ILog Log => Entity.Log;
 		public FileSystem FileSystem => Entity.FileSystem;
-
 		public Events.EventSystem EventSystem => Entity.EventSystem;
 
-		public IDependencyManager Dependency => Entity.Dependency;
 
-		public ComponentWithShortcuts(Entity entity) : base(entity)
-		{
-		}
+
+		public SceneSystem Scene => Entity.Scene;
+		public Transform Transform => Entity.Transform;
+
 	}
 }

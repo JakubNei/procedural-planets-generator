@@ -10,8 +10,10 @@ namespace MyEngine.Components
 {
 	public class Bloom : PostProcessEffect
 	{
-		public Bloom(Entity entity) : base(entity)
+		public override void OnAddedToEntity(Entity entity)
 		{
+			base.OnAddedToEntity(entity);
+		
 			Shader = Factory.GetShader("postProcessEffects/bloom.glsl");
 		}
 	}

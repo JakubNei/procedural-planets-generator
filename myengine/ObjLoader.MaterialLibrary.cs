@@ -7,7 +7,7 @@ namespace MyEngine
 {
 	public partial class ObjLoader
 	{
-		class MaterialLibrary
+		class MaterialLibrary : SingletonsPropertyAccesor
 		{
 			Dictionary<string, MaterialPBR> materials = new Dictionary<string, MaterialPBR>();
 
@@ -19,12 +19,12 @@ namespace MyEngine
 					failedParse++;
 			}
 
-			public MaterialLibrary(MyFile file, FileSystem FileSystem, Factory factory)
+			public MaterialLibrary(MyFile file)
 			{
 				using (var s = file.GetDataStream())
 				using (StreamReader textReader = new StreamReader(s))
 				{
-					MaterialPBR lastMat = new MaterialPBR(factory);
+					MaterialPBR lastMat = new MaterialPBR();
 					string line;
 					while ((line = textReader.ReadLine()) != null)
 					{
@@ -51,7 +51,7 @@ namespace MyEngine
 						switch (parameters[0])
 						{
 							case "newmtl":
-								lastMat = new MaterialPBR(factory);
+								lastMat = new MaterialPBR();
 								materials[parameters[1]] = lastMat;
 								break;
 

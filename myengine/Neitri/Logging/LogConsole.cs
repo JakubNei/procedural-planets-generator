@@ -37,6 +37,7 @@ namespace Neitri.Logging
 					doLog.Reset();
 				}
 			});
+			thread.Name = "deferred log to console";
 			thread.IsBackground = true;
 			thread.Start();
 		}

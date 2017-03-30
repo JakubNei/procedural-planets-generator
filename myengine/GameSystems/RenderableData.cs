@@ -9,14 +9,16 @@ using MyEngine.Events;
 
 namespace MyEngine
 {
+	/// <summary>
+	/// Source data to render, we give those to <see cref="RenderManager"/>
+	/// </summary>
     public class RenderableData
     {
-        public IList<IRenderable> Renderers =>  renderers;
-    
-        public IList<ILight> Lights => lights;
+        public UnorderedList<IRenderable> Renderers =>  renderers;    
+        public UnorderedList<ILight> Lights => lights;
 
-		IList<IRenderable> renderers = new UnorderedList<IRenderable>(1000);
-		IList<ILight> lights = new UnorderedList<ILight>(1000);
+		UnorderedList<IRenderable> renderers = new UnorderedList<IRenderable>(1000);
+		UnorderedList<ILight> lights = new UnorderedList<ILight>(1000);
 
         public void Add(IRenderable renderer)
         {

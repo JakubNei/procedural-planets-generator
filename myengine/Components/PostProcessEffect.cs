@@ -29,8 +29,11 @@ namespace MyEngine.Components
 		public Shader Shader { get; set; }
 		public bool RequiresGBufferMipMaps { get; set; }
 
-		public PostProcessEffect(Entity entity) : base(entity)
+
+		public override void OnAddedToEntity(Entity entity)
 		{
+			base.OnAddedToEntity(entity);
+
 			IsEnabled = true;
 			RequiresGBufferMipMaps = true;
 			Camera.AddPostProcessEffect(this);

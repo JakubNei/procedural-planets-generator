@@ -122,12 +122,9 @@
     <Compile Include="Mathematical\WorleyD.cs" />
     <Compile Include="Mesh.Utils.cs" />
     <Compile Include="GameSystems\RenderManager.cs" />
-    <Compile Include="Neitri\DependencyInjection\DependencyManager.cs" />
     <Compile Include="Neitri\GlobSearch.cs" />
     <Compile Include="Neitri\IBinarySerializer.cs" />
-    <Compile Include="Neitri\DependencyInjection\IDependencyManager.cs" />
     <Compile Include="Neitri\Logging\ILogger.cs" />
-    <Compile Include="Neitri\DependencyInjection\IOnDependencyResolved.cs" />
     <Compile Include="Neitri\Logging\LogAggregator.cs" />
     <Compile Include="Neitri\Logging\LogConsole.cs" />
     <Compile Include="Neitri\Logging\LogFile.cs" />
@@ -157,7 +154,6 @@
     <Compile Include="GameSystems\MyFile.cs" />
     <Compile Include="GameSystems\MyFolder.cs" />
     <Compile Include="GameSystems\FileSystem.cs" />
-    <Compile Include="ITest1.cs" />
     <Compile Include="Mathematical\MyMath.cs">
       <LastGenOutput>MyMath1.cs</LastGenOutput>
     </Compile>

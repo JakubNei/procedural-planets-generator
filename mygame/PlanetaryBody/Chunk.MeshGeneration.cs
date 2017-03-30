@@ -127,13 +127,13 @@ namespace MyGame.PlanetaryBody
 				mesh.Bounds.Encapsulate(NoElevationRange.CenterPos.ToVector3() - n * c - o);
 			}
 
-			if (renderer != null) throw new Exception("something went terribly wrong, renderer should be null");
-			renderer = planetaryBody.Entity.AddComponent<CustomChunkMeshRenderer>();
-			renderer.chunk = this;
-			renderer.Mesh = mesh;
-			renderer.Offset += offsetCenter;
-			renderer.Material = planetaryBody.PlanetMaterial;
-			renderer.RenderingMode = MyRenderingMode.DontRender;
+			if (Renderer != null) throw new Exception("something went terribly wrong, renderer should be null");
+			Renderer = planetaryBody.Entity.AddComponent<CustomChunkMeshRenderer>();
+			Renderer.chunk = this;
+			Renderer.Mesh = mesh;
+			Renderer.Offset += offsetCenter;
+			Renderer.Material = planetaryBody.PlanetMaterial;
+			Renderer.RenderingMode = MyRenderingMode.DontRender;
 		}
 
 

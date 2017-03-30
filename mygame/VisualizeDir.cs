@@ -10,32 +10,34 @@ using OpenTK;
 
 namespace MyGame
 {
-    public class VisualizeDir : ComponentWithShortcuts
-    {
+	public class VisualizeDir : ComponentWithShortcuts
+	{
 
-        public Vector3 offset = new Vector3(0, 10, 0);
+		public Vector3 offset = new Vector3(0, 10, 0);
 
-        Entity dirVisualize;
+		Entity dirVisualize;
 
-        public VisualizeDir(Entity entity) : base(entity)
-        {
-            Start();
-            Entity.EventSystem.On<EventThreadUpdate>(e => Update(e.DeltaTime));
-        }
+		public override void OnAddedToEntity(Entity entity)
+		{
+			base.OnAddedToEntity(entity);
 
-        void Start()
-        {
-            var go = Entity.Scene.AddEntity();
-            var renderer = go.AddComponent<MeshRenderer>();
-            renderer.Mesh = Factory.GetMesh("sphere.obj");
-            go.Transform.Scale *= 0.5f;
+			Start();
+			Entity.EventSystem.On<EventThreadUpdate>(e => Update(e.DeltaTime));
+		}
 
-            dirVisualize = go;
-        }
+		void Start()
+		{
+			var go = Entity.Scene.AddEntity();
+			var renderer = go.AddComponent<MeshRenderer>();
+			renderer.Mesh = Factory.GetMesh("sphere.obj");
+			go.Transform.Scale *= 0.5f;
 
-        void Update(double deltaTime)
-        {
-            dirVisualize.Transform.Position = this.Entity.Transform.Position + this.Entity.Transform.Forward*2;
-        }
-    }
+			dirVisualize = go;
+		}
+
+		void Update(double deltaTime)
+		{
+			dirVisualize.Transform.Position = this.Entity.Transform.Position + this.Entity.Transform.Forward * 2;
+		}
+	}
 }

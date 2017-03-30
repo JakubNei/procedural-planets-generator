@@ -65,12 +65,13 @@ namespace MyEngine.Components
 
 		public virtual bool ForcePassCulling { get; set; }
 
-		MyWeakReference<RenderableData> dataToRender;
+		RenderableData DataToRender => Entity.Scene.DataToRender;
 
-		public Renderer(Entity entity) : base(entity)
+		public override void OnAddedToEntity(Entity entity)
 		{
-			dataToRender = new MyWeakReference<RenderableData>(Entity.Scene.DataToRender);
-			dataToRender.Target?.Add(this);
+			base.OnAddedToEntity(entity);
+
+			DataToRender.Add(this);
 		}
 
 		public void SetRenderingMode(MyRenderingMode renderingMode) => RenderingMode = renderingMode;
@@ -99,7 +100,7 @@ namespace MyEngine.Components
 
 		public void Dispose()
 		{
-			dataToRender.Target?.Remove(this);
+			DataToRender.Remove(this);
 		}
 
 		public override string ToString()

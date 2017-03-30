@@ -12,7 +12,7 @@ using Neitri.Base;
 
 namespace MyEngine
 {
-	public partial class Shader : IDisposable
+	public partial class Shader : SingletonsPropertyAccesor, IDisposable
 	{
 		public const int positionLocation = 0;
 		public const int normalLocation = 1;
@@ -40,9 +40,9 @@ namespace MyEngine
 
 		public int ShaderProgramHandle { get; private set; }
 
-		readonly MyDebug debug;
-		public ILog Log => debug.Log;
 		Dictionary<string, int> cachedUniformLocations = new Dictionary<string, int>();
+
+
 
 		MyFile file;
 
@@ -50,9 +50,8 @@ namespace MyEngine
 
 		static int lastBindedShaderHandle;
 
-		public Shader(MyFile file, MyDebug debug)
+		public Shader(MyFile file)
 		{
-			this.debug = debug;
 			this.file = file;
 			this.Uniforms = new UniformsData();
 		}
@@ -61,7 +60,7 @@ namespace MyEngine
 		{
 			ShaderProgramHandle = GL.CreateProgram(); MyGL.Check();
 
-			var builder = new ShaderBuilder(file.FileSystem, debug);
+			var builder = new ShaderBuilder(file.FileSystem);
 			var success = true;
 			builder.LoadAndParse(file);
 

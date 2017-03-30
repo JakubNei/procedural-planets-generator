@@ -33,8 +33,10 @@ namespace MyEngine.Components
 		public List<IPostProcessEffect> postProcessEffects = new List<IPostProcessEffect>();
 
 
-		public Camera(Entity entity) : base(entity)
+		public override void OnAddedToEntity(Entity entity)
 		{
+			base.OnAddedToEntity(entity);
+		
 			entity.EventSystem.On<Events.WindowResized>(e => SetSize(e.NewPixelWidth, e.NewPixelHeight));
 
 			Transform.OnRotationChanged += () => RecalculateRotationMatrix();

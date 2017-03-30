@@ -39,11 +39,11 @@ namespace MyEngine
 			}
 		}
 
-		public MaterialPBR(Factory factory) : base(factory)
+		public MaterialPBR() : base()
 		{
-			albedoTexture = factory.WhiteTexture;
-			metallicTexture = factory.WhiteTexture;
-			smoothnessTexture = factory.WhiteTexture;
+			albedoTexture = Factory.WhiteTexture;
+			metallicTexture = Factory.WhiteTexture;
+			smoothnessTexture = Factory.WhiteTexture;
 			normalMap = null;
 		}
 

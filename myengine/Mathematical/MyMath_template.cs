@@ -340,7 +340,7 @@ namespace MyEngine
 		public static bool Intersects(this SphereD sphere, TriangleD triangle) => Intersects(triangle, sphere);
 		public static bool Intersects(this TriangleD triangle, SphereD sphere)
 		{
-			// from http://realtimecollisiondetection.net/blog/?p=103
+			// from http://realtimecollisiondetection.net/bLog/?p=103
 			var A = triangle.a - sphere.center;
 			var B = triangle.b - sphere.center;
 			var C = triangle.c - sphere.center;

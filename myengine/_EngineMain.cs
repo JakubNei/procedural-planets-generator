@@ -15,22 +15,42 @@ using System.Threading.Tasks;
 
 namespace MyEngine
 {
-	public class EngineMain : IDisposable
+	public static class Singletons
 	{
-		public InputSystem Input { get; private set; }
+		public static InputSystem Input { get; private set; }
+		public static MyDebug Debug { get; private set; }
+		public static Factory Factory { get; private set; }
+		public static ILog Log { get; private set; }
+		public static FileSystem FileSystem { get; private set; } = new FileSystem("../Resources/");
+		public static Events.EventSystem EventSystem { get; private set; }
 
-		public MyDebug Debug { get; private set; }
-		public ILog Log => Debug.Log;
-		public FileSystem FileSystem { get; private set; } = new FileSystem("../Resources/");
+		public static void Start(EngineMain engine)
+		{
+			Log = new Neitri.Logging.LogConsole();
+			Input = new InputSystem(engine);
+			Debug = new MyDebug();
+			EventSystem = new Events.EventSystem();
+			Factory = new Factory();
+
+		}
+	}
+
+	public class SingletonsPropertyAccesor
+	{
+		public InputSystem Input => Singletons.Input;
+		public MyDebug Debug => Singletons.Debug;
+		public Factory Factory => Singletons.Factory;
+		public ILog Log => Singletons.Log;
+		public FileSystem FileSystem => Singletons.FileSystem;
+		public Events.EventSystem EventSystem => Singletons.EventSystem;
+
+	}
+
+	public class EngineMain : SingletonsPropertyAccesor, IDisposable
+	{
 
 		List<SceneSystem> scenes = new List<SceneSystem>();
 
-		public IDependencyManager Dependency { get; private set; } = new Neitri.DependencyInjection.DependencyManager();
-
-		public Events.EventSystem EventSystem { get; private set; }
-
-		[Dependency(Register = true)]
-		public Factory Factory { get; private set; }
 
 		const string defaultWindowTitle = "Procedural Planet Generator";
 		public string WindowTitle { get { return gameWindow.Title; } set { gameWindow.Title = value; } }
@@ -69,16 +89,14 @@ namespace MyEngine
 				3,
 				GraphicsContextFlags.ForwardCompatible/*| GraphicsContextFlags.Debug*/
 			);
+
+			Singletons.Start(this);
+			Singletons.Log.Info("START");
+
 			gameWindow.VSync = VSyncMode.Off;
 
-			Input = new InputSystem(this);
-			Debug = new MyDebug(Input, FileSystem);
-			EventSystem = new Events.EventSystem();
 
-			Log.Info("START"); // to have debug initialized before anything else
 
-			Dependency.Register(FileSystem, Debug, Input, EventSystem, this);
-			Dependency.BuildUp(this);
 
 			System.Diagnostics.Process.GetCurrentProcess().PriorityClass = System.Diagnostics.ProcessPriorityClass.RealTime;
 			Thread.CurrentThread.Priority = ThreadPriority.Highest;
@@ -100,7 +118,6 @@ namespace MyEngine
 		public SceneSystem NewScene()
 		{
 			var scene = new SceneSystem(this);
-			EventSystem.PassEventsTo(scene.EventSystem);
 			scenes.Add(scene);
 			return scene;
 		}
@@ -113,8 +130,8 @@ namespace MyEngine
 
 			stopwatchSinceStart.Restart();
 
-			renderManagerFront = Dependency.Create<RenderManager>();
-			renderManagerBack = Dependency.Create<RenderManager>();
+			renderManagerFront = new RenderManager();
+			renderManagerBack = new RenderManager();
 
 
 			/*Debug.CommonCVars.VSync().ToogledByKey(OpenTK.Input.Key.V).OnChanged += (cvar) =>
@@ -231,7 +248,7 @@ namespace MyEngine
 					var dataToRender = scene.DataToRender;
 					if (camera != null && dataToRender != null)
 					{
-						renderManagerBack.BuildRenderList(dataToRender.Renderers, camera);
+						renderManagerBack.PrepareRender(dataToRender, camera);
 					}
 				}
 			}

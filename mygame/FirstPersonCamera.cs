@@ -37,8 +37,12 @@ namespace MyGame
 
 		public ProceduralPlanets planets;
 		const bool moveCameraToSurfaceOnStart = false;
-		public FirstPersonCamera(Entity entity) : base(entity)
+
+
+		public override void OnAddedToEntity(Entity entity)
 		{
+			base.OnAddedToEntity(entity);
+
 			EventSystem.On<InputUpdate>(e => Update((float)e.DeltaTime));
 			EventSystem.Once<InputUpdate>(e => Start());
 		}

@@ -9,7 +9,7 @@ using System.Text;
 
 namespace MyEngine
 {
-	public class DeferredGBuffer : System.IDisposable
+	public class DeferredGBuffer : SingletonsPropertyAccesor, System.IDisposable
 	{
 		int frameBufferObjectHandle;
 
@@ -34,7 +34,6 @@ namespace MyEngine
 			Final2 = 5,
 		}
 
-		Factory Factory => Factory.Instance;
 		readonly int width;
 		readonly int height;
 

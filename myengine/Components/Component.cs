@@ -12,7 +12,7 @@ namespace MyEngine.Components
 {
 	public class Component : IComponent
 	{
-		public Component(Entity entity)
+		public virtual void OnAddedToEntity(Entity entity)
 		{
 			this.entity = entity;
 		}
@@ -20,7 +20,7 @@ namespace MyEngine.Components
 		/// <summary>
 		/// The Entity that this Component is attached to
 		/// </summary>
-		public Entity Entity
+		public virtual Entity Entity
 		{
 			get
 			{
@@ -30,5 +30,7 @@ namespace MyEngine.Components
 		}
 
 		private Entity entity;
+
+
 	}
 }

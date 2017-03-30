@@ -32,15 +32,13 @@ namespace MyGame.PlanetaryBody
 
 		public int meshGeneratedWithShaderVersion;
 
-		public List<Chunk> childs { get; } = new List<Chunk>();
-		public CustomChunkMeshRenderer renderer { get; set; }
+		public List<Chunk> Children { get; } = new List<Chunk>();
+		public CustomChunkMeshRenderer Renderer { get; set; }
 
 		public class CustomChunkMeshRenderer : MeshRenderer
 		{
 			public Chunk chunk;
-			public CustomChunkMeshRenderer(Entity entity) : base(entity)
-			{
-			}
+
 			/*
 			public override bool ShouldRenderInContext(Camera camera, RenderContext renderContext)
 			{
@@ -107,7 +105,7 @@ namespace MyGame.PlanetaryBody
 		TriangleD[] GetMeshTriangles()
 		{
 			if (meshTriangles == null)
-				meshTriangles = renderer?.Mesh?.GetMeshTrianglesD();
+				meshTriangles = Renderer?.Mesh?.GetMeshTrianglesD();
 			return meshTriangles;
 		}
 
@@ -149,12 +147,12 @@ namespace MyGame.PlanetaryBody
 			var dotToCamera = rangeToCalculateScreenSizeOn.Normal.Dot(dirToCamera);
 
 			var distanceToCamera = myPos.Distance(cam.ViewPointPosition);
-			if (renderer != null && renderer.Mesh != null)
+			if (Renderer != null && Renderer.Mesh != null)
 			{
 				//var localCamPos = planetaryBody.Transform.Position.Towards(cam.ViewPointPosition).ToVector3();
 				//distanceToCamera = renderer.Mesh.Vertices.FindClosest((v) => v.DistanceSqr(localCamPos)).Distance(localCamPos);
 				//isVisible = cam.GetFrustum().VsBounds(renderer.GetCameraSpaceBounds(cam.ViewPointPosition));
-				isVisible = renderer.GetCameraRenderStatusFeedback(cam).HasFlag(RenderStatus.Rendered);
+				isVisible = Renderer.GetCameraRenderStatusFeedback(cam).HasFlag(RenderStatus.Rendered);
 			}
 
 			double radiusCameraSpace;
@@ -174,11 +172,11 @@ namespace MyGame.PlanetaryBody
 
 		public void CalculateRealVisibleRange()
 		{
-			var a = renderer.Mesh.Vertices[planetaryBody.AIndex];
-			var b = renderer.Mesh.Vertices[planetaryBody.BIndex];
-			var c = renderer.Mesh.Vertices[planetaryBody.CIndex];
+			var a = Renderer.Mesh.Vertices[planetaryBody.AIndex];
+			var b = Renderer.Mesh.Vertices[planetaryBody.BIndex];
+			var c = Renderer.Mesh.Vertices[planetaryBody.CIndex];
 
-			var o = renderer.Offset.ToVector3d();
+			var o = Renderer.Offset.ToVector3d();
 			realVisibleRange.a = a.ToVector3d() + o;
 			realVisibleRange.b = b.ToVector3d() + o;
 			realVisibleRange.c = c.ToVector3d() + o;
@@ -202,19 +200,21 @@ namespace MyGame.PlanetaryBody
 
 		void AddChild(Vector3d a, Vector3d b, Vector3d c, ChildPosition cp)
 		{
-			var range = new TriangleD();
-			range.a = a;
-			range.b = b;
-			range.c = c;
+			var range = new TriangleD()
+			{
+				a = a,
+				b = b,
+				c = c
+			};
 			var child = new Chunk(planetaryBody, range, this, cp);
-			childs.Add(child);
+			Children.Add(child);
 			child.subdivisionDepth = subdivisionDepth + 1;
 			child.rangeToCalculateScreenSizeOn = range;
 		}
 
 		public void CreteChildren()
 		{
-			if (childs.Count <= 0)
+			if (Children.Count <= 0)
 			{
 				var a = NoElevationRange.a;
 				var b = NoElevationRange.b;
@@ -236,22 +236,22 @@ namespace MyGame.PlanetaryBody
 
 		public void DeleteChildren()
 		{
-			if (childs.Count > 0)
+			if (Children.Count > 0)
 			{
-				foreach (var child in childs)
+				foreach (var child in Children)
 				{
 					child.DeleteChildren();
 					child.DestroyRenderer();
 				}
-				childs.Clear();
+				Children.Clear();
 			}
 		}
 
 		public void DestroyRenderer()
 		{
-			renderer?.SetRenderingMode(MyRenderingMode.DontRender);
-			planetaryBody.Entity.DestroyComponent(renderer);
-			renderer = null;
+			Renderer?.SetRenderingMode(MyRenderingMode.DontRender);
+			planetaryBody.Entity.DestroyComponent(Renderer);
+			Renderer = null;
 		}
 
 

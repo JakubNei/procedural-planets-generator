@@ -9,26 +9,21 @@ using System.Text;
 
 namespace MyEngine
 {
+	// TODO: improve
 	public class MaterialInstance : Material
 	{
 		public Material parentMaterial;
-
-		public MaterialInstance(Factory factory) : base(factory)
-		{
-		}
 	}
 
-	public class Material : ICloneable
+	public class Material : SingletonsPropertyAccesor, ICloneable
 	{
-		Factory factory;
-
 		Shader gBufferShader;
 
 		public virtual Shader GBufferShader
 		{
 			get
 			{
-				return gBufferShader ?? (gBufferShader = factory.DefaultGBufferShader);
+				return gBufferShader ?? (gBufferShader = Factory.DefaultGBufferShader);
 			}
 			set
 			{
@@ -43,7 +38,7 @@ namespace MyEngine
 		{
 			get
 			{
-				return depthGrabShader ?? (depthGrabShader = factory.DefaultDepthGrabShader);
+				return depthGrabShader ?? (depthGrabShader = Factory.DefaultDepthGrabShader);
 			}
 			set
 			{
@@ -54,9 +49,8 @@ namespace MyEngine
 
 		public virtual UniformsData Uniforms { get; private set; }
 
-		public Material(Factory factory)
+		public Material()
 		{
-			this.factory = factory;
 			Uniforms = new UniformsData();
 		}
 
@@ -66,14 +60,14 @@ namespace MyEngine
 
 		public virtual MaterialInstance MakeInstance()
 		{
-			var ret = new MaterialInstance(factory);
+			var ret = new MaterialInstance();
 			ret.parentMaterial = this;
 			return ret;
 		}
 
 		public virtual Material CloneTyped()
 		{
-			var m = new Material(factory)
+			var m = new Material()
 			{
 				GBufferShader = GBufferShader,
 				DepthGrabShader = DepthGrabShader,

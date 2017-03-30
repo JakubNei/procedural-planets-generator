@@ -10,13 +10,9 @@ using System.Windows.Forms;
 
 namespace MyEngine
 {
-	public class MyDebug
+	public class MyDebug : SingletonsPropertyAccesor
 	{
-		public static MyDebug Instance { get; private set; }
-
 		List<string> alreadyShown = new List<string>();
-
-		public readonly InputSystem Input;
 
 
 
@@ -26,31 +22,25 @@ namespace MyEngine
 
 		class TraceListener : System.Diagnostics.TraceListener
 		{
-			public ILog Log { get; set; }
+			public ILog log;
 			public override void Write(string message)
 			{
-				Log.Info(message);
+				log.Info(message);
 			}
 
 			public override void WriteLine(string message)
 			{
-				Log.Info(message);
+				log.Info(message);
 			}
 		}
-
-		public readonly ILog Log;
-
-		public MyDebug(InputSystem input, FileSystem fs)
+		public MyDebug()
 		{
-			Log = new Neitri.Logging.LogConsole();
-			this.Input = input;
-			Instance = this;
 
-			cvars = new CVarFactory(() => File.Open(fs.GetPhysicalPath("cvars.config"), FileMode.OpenOrCreate), Log);
+			cvars = new CVarFactory(() => File.Open(FileSystem.GetPhysicalPath("cvars.config"), FileMode.OpenOrCreate), Log);
 			CommonCVars = new CommonCVars(this);
 			AddCommonCvars();
 
-			System.Diagnostics.Debug.Listeners.Add(new TraceListener() { Log = Log });
+			System.Diagnostics.Debug.Listeners.Add(new TraceListener() { log = Log });
 		}
 
 
