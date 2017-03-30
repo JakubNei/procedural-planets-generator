@@ -45,6 +45,7 @@ namespace MyEngine
 				}
 			}
 		}
+		public static implicit operator bool(CVar cvar) => cvar.Bool;
 
 		float _number = 0;
 		public float Number
@@ -65,6 +66,8 @@ namespace MyEngine
 			}
 		}
 
+		public static implicit operator float(CVar cvar) => cvar.Number;
+		public static implicit operator int(CVar cvar) => (int)cvar.Number;
 
 		public OpenTK.Input.Key ToogleKey { get; set; } = OpenTK.Input.Key.Unknown;
 
@@ -110,7 +113,6 @@ namespace MyEngine
 			return this;
 		}
 
-		public static implicit operator bool(CVar cvar) => cvar.Bool;
 	}
 
 }

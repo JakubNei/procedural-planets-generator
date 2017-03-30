@@ -117,7 +117,7 @@ namespace MyEngine
 			var s = cvar.Name + " = ";
 
 			if (cvar.ValueType == CvarValueType.NotSet) s += "not set";
-			else if (cvar.ValueType == CvarValueType.Bool) s += cvar.Bool;
+			else if (cvar.ValueType == CvarValueType.Bool) s += cvar.Bool.ToString().ToLower();
 			else if (cvar.ValueType == CvarValueType.Number) s += cvar.Number;
 
 			if (cvar.ToogleKey != OpenTK.Input.Key.Unknown) s += " = " + cvar.ToogleKey;

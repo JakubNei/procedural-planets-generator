@@ -19,8 +19,8 @@ namespace MyGame.PlanetaryBody
 	{
 		public double RadiusMin => config.radiusMin;
 
-		public int ChunkNumberOfVerticesOnEdge => 50;
-		public float SizeOnScreenNeededToSubdivide => 0.3f;
+		public int ChunkNumberOfVerticesOnEdge => Debug.GetCVar("segment number of vertices on edge", 50);
+		public float SizeOnScreenNeededToSubdivide => Debug.GetCVar("segment subdivide if size on screen is bigger than", 0.3f);
 
 		int subdivisionMaxRecurisonDepthCached = -1;
 		public int SubdivisionMaxRecurisonDepth
@@ -33,7 +33,7 @@ namespace MyGame.PlanetaryBody
 					var oneRootChunkCircumference = planetCircumference / 6.0f;
 
 					subdivisionMaxRecurisonDepthCached = 0;
-					while (oneRootChunkCircumference > 100)
+					while (oneRootChunkCircumference > Debug.GetCVar("segment stop recursion at world size", 100))
 					{
 						oneRootChunkCircumference /= 2;
 						subdivisionMaxRecurisonDepthCached++;
