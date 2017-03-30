@@ -57,6 +57,9 @@
     <Compile Include="MoveWithArrowKeys.cs" />
     <Compile Include="PlanetaryBody\Chunk.MeshGeneration.cs" />
     <Compile Include="PlanetaryBody\Config.cs" />
+    <Compile Include="PlanetaryBody\IJob.cs" />
+    <Compile Include="PlanetaryBody\JobRunner.cs" />
+    <Compile Include="PlanetaryBody\JobTemplate.cs" />
     <Compile Include="PlanetaryBody\Root.cs" />
     <Compile Include="PlanetaryBody\Chunk.cs" />
     <Compile Include="PlanetaryBody\ProceduralPlanets.cs" />

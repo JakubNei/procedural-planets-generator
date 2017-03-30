@@ -15,10 +15,8 @@ namespace MyGame.PlanetaryBody
 {
 	public partial class Chunk
 	{
-		Mesh.VertexIndex[] edgeVerticesIndexes;
-	
 
-
+		uint numbetOfChunksGenerated = 0;
 		public bool GenerationBegan { get; private set; } = false;
 
 		public void CreateRendererAndBasicMesh()
@@ -28,57 +26,15 @@ namespace MyGame.PlanetaryBody
 				if (GenerationBegan) return;// throw new Exception("generation already began");
 				GenerationBegan = true;
 			}
+			numbetOfChunksGenerated++;
 
 			var offsetCenter = NoElevationRange.CenterPos;
-			var mesh = new Mesh();// "PlanetaryBodyChunk depth:" + subdivisionDepth + " #" + numbetOfChunksGenerated);
+			var mesh = new Mesh();
+			mesh.Name = "PlanetaryBodyChunk depth:" + subdivisionDepth + " #" + numbetOfChunksGenerated;
 
-			// generate evenly spaced vertices, then we make triangles out of them
 
 			var normals = mesh.Normals;
 
-
-			// generate all of our vertices
-			/*
-			{
-				//positionsFinal.Add(noElevationRange.a.ToVector3());
-				vertices.Add(GetFinalPos(noElevationRange.a).ToVector3());
-				//vertices.Add(Vector3.Zero);
-
-				// add positions, line by line
-				{
-					int numberOfVerticesInBetween = 0;
-					for (uint y = 1; y < NumberOfVerticesOnEdge; y++)
-					{
-						var percent = y / (float)(NumberOfVerticesOnEdge - 1);
-						var start = MyMath.Slerp(noElevationRange.a, noElevationRange.b, percent);
-						var end = MyMath.Slerp(noElevationRange.a, noElevationRange.c, percent);
-
-						//positionsFinal.Add(start.ToVector3());
-						vertices.Add(GetFinalPos(start).ToVector3());
-						//vertices.Add(Vector3.Zero);
-
-						if (numberOfVerticesInBetween > 0)
-						{
-							for (uint x = 1; x <= numberOfVerticesInBetween; x++)
-							{
-								var v = MyMath.Slerp(start, end, x / (float)(numberOfVerticesInBetween + 1));
-
-								//positionsFinal.Add(v.ToVector3());
-								vertices.Add(GetFinalPos(v).ToVector3());
-								//vertices.Add(Vector3.Zero);
-
-							}
-						}
-
-						//positionsFinal.Add(end.ToVector3());
-						vertices.Add(GetFinalPos(end).ToVector3());
-						//vertices.Add(Vector3.Zero);
-
-						numberOfVerticesInBetween++;
-					}
-				}
-			}
-			*/
 
 			var vertices = planetaryBody.GetVerticesList();
 			var indicies = planetaryBody.GetIndiciesList();
@@ -98,13 +54,11 @@ namespace MyGame.PlanetaryBody
 			}
 			*/
 
-			edgeVerticesIndexes = planetaryBody.GetEdgeVertices();
-
 			bool useSkirts = false;
 			//useSkirts = true;
 			if (useSkirts)
 			{
-				var skirtVertices = mesh.Duplicate(edgeVerticesIndexes, mesh.Vertices, mesh.Normals);
+				var skirtVertices = mesh.Duplicate(planetaryBody.GetEdgeVerticesIndexes(), mesh.Vertices, mesh.Normals);
 				var moveAmount = this.NoElevationRange.ToBoundingSphere().radius / 10;
 				mesh.MoveVertices(skirtVertices, -this.NoElevationRange.Normal.ToVector3() * (float)moveAmount, mesh.Vertices);
 			}
@@ -136,111 +90,5 @@ namespace MyGame.PlanetaryBody
 			Renderer.RenderingMode = MyRenderingMode.DontRender;
 		}
 
-
-		//public void SmoothEdgeNormalsBasedOn(Chunk otherChunk)
-		//{
-		//	// my index, other index
-		//	var toAverageIndexes = new List<Tuple<Mesh.VertexIndex, Mesh.VertexIndex>>();
-
-		//	var myMesh = this.renderer.Mesh;
-		//	var otherMesh = otherChunk.renderer.Mesh;
-
-		//	foreach (var otherIndex in otherChunk.edgeVerticesIndexes)
-		//	{
-		//		var otherVertice = otherMesh.Vertices[otherIndex];
-		//		foreach (var myIndex in this.edgeVerticesIndexes)
-		//		{
-		//			var myVertice = myMesh.Vertices[myIndex];
-		//			if (myVertice.DistanceSqr(otherVertice) < 0.1f)
-		//			{
-		//				toAverageIndexes.Add(Tuple.Create(myIndex, otherIndex));
-		//			}
-		//		}
-		//	}
-
-		//	var myNormalsFinal = myMesh.Normals;
-		//	var otherNormals = otherMesh.Normals;
-
-		//	var myNormalsInitial = myMesh.VertexArray.GetVertexArrayBufferObject("normalsInitial") as Mesh.VertexBufferObject<Vector3>;
-		//	var otherNormalsInitial = otherMesh.VertexArray.GetVertexArrayBufferObject("normalsInitial") as Mesh.VertexBufferObject<Vector3>;
-
-		//	foreach (var toAverageIndex in toAverageIndexes)
-		//	{
-		//		{
-		//			var myNormal = this.originalNormalsFinal[toAverageIndex.Item1];
-		//			var otherNormal = otherChunk.originalNormalsFinal[toAverageIndex.Item2];
-
-		//			var newNormal = (myNormal + otherNormal) / 2.0f;
-
-		//			myNormalsFinal[toAverageIndex.Item1] = newNormal;
-		//		}
-
-		//		{
-		//			var myNormal = this.originalNormalsInitial[toAverageIndex.Item1];
-		//			var otherNormal = otherChunk.originalNormalsInitial[toAverageIndex.Item2];
-
-		//			var newNormal = (myNormal + otherNormal) / 2.0f;
-
-		//			myNormalsInitial[toAverageIndex.Item1] = newNormal;
-		//		}
-		//	}
-
-		//	myMesh.NotifyDataChanged();
-		//}
-
-		public void SmoothEdgeNormalsWith(Chunk otherChunk)
-		{
-			// my index, other index
-			//var toAverageIndexes = new List<Tuple<Mesh.VertexIndex, Mesh.VertexIndex>>();
-
-			//var myMesh = this.renderer.Mesh;
-			//var otherMesh = otherChunk.renderer.Mesh;
-
-			//foreach (var otherIndex in otherChunk.edgeVerticesIndexes)
-			//{
-			//	var otherVertice = otherMesh.Vertices[otherIndex];
-			//	foreach (var myIndex in this.edgeVerticesIndexes)
-			//	{
-			//		var myVertice = myMesh.Vertices[myIndex];
-			//		if (myVertice.DistanceSqr(otherVertice) < 0.1f)
-			//		{
-			//			toAverageIndexes.Add(Tuple.Create(myIndex, otherIndex));
-			//		}
-			//	}
-			//}
-
-			//var myNormals = myMesh.Normals;
-			//var otherNormals = otherMesh.Normals;
-
-			//var myNormalsInitial = myMesh.VertexArray.GetVertexArrayBufferObject("normalsInitial") as Mesh.VertexBufferObject<Vector3>;
-			//var otherNormalsInitial = otherMesh.VertexArray.GetVertexArrayBufferObject("normalsInitial") as Mesh.VertexBufferObject<Vector3>;
-
-			//foreach (var toAverageIndex in toAverageIndexes)
-			//{
-			//	{
-			//		var myNormal = myNormals[toAverageIndex.Item1];
-			//		var otherNormal = otherNormals[toAverageIndex.Item2];
-
-			//		var newNormal = (myNormal + otherNormal) / 2.0f;
-
-			//		myNormals[toAverageIndex.Item1] = newNormal;
-			//		otherNormals[toAverageIndex.Item2] = newNormal;
-			//	}
-
-			//	{
-			//		var myNormalInitial = myNormalsInitial[toAverageIndex.Item1];
-			//		var otherNormalInitial = otherNormalsInitial[toAverageIndex.Item2];
-
-			//		var newNormalInitial = (myNormalInitial + otherNormalInitial) / 2.0f;
-
-			//		myNormalsInitial[toAverageIndex.Item1] = newNormalInitial;
-			//		otherNormalsInitial[toAverageIndex.Item2] = newNormalInitial;
-			//	}
-			//}
-
-			//myMesh.NotifyDataChanged();
-			//otherMesh.NotifyDataChanged();
-
-		}
 	}
 }

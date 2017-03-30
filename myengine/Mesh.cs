@@ -56,14 +56,18 @@ namespace MyEngine
 			}
 		}
 
+		public string Name { get; set; }
+
 		Bounds bounds;
 
 		bool isOnGPU = false;
 
 		public VertexArrayObject VertexArray { get; private set; }
 
-		public Mesh()
+		public Mesh(string name = "unnamed mesh")
 		{
+			this.Name = name;
+
 			Vertices = new BufferObjectVector3();
 			Normals = new BufferObjectVector3();
 			Tangents = new BufferObjectVector3();
@@ -116,7 +120,7 @@ namespace MyEngine
 				UploadDataToGpu();
 		}
 
-		private void UploadDataToGpu()
+		public void UploadDataToGpu()
 		{
 			if (!HasNormals())
 				RecalculateNormals();
@@ -126,7 +130,7 @@ namespace MyEngine
 
 			//VertexArrayObj.Dispose(); // causes access violation if we try to reupload
 			if (VertexArray.VaoHandle == -1) VertexArray.CreateBuffer();
-			VertexArray.SendDataToGpu();
+			VertexArray.UploadDataToGpu();
 
 			isOnGPU = true;
 		}

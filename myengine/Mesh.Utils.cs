@@ -158,11 +158,11 @@ namespace MyEngine
 
 		public struct VertexIndex : IEquatable<VertexIndex>
 		{
-			public int vertexIndex;
+			public int Index { get; private set; }
 
-			public VertexIndex(int vertexIndex)
+			public VertexIndex(int index)
 			{
-				this.vertexIndex = vertexIndex;
+				this.Index = index;
 			}
 
 			public override bool Equals(object obj)
@@ -172,17 +172,17 @@ namespace MyEngine
 
 			public bool Equals(VertexIndex other)
 			{
-				return other.vertexIndex == this.vertexIndex;
+				return other.Index == this.Index;
 			}
 
 			public override int GetHashCode()
 			{
-				return vertexIndex.GetHashCode();
+				return Index.GetHashCode();
 			}
 
 			public static implicit operator int(VertexIndex me)
 			{
-				return me.vertexIndex;
+				return me.Index;
 			}
 
 			public static implicit operator VertexIndex(int other)
@@ -192,7 +192,7 @@ namespace MyEngine
 
 			public override string ToString()
 			{
-				return vertexIndex.ToString();
+				return Index.ToString();
 			}
 		}
 
@@ -294,7 +294,7 @@ namespace MyEngine
 			{
 				for (int i = 0; i < moveVertices.Length; i++)
 				{
-					vbo[moveVertices[i].vertexIndex] += addVector;
+					vbo[moveVertices[i].Index] += addVector;
 				}
 			}
 		}

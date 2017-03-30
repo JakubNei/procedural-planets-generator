@@ -131,7 +131,14 @@ namespace MyEngine
 				}
 				else
 				{
-					GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill); MyGL.Check();
+					if (Debug.GetCVar("renderer render only front of triangles", true))
+					{
+						GL.PolygonMode(MaterialFace.Front, PolygonMode.Fill); MyGL.Check();
+					}
+					else
+					{
+						GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill); MyGL.Check();
+					}
 				}
 
 				// RENDER ALL OBJECTS

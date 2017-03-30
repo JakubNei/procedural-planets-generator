@@ -105,7 +105,7 @@ namespace MyGame.PlanetaryBody
 
 
 		Mesh.VertexIndex[] skirtIndicies = null;
-		public Mesh.VertexIndex[] GetEdgeVertices()
+		public Mesh.VertexIndex[] GetEdgeVerticesIndexes()
 		{
 			if (skirtIndicies != null) return skirtIndicies;
 

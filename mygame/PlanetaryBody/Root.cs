@@ -19,8 +19,8 @@ namespace MyGame.PlanetaryBody
 	{
 		public double RadiusMin => config.radiusMin;
 
-		public int ChunkNumberOfVerticesOnEdge => Debug.GetCVar("segment number of vertices on edge", 50);
-		public float SizeOnScreenNeededToSubdivide => Debug.GetCVar("segment subdivide if size on screen is bigger than", 0.3f);
+		public int ChunkNumberOfVerticesOnEdge => config.chunkNumberOfVerticesOnEdge;
+		public float SizeOnScreenNeededToSubdivide => config.sizeOnScreenNeededToSubdivide;
 
 		int subdivisionMaxRecurisonDepthCached = -1;
 		public int SubdivisionMaxRecurisonDepth
@@ -33,7 +33,7 @@ namespace MyGame.PlanetaryBody
 					var oneRootChunkCircumference = planetCircumference / 6.0f;
 
 					subdivisionMaxRecurisonDepthCached = 0;
-					while (oneRootChunkCircumference > Debug.GetCVar("segment stop recursion at world size", 100))
+					while (oneRootChunkCircumference > config.stopSegmentRecursionAtWorldSize)
 					{
 						oneRootChunkCircumference /= 2;
 						subdivisionMaxRecurisonDepthCached++;
@@ -46,10 +46,6 @@ namespace MyGame.PlanetaryBody
 
 		public Material PlanetMaterial { get; set; }
 
-		double DebugWeight => DebugKeys.keyIK * 2 - 0.8;
-
-
-		const bool debugSameHeightEverywhere = false; // DEBUG
 
 		public WorldPos Center => Transform.Position;
 
@@ -60,7 +56,7 @@ namespace MyGame.PlanetaryBody
 
 		public Config config;
 
-		public Shader computeShader;
+		public Shader ComputeShader => Factory.GetShader("shaders/planetGeneration.compute");
 
 		GenerationStats stats;
 
@@ -306,7 +302,7 @@ namespace MyGame.PlanetaryBody
 		{
 			chunk.Renderer?.SetRenderingMode(MyRenderingMode.RenderGeometryAndCastShadows);
 
-			if (computeShader.Version != chunk.meshGeneratedWithShaderVersion)
+			if (ComputeShader.Version != chunk.meshGeneratedWithShaderVersion)
 				EnqueueChunkForGeneration(chunk);
 		}
 
@@ -390,255 +386,63 @@ namespace MyGame.PlanetaryBody
 			}
 		}
 
-		public class ProfilerEvent
-		{
-			string name;
-			public ProfilerEvent(string name)
-			{
-				this.name = name;
-			}
-			public ProfilerEvent MakeChild(string name = null)
-			{
-				return new ProfilerEvent(name);
-			}
-			public void Start()
-			{
-
-			}
-			public void Stop()
-			{
-
-			}
-		}
-
 
 		UniformsData computeShaderUniforms = new UniformsData();
 
 
-		public enum WhereToRun
-		{
-			GPUThread,
-			DoesNotMatter,
-		}
-
-		public class JobRunner
-		{
-			List<IJob> jobs = new List<IJob>();
-			Dictionary<IJob, double> timesOutOfTime = new Dictionary<IJob, double>();
-			public void AddJob(IJob job)
-			{
-				lock (jobs)
-					jobs.Add(job);
-			}
-			public void RemoveNotStarted()
-			{
-				lock (jobs)
-					jobs.RemoveAll(j => j.IsStarted == false);
-			}
-			public void GPUThreadTick(FrameTime ft, Func<double> secondLeftToUse)
-			{
-				while (jobs.Count > 0 && secondLeftToUse() > 0)
-				{
-					int jobsRan = 0;
-
-					IJob[] orderedJobs;
-					lock (jobs)
-					{
-						jobs.RemoveAll(j => j.ShouldRemove);
-						orderedJobs = jobs.OrderByDescending(j => j.NextGPUThreadTickWillTakeSeconds()).ToArray();
-					}
-
-					foreach (var job in orderedJobs)
-					{
-						if (job.ShouldExecute)
-						{
-							while (job.NextGPUThreadTickWillTakeSeconds() < secondLeftToUse() && job.GPUThreadTick())
-								jobsRan++;
-						}
-					}
-
-					lock (jobs)
-						jobs.RemoveAll(j => j.ShouldRemove);
-
-					if (jobsRan == 0) break;
-				}
-
-
-				Singletons.Debug.AddValue("jobs count", jobs.Count);
-			}
-		}
-
-		public interface IJob
-		{
-			bool IsStarted { get; }
-			bool ShouldExecute { get; }
-			bool ShouldRemove { get; }
-			double NextGPUThreadTickWillTakeSeconds();
-			bool GPUThreadTick();
-		}
-
-		public class JobTemplate<TData>
-		{
-			class JobTask
-			{
-				public Action<TData> normalAction;
-				public Action<TData, int, int> splittableAction; // splitCount, splitIndex
-				public WhereToRun whereToRun;
-
-				public TimeSpan timeTaken;
-
-				public bool firstRunDone;
-				public ulong timesExecuted;
-				public double avergeSeconds
-				{
-					get
-					{
-						if (firstRunDone && timesExecuted > 0)
-							return timeTaken.TotalSeconds / timesExecuted;
-						return 0;
-					}
-				}
-			}
-			List<JobTask> tasksToRun = new List<JobTask>();
-
-			public string Name { get; set; }
-			public JobTemplate()
-			{
-
-			}
-			public void AddSplittableTask(Action<TData, int, int> action) => AddSplittableTask(WhereToRun.DoesNotMatter, action);
-			public void AddSplittableTask(WhereToRun whereToRun, Action<TData, int, int> action)
-			{
-				tasksToRun.Add(new JobTask() { splittableAction = action, whereToRun = whereToRun });
-			}
-			public void AddTask(Action<TData> action) => AddTask(WhereToRun.DoesNotMatter, action);
-			public void AddTask(WhereToRun whereToRun, Action<TData> action)
-			{
-				tasksToRun.Add(new JobTask() { normalAction = action, whereToRun = whereToRun });
-			}
-			public IJob MakeInstanceWithData(TData data)
-			{
-				return new JobInstance(this, data);
-			}
-			class JobInstance : IJob
-			{
-				public bool ShouldExecute => !ShouldRemove;
-				public bool ShouldRemove => IsFinished || IsAborted || IsFaulted;
-
-				public bool IsStarted => currentTaskIndex > 0;
-				public bool IsFinished => currentTaskIndex >= parent.tasksToRun.Count && (lastTask == null || lastTask.IsCompleted);
-				public bool IsAborted { get; private set; }
-				public bool IsFaulted { get; private set; }
-				public Exception Exception { get; private set; }
-
-				Task lastTask;
-				int currentTaskIndex;
-
-				readonly TData data;
-				readonly JobTemplate<TData> parent;
-
-				public JobInstance(JobTemplate<TData> parent, TData data)
-				{
-					this.parent = parent;
-					this.data = data;
-				}
-
-				public bool GPUThreadTick()
-				{
-					if (!ShouldExecute) return false;
-					if (lastTask != null && lastTask.IsCompleted == false) return false;
-					lastTask = null;
-
-					var jobTask = parent.tasksToRun[currentTaskIndex];
-
-					if (jobTask.normalAction != null)
-					{
-						Action action = () =>
-						{
-							var stopWatch = Stopwatch.StartNew();
-							try
-							{
-								jobTask.normalAction(data);
-							}
-							catch (Exception e)
-							{
-								IsFaulted = true;
-								Exception = e;
-							}
-							if (jobTask.firstRunDone)
-							{
-								jobTask.timeTaken += stopWatch.Elapsed;
-								jobTask.timesExecuted++;
-							}
-							else
-							{
-								jobTask.firstRunDone = true;
-							}
-						};
-						if (jobTask.whereToRun == WhereToRun.GPUThread)
-							action();
-						else
-							lastTask = Task.Run(action);
-					}
-
-					currentTaskIndex++;
-					return true;
-				}
-				public void Abort()
-				{
-					IsAborted = true;
-				}
-
-				public double NextGPUThreadTickWillTakeSeconds()
-				{
-					if (IsFinished) return 0;
-					var jobTask = parent.tasksToRun[currentTaskIndex];
-					if (jobTask.whereToRun == WhereToRun.GPUThread) return jobTask.avergeSeconds;
-					return 0;
-				}
-			}
-
-		}
-
-
 		JobRunner jobRunner = new JobRunner();
-		ProfilerEvent profiler = new ProfilerEvent("chunk generation");
 
 		JobTemplate<Chunk> generationJobTemplate;
 
 		void InitializeJobTemplate()
 		{
+			var useSkirts = true;
+
 			generationJobTemplate = new JobTemplate<Chunk>();
 
-			generationJobTemplate.AddTask(WhereToRun.GPUThread, (chunk) =>
+			generationJobTemplate.AddTask(WhereToRun.GPUThread, chunk =>
 			{
 				chunk.CreateRendererAndBasicMesh();
 			});
-			generationJobTemplate.AddTask(WhereToRun.GPUThread, (chunk) =>
-			{
-				var mesh = chunk.Renderer.Mesh;
-				mesh.EnsureIsOnGpu();
-			});
-			//if (chunk.renderer == null && mesh != null) throw new Exception("concurency problem");
-
-
-			computeShader = Factory.GetShader("shaders/planetGeneration.compute");
 
 			generationJobTemplate.AddTask(WhereToRun.GPUThread, chunk =>
 			{
 				var mesh = chunk.Renderer.Mesh;
-				config.SetTo(computeShaderUniforms);
+				mesh.EnsureIsOnGpu();
+			});
 
-				computeShaderUniforms.Set("param_offsetFromPlanetCenter", chunk.Renderer.Offset.ToVector3());
+			//if (chunk.renderer == null && mesh != null) throw new Exception("concurency problem");
+
+			generationJobTemplate.AddTask(WhereToRun.GPUThread, chunk =>
+			{
+				var mesh = chunk.Renderer.Mesh;
+
+				var range = chunk.NoElevationRange;
+
+				if (useSkirts)
+				{
+					var ratio = (ChunkNumberOfVerticesOnEdge + 2) / (float)ChunkNumberOfVerticesOnEdge;
+					ratio = ratio - 1;
+					var halfRatio = ratio / 2;
+					var rangeMultiplier = 1 + 2 * Math.Sqrt(ratio * ratio - halfRatio * halfRatio);
+
+					var c = range.CenterPos;
+					range.a = (range.a - c) * rangeMultiplier + c;
+					range.b = (range.b - c) * rangeMultiplier + c;
+					range.c = (range.c - c) * rangeMultiplier + c;
+				}
+
+				config.SetTo(computeShaderUniforms);
+				computeShaderUniforms.Set("param_offsetFromPlanetCenter", chunk.Renderer.Offset.ToVector3d());
 				computeShaderUniforms.Set("param_numberOfVerticesOnEdge", ChunkNumberOfVerticesOnEdge);
-				computeShaderUniforms.Set("param_cornerPositionA", chunk.NoElevationRange.a.ToVector3());
-				computeShaderUniforms.Set("param_cornerPositionB", chunk.NoElevationRange.b.ToVector3());
-				computeShaderUniforms.Set("param_cornerPositionC", chunk.NoElevationRange.c.ToVector3());
+				computeShaderUniforms.Set("param_cornerPositionA", range.a);
+				computeShaderUniforms.Set("param_cornerPositionB", range.b);
+				computeShaderUniforms.Set("param_cornerPositionC", range.c);
 				computeShaderUniforms.Set("param_indiciesCount", mesh.TriangleIndicies.Count);
 				computeShaderUniforms.Set("param_verticesStartIndexOffset", 0);
 
-				computeShaderUniforms.SendAllUniformsTo(computeShader.Uniforms);
-				computeShader.Bind();
+				computeShaderUniforms.SendAllUniformsTo(ComputeShader.Uniforms);
+				ComputeShader.Bind();
 
 				stats.Start();
 
@@ -652,28 +456,51 @@ namespace MyGame.PlanetaryBody
 				stats.Update();
 			});
 
-			generationJobTemplate.AddTask(WhereToRun.GPUThread, (chunk) =>
+			generationJobTemplate.AddTask(WhereToRun.GPUThread, chunk =>
 			{
 				var mesh = chunk.Renderer.Mesh;
-				mesh.Vertices.DownloadDataFromGpuToRam();
+				mesh.Vertices.DownloadDataFromGPU();
 			});
 
-			generationJobTemplate.AddTask((chunk) =>
+			generationJobTemplate.AddTask(chunk =>
 			{
 				var mesh = chunk.Renderer.Mesh;
 				mesh.RecalculateBounds();
 			});
 
-			generationJobTemplate.AddTask((chunk) =>
+			generationJobTemplate.AddTask(chunk =>
 			{
 				chunk.CalculateRealVisibleRange();
-				chunk.meshGeneratedWithShaderVersion = computeShader.Version;
 			});
 
-			generationJobTemplate.AddTask(WhereToRun.GPUThread, (chunk) =>
+			generationJobTemplate.AddTask(WhereToRun.GPUThread, chunk =>
+			 {
+				 var mesh = chunk.Renderer.Mesh;
+				 CalculateNormalsOnGPU(mesh);
+			 });
+
+			generationJobTemplate.AddTask(chunk =>
 			{
-				var mesh = chunk.Renderer.Mesh;
-				CalculateNormalsOnGPU(mesh);
+				if (useSkirts)
+				{
+					var mesh = chunk.Renderer.Mesh;
+					var moveAmount = -chunk.NoElevationRange.CenterPos.Normalized().ToVector3() * (float)chunk.NoElevationRange.ToBoundingSphere().radius / 10;
+					foreach (var i in GetEdgeVerticesIndexes()) mesh.Vertices[i] += moveAmount;
+				}
+			});
+
+			generationJobTemplate.AddTask(WhereToRun.GPUThread, chunk =>
+			{
+				if (useSkirts)
+				{
+					var mesh = chunk.Renderer.Mesh;
+					mesh.Vertices.UploadDataToGPU();
+				}
+			});
+
+			generationJobTemplate.AddTask(chunk =>
+			{
+				chunk.meshGeneratedWithShaderVersion = ComputeShader.Version;
 				chunk.isGenerationDone = true;
 			});
 		}
@@ -703,7 +530,8 @@ namespace MyGame.PlanetaryBody
 
 		public void GPUThreadTick(FrameTime t)
 		{
-			jobRunner.GPUThreadTick(t, () => 1 / t.TargetFps - t.CurrentFrameElapsedSeconds);
+			jobRunner.GPUThreadTick(t, () => 1000);
+			//jobRunner.GPUThreadTick(t, () => 1 / t.TargetFps - t.CurrentFrameElapsedSeconds);
 		}
 
 

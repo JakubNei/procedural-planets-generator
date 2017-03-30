@@ -248,7 +248,14 @@ namespace MyEngine
 					var dataToRender = scene.DataToRender;
 					if (camera != null && dataToRender != null)
 					{
-						renderManagerBack.PrepareRender(dataToRender, camera);
+						try
+						{
+							renderManagerBack.PrepareRender(dataToRender, camera);
+						}
+						catch(Exception e)
+						{
+							Log.Exception(e);
+						}
 					}
 				}
 			}

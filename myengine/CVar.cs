@@ -102,7 +102,10 @@ namespace MyEngine
 
 		public CVar Toogle()
 		{
-			Bool = !Bool;
+			if (ValueType == CvarValueType.Bool)
+			{
+				Bool = !Bool;
+			}
 			return this;
 		}
 

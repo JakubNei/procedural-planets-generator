@@ -12,8 +12,8 @@ namespace MyEngine
 
 		public Mesh Load(MyFile resource, Entity appendToEntity = null)
 		{
-			var loadJob = new LoadJob();
-			var mesh = loadJob.Parse(resource, appendToEntity);
+			var loadJob = new LoadJob(resource, appendToEntity);
+			var mesh = loadJob.Parse();
 			mesh.file = resource;
 			return mesh;
 		}
@@ -45,13 +45,22 @@ namespace MyEngine
 
 			int failedParse = 0;
 
+			MyFile file;
+			Entity appendToEntity;
+
+			public LoadJob(MyFile file, Entity appendToEntity)
+			{
+				this.file = file;
+				this.appendToEntity = appendToEntity;
+			}
+
 			void Parse(ref string str, ref float t)
 			{
 				if (!float.TryParse(str, System.Globalization.NumberStyles.Any, System.Globalization.NumberFormatInfo.InvariantInfo, out t))
 					failedParse++;
 			}
 
-			public Mesh Parse(MyFile file, Entity appendToEntity)
+			public Mesh Parse()
 			{
 				using (StreamReader textReader = new StreamReader(file.GetDataStream()))
 				{
@@ -150,6 +159,7 @@ namespace MyEngine
 			Mesh EndMesh()
 			{
 				var mesh = new Mesh();
+				mesh.Name = file.VirtualPath;
 
 				mesh.Vertices.SetData(verticesMesh);
 				mesh.UVs.SetData(uvsMesh);

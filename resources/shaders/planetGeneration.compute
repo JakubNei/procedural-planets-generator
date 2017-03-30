@@ -5,7 +5,7 @@
 
 [include shaders/include.planet.glsl]
 
-
+#line 9
 
 
 
@@ -124,11 +124,11 @@ vec3 GetNormal(int a, int b, int c)
 
 
 
-uniform vec3 param_offsetFromPlanetCenter;
+uniform dvec3 param_offsetFromPlanetCenter;
 uniform int param_numberOfVerticesOnEdge;
-uniform vec3 param_cornerPositionA;
-uniform vec3 param_cornerPositionB;
-uniform vec3 param_cornerPositionC;
+uniform dvec3 param_cornerPositionA;
+uniform dvec3 param_cornerPositionB;
+uniform dvec3 param_cornerPositionC;
 uniform int param_indiciesCount;
 uniform int param_verticesStartIndexOffset;
 
@@ -153,36 +153,37 @@ void main() {
 	}
 	ix = tempVerticeIndex;
 
-	float x = 0;
-	float y = 0;
-	if(param_numberOfVerticesOnLine > 1) x = float(ix) / (param_numberOfVerticesOnLine-1);
-	if(param_numberOfVerticesOnEdge > 1) y = float(iy) / (param_numberOfVerticesOnEdge-1);
+	double x = 0;
+	double y = 0;
+	if(param_numberOfVerticesOnLine > 1) x = double(ix) / (param_numberOfVerticesOnLine-1);
+	if(param_numberOfVerticesOnEdge > 1) y = double(iy) / (param_numberOfVerticesOnEdge-1);
 
-	vec3 p = 
+	dvec3 p = 
 		param_cornerPositionA + 
 		(param_cornerPositionB - param_cornerPositionA) * y * (1-x) + 
 		(param_cornerPositionC - param_cornerPositionA) * y * x;
 
-	vec2 uv = calestialToSpherical(p).xy;
-
 	p = normalize(p);
 
+	vec3 _p = vec3(p);
+
+	vec2 uv = calestialToSpherical(_p).xy;
 
 	double height = param_radiusMin;
 	
 	if(param_baseHeightMapMultiplier > 0) height += param_baseHeightMapMultiplier * texture2D(param_baseHeightMap, uv).r; 
 			
-	height += param_noiseMultiplier * GetHeightAt(p);
+	height += param_noiseMultiplier * GetHeightAt(_p);
 
 
-	p *= float(height);
+	p *= height;
 	p -= param_offsetFromPlanetCenter;
 
 	// DEBUG
 	//vec3 p = fromStruct(positions[verticeIndex]);
 	//p.x += 0.01f;
 
-	positions[verticeIndex] = toStruct(p);
+	positions[verticeIndex] = toStruct(vec3(p));
 	uvs[verticeIndex] = toStruct(uv);
 }
 

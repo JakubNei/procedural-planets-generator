@@ -30,5 +30,9 @@ namespace MyEngine
 		{
 			GL.Uniform3(location, vec.X, vec.Y, vec.Z);
 		}
+		public static void Uniform3(int location, ref Vector3d vec)
+		{
+			GL.Uniform3(location, vec.X, vec.Y, vec.Z);
+		}
 	}
 }

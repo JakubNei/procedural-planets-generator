@@ -83,11 +83,11 @@ namespace MyEngine
 				}
 			}
 
-			public void SendDataToGpu()
+			public void UploadDataToGpu()
 			{
 				foreach (var kvp in nameToVbo)
 				{
-					kvp.Value.SendDataToGpu(kvp.Key);
+					kvp.Value.UploadDataToGPU();
 				}
 			}
 		}
@@ -103,9 +103,9 @@ namespace MyEngine
 
 			void CreateBuffer();
 
-			void SendDataToGpu(string myName);
+			void UploadDataToGPU();
 
-			void DownloadDataFromGpuToRam();
+			void DownloadDataFromGPU();
 
 			void BindBufferToVAO();
 
@@ -261,7 +261,7 @@ namespace MyEngine
 				}
 			}
 
-			public void SendDataToGpu(string myName)
+			public void UploadDataToGPU()
 			{
 				CreateBuffer();
 				int sizeFromGpu;
@@ -271,7 +271,7 @@ namespace MyEngine
 				GL.BufferData(GL_BufferTarget, size, arr, BufferUsageHint.StaticDraw); MyGL.Check(); // BufferUsageHint explained: http://www.informit.com/articles/article.aspx?p=1377833&seqNum=7
 				GL.GetBufferParameter(GL_BufferTarget, BufferParameterName.BufferSize, out sizeFromGpu); MyGL.Check();
 				// if (size != sizeFromGpu) Log.Error(myName + " size mismatch size=" + GL_BufferTarget + " sizeFromGpu=" + sizeFromGpu);
-				GL.BindBuffer(GL_BufferTarget, 0);
+				GL.BindBuffer(GL_BufferTarget, 0); MyGL.Check();
 			}
 
 			public void BindBufferToVAO()
@@ -319,15 +319,15 @@ namespace MyEngine
 
 			public void Duplicate(VertexIndex index)
 			{
-				Add(this[index.vertexIndex]);
+				Add(this[index.Index]);
 			}
 
-			public void DownloadDataFromGpuToRam()
+			public void DownloadDataFromGPU()
 			{
 				GL.BindBuffer(BufferTarget.ShaderStorageBuffer, VboHandle); MyGL.Check();
 				var intPtr = GL.MapBuffer(BufferTarget.ShaderStorageBuffer, BufferAccess.ReadOnly); MyGL.Check();
 				SetData(intPtr, Count);
-				GL.UnmapBuffer(BufferTarget.ShaderStorageBuffer);
+				GL.UnmapBuffer(BufferTarget.ShaderStorageBuffer); MyGL.Check();
 			}
 			public abstract void SetData(IntPtr intPtr, int count);
 

@@ -56,8 +56,8 @@ namespace MyGame.PlanetaryBody
 			*/
 			public override IEnumerable<Vector3> GetCameraSpaceOccluderTriangles(Camera camera)
 			{
-				if (chunk.occluderTringles.Count == 0 && chunk.isGenerationDone) throw new Exception("this should not happen");
-				if (chunk.isGenerationDone)
+				if (chunk.occluderTringles.Count < 9 && chunk.isGenerationDone) throw new Exception("this should not happen");
+				if (chunk.isGenerationDone && chunk.occluderTringles.Count == 9)
 				{
 					var mvp = GetModelViewProjectionMatrix(camera);
 					return chunk.occluderTringles.Select(v3 => v3.Multiply(ref mvp));
@@ -172,6 +172,8 @@ namespace MyGame.PlanetaryBody
 
 		public void CalculateRealVisibleRange()
 		{
+			if (occluderTringles.Count != 0) return;
+
 			var a = Renderer.Mesh.Vertices[planetaryBody.AIndex];
 			var b = Renderer.Mesh.Vertices[planetaryBody.BIndex];
 			var c = Renderer.Mesh.Vertices[planetaryBody.CIndex];
@@ -182,8 +184,6 @@ namespace MyGame.PlanetaryBody
 			realVisibleRange.c = c.ToVector3d() + o;
 
 			rangeToCalculateScreenSizeOn = realVisibleRange;
-
-			occluderTringles.Clear();
 
 			occluderTringles.Add(a);
 			occluderTringles.Add(Vector3.Zero);

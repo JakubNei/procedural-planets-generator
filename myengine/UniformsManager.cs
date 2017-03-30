@@ -74,6 +74,7 @@ namespace MyEngine
 		public void Set(string name, double data) => GenericSet(name, data);
 		public void Set(string name, Vector2 data) => GenericSet(name, data);
 		public void Set(string name, Vector3 data) => GenericSet(name, data);
+		public void Set(string name, Vector3d data) => GenericSet(name, data);
 		public void Set(string name, Vector4 data) => GenericSet(name, data);
 
 		public void GenericSet<T>(string name, T data)
@@ -175,6 +176,12 @@ namespace MyEngine
 			{
 				var u = (Vector2)o;
 				GL.Uniform2(location, ref u); MyGL.Check();
+				return true;
+			}
+			if (o is Vector3d)
+			{
+				var u = (Vector3d)o;
+				MyGL.Uniform3(location, ref u); MyGL.Check();
 				return true;
 			}
 			if (o is Vector3)
