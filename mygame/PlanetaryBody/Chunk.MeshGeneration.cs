@@ -30,7 +30,7 @@ namespace MyGame.PlanetaryBody
 
 			var offsetCenter = NoElevationRange.CenterPos;
 			var mesh = new Mesh();
-			mesh.Name = "PlanetaryBodyChunk depth:" + subdivisionDepth + " #" + numberOfChunksGenerated;
+			mesh.Name = "PlanetaryBodyChunk generation:" + subdivisionDepth + " id:" + numberOfChunksGenerated;
 
 
 			var normals = mesh.Normals;

@@ -19,6 +19,9 @@ namespace MyGame.PlanetaryBody
 	{
 		public double RadiusMin => config.radiusMin;
 
+		public Camera Camera => Entity.Scene.MainCamera;
+
+
 		public int ChunkNumberOfVerticesOnEdge => config.chunkNumberOfVerticesOnEdge;
 		public float SizeOnScreenNeededToSubdivide => config.sizeOnScreenNeededToSubdivide;
 
@@ -236,26 +239,25 @@ namespace MyGame.PlanetaryBody
 
 		}
 
-		void Chunks_GatherWeights(ChunkWeightedList list, Chunk chunk, int recursionDepth)
+		void Chunks_GatherWeights(ChunkWeightedList toGenerate, Chunk chunk, int recursionDepth)
 		{
-			var cam = Entity.Scene.MainCamera;
-			var sizeOnScreen = chunk.GetSizeOnScreen(cam);
+			var weight = chunk.GetSizeOnScreen(Camera);
 
-			if (!chunk.GenerationBegan)
+			if (chunk.GenerationBegan == false)
 			{
-				list.Add(sizeOnScreen, chunk);
+				toGenerate.Add(chunk, weight);
 			}
 
 			if (recursionDepth < SubdivisionMaxRecurisonDepth)
 			{
-				if (sizeOnScreen > SizeOnScreenNeededToSubdivide)
+				if (weight > SizeOnScreenNeededToSubdivide)
 					chunk.CreteChildren();
 				else
 					chunk.DeleteChildren();
 
 				foreach (var child in chunk.Children)
 				{
-					Chunks_GatherWeights(list, child, recursionDepth + 1);
+					Chunks_GatherWeights(toGenerate, child, recursionDepth + 1);
 				}
 			}
 			else
@@ -268,9 +270,17 @@ namespace MyGame.PlanetaryBody
 		// return true if all childs are visible
 		// we can hide parent only once all 4 childs are generated
 		// we have to show all 4 childs at once
-		void Chunks_UpdateVisibility(Chunk chunk, int recursionDepth)
+		void Chunks_UpdateVisibility(Chunk chunk, ChunkWeightedList toGenerate, int recursionDepth)
 		{
-			var cam = Entity.Scene.MainCamera;
+			void DoRenderChunk()
+			{
+				chunk.Renderer?.SetRenderingMode(MyRenderingMode.RenderGeometryAndCastShadows);
+
+				if (ComputeShader.Version != chunk.meshGeneratedWithShaderVersion)
+					toGenerate.Add(chunk, float.MaxValue);
+			}
+
+
 
 			if (recursionDepth < SubdivisionMaxRecurisonDepth)
 			{
@@ -283,75 +293,103 @@ namespace MyGame.PlanetaryBody
 
 					foreach (var child in chunk.Children)
 					{
-						Chunks_UpdateVisibility(child, recursionDepth + 1);
+						Chunks_UpdateVisibility(child, toGenerate, recursionDepth + 1);
 					}
 				}
 				else
 				{
-					DoRenderChunk(chunk);
+					DoRenderChunk();
 				}
 			}
 			else
 			{
 				//Log.Warn("recursion depth is over: " + SubdivisionMaxRecurisonDepth);
-				DoRenderChunk(chunk);
+				DoRenderChunk();
 			}
 		}
 
-		void DoRenderChunk(Chunk chunk)
-		{
-			chunk.Renderer?.SetRenderingMode(MyRenderingMode.RenderGeometryAndCastShadows);
-
-			if (ComputeShader.Version != chunk.meshGeneratedWithShaderVersion)
-				EnqueueChunkForGeneration(chunk);
-		}
 
 
 		// new SortedList<double, Chunk>(ReverseComparer<double>.Default)
-		class ChunkWeightedList
+		class ChunkWeightedList : Dictionary<Chunk, double>
 		{
-			List<Tuple<double, Chunk>> l = new List<Tuple<double, Chunk>>();
-			public void Add(double weight, Chunk chunk)
+			public Camera cam;
+
+			public new void Add(Chunk chunk, double weight)
 			{
-				l.Add(new Tuple<double, Chunk>(weight, chunk));
+				PrivateAdd1(chunk, weight);
+
+				// we have to generate all our parents first
+				while (chunk.parentChunk != null && chunk.parentChunk.GenerationBegan == false)
+				{
+					chunk = chunk.parentChunk;
+					var w = chunk.GetSizeOnScreen(cam);
+					PrivateAdd1(chunk, Math.Max(w, weight));
+				}
+			}
+			private void PrivateAdd1(Chunk chunk, double weight)
+			{
+				PrivateAdd2(chunk, weight);
+
+				// if we want to show this chunk, our neighbours have the same weight, because we cant be shown without our neighbours
+				if (chunk.parentChunk != null)
+				{
+					foreach (var neighbour in chunk.parentChunk.Children)
+					{
+						if (neighbour.GenerationBegan == false)
+						{
+							var w = neighbour.GetSizeOnScreen(cam);
+							PrivateAdd2(neighbour, Math.Max(w, weight));
+						}
+					}
+				}
+			}
+			private void PrivateAdd2(Chunk chunk, double weight)
+			{
+				if (this.TryGetValue(chunk, out double w))
+				{
+					if (w > weight) return; // the weight already present is bigger, dont change it
+				}
+
+				this[chunk] = weight;
+			}
+			public IEnumerable<Chunk> GetWeighted()
+			{
+				return this.OrderByDescending(i => i.Value).Select(i => i.Key);
 			}
 			public Chunk GetMostImportantChunk()
 			{
-				return l.OrderByDescending(i => i.Item1).FirstOrDefault()?.Item2;
+				return this.OrderByDescending(i => i.Value).FirstOrDefault().Key;
 			}
 		}
 
+		Queue<Chunk> toGenerateChunksOrderedByWeight;
 
 		public void TrySubdivideOver(WorldPos pos)
 		{
-			var weightedList = new ChunkWeightedList();
+			var toGenerate = new ChunkWeightedList() { cam = Camera };
 
-			var toGenerate = rootChunks.FirstOrDefault(c => c.Renderer == null); // first generate rootCunks;
-
-			if (toGenerate == null) // then find the most important child chunk
+			foreach (var rootChunk in rootChunks)
 			{
-				//var sphere = new Sphere((pos - Transform.Position).ToVector3d(), this.RadiusMax * startingRadiusSubdivisionModifier);
-				foreach (var rootChunk in this.rootChunks)
-					Chunks_GatherWeights(weightedList, rootChunk, 0);
-				toGenerate = weightedList.GetMostImportantChunk();
+				if (rootChunk.GenerationBegan == false)
+				{
+					// first generate rootCunks
+					toGenerate.Add(rootChunk, float.MaxValue);
+				}
+				else
+				{
+					// then their children
+					Chunks_GatherWeights(toGenerate, rootChunk, 0);
+				}
 			}
 
-			if (toGenerate != null)
+			foreach (var rootChunk in this.rootChunks)
 			{
-				while (toGenerate.parentChunk != null && !toGenerate.parentChunk.GenerationBegan) // we have to generate our parent first
-					toGenerate = toGenerate.parentChunk;
-
-				// if we want to show this chunk, our neighbours have the same weight, because we cant be shown without our neighbours
-				if (toGenerate.parentChunk != null)
-					foreach (var neighbour in toGenerate.parentChunk.Children)
-						if (!neighbour.GenerationBegan)
-							toGenerate = neighbour;
-
-
-				EnqueueChunkForGeneration(toGenerate);
+				Chunks_UpdateVisibility(rootChunk, toGenerate, 0);
 			}
 
-			foreach (var rootChunk in this.rootChunks) Chunks_UpdateVisibility(rootChunk, 0);
+			toGenerateChunksOrderedByWeight = new Queue<Chunk>(toGenerate.GetWeighted());
+
 		}
 
 
@@ -392,33 +430,45 @@ namespace MyGame.PlanetaryBody
 
 		JobRunner jobRunner = new JobRunner();
 
-		JobTemplate<Chunk> generationJobTemplate;
+		JobTemplate<Chunk> jobTemplate;
 
 		void InitializeJobTemplate()
 		{
 			var useSkirts = true;
 
-			generationJobTemplate = new JobTemplate<Chunk>();
+			jobTemplate = new JobTemplate<Chunk>();
 
-			generationJobTemplate.AddTask(WhereToRun.GPUThread, chunk =>
+			jobTemplate.AddTask(WhereToRun.GPUThread, chunk =>
 			{
 				chunk.CreateRendererAndBasicMesh();
 			});
 
-			generationJobTemplate.AddTask(WhereToRun.GPUThread, chunk =>
+			jobTemplate.AddTask(WhereToRun.GPUThread, chunk =>
 			{
 				var mesh = chunk.Renderer.Mesh;
 				mesh.EnsureIsOnGpu();
 			});
 
-			//if (chunk.renderer == null && mesh != null) throw new Exception("concurency problem");
+			//if (chunk.renderer == null && mesh != null) throw new Exception("concurrency problem");
 
-			generationJobTemplate.AddTask(WhereToRun.GPUThread, chunk =>
+			jobTemplate.AddSplittableTask(WhereToRun.GPUThread, (chunk, maxCount, index) =>
 			{
 				var mesh = chunk.Renderer.Mesh;
 
-				var range = chunk.NoElevationRange;
+				var verticesStartIndexOffset = 0;
+				var verticesCountMax = mesh.Vertices.Count;
+				var verticesCount = verticesCountMax;
 
+				if (maxCount > 1)
+				{
+					verticesStartIndexOffset = ((index / (float)maxCount) * verticesCountMax).FloorToInt();
+					verticesCount = (verticesCountMax / (float)maxCount).FloorToInt();
+
+					if (index == maxCount - 1) // last part
+						verticesCount = verticesCountMax - verticesStartIndexOffset;
+				}
+
+				var range = chunk.NoElevationRange;
 				if (useSkirts)
 				{
 					var ratio = (ChunkNumberOfVerticesOnEdge + 2) / (float)ChunkNumberOfVerticesOnEdge;
@@ -439,7 +489,7 @@ namespace MyGame.PlanetaryBody
 				computeShaderUniforms.Set("param_cornerPositionB", range.b);
 				computeShaderUniforms.Set("param_cornerPositionC", range.c);
 				computeShaderUniforms.Set("param_indiciesCount", mesh.TriangleIndicies.Count);
-				computeShaderUniforms.Set("param_verticesStartIndexOffset", 0);
+				computeShaderUniforms.Set("param_verticesStartIndexOffset", verticesStartIndexOffset);
 
 				computeShaderUniforms.SendAllUniformsTo(ComputeShader.Uniforms);
 				ComputeShader.Bind();
@@ -450,36 +500,36 @@ namespace MyGame.PlanetaryBody
 				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 1, mesh.Normals.VboHandle); MyGL.Check();
 				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 2, mesh.UVs.VboHandle); MyGL.Check();
 				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 3, mesh.TriangleIndicies.VboHandle); MyGL.Check();
-				GL.DispatchCompute(mesh.Vertices.Count, 1, 1); MyGL.Check();
+				GL.DispatchCompute(verticesCount, 1, 1); MyGL.Check();
 
 				stats.End();
 				stats.Update();
 			});
 
-			generationJobTemplate.AddTask(WhereToRun.GPUThread, chunk =>
+			jobTemplate.AddTask(WhereToRun.GPUThread, chunk =>
 			{
 				var mesh = chunk.Renderer.Mesh;
 				mesh.Vertices.DownloadDataFromGPU();
 			});
 
-			generationJobTemplate.AddTask(chunk =>
+			jobTemplate.AddTask(chunk =>
 			{
 				var mesh = chunk.Renderer.Mesh;
 				mesh.RecalculateBounds();
 			});
 
-			generationJobTemplate.AddTask(chunk =>
+			jobTemplate.AddTask(chunk =>
 			{
 				chunk.CalculateRealVisibleRange();
 			});
 
-			generationJobTemplate.AddTask(WhereToRun.GPUThread, chunk =>
-			 {
-				 var mesh = chunk.Renderer.Mesh;
-				 CalculateNormalsOnGPU(mesh);
-			 });
+			jobTemplate.AddTask(WhereToRun.GPUThread, chunk =>
+			{
+				var mesh = chunk.Renderer.Mesh;
+				CalculateNormalsOnGPU(mesh);
+			});
 
-			generationJobTemplate.AddTask(chunk =>
+			jobTemplate.AddTask(chunk =>
 			{
 				if (useSkirts)
 				{
@@ -489,7 +539,7 @@ namespace MyGame.PlanetaryBody
 				}
 			});
 
-			generationJobTemplate.AddTask(WhereToRun.GPUThread, chunk =>
+			jobTemplate.AddTask(WhereToRun.GPUThread, chunk =>
 			{
 				if (useSkirts)
 				{
@@ -498,20 +548,12 @@ namespace MyGame.PlanetaryBody
 				}
 			});
 
-			generationJobTemplate.AddTask(chunk =>
+			jobTemplate.AddTask(chunk =>
 			{
 				chunk.meshGeneratedWithShaderVersion = ComputeShader.Version;
 				chunk.isGenerationDone = true;
 			});
 		}
-
-
-		void EnqueueChunkForGeneration(Chunk chunk)
-		{
-			var job = generationJobTemplate.MakeInstanceWithData(chunk);
-			jobRunner.AddJob(job);
-		}
-
 
 		public void CalculateNormalsOnGPU(Mesh mesh)
 		{
@@ -530,8 +572,26 @@ namespace MyGame.PlanetaryBody
 
 		public void GPUThreadTick(FrameTime t)
 		{
-			jobRunner.GPUThreadTick(t, () => 1000);
-			//jobRunner.GPUThreadTick(t, () => 1 / t.TargetFps - t.CurrentFrameElapsedSeconds);
+			if (toGenerateChunksOrderedByWeight != null && toGenerateChunksOrderedByWeight.Count > 0)
+			{
+
+				void AddJob()
+				{
+					jobRunner.AddJob(
+						jobTemplate.MakeInstanceWithData(
+							toGenerateChunksOrderedByWeight.Dequeue()
+						)
+					);
+				}
+
+				Func<double> secondLeftToUse = () => 1 / t.TargetFps - t.CurrentFrameElapsedSeconds;
+
+				while (secondLeftToUse() > 0 && toGenerateChunksOrderedByWeight.Count > 0)
+				{
+					if (jobRunner.JobsCount == 0 && toGenerateChunksOrderedByWeight.Count > 0) AddJob();
+					jobRunner.GPUThreadTick(t, secondLeftToUse);
+				}
+			}
 		}
 
 

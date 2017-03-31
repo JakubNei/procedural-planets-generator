@@ -38,7 +38,7 @@ namespace MyGame
 
 
 					var cam = scene.MainCamera = entity.AddComponent<Camera>();
-					cam.NearClipPlane = 1000; // 0.5f
+					cam.NearClipPlane = 0.5f;
 					cam.FarClipPlane = 5000000;
 					cam.Recalculate();
 

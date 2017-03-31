@@ -18,37 +18,45 @@ namespace MyGame.PlanetaryBody
 	{
 		List<IJob> jobs = new List<IJob>();
 		Dictionary<IJob, double> timesOutOfTime = new Dictionary<IJob, double>();
+
+		public int JobsCount => jobs.Count;
+
 		public void AddJob(IJob job)
 		{
-			lock (jobs)
-				jobs.Add(job);
+			jobs.Add(job);
 		}
-		public void RemoveNotStarted()
-		{
-			lock (jobs)
-				jobs.RemoveAll(j => j.IsStarted == false);
-		}
+
 		public void GPUThreadTick(FrameTime ft, Func<double> secondLeftToUse)
-		{			
+		{
+			var maxBudget = secondLeftToUse();
+
 			while (jobs.Count > 0 && secondLeftToUse() > 0)
 			{
 				int jobsRan = 0;
 
-				IJob[] orderedJobs;
-				lock (jobs)
+				jobs.RemoveAll(j => j.WillNeverWantToBeExecuted);
+
+				foreach (var job in jobs)
 				{
-					jobs.RemoveAll(j => j.WantsToBeExecuted == false);
-					orderedJobs = jobs.OrderByDescending(j => j.NextGPUThreadTickWillTakeSeconds()).ToArray();
+					while (job.WantsToBeExecutedNow)
+					{
+						if (job.NextGPUThreadTickWillTakeSeconds() < secondLeftToUse())
+						{
+							if (job.GPUThreadExecute())
+								jobsRan++;
+						}
+						else
+						{
+							if (job.NextGPUThreadTickWillTakeSeconds() > maxBudget)
+							{
+								// split next job
+							}
+							break;
+						}
+					}
 				}
 
-				foreach (var job in orderedJobs)
-				{
-					while (job.WantsToBeExecuted && job.NextGPUThreadTickWillTakeSeconds() < secondLeftToUse() && job.GPUThreadTick())
-						jobsRan++;
-				}
-
-				lock (jobs)
-					jobs.RemoveAll(j => j.WantsToBeExecuted == false);
+				jobs.RemoveAll(j => j.WillNeverWantToBeExecuted);
 
 				if (jobsRan == 0) break;
 			}

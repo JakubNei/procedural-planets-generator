@@ -8,10 +8,10 @@ namespace MyGame.PlanetaryBody
 {
 	public interface IJob
 	{
-		bool IsStarted { get; }
-		bool WantsToBeExecuted { get; }
+		bool WillNeverWantToBeExecuted { get; }
+		bool WantsToBeExecutedNow { get; }
 		double NextGPUThreadTickWillTakeSeconds();
-		bool GPUThreadTick();
+		bool GPUThreadExecute();
 	}
 
 }

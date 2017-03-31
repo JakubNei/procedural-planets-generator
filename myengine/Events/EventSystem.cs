@@ -16,7 +16,7 @@ namespace MyEngine.Events
 	}
 
 	// TODO: add WeakReference (weak event pattern) probably WeakEventManager https://msdn.microsoft.com/en-us/library/system.windows.weakeventmanager(v=vs.100).aspx
-	public class EventSystem
+	public class EventSystem : SingletonsPropertyAccesor
 	{
 		Dictionary<Type, Delegate> typeToCallbacksAlways = new Dictionary<Type, Delegate>();
 		HashSet<Delegate> allDelegatesAlways = new HashSet<Delegate>();
@@ -29,20 +29,27 @@ namespace MyEngine.Events
 
 		public void Raise(IEvent evt)
 		{
-			Delegate delegat;
-			var type = evt.GetType();
-			if (typeToCallbacksOnce.TryGetValue(type, out delegat) == true)
+			try
 			{
-				delegat.DynamicInvoke(evt);
-				typeToCallbacksOnce.Remove(type);
-			}
-			if (typeToCallbacksAlways.TryGetValue(type, out delegat) == true)
-			{
-				delegat.DynamicInvoke(evt);
-			}
+				Delegate delegat;
+				var type = evt.GetType();
+				if (typeToCallbacksOnce.TryGetValue(type, out delegat) == true)
+				{
+					delegat.DynamicInvoke(evt);
+					typeToCallbacksOnce.Remove(type);
+				}
+				if (typeToCallbacksAlways.TryGetValue(type, out delegat) == true)
+				{
+					delegat.DynamicInvoke(evt);
+				}
 
-			OnAnyEventCalled?.Invoke(evt);
-			//foreach (var e in passEventsTo) e.Raise(evt);
+				OnAnyEventCalled?.Invoke(evt);
+				//foreach (var e in passEventsTo) e.Raise(evt);
+			}
+			catch(Exception e)
+			{
+				Log.Exception(e);
+			}
 		}
 
 		//public void PassEventsTo(EventSystem eventSystem)

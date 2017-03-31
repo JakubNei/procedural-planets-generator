@@ -9,10 +9,12 @@ namespace MyGame.PlanetaryBody
 {
 	public class JobTemplate<TData>
 	{
+		public delegate void SplittableAction(TData data, int splitIntoPartsCount, int partIndex);
+
 		class JobTask
 		{
 			public Action<TData> normalAction;
-			public Action<TData, int, int> splittableAction; // splitCount, splitIndex
+			public SplittableAction splittableAction; // splitCount, splitIndex
 			public WhereToRun whereToRun;
 
 			public TimeSpan timeTaken;
@@ -32,14 +34,14 @@ namespace MyGame.PlanetaryBody
 		List<JobTask> tasksToRun = new List<JobTask>();
 
 		public string Name { get; set; }
-		public JobTemplate()
+		public void AddSplittableTask(SplittableAction splittable) => AddSplittableTask(WhereToRun.DoesNotMatter, splittable);
+		public void AddSplittableTask(WhereToRun whereToRun, SplittableAction splittable)
 		{
-
-		}
-		public void AddSplittableTask(Action<TData, int, int> action) => AddSplittableTask(WhereToRun.DoesNotMatter, action);
-		public void AddSplittableTask(WhereToRun whereToRun, Action<TData, int, int> action)
-		{
-			tasksToRun.Add(new JobTask() { splittableAction = action, whereToRun = whereToRun });
+			tasksToRun.Add(new JobTask()
+			{
+				normalAction = (data) => splittable(data, 1, 0),
+				whereToRun = whereToRun,
+			});
 		}
 		public void AddTask(Action<TData> action) => AddTask(WhereToRun.DoesNotMatter, action);
 		public void AddTask(WhereToRun whereToRun, Action<TData> action)
@@ -52,7 +54,9 @@ namespace MyGame.PlanetaryBody
 		}
 		class JobInstance : IJob
 		{
-			public bool WantsToBeExecuted => currentTaskIndex < parent.tasksToRun.Count;
+			public bool WantsToBeExecutedNow => currentTaskIndex < parent.tasksToRun.Count && lastTask == null;
+
+			public bool WillNeverWantToBeExecuted => currentTaskIndex >= parent.tasksToRun.Count;
 
 			public bool IsStarted => currentTaskIndex > 0;
 			public bool IsFaulted { get; private set; }
@@ -70,13 +74,9 @@ namespace MyGame.PlanetaryBody
 				this.data = data;
 			}
 
-			public bool GPUThreadTick()
+			public bool GPUThreadExecute()
 			{
-				if (WantsToBeExecuted == false) return false;
-
-				if (lastTask != null && lastTask.IsCompleted == false) return false;
-
-				lastTask = null;
+				if (WantsToBeExecutedNow == false) return false;
 
 				var jobTask = parent.tasksToRun[currentTaskIndex];
 				currentTaskIndex++;
@@ -104,18 +104,23 @@ namespace MyGame.PlanetaryBody
 						{
 							jobTask.firstRunDone = true;
 						}
+						lastTask = null;
 					};
 					if (jobTask.whereToRun == WhereToRun.GPUThread)
 						action();
 					else
 						lastTask = Task.Run(action);
 				}
+				else
+				{
+					throw new Exception("makes no sense");
+				}
 
 				return true;
 			}
 			public double NextGPUThreadTickWillTakeSeconds()
 			{
-				if (WantsToBeExecuted == false) return 0;
+				if (WantsToBeExecutedNow == false) return 0;
 				var jobTask = parent.tasksToRun[currentTaskIndex];
 				if (jobTask.whereToRun == WhereToRun.GPUThread) return jobTask.avergeSeconds;
 				return 0;
