@@ -143,19 +143,26 @@ namespace MyEngine
 			configFile.Position = 0;
 			var w = new StreamWriter(configFile, Encoding.UTF8);
 
+			var isFirst = true;
 			foreach (var line in lines)
 			{
+				if (isFirst == false) w.WriteLine();
+
 				var l = "";
 				if (line.associatedCvar != null) l += ToSaveString(line.associatedCvar) + " ";
 				l += line.commentPart;
-				w.WriteLine(l);
+				w.Write(l);
+
+				isFirst = false;
 			}
 			w.Flush();
+
+			// clear the rest of the file, we cant actually decrease its size it seems
 			if (w.BaseStream.Length > w.BaseStream.Position)
 			{
 				var c = w.BaseStream.Length - w.BaseStream.Position;
 				while (c-- > 0)
-					w.Flush();
+					w.Write(" ");
 				w.Flush();
 			}
 			w.Close();
