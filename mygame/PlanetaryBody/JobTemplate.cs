@@ -19,13 +19,15 @@ namespace MyGame.PlanetaryBody
 
 			public TimeSpan timeTaken;
 
-			public bool firstRunDone;
+			public ulong timesExecutedBeforeMeasurement;
+
+			public bool CanMeasure => timesExecutedBeforeMeasurement > 100;
 			public ulong timesExecuted;
 			public double avergeSeconds
 			{
 				get
 				{
-					if (firstRunDone && timesExecuted > 0)
+					if (CanMeasure && timesExecuted > 0)
 						return timeTaken.TotalSeconds / timesExecuted;
 					return 0;
 				}
@@ -62,7 +64,7 @@ namespace MyGame.PlanetaryBody
 			public bool IsFaulted { get; private set; }
 			public Exception Exception { get; private set; }
 
-			Task lastTask;
+			volatile Task lastTask;
 			int currentTaskIndex;
 
 			readonly TData data;
@@ -95,14 +97,14 @@ namespace MyGame.PlanetaryBody
 							IsFaulted = true;
 							Exception = e;
 						}
-						if (jobTask.firstRunDone)
+						if (jobTask.CanMeasure)
 						{
 							jobTask.timeTaken += stopWatch.Elapsed;
 							jobTask.timesExecuted++;
 						}
 						else
 						{
-							jobTask.firstRunDone = true;
+							jobTask.timesExecutedBeforeMeasurement++;
 						}
 						lastTask = null;
 					};

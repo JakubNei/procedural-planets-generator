@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace MyGame.PlanetaryBody
 {
-	public partial class Chunk
+	public partial class Segment
 	{
 
 		static ulong numberOfChunksGenerated = 0;
@@ -36,8 +36,8 @@ namespace MyGame.PlanetaryBody
 			var normals = mesh.Normals;
 
 
-			var vertices = planetaryBody.GetVerticesList();
-			var indicies = planetaryBody.GetIndiciesList();
+			var vertices = planetInfo.GetVerticesList();
+			var indicies = planetInfo.GetIndiciesList();
 
 			mesh.Vertices.SetData(vertices);
 			mesh.TriangleIndicies.SetData(indicies);
@@ -58,7 +58,7 @@ namespace MyGame.PlanetaryBody
 			//useSkirts = true;
 			if (useSkirts)
 			{
-				var skirtVertices = mesh.Duplicate(planetaryBody.GetEdgeVerticesIndexes(), mesh.Vertices, mesh.Normals);
+				var skirtVertices = mesh.Duplicate(planetInfo.GetEdgeVerticesIndexes(), mesh.Vertices, mesh.Normals);
 				var moveAmount = this.NoElevationRange.ToBoundingSphere().radius / 10;
 				mesh.MoveVertices(skirtVertices, -this.NoElevationRange.Normal.ToVector3() * (float)moveAmount, mesh.Vertices);
 			}
@@ -82,11 +82,11 @@ namespace MyGame.PlanetaryBody
 			}
 
 			if (Renderer != null) throw new Exception("something went terribly wrong, renderer should be null");
-			Renderer = planetaryBody.Entity.AddComponent<CustomChunkMeshRenderer>();
+			Renderer = planetInfo.Entity.AddComponent<CustomChunkMeshRenderer>();
 			Renderer.chunk = this;
 			Renderer.Mesh = mesh;
 			Renderer.Offset += offsetCenter;
-			Renderer.Material = planetaryBody.PlanetMaterial;
+			Renderer.Material = planetInfo.PlanetMaterial;
 			Renderer.RenderingMode = MyRenderingMode.DontRender;
 		}
 

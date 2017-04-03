@@ -22,7 +22,7 @@ namespace MyEngine
 
 		public MyFile file;
 
-		bool recalculateBounds = true;
+		public bool BoundsNeedRecalculation { get; set; }
 
 		/// <summary>
 		/// Mesh space bounds of the mesh.
@@ -31,27 +31,13 @@ namespace MyEngine
 		{
 			get
 			{
-				if (recalculateBounds)
-				{
-					recalculateBounds = false;
-					lock (Vertices)
-					{
-						if (Vertices.Count > 0)
-						{
-							bounds = new Bounds(Vertices[0]);
-							bounds.Encapsulate(Vertices);
-						}
-						else
-						{
-							bounds = new Bounds(Vector3.Zero);
-						}
-					}
-				}
+				if (BoundsNeedRecalculation)
+					RecalculateBounds();
 				return bounds;
 			}
 			set
 			{
-				recalculateBounds = false;
+				BoundsNeedRecalculation = false;
 				bounds = value;
 			}
 		}
@@ -88,9 +74,18 @@ namespace MyEngine
 
 		public void RecalculateBounds()
 		{
-			lock (this)
+			lock (Vertices)
 			{
-				recalculateBounds = true;
+				if (Vertices.Count > 0)
+				{
+					bounds = new Bounds(Vertices[0]);
+					bounds.Encapsulate(Vertices);
+				}
+				else
+				{
+					bounds = new Bounds(Vector3.Zero);
+				}
+				BoundsNeedRecalculation = false;
 			}
 		}
 

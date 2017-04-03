@@ -26,7 +26,15 @@ namespace MyEngine
 
 		public static void Start(EngineMain engine)
 		{
-			Log = new Neitri.Logging.LogConsole();
+			var log = new Neitri.Logging.LogConsole();
+			log.messageFormatter = (logEntry) =>
+				string.Format("[{0}][{1}] {2}",
+					DateTime.Now.ToString("HH:mm:ss.fff"),
+					logEntry.Caller,
+					logEntry.Message
+				);
+			Log = log;
+
 			Input = new InputSystem(engine);
 			Debug = new MyDebug();
 			EventSystem = new Events.EventSystem();
@@ -63,6 +71,7 @@ namespace MyEngine
 
 		CVar FpsThrottling => Debug.GetCVar("fps throttling enabled", true);
 		CVar PauseRenderPrepare => Debug.GetCVar("pause render prepare");
+		CVar TargetFps => Debug.GetCVar("target fps", 60);
 
 		// to simulate OpenTk.GameWindow functionalty, see it's source https://github.com/mono/opentk/blob/master/Source/OpenTK/GameWindow.cs
 		private MyGameWindow gameWindow;
@@ -96,9 +105,7 @@ namespace MyEngine
 			gameWindow.VSync = VSyncMode.Off;
 
 
-
-
-			System.Diagnostics.Process.GetCurrentProcess().PriorityClass = System.Diagnostics.ProcessPriorityClass.RealTime;
+			//System.Diagnostics.Process.GetCurrentProcess().PriorityClass = System.Diagnostics.ProcessPriorityClass.High;
 			Thread.CurrentThread.Priority = ThreadPriority.Highest;
 		}
 
@@ -207,20 +214,14 @@ namespace MyEngine
 
 		void StartOtherThreads()
 		{
-			//StartSecondaryThread(EventThreadMain);
-			StartThreadLoop(BuildRenderListMain);
-		}
-
-		void StartThreadLoop(Action action)
-		{
 			var t = new Thread(() =>
 			{
 				while (ShouldContinueRunning)
 				{
-					action();
+					BuildRenderListMain();
 				}
 			});
-
+			t.Name = "prepare render";
 			t.Priority = ThreadPriority.Highest;
 			t.IsBackground = true;
 			t.Start();
@@ -252,7 +253,7 @@ namespace MyEngine
 						{
 							renderManagerBack.PrepareRender(dataToRender, camera);
 						}
-						catch(Exception e)
+						catch (Exception e)
 						{
 							Log.Exception(e);
 						}
@@ -276,11 +277,13 @@ namespace MyEngine
 
 		FrameTime renderThreadTime = new FrameTime();
 
-		ulong frameCounter;
 
 		void MainLoop()
 		{
 			renderThreadTime.FrameBegan();
+			renderThreadTime.TargetFps = TargetFps;
+			Debug.AddValue("rendering / frames rendered", renderThreadTime.FrameCounter);
+
 			EventSystem.Raise(new MyEngine.Events.FrameStarted());
 
 			try
@@ -309,8 +312,6 @@ namespace MyEngine
 
 			if (ShouldContinueRunning == false) return;
 
-			frameCounter++;
-			Debug.AddValue("rendering / frames rendered", frameCounter);
 
 			UpdateGPUMemoryInfo();
 
@@ -357,13 +358,19 @@ namespace MyEngine
 
 			EventSystem.Raise(new MyEngine.Events.FrameEnded(renderThreadTime));
 
+			if (renderThreadTime.FrameCounter > TargetFps.Number * 10 && renderThreadTime.FpsPer10Sec < TargetFps)
+			{
+				TargetFps.Number = (float)renderThreadTime.FpsPer1Sec;
+				Debug.AddValue("rendering / adjusted target fps", TargetFps.Number);
+			}
+
 			if (FpsThrottling)
 			{
-				var targetFps = renderThreadTime.TargetFps * 1.2;
+				var targetFps = TargetFps * 1.2;
 				var secondsWeCanSleep = 1 / targetFps - renderThreadTime.CurrentFrameElapsedSeconds;
 				if (secondsWeCanSleep > 0)
 				{
-					Debug.AddValue("theoretical unthrottled fps", renderThreadTime.CurrentFrameElapsedTimeFps + " fps");
+					Debug.AddValue("rendering / theoretical unthrottled fps", renderThreadTime.CurrentFrameElapsedTimeFps + " fps");
 					Thread.Sleep((1000 * secondsWeCanSleep).FloorToInt());
 				}
 			}

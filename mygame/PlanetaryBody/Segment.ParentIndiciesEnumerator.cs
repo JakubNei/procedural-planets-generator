@@ -14,7 +14,7 @@ using System.Collections;
 
 namespace MyGame.PlanetaryBody
 {
-    public partial class Chunk
+    public partial class Segment
     {
 		class ParentIndiciesEnumerator : IEnumerator<int>
 		{
@@ -41,12 +41,12 @@ namespace MyGame.PlanetaryBody
 			{
 				get
 				{
-					return parentChunk.planetaryBody.ChunkNumberOfVerticesOnEdge;
+					return parentChunk.planetInfo.ChunkNumberOfVerticesOnEdge;
 				}
 			}
-			Chunk parentChunk;
+			Segment parentChunk;
 			ChildPosition myPos;
-			public ParentIndiciesEnumerator(Chunk parentChunk, ChildPosition myPos)
+			public ParentIndiciesEnumerator(Segment parentChunk, ChildPosition myPos)
 			{
 				this.parentChunk = parentChunk;
 				this.myPos = myPos;

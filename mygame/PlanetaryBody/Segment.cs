@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace MyGame.PlanetaryBody
 {
-	public partial class Chunk
+	public partial class Segment
 	{
 		/// <summary>
 		/// Planet local position range
@@ -36,13 +36,13 @@ namespace MyGame.PlanetaryBody
 
 
 
-		public Chunk parentChunk;
-		public List<Chunk> Children { get; } = new List<Chunk>();
+		public Segment parent;
+		public List<Segment> Children { get; } = new List<Segment>();
 		public CustomChunkMeshRenderer Renderer { get; set; }
 
 		public class CustomChunkMeshRenderer : MeshRenderer
 		{
-			public Chunk chunk;
+			public Segment chunk;
 
 			/*
 			public override bool ShouldRenderInContext(Camera camera, RenderContext renderContext)
@@ -85,7 +85,7 @@ namespace MyGame.PlanetaryBody
 
 
 		int subdivisionDepth;
-		Root planetaryBody;
+		Planet planetInfo;
 
 
 		ChildPosition childPosition;
@@ -99,10 +99,10 @@ namespace MyGame.PlanetaryBody
 			NoneNoParent = -1,
 		}
 
-		public Chunk(Root planetInfo, TriangleD noElevationRange, Chunk parentChunk, ChildPosition childPosition = ChildPosition.NoneNoParent)
+		public Segment(Planet planetInfo, TriangleD noElevationRange, Segment parentChunk, ChildPosition childPosition = ChildPosition.NoneNoParent)
 		{
-			this.planetaryBody = planetInfo;
-			this.parentChunk = parentChunk;
+			this.planetInfo = planetInfo;
+			this.parent = parentChunk;
 			this.childPosition = childPosition;
 			this.NoElevationRange = noElevationRange;
 			this.rangeToCalculateScreenSizeOn = noElevationRange;
@@ -149,7 +149,7 @@ namespace MyGame.PlanetaryBody
 		{
 			bool isVisible = true;
 
-			var myPos = rangeToCalculateScreenSizeOn.CenterPos + planetaryBody.Transform.Position;
+			var myPos = rangeToCalculateScreenSizeOn.CenterPos + planetInfo.Transform.Position;
 			var dirToCamera = myPos.Towards(cam.ViewPointPosition).ToVector3d();
 
 			// 0 looking at it from side, 1 looking at it from top, -1 looking at it from behind
@@ -183,9 +183,9 @@ namespace MyGame.PlanetaryBody
 		{
 			if (occluderTringles.Count != 0) return;
 
-			var a = Renderer.Mesh.Vertices[planetaryBody.AIndex];
-			var b = Renderer.Mesh.Vertices[planetaryBody.BIndex];
-			var c = Renderer.Mesh.Vertices[planetaryBody.CIndex];
+			var a = Renderer.Mesh.Vertices[planetInfo.AIndex];
+			var b = Renderer.Mesh.Vertices[planetInfo.BIndex];
+			var c = Renderer.Mesh.Vertices[planetInfo.CIndex];
 
 			var o = Renderer.Offset.ToVector3d();
 			realVisibleRange.a = a.ToVector3d() + o;
@@ -215,7 +215,7 @@ namespace MyGame.PlanetaryBody
 				b = b,
 				c = c
 			};
-			var child = new Chunk(planetaryBody, range, this, cp);
+			var child = new Segment(planetInfo, range, this, cp);
 			Children.Add(child);
 			child.subdivisionDepth = subdivisionDepth + 1;
 			child.rangeToCalculateScreenSizeOn = range;
@@ -232,9 +232,9 @@ namespace MyGame.PlanetaryBody
 				var ac = (a + c).Divide(2.0f).Normalized();
 				var bc = (b + c).Divide(2.0f).Normalized();
 
-				ab *= planetaryBody.RadiusMin;
-				ac *= planetaryBody.RadiusMin;
-				bc *= planetaryBody.RadiusMin;
+				ab *= planetInfo.RadiusMin;
+				ac *= planetInfo.RadiusMin;
+				bc *= planetInfo.RadiusMin;
 
 				AddChild(a, ab, ac, ChildPosition.Top);
 				AddChild(ab, b, bc, ChildPosition.Left);
@@ -256,10 +256,10 @@ namespace MyGame.PlanetaryBody
 			}
 		}
 
-		public void DestroyRenderer()
+		private void DestroyRenderer()
 		{
 			Renderer?.SetRenderingMode(MyRenderingMode.DontRender);
-			planetaryBody.Entity.DestroyComponent(Renderer);
+			planetInfo.Entity.DestroyComponent(Renderer);
 			Renderer = null;
 		}
 

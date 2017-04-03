@@ -14,7 +14,9 @@ namespace MyEngine
 		Queue<DateTime> frameTimes10sec = new Queue<DateTime>();
 		Stopwatch eventThreadTime = new Stopwatch();
 
-		public double TargetFps => 60;
+
+		public ulong FrameCounter { get; private set; }
+		public double TargetFps { get; set; }
 
 		/// <summary>
 		/// Delta Time from last frame.
@@ -37,6 +39,7 @@ namespace MyEngine
 		{
 			DeltaTime = eventThreadTime.ElapsedTicks / (double)Stopwatch.Frequency;
 			eventThreadTime.Restart();
+			FrameCounter++;
 
 			if (DeltaTime > 0)
 				Fps = 1 / DeltaTime;

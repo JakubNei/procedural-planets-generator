@@ -14,7 +14,7 @@ using System.Threading;
 
 namespace MyGame.PlanetaryBody
 {
-	public partial class Root
+	public partial class Planet
 	{
 
 		List<Vector3> verticesList = new List<Vector3>();

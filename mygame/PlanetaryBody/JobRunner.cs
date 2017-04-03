@@ -14,7 +14,7 @@ namespace MyGame.PlanetaryBody
 		DoesNotMatter,
 	}
 
-	public class JobRunner
+	public class JobRunner : SingletonsPropertyAccesor
 	{
 		List<IJob> jobs = new List<IJob>();
 		Dictionary<IJob, double> timesOutOfTime = new Dictionary<IJob, double>();
@@ -26,9 +26,11 @@ namespace MyGame.PlanetaryBody
 			jobs.Add(job);
 		}
 
-		public void GPUThreadTick(FrameTime ft, Func<double> secondLeftToUse)
+		public void GPUThreadTick(Func<double> secondLeftToUse)
 		{
 			var maxBudget = secondLeftToUse();
+
+			Debug.AddValue("generation / generation jobs running", jobs.Count);
 
 			while (jobs.Count > 0 && secondLeftToUse() > 0)
 			{
@@ -47,9 +49,11 @@ namespace MyGame.PlanetaryBody
 						}
 						else
 						{
-							if (job.NextGPUThreadTickWillTakeSeconds() > maxBudget)
+							var s = job.NextGPUThreadTickWillTakeSeconds();
+							if (s > maxBudget)
 							{
 								// split next job
+								Log.Warn("generation job exceeded budget limit by " + (s - maxBudget) + " seconds");
 							}
 							break;
 						}
@@ -60,8 +64,6 @@ namespace MyGame.PlanetaryBody
 
 				if (jobsRan == 0) break;
 			}
-
-			Singletons.Debug.AddValue("jobs count", jobs.Count);
 		}
 	}
 

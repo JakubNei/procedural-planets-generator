@@ -43,7 +43,7 @@ namespace MyEngine
 
 
 		DictionaryWatcher<string, string> stringValuesWatcher;
-		DictionaryWatcher<string, CVar, bool> cvarValuesWatcher;
+		DictionaryWatcher<string, CVar, string> cvarValuesWatcher;
 
 		void InitializeDataWatchers()
 		{
@@ -56,22 +56,22 @@ namespace MyEngine
 			}
 			{
 				var items = listView2.Items;
-				cvarValuesWatcher = new DictionaryWatcher<string, CVar, bool>();
-				cvarValuesWatcher.getValueToDetectChangesOn = (key, item) => item.Bool;
+				cvarValuesWatcher = new DictionaryWatcher<string, CVar, string>();
+				cvarValuesWatcher.getValueToDetectChangesOn = (key, item) => item.ValueAsTring;
 				cvarValuesWatcher.OnAdded += (key, item) =>
 				{
 					items.Add(new ListViewItem(new string[] {
-								item.ToogleKey == OpenTK.Input.Key.Unknown ? string.Empty : item.ToogleKey.ToString(),
+								item.ToogleKey.ToString(),
 								item.Name,
-								item.ValueType == CvarValueType.Bool ? item.Bool.ToString() : item.Number.ToString(),
+								item.ValueAsTring,
 							})
 					{ Tag = item });
 				};
 				cvarValuesWatcher.OnUpdated += (key, item) =>
 				{
 					var subItems = items.OfType<ListViewItem>().First(i => i.Tag == item).SubItems;
-					subItems[0].Text = item.ToogleKey == OpenTK.Input.Key.Unknown ? string.Empty : item.ToogleKey.ToString();
-					subItems[2].Text = item.ValueType == CvarValueType.Bool ? item.Bool.ToString() : item.Number.ToString();
+					subItems[0].Text = item.ToogleKey.ToString();
+					subItems[2].Text = item.ValueAsTring;
 				};
 				cvarValuesWatcher.OnRemoved += (key, item) => items.Remove(items.OfType<ListViewItem>().First(i => i.Tag == item));
 			}

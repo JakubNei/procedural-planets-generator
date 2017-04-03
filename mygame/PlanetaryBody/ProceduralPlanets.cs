@@ -17,7 +17,7 @@ namespace MyGame
 {
 	public class ProceduralPlanets
 	{
-		public List<PlanetaryBody.Root> planets = new List<PlanetaryBody.Root>();
+		public List<PlanetaryBody.Planet> planets = new List<PlanetaryBody.Planet>();
 		SceneSystem scene;
 		Factory Factory => scene.Factory;
 		MyDebug Debug => scene.Debug;
@@ -39,11 +39,10 @@ namespace MyGame
 					while (true)
 					{
 						PlanetLogicUpdate();
-						Thread.Sleep(10);
 					}
 				});
 				t.Name = "Planet logic";
-				t.Priority = ThreadPriority.Highest;
+				t.Priority = ThreadPriority.Lowest;
 				t.IsBackground = true;
 				t.Start();
 			}
@@ -53,11 +52,11 @@ namespace MyGame
 
 
 
-		PlanetaryBody.Root planet;
+		PlanetaryBody.Planet planet;
 
-		public PlanetaryBody.Root AddPlanet()
+		public PlanetaryBody.Planet AddPlanet()
 		{
-			var planet = scene.AddEntity("procedural planet #" + planets.Count + 1).AddComponent<PlanetaryBody.Root>();
+			var planet = scene.AddEntity("procedural planet #" + planets.Count + 1).AddComponent<PlanetaryBody.Planet>();
 			planets.Add(planet);
 			return planet;
 		}
@@ -104,6 +103,10 @@ namespace MyGame
 
 			// 6371000 earth radius
 			var cfg = new PlanetaryBody.Config();
+			cfg.chunkNumberOfVerticesOnEdge = Debug.GetCVar("segment number of vertices on edge", 50);
+			cfg.sizeOnScreenNeededToSubdivide = Debug.GetCVar("segment subdivide if size on screen is bigger than", 0.3f);
+			cfg.stopSegmentRecursionAtWorldSize = Debug.GetCVar("segment stop recursion at world size", 100);
+
 			cfg.radiusMin = 1000000;
 			cfg.baseHeightMap = Factory.GetTexture2D("textures/earth_elevation_map.*");
 			cfg.baseHeightMapMultiplier = 20000; //20 km
@@ -133,7 +136,7 @@ namespace MyGame
 			planet.Initialize();
 		}
 
-		public PlanetaryBody.Root GetClosestPlanet(WorldPos pos)
+		public PlanetaryBody.Planet GetClosestPlanet(WorldPos pos)
 		{
 			return planets.OrderBy(p => p.Transform.Position.DistanceSqr(pos) - p.RadiusMin * p.RadiusMin).FirstOrDefault();
 		}

@@ -66,6 +66,17 @@ namespace MyEngine
 			}
 		}
 
+		public string ValueAsTring
+		{
+			get
+			{
+				if (ValueType == CvarValueType.Bool) return Bool.ToString();
+				if (ValueType == CvarValueType.Number) return Number.ToString();
+				if (ValueType == CvarValueType.NotSet) return "not set";
+				return "";
+			}
+		}
+
 		public static implicit operator float(CVar cvar) => cvar.Number;
 		public static implicit operator int(CVar cvar) => (int)cvar.Number;
 
