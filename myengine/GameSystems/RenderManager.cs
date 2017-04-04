@@ -25,19 +25,19 @@ namespace MyEngine
 		public Cubemap SkyboxCubeMap { get; set; }
 		Shader FinalDrawShader => Factory.GetShader("internal/finalDraw.glsl");
 
-		CVar DrawLines => Debug.GetCVar("debug draw lines");
-		CVar EnablePostProcessEffects => Debug.GetCVar("enable post process effects");
-		CVar DebugBounds => Debug.GetCVar("debug draw mesh bouding boxes");
-		CVar ShadowsEnabled => Debug.GetCVar("shadows enabled");
+		CVar DrawLines => Debug.GetCVar("rendering / debug / draw lines");
+		CVar EnablePostProcessEffects => Debug.GetCVar("rendering / enable post process effects");
+		CVar DebugBounds => Debug.GetCVar("rendering / debug / draw mesh bouding boxes");
+		CVar ShadowsEnabled => Debug.GetCVar("rendering / shadows enabled");
 
-		CVar EnableCulling => Debug.GetCVar("enable culling", true);
-		CVar EnableRasterizerRasterization => Debug.GetCVar("enable rasterizer rasterization", true);
-		CVar EnableRasterizerCulling => Debug.GetCVar("enable rasterizer culling", true);
-		CVar ShowRasterizerContents => Debug.GetCVar("show rasterizer contents");
-		CVar SortRenderables => Debug.GetCVar("sort renderables", true);
-		CVar DoParallelize => Debug.GetCVar("parallelize render prepare", true);
+		CVar EnableCulling => Debug.GetCVar("rendering / enable culling", true);
+		CVar EnableRasterizerRasterization => Debug.GetCVar("rendering / enable rasterizer rasterization", true);
+		CVar EnableRasterizerCulling => Debug.GetCVar("rendering / enable rasterizer culling", true);
+		CVar ShowRasterizerContents => Debug.GetCVar("rendering / debug / show rasterizer contents");
+		CVar SortRenderables => Debug.GetCVar("rendering / sort renderables", true);
+		CVar DoParallelize => Debug.GetCVar("rendering / parallelize render prepare", true);
 
-		CVar RenderOnlyFront => Debug.GetCVar("renderer render only front of triangles", true);
+		CVar RenderOnlyFront => Debug.GetCVar("rendering / render only front of triangles", true);
 
 		ParallerRunner paraller;
 
@@ -96,8 +96,8 @@ namespace MyEngine
 
 			if (DebugBounds) RenderDebugBounds(ubo, camera);
 
-			if (Debug.GetCVar("debug draw normal buffer contents")) GBuffer.DebugDrawNormal();
-			if (Debug.GetCVar("debug draw gbuffer contents")) GBuffer.DebugDrawContents();
+			if (Debug.GetCVar("rendering / debug / draw normal buffer contents")) GBuffer.DebugDrawNormal();
+			if (Debug.GetCVar("rendering / debug / draw gbuffer contents")) GBuffer.DebugDrawContents();
 			//if (drawShadowMapContents) DebugDrawTexture(shadowMap.depthMap, new Vector4(0.5f, 0.5f, 1, 1), new Vector4(0.5f,0.5f,0,1), 1, 0);
 
 			ErrorCode glError;
@@ -440,7 +440,7 @@ namespace MyEngine
 					workerThreadsRun[i].Set();
 				}
 
-				while (ExecuteNextAndReturnStatus(0));
+				while (ExecuteNextAndReturnStatus(0)) ;
 
 				for (int i = 1; i < useThreads; i++)
 				{
@@ -501,8 +501,8 @@ namespace MyEngine
 						{
 							if (renderable.ForcePassCulling)
 							{
-								var newIndex = Interlocked.Increment(ref passedFrustumCullingIndex);
-								passedFrustumCulling[newIndex - 1] = renderable;
+								var newIndex = Interlocked.Increment(ref passedFrustumCullingIndex) - 1;
+								passedFrustumCulling[newIndex] = renderable;
 								rasterizer?.AddTriangles(renderable.GetCameraSpaceOccluderTriangles(camera));
 							}
 							else
@@ -513,8 +513,8 @@ namespace MyEngine
 									&& frustum.VsBounds(bounds)
 								)
 								{
-									var newIndex = Interlocked.Increment(ref passedFrustumCullingIndex);
-									passedFrustumCulling[newIndex - 1] = renderable;
+									var newIndex = Interlocked.Increment(ref passedFrustumCullingIndex) - 1;
+									passedFrustumCulling[newIndex] = renderable;
 									rasterizer?.AddTriangles(renderable.GetCameraSpaceOccluderTriangles(camera));
 								}
 								else
@@ -559,9 +559,9 @@ namespace MyEngine
 						if (renderable.ForcePassCulling)
 						{
 							renderable.SetCameraRenderStatusFeedback(camera, RenderStatus.RenderedAndVisible);
-							var newIndex = Interlocked.Increment(ref passedRasterizationCullingIndex);
-							passedRasterizationCulling[newIndex - 1] = renderable;
-							distancesToCamera[newIndex - 1] = 0;
+							var newIndex = Interlocked.Increment(ref passedRasterizationCullingIndex) - 1;
+							passedRasterizationCulling[newIndex] = renderable;
+							distancesToCamera[newIndex] = 0;
 						}
 						else
 						{
@@ -569,9 +569,9 @@ namespace MyEngine
 							if (rasterizer.AreBoundsVisible(bounds))
 							{
 								renderable.SetCameraRenderStatusFeedback(camera, RenderStatus.RenderedAndVisible);
-								var newIndex = Interlocked.Increment(ref passedRasterizationCullingIndex);
-								passedRasterizationCulling[newIndex - 1] = renderable;
-								distancesToCamera[newIndex - 1] = bounds.depthClosest;
+								var newIndex = Interlocked.Increment(ref passedRasterizationCullingIndex) - 1;
+								passedRasterizationCulling[newIndex] = renderable;
+								distancesToCamera[newIndex] = bounds.depthClosest;
 							}
 							else
 							{

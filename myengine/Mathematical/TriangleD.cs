@@ -34,6 +34,16 @@ namespace MyEngine
 				));
 			}
 		}
+		public Vector3d NormalFast
+		{
+			get
+			{
+				return Vector3d.NormalizeFast(Vector3d.Cross(
+					b - a,
+					c - a
+				));
+			}
+		}
 
 		public TriangleD(Vector3d a, Vector3d b, Vector3d c)
 		{
@@ -45,7 +55,7 @@ namespace MyEngine
 		public SphereD ToBoundingSphere()
 		{
 			var c = CenterPos;
-			var radius = (float)Math.Sqrt(
+			var radius = Math.Sqrt(
 				Math.Max(
 					Math.Max(
 						a.DistanceSqr(b),

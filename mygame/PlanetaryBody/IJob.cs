@@ -10,8 +10,19 @@ namespace MyGame.PlanetaryBody
 	{
 		bool WillNeverWantToBeExecuted { get; }
 		bool WantsToBeExecutedNow { get; }
-		double NextGPUThreadTickWillTakeSeconds();
+		double NextGPUThreadExecuteWillTakeSeconds();
 		bool GPUThreadExecute();
+
+		ITask NextTask { get; }
+
 	}
+
+	public interface ITask
+	{
+		string Name { get; }
+		bool IsSplittable { get; }
+		bool TrySplitToParts(ushort parts);
+	}
+
 
 }

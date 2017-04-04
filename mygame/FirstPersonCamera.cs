@@ -34,7 +34,7 @@ namespace MyGame
 		bool walkOnShere_start;
 
 		Camera cam => Scene.MainCamera;
-		CVar WalkOnPlanet => Debug.GetCVar("walk on planet");
+		CVar WalkOnPlanet => Debug.GetCVar("game / walk on planet");
 
 		public ProceduralPlanets planets;
 		const bool moveCameraToSurfaceOnStart = false;

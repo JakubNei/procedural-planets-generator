@@ -78,7 +78,7 @@ namespace MyEngine
 
 		void AddCommonCvars()
 		{
-			CommonCVars.GetCVar("debug show debug form").ToogledByKey(OpenTK.Input.Key.F1).OnChangedAndNow((cvar) =>
+			CommonCVars.GetCVar("debug / show debug form").ToogledByKey(OpenTK.Input.Key.F1).OnChangedAndNow((cvar) =>
 			{
 				if (debugForm == null) debugForm = new DebugForm();
 				if (cvar.Bool) debugForm.Show();

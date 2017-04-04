@@ -8,7 +8,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 
 /// <summary>
-/// Version 2017-03-28
+/// Version 2017-04-04
 /// Many useful extensions I've made over the years.
 /// All in one class.
 /// </summary>
@@ -187,7 +187,38 @@ public static class NeitriExtensions
 
 	#region List<T> extensions
 
-	public static void Resize<T>(this List<T> list, int newCount, T valueToAdd)
+	public static T First<T>(this List<T> list)
+	{
+		return list[0];
+	}
+	public static T FirstOrDefault<T>(this List<T> list)
+	{
+		if (list.Count > 0)
+			return list[0];
+		return default(T);
+	}
+
+	public static T Last<T>(this List<T> list)
+	{
+		return list[list.Count - 1];
+	}
+	public static T LastOrDefault<T>(this List<T> list)
+	{
+		if (list.Count > 0)
+			return list[list.Count - 1];
+		return default(T);
+	}
+
+	public static int Count<T>(this List<T> list)
+	{
+		return list.Count;
+	}
+	public static long LongCount<T>(this List<T> list)
+	{
+		return (long)list.Count;
+	}
+
+	public static void Resize<T>(this List<T> list, int newCount, T defaultValue)
 	{
 		int currentCount = list.Count;
 		if (newCount < currentCount)
@@ -196,13 +227,13 @@ public static class NeitriExtensions
 		{
 			if (newCount > list.Capacity)//this bit is purely an optimisation, to avoid multiple automatic capacity changes.
 				list.Capacity = newCount;
-			list.AddRange(Enumerable.Repeat(valueToAdd, newCount - currentCount));
+			list.AddRange(Enumerable.Repeat(defaultValue, newCount - currentCount));
 		}
 	}
 
-	public static void Resize<T>(this List<T> list, int newCount) where T : new()
+	public static void Resize<T>(this List<T> list, int newCount)
 	{
-		Resize(list, newCount, new T());
+		Resize(list, newCount, default(T));
 	}
 
 	#endregion

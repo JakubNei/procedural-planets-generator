@@ -132,17 +132,14 @@ namespace MyEngine
 				DataStrideInElementsNumber = 3;
 			}
 
-			public override void SetData(IntPtr ptr, int countOfVector3s)
+			public override unsafe void SetData(IntPtr ptr, int countOfVector3s)
 			{
-				var countOfFloats = countOfVector3s * 3;
-				var data = new float[countOfFloats];
-				Marshal.Copy(ptr, data, 0, countOfFloats);
 				lock (this)
 				{
-					this.Clear();
-					for (int i = 0; i < countOfFloats; i += 3)
+					var p = (float*)ptr.ToPointer();
+					for (int i = 0; i < countOfVector3s; i++)
 					{
-						this.Add(new Vector3(data[i], data[i + 1], data[i + 2]));
+						this[i] = new Vector3(*p++, *p++, *p++);
 					}
 				}
 			}
@@ -268,7 +265,7 @@ namespace MyEngine
 				GL.BindBuffer(GL_BufferTarget, VboHandle); MyGL.Check();
 				var arr = this.ToArray();
 				var size = NumberOfElements * DataSizeOfOneElementInBytes;
-				GL.BufferData(GL_BufferTarget, size, arr, BufferUsageHint.StaticDraw); MyGL.Check(); // BufferUsageHint explained: http://www.informit.com/articles/article.aspx?p=1377833&seqNum=7
+				GL.BufferData(GL_BufferTarget, size, arr, BufferUsageHint.StreamRead); MyGL.Check(); // BufferUsageHint explained: http://www.informit.com/articles/article.aspx?p=1377833&seqNum=7
 				GL.GetBufferParameter(GL_BufferTarget, BufferParameterName.BufferSize, out sizeFromGpu); MyGL.Check();
 				// if (size != sizeFromGpu) Log.Error(myName + " size mismatch size=" + GL_BufferTarget + " sizeFromGpu=" + sizeFromGpu);
 				GL.BindBuffer(GL_BufferTarget, 0); MyGL.Check();
@@ -325,10 +322,19 @@ namespace MyEngine
 			public void DownloadDataFromGPU()
 			{
 				GL.BindBuffer(BufferTarget.ShaderStorageBuffer, VboHandle); MyGL.Check();
+				//var intPtr = GL.MapBufferRange(BufferTarget.ShaderStorageBuffer, new IntPtr(), Count, BufferAccessMask.MapReadBit); MyGL.Check();
 				var intPtr = GL.MapBuffer(BufferTarget.ShaderStorageBuffer, BufferAccess.ReadOnly); MyGL.Check();
 				SetData(intPtr, Count);
 				GL.UnmapBuffer(BufferTarget.ShaderStorageBuffer); MyGL.Check();
 			}
+			/*
+			public void DownloadDataFromGPU(ushort splitToPartsCount, ushort partIndex)
+			{
+				GL.BindBuffer(BufferTarget.ShaderStorageBuffer, VboHandle); MyGL.Check();
+				var intPtr = GL.MapBuffer(BufferTarget.ShaderStorageBuffer, BufferAccess.ReadOnly); MyGL.Check();
+				SetData(intPtr, Count);
+				GL.UnmapBuffer(BufferTarget.ShaderStorageBuffer); MyGL.Check();
+			}*/
 			public abstract void SetData(IntPtr intPtr, int count);
 
 		}

@@ -32,8 +32,6 @@ namespace MyGame.PlanetaryBody
 
 		public int meshGeneratedWithShaderVersion;
 
-		public bool isGenerationDone;
-
 
 
 		public Segment parent;
@@ -61,8 +59,8 @@ namespace MyGame.PlanetaryBody
 			*/
 			public override IEnumerable<Vector3> GetCameraSpaceOccluderTriangles(Camera camera)
 			{
-				if (chunk.occluderTringles.Count < 9 && chunk.isGenerationDone) throw new Exception("this should not happen");
-				if (chunk.isGenerationDone && chunk.occluderTringles.Count == 9)
+				if (chunk.occluderTringles.Count < 9 && chunk.IsGenerationDone) throw new Exception("this should not happen");
+				if (chunk.IsGenerationDone && chunk.occluderTringles.Count == 9)
 				{
 					var mvp = GetModelViewProjectionMatrix(camera);
 					return chunk.occluderTringles.Select(v3 => v3.Multiply(ref mvp));
@@ -75,7 +73,7 @@ namespace MyGame.PlanetaryBody
 
 			public override void SetRenderingMode(MyRenderingMode renderingMode)
 			{
-				if (renderingMode.HasFlag(MyRenderingMode.RenderGeometry) && chunk.isGenerationDone == false)
+				if (renderingMode.HasFlag(MyRenderingMode.RenderGeometry) && chunk.IsGenerationDone == false)
 					Log.Warn("trying to render chunk " + chunk?.Renderer?.Mesh?.Name + " that did not finish generation");
 				base.SetRenderingMode(renderingMode);
 			}
@@ -151,9 +149,10 @@ namespace MyGame.PlanetaryBody
 
 			var myPos = rangeToCalculateScreenSizeOn.CenterPos + planetInfo.Transform.Position;
 			var dirToCamera = myPos.Towards(cam.ViewPointPosition).ToVector3d();
+			dirToCamera.NormalizeFast();
 
 			// 0 looking at it from side, 1 looking at it from top, -1 looking at it from behind
-			var dotToCamera = rangeToCalculateScreenSizeOn.Normal.Dot(dirToCamera);
+			var dotToCamera = rangeToCalculateScreenSizeOn.NormalFast.Dot(dirToCamera);
 
 			var distanceToCamera = myPos.Distance(cam.ViewPointPosition);
 			if (Renderer != null && Renderer.Mesh != null)
@@ -174,7 +173,7 @@ namespace MyGame.PlanetaryBody
 			}
 
 
-			var weight = radiusCameraSpace * MyMath.SmoothStep(2, 1, MyMath.Clamp01(dotToCamera));
+			var weight = radiusCameraSpace; // * (1 + MyMath.Clamp01(dotToCamera));
 			if (isVisible == false) weight *= 0.3f;
 			return weight;
 		}
@@ -194,16 +193,18 @@ namespace MyGame.PlanetaryBody
 
 			rangeToCalculateScreenSizeOn = realVisibleRange;
 
+			var z = a.Distance(b) / 5000.0f * -realVisibleRange.Normal.ToVector3();
+
 			occluderTringles.Add(a);
-			occluderTringles.Add(Vector3.Zero);
+			occluderTringles.Add(z);
 			occluderTringles.Add(b);
 
 			occluderTringles.Add(b);
-			occluderTringles.Add(Vector3.Zero);
+			occluderTringles.Add(z);
 			occluderTringles.Add(c);
 
 			occluderTringles.Add(c);
-			occluderTringles.Add(Vector3.Zero);
+			occluderTringles.Add(z);
 			occluderTringles.Add(a);
 		}
 
@@ -258,11 +259,24 @@ namespace MyGame.PlanetaryBody
 
 		private void DestroyRenderer()
 		{
+			lock (this)
+			{
+				GenerationBegan = false;
+				IsGenerationDone = false;
+			}
 			Renderer?.SetRenderingMode(MyRenderingMode.DontRender);
 			planetInfo.Entity.DestroyComponent(Renderer);
 			Renderer = null;
 		}
 
+
+		public void NotifyGenerationDone()
+		{
+			lock (this)
+			{
+				IsGenerationDone = true;
+			}
+		}
 
 
 	}

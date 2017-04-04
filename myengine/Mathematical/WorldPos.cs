@@ -44,15 +44,15 @@ namespace MyEngine
 		{
 			long sector_add;
 
-			sector_add = (long)Math.Floor(insideSectorPosition.X / sectorCubeSideLength);
+			sector_add = (long)(insideSectorPosition.X / sectorCubeSideLength);
 			insideSectorPosition.X -= sectorCubeSideLength * sector_add;
 			sectorX += sector_add;
 
-			sector_add = (long)Math.Floor(insideSectorPosition.Y / sectorCubeSideLength);
+			sector_add = (long)(insideSectorPosition.Y / sectorCubeSideLength);
 			insideSectorPosition.Y -= sectorCubeSideLength * sector_add;
 			sectorY += sector_add;
 
-			sector_add = (long)Math.Floor(insideSectorPosition.Z / sectorCubeSideLength);
+			sector_add = (long)(insideSectorPosition.Z / sectorCubeSideLength);
 			insideSectorPosition.Z -= sectorCubeSideLength * sector_add;
 			sectorZ += sector_add;
 		}

@@ -154,7 +154,7 @@ namespace MyEngine.Components
 				var cameraSpaceBoundVertex = meshSpaceBoundsVertex.Multiply(ref mvp);
 
 				b.maxX = Math.Max(b.maxX, cameraSpaceBoundVertex.X);
-				b.minX = Math.Min(b.minY, cameraSpaceBoundVertex.X);
+				b.minX = Math.Min(b.minX, cameraSpaceBoundVertex.X);
 
 				b.maxY = Math.Max(b.maxY, cameraSpaceBoundVertex.Y);
 				b.minY = Math.Min(b.minY, cameraSpaceBoundVertex.Y);

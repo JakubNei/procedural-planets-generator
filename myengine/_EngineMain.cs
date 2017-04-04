@@ -69,9 +69,8 @@ namespace MyEngine
 
 		public bool ShouldContinueRunning => gameWindow.IsStoppingOrStopped == false && ExitRequested == false;
 
-		CVar FpsThrottling => Debug.GetCVar("fps throttling enabled", true);
-		CVar PauseRenderPrepare => Debug.GetCVar("pause render prepare");
-		CVar TargetFps => Debug.GetCVar("target fps", 60);
+		CVar PauseRenderPrepare => Debug.GetCVar("rendering / debug / pause render prepare");
+		CVar TargetFps => Debug.GetCVar("rendering / target fps", 60);
 
 		// to simulate OpenTk.GameWindow functionalty, see it's source https://github.com/mono/opentk/blob/master/Source/OpenTK/GameWindow.cs
 		private MyGameWindow gameWindow;
@@ -148,7 +147,7 @@ namespace MyEngine
 			};
 			Debug.CommonCVars.VSync().InitializeWith(false);*/
 
-			Debug.GetCVar("fullscreen").OnChangedAndNow((cvar) =>
+			Debug.GetCVar("rendering / fullscreen").OnChangedAndNow((cvar) =>
 			{
 				if (cvar.Bool && WindowState != WindowState.Fullscreen)
 					WindowState = WindowState.Fullscreen;
@@ -315,7 +314,7 @@ namespace MyEngine
 
 			UpdateGPUMemoryInfo();
 
-			if (Debug.GetCVar("reload all shaders").EatBoolIfTrue())
+			if (Debug.GetCVar("rendering / debug / reload all shaders").EatBoolIfTrue())
 				Factory.ReloadAllShaders();
 
 			ubo.engine.totalElapsedSecondsSinceEngineStart = (float)stopwatchSinceStart.Elapsed.TotalSeconds;
@@ -358,13 +357,16 @@ namespace MyEngine
 
 			EventSystem.Raise(new MyEngine.Events.FrameEnded(renderThreadTime));
 
-			if (renderThreadTime.FrameCounter > TargetFps.Number * 10 && renderThreadTime.FpsPer10Sec < TargetFps)
+			if (Debug.GetCVar("rendering / automatically adjust target fps", true))
 			{
-				TargetFps.Number = (float)renderThreadTime.FpsPer1Sec;
-				Debug.AddValue("rendering / adjusted target fps", TargetFps.Number);
+				if (renderThreadTime.FrameCounter > TargetFps.Number * 10 && renderThreadTime.FpsPer10Sec < TargetFps)
+				{
+					TargetFps.Number = (float)renderThreadTime.FpsPer1Sec;
+					Debug.AddValue("rendering / adjusted target fps", TargetFps.Number);
+				}
 			}
 
-			if (FpsThrottling)
+			if (Debug.GetCVar("rendering / throttle fps", true))
 			{
 				var targetFps = TargetFps * 1.2;
 				var secondsWeCanSleep = 1 / targetFps - renderThreadTime.CurrentFrameElapsedSeconds;

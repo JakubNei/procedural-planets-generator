@@ -103,9 +103,9 @@ namespace MyGame
 
 			// 6371000 earth radius
 			var cfg = new PlanetaryBody.Config();
-			cfg.chunkNumberOfVerticesOnEdge = Debug.GetCVar("segment number of vertices on edge", 50);
-			cfg.sizeOnScreenNeededToSubdivide = Debug.GetCVar("segment subdivide if size on screen is bigger than", 0.3f);
-			cfg.stopSegmentRecursionAtWorldSize = Debug.GetCVar("segment stop recursion at world size", 100);
+			cfg.chunkNumberOfVerticesOnEdge = Debug.GetCVar("generation / segment number of vertices on edge", 50);
+			cfg.sizeOnScreenNeededToSubdivide = Debug.GetCVar("generation / segment subdivide if size on screen is bigger than", 0.3f);
+			cfg.stopSegmentRecursionAtWorldSize = Debug.GetCVar("generation / segment stop recursion at world size", 100);
 
 			cfg.radiusMin = 1000000;
 			cfg.baseHeightMap = Factory.GetTexture2D("textures/earth_elevation_map.*");
@@ -142,7 +142,7 @@ namespace MyGame
 		}
 
 
-		bool FreezeUpdate => scene.Debug.GetCVar("planet segments pause subdivision and visibility updates");
+		bool FreezeUpdate => scene.Debug.GetCVar("generation / planet segments pause subdivision and visibility updates");
 		void PlanetLogicUpdate()
 		{
 			if (FreezeUpdate) return;

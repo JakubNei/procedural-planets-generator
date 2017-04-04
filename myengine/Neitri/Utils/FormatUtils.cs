@@ -78,5 +78,26 @@ namespace Neitri
 			}
 			return ret;
 		}
+
+		public static string SecondsToString(float seconds)
+		{
+			return SecondsToString((double)seconds);
+		}
+		public static string SecondsToString(double seconds)
+		{
+			if (seconds > 1) return SecondsToStringHelper(seconds) + "s";
+			if (seconds > 1e-3) return SecondsToStringHelper(seconds * 1e3) + "ms";
+			if (seconds > 1e-6) return SecondsToStringHelper(seconds * 1e6) + "μs";
+			if (seconds > 1e-9) return SecondsToStringHelper(seconds * 1e9) + "ns";
+			if (seconds > 1e-12) return SecondsToStringHelper(seconds * 1e12) + "ps";
+			return seconds + "s";
+		}
+		private static string SecondsToStringHelper(double v)
+		{
+			if (v > 1000) return ((int)v).ToString();
+			if (v > 100) return string.Format("{0:N1}", v);
+			if (v > 10) return string.Format("{0:N2}", v);
+			return string.Format("{0:N3}", v);
+		}
 	}
 }

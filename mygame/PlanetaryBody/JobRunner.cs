@@ -19,48 +19,65 @@ namespace MyGame.PlanetaryBody
 		List<IJob> jobs = new List<IJob>();
 		Dictionary<IJob, double> timesOutOfTime = new Dictionary<IJob, double>();
 
-		public int JobsCount => jobs.Count;
 
-		public void AddJob(IJob job)
-		{
-			jobs.Add(job);
-		}
 
-		public void GPUThreadTick(Func<double> secondLeftToUse)
+		public void GPUThreadTick(Func<double> secondLeftToUse, Func<IJob> jobFactory)
 		{
 			var maxBudget = secondLeftToUse();
 
-			Debug.AddValue("generation / generation jobs running", jobs.Count);
+			//Debug.AddValue("generation / generation jobs running", jobs.Count);
 
-			while (jobs.Count > 0 && secondLeftToUse() > 0)
+			while (secondLeftToUse() > 0)
 			{
-				int jobsRan = 0;
-
 				jobs.RemoveAll(j => j.WillNeverWantToBeExecuted);
+
+				if (jobs.Count == 0)
+				{
+					var j = jobFactory();
+					if (j == null) return;
+					jobs.Add(j);
+				}
+
+				int jobsRan = 0;
 
 				foreach (var job in jobs)
 				{
 					while (job.WantsToBeExecutedNow)
 					{
-						if (job.NextGPUThreadTickWillTakeSeconds() < secondLeftToUse())
+						var secondsNeeded = job.NextGPUThreadExecuteWillTakeSeconds();
+						if (secondsNeeded < secondLeftToUse())
 						{
 							if (job.GPUThreadExecute())
 								jobsRan++;
 						}
 						else
 						{
-							var s = job.NextGPUThreadTickWillTakeSeconds();
-							if (s > maxBudget)
+							if (secondsNeeded > maxBudget)
 							{
-								// split next job
-								Log.Warn("generation job exceeded budget limit by " + (s - maxBudget) + " seconds");
+								if (job.NextTask.IsSplittable)
+								{
+									var partsToSplitTo = (maxBudget / secondsNeeded).CeilToInt();
+									job.NextTask.TrySplitToParts((ushort)partsToSplitTo);
+
+									Log.Warn(
+										"generation task exceeds budget limit " + Neitri.FormatUtils.SecondsToString(maxBudget) + " " +
+										"by " + Neitri.FormatUtils.SecondsToString(secondsNeeded - maxBudget) + ", " +
+										"splitting to " + partsToSplitTo + " parts: '" + job.NextTask.Name + "'"
+									);
+								}
+								else
+								{
+									Log.Error(
+										"generation task exceeds budget limit " + Neitri.FormatUtils.SecondsToString(maxBudget) + " " +
+										"by " + Neitri.FormatUtils.SecondsToString(secondsNeeded - maxBudget) + ", " +
+										"unable to split: '" + job.NextTask.Name + "'"
+									);
+								}
 							}
 							break;
 						}
 					}
 				}
-
-				jobs.RemoveAll(j => j.WillNeverWantToBeExecuted);
 
 				if (jobsRan == 0) break;
 			}

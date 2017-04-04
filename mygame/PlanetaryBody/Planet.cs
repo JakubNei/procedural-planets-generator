@@ -108,11 +108,11 @@ namespace MyGame.PlanetaryBody
 				lock (chunk)
 				{
 					int safe = 100;
-					while (chunk.Children.Count > 0 && chunk.Children.Any(c => c.isGenerationDone) && safe-- > 0)
+					while (chunk.Children.Count > 0 && chunk.Children.Any(c => c.IsGenerationDone) && safe-- > 0)
 					{
 						foreach (var child in chunk.Children)
 						{
-							if (child.isGenerationDone && rayFromPlanet.CastRay(child.NoElevationRange).DidHit)
+							if (child.IsGenerationDone && rayFromPlanet.CastRay(child.NoElevationRange).DidHit)
 							{
 								chunk = child;
 							}
@@ -283,7 +283,7 @@ namespace MyGame.PlanetaryBody
 
 			if (recursionDepth < SubdivisionMaxRecurisonDepth)
 			{
-				var areAllChildsGenerated = chunk.Children.Count > 0 && chunk.Children.All(c => c.isGenerationDone);
+				var areAllChildsGenerated = chunk.Children.Count > 0 && chunk.Children.All(c => c.IsGenerationDone);
 
 				// hide only if all our childs are visible, they might still be generating
 				if (areAllChildsGenerated)
@@ -445,17 +445,21 @@ namespace MyGame.PlanetaryBody
 			jobTemplate.AddTask(WhereToRun.GPUThread, chunk =>
 			{
 				chunk.CreateRendererAndBasicMesh();
-			});
+			}, "vytvoření trojúhelníkové sítě a vykreslovací komponenty");
 
 			jobTemplate.AddTask(WhereToRun.GPUThread, chunk =>
 			{
 				var mesh = chunk.Renderer.Mesh;
 				mesh.EnsureIsOnGpu();
-			});
+			}, "přesun trojúhelníkové sítě na grafickou kartu");
+
 
 			//if (chunk.renderer == null && mesh != null) throw new Exception("concurrency problem");
 
-			jobTemplate.AddSplittableTask(WhereToRun.GPUThread, (chunk, maxCount, index) =>
+
+			// splitting this is actually not needed as it this task takes least amount of time
+
+			/*jobTemplate.AddSplittableTask(WhereToRun.GPUThread, (chunk, maxCount, index) =>
 			{
 				var mesh = chunk.Renderer.Mesh;
 
@@ -471,7 +475,14 @@ namespace MyGame.PlanetaryBody
 					if (index == maxCount - 1) // last part
 						verticesCount = verticesCountMax - verticesStartIndexOffset;
 				}
+				*/
+			jobTemplate.AddTask(WhereToRun.GPUThread, (chunk) =>
+			{
+				var mesh = chunk.Renderer.Mesh;
 
+				var verticesStartIndexOffset = 0;
+				var verticesCountMax = mesh.Vertices.Count;
+				var verticesCount = verticesCountMax;
 
 				var range = chunk.NoElevationRange;
 				if (useSkirts)
@@ -511,26 +522,26 @@ namespace MyGame.PlanetaryBody
 
 				stats.End();
 				stats.Update();
-			});
+			}, "vygenerování výšek trojúhelníkové sítě na grafické kartě");
 
 			jobTemplate.AddTask(WhereToRun.GPUThread, chunk =>
 			{
 				var mesh = chunk.Renderer.Mesh;
 				mesh.Vertices.DownloadDataFromGPU();
-			});
+			}, "stáhnutí trojúhelníkové sítě z grafické karty do hlavní paměti počítače");
 
 			jobTemplate.AddTask(chunk =>
 			{
 				var mesh = chunk.Renderer.Mesh;
 				mesh.RecalculateBounds();
 				chunk.CalculateRealVisibleRange();
-			});
+			}, "vypočet obalového kvádru trojúhelníkové sítě");
 
 			jobTemplate.AddTask(WhereToRun.GPUThread, chunk =>
 			{
 				var mesh = chunk.Renderer.Mesh;
 				CalculateNormalsOnGPU(mesh);
-			});
+			}, "výpočet normál trojúhelníkové sítě na grafické kartě");
 
 			jobTemplate.AddTask(chunk =>
 			{
@@ -540,7 +551,7 @@ namespace MyGame.PlanetaryBody
 					var moveAmount = -chunk.NoElevationRange.CenterPos.Normalized().ToVector3() * (float)chunk.NoElevationRange.ToBoundingSphere().radius / 10;
 					foreach (var i in GetEdgeVerticesIndexes()) mesh.Vertices[i] += moveAmount;
 				}
-			});
+			}, "pokud jsou sukně zapnuty: vytvoření sukní na centrální procesorové jednotce");
 
 			jobTemplate.AddTask(WhereToRun.GPUThread, chunk =>
 			{
@@ -550,8 +561,15 @@ namespace MyGame.PlanetaryBody
 					mesh.Vertices.UploadDataToGPU();
 				}
 				chunk.meshGeneratedWithShaderVersion = ComputeShader.Version;
-				chunk.isGenerationDone = true;
-			});
+				chunk.NotifyGenerationDone();
+			}, "pokud jsou sukně zapnuty: přesun upravené trojúhelníkové sítě zpět na grafickou kartu");
+
+			jobTemplate.AddTask(chunk =>
+			{
+				chunk.meshGeneratedWithShaderVersion = ComputeShader.Version;
+				chunk.NotifyGenerationDone();
+			}, "ukončení generování");
+
 
 		}
 
@@ -574,33 +592,33 @@ namespace MyGame.PlanetaryBody
 		{
 			if (toGenerateChunksOrderedByWeight == null) return;
 
-			if (toGenerateChunksOrderedByWeight.Count > 0)
+			Func<double> secondLeftToUse;
+			if (Debug.GetCVar("generation / limit generation by fps", true))
+				secondLeftToUse = () => 1 / t.TargetFps - t.CurrentFrameElapsedSeconds;
+			else
+				secondLeftToUse = () => float.MaxValue;
+
+
+			Func<IJob> jobFactory = () =>
 			{
-
-				void AddJob()
+				Segment s = null;
+				while (toGenerateChunksOrderedByWeight.Count > 0 && s == null)
 				{
-					jobRunner.AddJob(
-						jobTemplate.MakeInstanceWithData(
-							toGenerateChunksOrderedByWeight.Dequeue()
-						)
-					);
+					s = toGenerateChunksOrderedByWeight.Dequeue();
+					if (s.GenerationBegan) s = null;
 				}
 
-				Func<double> secondLeftToUse;
+				if (s == null) return null;
+				return jobTemplate.MakeInstanceWithData(s);
+			};
 
-				if (Debug.GetCVar("limit generation by fps", true))
-					secondLeftToUse = () => 1 / t.TargetFps - t.CurrentFrameElapsedSeconds;
-				else
-					secondLeftToUse = () => 10000;
 
-				while (secondLeftToUse() > 0 && toGenerateChunksOrderedByWeight.Count > 0)
-				{
-					if (jobRunner.JobsCount == 0 && toGenerateChunksOrderedByWeight.Count > 0) AddJob();
-					jobRunner.GPUThreadTick(secondLeftToUse);
-				}
+			if(Debug.GetCVar("generation / print statistics report").EatBoolIfTrue())
+			{
+				Log.Trace(Environment.NewLine + jobTemplate.StatisticsReport());
 			}
+
+			jobRunner.GPUThreadTick(secondLeftToUse, jobFactory);
 		}
-
-
 	}
 }

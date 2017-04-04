@@ -62,7 +62,7 @@ namespace MyEngine
 				string dataPart = _line.Trim();
 				string commentPart = "";
 
-				var commentIndex = dataPart.IndexOfAny(new char[] { '#' }); // ab#c
+				var commentIndex = dataPart.IndexOfAny(new char[] { '#' }); // ab#c // # is comment
 				if (commentIndex != -1) // 2
 				{
 					commentPart = dataPart.Trim().Substring(commentIndex); // #c
@@ -98,7 +98,7 @@ namespace MyEngine
 					if (dataParts.Length > 2)
 					{
 						var toggleKey = dataParts[2].Trim();
-						if (Enum.TryParse<OpenTK.Input.Key>(toggleKey, out OpenTK.Input.Key keyTyped))
+						if (Enum.TryParse<OpenTK.Input.Key>(toggleKey, true, out OpenTK.Input.Key keyTyped))
 							cvar.ToogledByKey(keyTyped);
 						else
 							Log.Warn("invalid toggle key for cvar: " + toggleKey);
@@ -118,9 +118,9 @@ namespace MyEngine
 
 			if (cvar.ValueType == CvarValueType.NotSet) s += "not set";
 			else if (cvar.ValueType == CvarValueType.Bool) s += cvar.Bool.ToString().ToLower();
-			else if (cvar.ValueType == CvarValueType.Number) s += cvar.Number;
+			else if (cvar.ValueType == CvarValueType.Number) s += cvar.Number.ToString().ToLower();
 
-			if (cvar.ToogleKey != OpenTK.Input.Key.Unknown) s += " = " + cvar.ToogleKey;
+			if (cvar.ToogleKey != OpenTK.Input.Key.Unknown) s += " = " + cvar.ToogleKey.ToString().ToLower();
 
 			return s;
 		}

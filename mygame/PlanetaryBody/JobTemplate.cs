@@ -9,9 +9,9 @@ namespace MyGame.PlanetaryBody
 {
 	public class JobTemplate<TData>
 	{
-		public delegate void SplittableAction(TData data, int splitIntoPartsCount, int partIndex);
+		public delegate void SplittableAction(TData data, ushort splitIntoPartsCount, ushort partIndex);
 
-		class JobTask
+		class TaskTemplate
 		{
 			public Action<TData> normalAction;
 			public SplittableAction splittableAction; // splitCount, splitIndex
@@ -19,11 +19,13 @@ namespace MyGame.PlanetaryBody
 
 			public TimeSpan timeTaken;
 
+			public StackTrace creationStackTrace;
+
 			public ulong timesExecutedBeforeMeasurement;
 
-			public bool CanMeasure => timesExecutedBeforeMeasurement > 100;
+			public bool CanMeasure => timesExecutedBeforeMeasurement > 3;
 			public ulong timesExecuted;
-			public double avergeSeconds
+			public double AvergeSeconds
 			{
 				get
 				{
@@ -32,99 +34,167 @@ namespace MyGame.PlanetaryBody
 					return 0;
 				}
 			}
+
+			public string name;
 		}
-		List<JobTask> tasksToRun = new List<JobTask>();
+		List<TaskTemplate> tasksToRun = new List<TaskTemplate>();
 
 		public string Name { get; set; }
-		public void AddSplittableTask(SplittableAction splittable) => AddSplittableTask(WhereToRun.DoesNotMatter, splittable);
-		public void AddSplittableTask(WhereToRun whereToRun, SplittableAction splittable)
+		public void AddSplittableTask(SplittableAction splittable, string name = null) => AddSplittableTask(WhereToRun.DoesNotMatter, splittable, name);
+		public void AddSplittableTask(WhereToRun whereToRun, SplittableAction splittable, string name = null)
 		{
-			tasksToRun.Add(new JobTask()
+			tasksToRun.Add(new TaskTemplate()
 			{
-				normalAction = (data) => splittable(data, 1, 0),
+				name = name,
+				splittableAction = splittable,
 				whereToRun = whereToRun,
+				creationStackTrace = new StackTrace(1, true),
 			});
 		}
-		public void AddTask(Action<TData> action) => AddTask(WhereToRun.DoesNotMatter, action);
-		public void AddTask(WhereToRun whereToRun, Action<TData> action)
+		public void AddTask(Action<TData> action, string name = null) => AddTask(WhereToRun.DoesNotMatter, action, name);
+		public void AddTask(WhereToRun whereToRun, Action<TData> action, string name = null)
 		{
-			tasksToRun.Add(new JobTask() { normalAction = action, whereToRun = whereToRun });
+			tasksToRun.Add(new TaskTemplate()
+			{
+				name = name,
+				normalAction = action,
+				whereToRun = whereToRun,
+				creationStackTrace = new StackTrace(1, true),
+			});
 		}
 		public IJob MakeInstanceWithData(TData data)
 		{
 			return new JobInstance(this, data);
 		}
+
+		public string StatisticsReport()
+		{
+			return tasksToRun.Select(j => j.name + " = " + Neitri.FormatUtils.SecondsToString(j.AvergeSeconds)).Join(Environment.NewLine);
+		}
+
 		class JobInstance : IJob
 		{
-			public bool WantsToBeExecutedNow => currentTaskIndex < parent.tasksToRun.Count && lastTask == null;
+			public bool WantsToBeExecutedNow => tasksToRun.Count > 0 && (lastSystemTask == null || lastSystemTask.IsCompleted);
 
-			public bool WillNeverWantToBeExecuted => currentTaskIndex >= parent.tasksToRun.Count;
+			public bool WillNeverWantToBeExecuted => tasksToRun.Count == 0;
 
-			public bool IsStarted => currentTaskIndex > 0;
+
 			public bool IsFaulted { get; private set; }
 			public Exception Exception { get; private set; }
 
-			volatile Task lastTask;
-			int currentTaskIndex;
+
+			List<TaskInstance> tasksToRun = new List<TaskInstance>();
+
+			public ITask NextTask => nextTask;
+
+			volatile Task lastSystemTask;
+
+			TaskInstance nextTask => tasksToRun.First();
 
 			readonly TData data;
 			readonly JobTemplate<TData> parent;
+
+			class TaskInstance : ITask
+			{
+				public TaskTemplate taskTemplate;
+				public JobInstance parent;
+
+				public Action<TData> action;
+
+				public bool IsSplittable => taskTemplate.splittableAction != null;
+
+				public string Name => taskTemplate.name;
+
+				public TaskInstance(JobInstance parent, TaskTemplate taskTemplate, ushort splitCount, ushort splitIndex)
+				{
+					this.parent = parent;
+					this.taskTemplate = taskTemplate;
+
+					if (this.taskTemplate.splittableAction == null)
+						throw new Exception("this should not happen, trying to make splitted task instance on non splittable task template");
+					else
+						action = (data) => this.taskTemplate.splittableAction(data, splitCount, splitIndex);
+				}
+
+				public TaskInstance(JobInstance parent, TaskTemplate taskTemplate)
+				{
+					this.parent = parent;
+					this.taskTemplate = taskTemplate;
+
+					if (this.taskTemplate.splittableAction == null)
+						action = this.taskTemplate.normalAction;
+					else
+						action = (data) => this.taskTemplate.splittableAction(data, 1, 0);
+				}
+
+				public bool TrySplitToParts(ushort partsCount)
+				{
+					var myIndex = parent.tasksToRun.IndexOf(this);
+					parent.tasksToRun.RemoveAll((t) => t.taskTemplate == this.taskTemplate);
+
+					for (ushort i = 0; i < partsCount; i++)
+					{
+						parent.tasksToRun.Insert(myIndex + i, new TaskInstance(parent, taskTemplate, i, partsCount));
+					}
+
+					return true;
+				}
+			}
 
 			public JobInstance(JobTemplate<TData> parent, TData data)
 			{
 				this.parent = parent;
 				this.data = data;
+				foreach (var taskTemplate in parent.tasksToRun)
+					this.tasksToRun.Add(new TaskInstance(this, taskTemplate));
+
 			}
+
+
 
 			public bool GPUThreadExecute()
 			{
 				if (WantsToBeExecutedNow == false) return false;
 
-				var jobTask = parent.tasksToRun[currentTaskIndex];
-				currentTaskIndex++;
 
-				if (jobTask.normalAction != null)
+				var task = nextTask;
+				tasksToRun.RemoveAt(0);
+				Action<TData> currentAction = task.action;
+
+				Action action = () =>
 				{
-					Action action = () =>
+					var stopWatch = Stopwatch.StartNew();
+					try
 					{
-						var stopWatch = Stopwatch.StartNew();
-						try
-						{
-							jobTask.normalAction(data);
-						}
-						catch (Exception e)
-						{
-							IsFaulted = true;
-							Exception = e;
-						}
-						if (jobTask.CanMeasure)
-						{
-							jobTask.timeTaken += stopWatch.Elapsed;
-							jobTask.timesExecuted++;
-						}
-						else
-						{
-							jobTask.timesExecutedBeforeMeasurement++;
-						}
-						lastTask = null;
-					};
-					if (jobTask.whereToRun == WhereToRun.GPUThread)
-						action();
+						currentAction(data);
+					}
+					catch (Exception e)
+					{
+						IsFaulted = true;
+						Exception = e;
+					}
+					if (task.taskTemplate.CanMeasure)
+					{
+						task.taskTemplate.timeTaken += stopWatch.Elapsed;
+						task.taskTemplate.timesExecuted++;
+					}
 					else
-						lastTask = Task.Run(action);
-				}
+					{
+						task.taskTemplate.timesExecutedBeforeMeasurement++;
+					}
+				};
+				if (task.taskTemplate.whereToRun == WhereToRun.GPUThread)
+					action();
 				else
-				{
-					throw new Exception("makes no sense");
-				}
+					lastSystemTask = Task.Run(action);
+
 
 				return true;
 			}
-			public double NextGPUThreadTickWillTakeSeconds()
+			public double NextGPUThreadExecuteWillTakeSeconds()
 			{
 				if (WantsToBeExecutedNow == false) return 0;
-				var jobTask = parent.tasksToRun[currentTaskIndex];
-				if (jobTask.whereToRun == WhereToRun.GPUThread) return jobTask.avergeSeconds;
+				if (nextTask.taskTemplate.whereToRun == WhereToRun.GPUThread) return nextTask.taskTemplate.AvergeSeconds;
 				return 0;
 			}
 		}
