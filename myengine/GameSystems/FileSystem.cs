@@ -86,7 +86,8 @@ namespace MyEngine
 
 		public MyFile FindFile(string virtualPath)
 		{
-			if (TryFindFile(virtualPath, out MyFile file)) return file;
+            MyFile file;
+            if (TryFindFile(virtualPath, out file)) return file;
 			throw new FileNotFoundException("File " + virtualPath + " doesnt exits");
 		}
 

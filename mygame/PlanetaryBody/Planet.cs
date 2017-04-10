@@ -269,16 +269,6 @@ namespace MyGame.PlanetaryBody
 		// we have to show all 4 childs at once
 		void UpdateVisibility(Segment segment, WeightedSegmentsList toGenerate, int recursionDepth)
 		{
-			void DoRenderChunk()
-			{
-				segment.Renderer?.SetRenderingMode(MyRenderingMode.RenderGeometryAndCastShadows);
-
-				if (Generateheights.Version != segment.meshGeneratedWithShaderVersion)
-					toGenerate.Add(segment, float.MaxValue);
-			}
-
-
-
 			if (recursionDepth < SubdivisionMaxRecurisonDepth)
 			{
 				var areAllChildsGenerated = segment.Children.Count > 0 && segment.Children.All(c => c.IsGenerationDone);
@@ -292,18 +282,16 @@ namespace MyGame.PlanetaryBody
 					{
 						UpdateVisibility(child, toGenerate, recursionDepth + 1);
 					}
-				}
-				else
-				{
-					DoRenderChunk();
+
+                    return;
 				}
 			}
-			else
-			{
-				//Log.Warn("recursion depth is over: " + SubdivisionMaxRecurisonDepth);
-				DoRenderChunk();
-			}
-		}
+
+            segment.Renderer?.SetRenderingMode(MyRenderingMode.RenderGeometryAndCastShadows);
+
+            if (Generateheights.Version != segment.meshGeneratedWithShaderVersion)
+                toGenerate.Add(segment, float.MaxValue);
+        }
 
 
 
@@ -343,7 +331,8 @@ namespace MyGame.PlanetaryBody
 			}
 			private void PrivateAdd2(Segment segment, double weight)
 			{
-				if (this.TryGetValue(segment, out double w))
+                double w;
+                if (this.TryGetValue(segment, out w))
 				{
 					if (w > weight) return; // the weight already present is bigger, dont change it
 				}

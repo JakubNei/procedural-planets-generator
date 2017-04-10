@@ -495,35 +495,35 @@ namespace MyEngine
 
 				int passedFrustumCullingIndex = 0;
 				{
-					void Work(IRenderable renderable)
-					{
-						if (renderable.ShouldRenderInContext(camera, RenderContext))
-						{
-							if (renderable.ForcePassCulling)
-							{
-								var newIndex = Interlocked.Increment(ref passedFrustumCullingIndex) - 1;
-								passedFrustumCulling[newIndex] = renderable;
-								rasterizer?.AddTriangles(renderable.GetCameraSpaceOccluderTriangles(camera));
-							}
-							else
-							{
-								var bounds = renderable.GetFloatingOriginSpaceBounds(camPos);
-								if (
-									frustum.VsSphere(bounds.Center, bounds.Extents.LengthSquared)
-									&& frustum.VsBounds(bounds)
-								)
-								{
-									var newIndex = Interlocked.Increment(ref passedFrustumCullingIndex) - 1;
-									passedFrustumCulling[newIndex] = renderable;
-									rasterizer?.AddTriangles(renderable.GetCameraSpaceOccluderTriangles(camera));
-								}
-								else
-								{
-									renderable.SetCameraRenderStatusFeedback(camera, RenderStatus.NotRendered);
-								}
-							}
-						}
-					}
+                    Action<IRenderable> work = renderable =>
+                    {
+                        if (renderable.ShouldRenderInContext(camera, RenderContext))
+                        {
+                            if (renderable.ForcePassCulling)
+                            {
+                                var newIndex = Interlocked.Increment(ref passedFrustumCullingIndex) - 1;
+                                passedFrustumCulling[newIndex] = renderable;
+                                rasterizer?.AddTriangles(renderable.GetCameraSpaceOccluderTriangles(camera));
+                            }
+                            else
+                            {
+                                var bounds = renderable.GetFloatingOriginSpaceBounds(camPos);
+                                if (
+                                    frustum.VsSphere(bounds.Center, bounds.Extents.LengthSquared)
+                                    && frustum.VsBounds(bounds)
+                                )
+                                {
+                                    var newIndex = Interlocked.Increment(ref passedFrustumCullingIndex) - 1;
+                                    passedFrustumCulling[newIndex] = renderable;
+                                    rasterizer?.AddTriangles(renderable.GetCameraSpaceOccluderTriangles(camera));
+                                }
+                                else
+                                {
+                                    renderable.SetCameraRenderStatusFeedback(camera, RenderStatus.NotRendered);
+                                }
+                            }
+                        }
+                    };
 
 					if (DoParallelize)
 					{
@@ -531,7 +531,7 @@ namespace MyEngine
 						{
 							IRenderable renderable;
 							if (possibleRenderables.TryGetAtIndex(i, out renderable))
-								Work(renderable);
+								work(renderable);
 						});
 					}
 					else
@@ -540,7 +540,7 @@ namespace MyEngine
 						{
 							IRenderable renderable;
 							if (possibleRenderables.TryGetAtIndex(i, out renderable))
-								Work(renderable);
+								work(renderable);
 						}
 					}
 
@@ -554,7 +554,7 @@ namespace MyEngine
 
 					int passedRasterizationCullingIndex = 0;
 
-					void Work(IRenderable renderable)
+					Action<IRenderable> work = renderable =>
 					{
 						if (renderable.ForcePassCulling)
 						{
@@ -578,21 +578,21 @@ namespace MyEngine
 								renderable.SetCameraRenderStatusFeedback(camera, RenderStatus.NotRendered);
 							}
 						}
-					}
+					};
 
 
 					if (DoParallelize)
 					{
 						paraller.ForUseThisThreadToo(0, passedFrustumCullingIndex, (i) =>
 						{
-							Work(passedFrustumCulling[i]);
+							work(passedFrustumCulling[i]);
 						});
 					}
 					else
 					{
 						for (int i = 0; i < passedFrustumCullingIndex; i++)
 						{
-							Work(passedFrustumCulling[i]);
+							work(passedFrustumCulling[i]);
 						}
 					}
 

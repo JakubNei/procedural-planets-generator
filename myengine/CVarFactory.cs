@@ -81,16 +81,20 @@ namespace MyEngine
 					var name = dataParts[0].Trim();
 					cvar = GetCVar(name);
 
-					var value = dataParts[1].Trim();
+                    bool typedBoolValue;
+                    float typedFloatValue;
+                    OpenTK.Input.Key keyTyped;
+
+                    var value = dataParts[1].Trim();
 					if (value == "not set")
 					{
 
 					}
-					else if (bool.TryParse(value, out bool typedBoolValue))
+					else if (bool.TryParse(value, out typedBoolValue))
 					{
 						cvar.Bool = typedBoolValue;
 					}
-					else if (float.TryParse(value, out float typedFloatValue))
+					else if (float.TryParse(value, out typedFloatValue))
 					{
 						cvar.Number = typedFloatValue;
 					}
@@ -98,7 +102,7 @@ namespace MyEngine
 					if (dataParts.Length > 2)
 					{
 						var toggleKey = dataParts[2].Trim();
-						if (Enum.TryParse<OpenTK.Input.Key>(toggleKey, true, out OpenTK.Input.Key keyTyped))
+						if (Enum.TryParse<OpenTK.Input.Key>(toggleKey, true, out keyTyped))
 							cvar.ToogledByKey(keyTyped);
 						else
 							Log.Warn("invalid toggle key for cvar: " + toggleKey);
