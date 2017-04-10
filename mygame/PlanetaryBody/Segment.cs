@@ -19,6 +19,28 @@ namespace MyGame.PlanetaryBody
 		/// Planet local position range
 		/// </summary>
 		public TriangleD NoElevationRange { get; private set; }
+
+		public TriangleD NoElevationRangeModifiedForSkirts
+		{
+			get
+			{
+				var range = NoElevationRange;
+
+				var z = range.CenterPos;
+
+				double e = (double)planetInfo.ChunkNumberOfVerticesOnEdge;
+				double ratio = 1 / (e - 3);
+				double twoRatios = ratio * 2;
+				double rangeMultiplier = 1 + Math.Sqrt(twoRatios * twoRatios - ratio * ratio) * 1.8;
+
+				range.a = (range.a - z) * rangeMultiplier + z;
+				range.b = (range.b - z) * rangeMultiplier + z;
+				range.c = (range.c - z) * rangeMultiplier + z;
+
+				return range;
+			}
+		}
+
 		/// <summary>
 		/// Planet local position range
 		/// </summary>
@@ -59,7 +81,7 @@ namespace MyGame.PlanetaryBody
 			*/
 			public override IEnumerable<Vector3> GetCameraSpaceOccluderTriangles(Camera camera)
 			{
-				if (chunk.occluderTringles.Count < 9 && chunk.IsGenerationDone) throw new Exception("this should not happen");
+				//if (chunk.occluderTringles.Count < 9 && chunk.IsGenerationDone) throw new Exception("this should not happen");
 				if (chunk.IsGenerationDone && chunk.occluderTringles.Count == 9)
 				{
 					var mvp = GetModelViewProjectionMatrix(camera);
@@ -145,6 +167,20 @@ namespace MyGame.PlanetaryBody
 
 		public double GetSizeOnScreen(Camera cam)
 		{
+			var myPos = rangeToCalculateScreenSizeOn.CenterPos + planetInfo.Transform.Position;
+			var distanceToCamera = myPos.Distance(cam.ViewPointPosition);
+
+			// this is world space, doesnt take into consideration rotation, not good
+			var sphere = rangeToCalculateScreenSizeOn.ToBoundingSphere();
+			var radiusWorldSpace = sphere.radius;
+			var fov = cam.FieldOfView;
+			var radiusCameraSpace = radiusWorldSpace * MyMath.Cot(fov / 2) / distanceToCamera;
+
+			return radiusCameraSpace;
+		}
+
+		public double GetGenerationWeight(Camera cam)
+		{
 			bool isVisible = true;
 
 			var myPos = rangeToCalculateScreenSizeOn.CenterPos + planetInfo.Transform.Position;
@@ -154,26 +190,15 @@ namespace MyGame.PlanetaryBody
 			// 0 looking at it from side, 1 looking at it from top, -1 looking at it from behind
 			var dotToCamera = rangeToCalculateScreenSizeOn.NormalFast.Dot(dirToCamera);
 
-			var distanceToCamera = myPos.Distance(cam.ViewPointPosition);
 			if (Renderer != null && Renderer.Mesh != null)
 			{
 				//var localCamPos = planetaryBody.Transform.Position.Towards(cam.ViewPointPosition).ToVector3();
 				//distanceToCamera = renderer.Mesh.Vertices.FindClosest((v) => v.DistanceSqr(localCamPos)).Distance(localCamPos);
 				//isVisible = cam.GetFrustum().VsBounds(renderer.GetCameraSpaceBounds(cam.ViewPointPosition));
 				isVisible = Renderer.GetCameraRenderStatusFeedback(cam).HasFlag(RenderStatus.Rendered);
-			}
+			}			
 
-			double radiusCameraSpace;
-			{
-				// this is world space, doesnt take into consideration rotation, not good
-				var sphere = rangeToCalculateScreenSizeOn.ToBoundingSphere();
-				var radiusWorldSpace = sphere.radius;
-				var fov = cam.FieldOfView;
-				radiusCameraSpace = radiusWorldSpace * MyMath.Cot(fov / 2) / distanceToCamera;
-			}
-
-
-			var weight = radiusCameraSpace; // * (1 + MyMath.Clamp01(dotToCamera));
+			var weight = GetSizeOnScreen(cam); // * (1 + MyMath.Clamp01(dotToCamera));
 			if (isVisible == false) weight *= 0.3f;
 			return weight;
 		}
@@ -222,7 +247,7 @@ namespace MyGame.PlanetaryBody
 			child.rangeToCalculateScreenSizeOn = range;
 		}
 
-		public void CreteChildren()
+		public void CreateChildren()
 		{
 			if (Children.Count <= 0)
 			{

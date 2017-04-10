@@ -39,6 +39,10 @@ namespace MyGame.PlanetaryBody
 		}
 		List<TaskTemplate> tasksToRun = new List<TaskTemplate>();
 
+		public double SecondsTaken => tasksToRun.Sum(t => t.timeTaken.TotalSeconds);
+		public double AverageSeconds => tasksToRun.Sum(t => t.AvergeSeconds);
+
+
 		public string Name { get; set; }
 		public void AddSplittableTask(SplittableAction splittable, string name = null) => AddSplittableTask(WhereToRun.DoesNotMatter, splittable, name);
 		public void AddSplittableTask(WhereToRun whereToRun, SplittableAction splittable, string name = null)

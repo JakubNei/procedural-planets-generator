@@ -1,0 +1,91 @@
+#version 430
+[ComputeShader]
+
+#define M_PI 3.1415926535897932384626433832795
+
+[include shaders/include.planet.glsl]
+
+#line 9
+
+
+
+
+ 
+struct vec2_struct
+{
+    float x;
+    float y;
+};
+vec2 fromStruct(vec2_struct p)
+{
+	return vec2(p.x, p.y);
+}
+vec2_struct toStruct(vec2 p)
+{
+	vec2_struct s;
+	s.x = p.x;
+	s.y = p.y;
+	return s;
+}
+
+
+struct vec3_struct
+{
+    float x;
+    float y;
+    float z;
+};
+vec3 fromStruct(vec3_struct p)
+{
+	return vec3(p.x, p.y, p.z);
+}
+vec3_struct toStruct(vec3 p)
+{
+	vec3_struct s;
+	s.x = p.x;
+	s.y = p.y;
+	s.z = p.z;
+	return s;
+}
+
+
+
+
+layout( binding=0 ) buffer buffer1 {
+    vec3_struct positions[];
+};
+
+
+layout( local_size_x = 1, local_size_y = 1, local_size_z = 1 ) in;
+ 
+
+
+
+
+
+
+
+
+uniform vec3 param_moveAmount;
+//uniform int param_edgeVertexIndex[100];
+
+
+
+
+void main() {
+	
+
+
+	int invococtionIndex = int(gl_GlobalInvocationID.x);
+
+	//int verticeIndex = param_edgeVertexIndex[invococtionIndex];
+	verticeIndex = invococtionIndex;
+
+	vec3 p = fromStruct(positions[verticeIndex]);
+
+	p += param_moveAmount;
+	p = vec3(0);
+
+	positions[verticeIndex] = toStruct(p);
+}
+

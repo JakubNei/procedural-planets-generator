@@ -123,7 +123,7 @@ namespace MyGame
 
 
 			var planet = AddPlanet();
-			planet.SetConfig(cfg);
+			planet.Initialize(cfg);
 			planet.Transform.Position = new WorldPos(planet.RadiusMin * 3, 0, 0);
 
 			var planetShader = Factory.GetShader("shaders/planet.shader");

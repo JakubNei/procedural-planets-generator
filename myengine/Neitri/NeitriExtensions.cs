@@ -8,7 +8,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 
 /// <summary>
-/// Version 2017-04-04
+/// Version 2017-04-08
 /// Many useful extensions I've made over the years.
 /// All in one class.
 /// </summary>
@@ -239,7 +239,6 @@ public static class NeitriExtensions
 	#endregion
 
 	#region IList<T> and IList extensions
-
 	public static void AddRange(this IList me, IEnumerable enumerable)
 	{
 		if (me == null) throw new NullReferenceException("me");
@@ -249,7 +248,6 @@ public static class NeitriExtensions
 			me.Add(e);
 		}
 	}
-
 	public static void AddRange(this IList me, IList other)
 	{
 		if (me == null) throw new NullReferenceException("me");
@@ -259,7 +257,6 @@ public static class NeitriExtensions
 			me.Add(e);
 		}
 	}
-
 	public static void AddRange<T>(this IList<T> me, IEnumerable<T> enumerable)
 	{
 		if (me == null) throw new NullReferenceException("me");
@@ -269,7 +266,6 @@ public static class NeitriExtensions
 			me.Add(e);
 		}
 	}
-
 	public static void AddRange<T>(this IList<T> me, IList<T> other)
 	{
 		if (me == null) throw new NullReferenceException("me");
@@ -281,17 +277,7 @@ public static class NeitriExtensions
 	}
 	#endregion
 
-	#region IEnumerable extensions
-	public static int GetContentsHashCode<T>(this IEnumerable<T> enumerable)
-	{
-		int hashCode = 0;
-		foreach (var e in enumerable)
-			hashCode ^= e.GetHashCode();
-		return hashCode;
-	}
-	#endregion
-
-	#region IEnumerable<string> and IEnumerable<char> extensions
+	#region IEnumerable<T> extensions
 	public static void ForEach<T>(this IEnumerable<T> enumerable, Action<T> action)
 	{
 		foreach (var item in enumerable)
@@ -300,7 +286,7 @@ public static class NeitriExtensions
 		}
 	}
 
-	public static void ForEach<TIn, TRet>(this IEnumerable<TIn> enumerable, Func<TIn, TRet> action)
+	public static void ForEach<TInput, TResult>(this IEnumerable<TInput> enumerable, Func<TInput, TResult> action)
 	{
 		foreach (var item in enumerable)
 		{
@@ -332,24 +318,71 @@ public static class NeitriExtensions
 		}
 		return closestEnumerable;
 	}
-	public static string Join(this IEnumerable<string> enumerable, string glue)
+
+	public static IEnumerable<T> Concat<T>(this IEnumerable<IEnumerable<T>> enumerable)
 	{
-		return string.Join(glue, enumerable.ToArray());
+		IEnumerable<T> result = null;
+		foreach (var e in enumerable)
+		{
+			if (result == null) result = e;
+			else result = result.Concat(e);
+		}
+		return result;
 	}
 
+	public static int GetContentsHashCode<T>(this IEnumerable<T> enumerable)
+	{
+		int hashCode = 0;
+		foreach (var e in enumerable)
+			hashCode ^= e.GetHashCode();
+		return hashCode;
+	}
+
+	/// <summary>
+	/// Ruby style Array.map
+	/// </summary>
+	public static IEnumerable<TResult> Map<TInput, TResult>(this IEnumerable<TInput> enumerable, Func<TInput, TResult> selector)
+	{
+		return enumerable.Select(selector);
+	}
+
+	/// <summary>
+	/// Ruby style Array.each
+	/// </summary>
+	public static void Each<T>(this IEnumerable<T> enumerable, Action<T> action)
+	{
+		enumerable.ForEach(action);
+	}
+
+	/// <summary>
+	/// Ruby style Array.uniq
+	/// </summary>
+	public static IEnumerable<T> Uniq<T>(this IEnumerable<T> enumerable)
+	{
+		return enumerable.Distinct();
+	}
+
+	#endregion
+
+	#region IEnumerable<char> extensions
+	public static string Join(this IEnumerable<char> enumerable, char glue)
+	{
+		return string.Join(glue.ToString(), enumerable.Select(c => c.ToString()).ToArray());
+	}
 	public static string Join(this IEnumerable<char> enumerable, string glue)
 	{
 		return string.Join(glue, enumerable.Select(c => c.ToString()).ToArray());
 	}
+	#endregion
 
+	#region IEnumerable<string> extensions	
+	public static string Join(this IEnumerable<string> enumerable, string glue)
+	{
+		return string.Join(glue, enumerable.ToArray());
+	}
 	public static string Join(this IEnumerable<string> enumerable, char glue)
 	{
 		return string.Join(glue.ToString(), enumerable.ToArray());
-	}
-
-	public static string Join(this IEnumerable<char> enumerable, char glue)
-	{
-		return string.Join(glue.ToString(), enumerable.Select(c => c.ToString()).ToArray());
 	}
 	#endregion
 
@@ -660,7 +693,8 @@ public static class NeitriExtensions
 	//from http://stackoverflow.com/questions/5154970/how-do-i-create-a-hashcode-in-net-c-for-a-string-that-is-safe-to-store-in-a
 	public static int GetPlatformIndependentHashCode(this string text)
 	{
-		if (text.IsNullOrEmpty()) return 0;
+		if (text == null) return 0;
+		if (text == string.Empty) return 1;
 		unchecked
 		{
 			int hash = 23;
@@ -675,7 +709,7 @@ public static class NeitriExtensions
 
 
 	/// <summary>
-	/// Number of edits needed to turn one string into another.
+	/// Number of changes needed to turn one string into another.
 	/// Taken from https://www.dotnetperls.com/levenshtein
 	/// </summary>
 	/// <param name="s"></param>
@@ -763,11 +797,11 @@ public static class NeitriExtensions
 	/// <returns></returns>
 	public static object GetDefault(this Type t)
 	{
-		Func<object> f = GetDefault<object>;
+		Func<object> f = GetDefault_Helper<object>;
 		return f.Method.GetGenericMethodDefinition().MakeGenericMethod(t).Invoke(null, null);
 	}
 
-	static T GetDefault<T>()
+	private static T GetDefault_Helper<T>()
 	{
 		return default(T);
 	}
@@ -803,7 +837,7 @@ public static class NeitriExtensions
 	}
 	#endregion
 
-	#region jagged array extensions
+	#region Array[,] extensions
 	public static IEnumerable<T> ToEnumerable<T>(this T[,] target)
 	{
 		foreach (T item in target)

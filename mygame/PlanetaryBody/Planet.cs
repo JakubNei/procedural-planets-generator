@@ -54,32 +54,30 @@ namespace MyGame.PlanetaryBody
 		PerlinD perlin;
 		WorleyD worley;
 
-		public List<Segment> rootChunks = new List<Segment>();
+		public List<Segment> rootSegments = new List<Segment>();
 
 		public Config config;
 
-		public Shader ComputeShader => Factory.GetShader("shaders/planetGeneration.compute");
-
-		GenerationStats stats;
 
 		//ProceduralMath proceduralMath;
 		public override void OnAddedToEntity(Entity entity)
 		{
 			base.OnAddedToEntity(entity);
 
+
+		}
+
+		public void Initialize(Config config)
+		{
+			this.config = config;
+
 			//proceduralMath = new ProceduralMath();
-			stats = new GenerationStats(Debug);
 
 			perlin = new PerlinD(5646);
 			worley = new WorleyD(894984, WorleyD.DistanceFunction.Euclidian);
 
 
 			InitializeJobTemplate();
-		}
-
-		public void SetConfig(Config config)
-		{
-			this.config = config;
 		}
 
 
@@ -101,7 +99,7 @@ namespace MyGame.PlanetaryBody
 
 			var rayFromPlanet = new RayD(Vector3d.Zero, planetLocalPosition);
 
-			var chunk = rootChunks.FirstOrDefault(c => rayFromPlanet.CastRay(c.NoElevationRange).DidHit);
+			var chunk = rootSegments.FirstOrDefault(c => rayFromPlanet.CastRay(c.NoElevationRange).DidHit);
 
 			if (chunk != null)
 			{
@@ -172,7 +170,7 @@ namespace MyGame.PlanetaryBody
 				c = vertices[C]
 			};
 			var child = new Segment(this, range, null);
-			this.rootChunks.Add(child);
+			this.rootSegments.Add(child);
 		}
 
 		public void Initialize()
@@ -238,25 +236,25 @@ namespace MyGame.PlanetaryBody
 
 		}
 
-		void Chunks_GatherWeights(ChunkWeightedList toGenerate, Segment chunk, int recursionDepth)
+		void GatherWeights(WeightedSegmentsList toGenerate, Segment segment, int recursionDepth)
 		{
-			var weight = chunk.GetSizeOnScreen(Camera);
+			var weight = segment.GetGenerationWeight(Camera);
 
-			if (chunk.GenerationBegan == false)
+			if (segment.GenerationBegan == false)
 			{
-				toGenerate.Add(chunk, weight);
+				toGenerate.Add(segment, weight);
 			}
 
 			if (recursionDepth < SubdivisionMaxRecurisonDepth)
 			{
 				if (weight > SizeOnScreenNeededToSubdivide)
-					chunk.CreteChildren();
+					segment.CreateChildren();
 				else
-					chunk.DeleteChildren();
+					segment.DeleteChildren();
 
-				foreach (var child in chunk.Children)
+				foreach (var child in segment.Children)
 				{
-					Chunks_GatherWeights(toGenerate, child, recursionDepth + 1);
+					GatherWeights(toGenerate, child, recursionDepth + 1);
 				}
 			}
 			else
@@ -269,30 +267,30 @@ namespace MyGame.PlanetaryBody
 		// return true if all childs are visible
 		// we can hide parent only once all 4 childs are generated
 		// we have to show all 4 childs at once
-		void Chunks_UpdateVisibility(Segment chunk, ChunkWeightedList toGenerate, int recursionDepth)
+		void UpdateVisibility(Segment segment, WeightedSegmentsList toGenerate, int recursionDepth)
 		{
 			void DoRenderChunk()
 			{
-				chunk.Renderer?.SetRenderingMode(MyRenderingMode.RenderGeometryAndCastShadows);
+				segment.Renderer?.SetRenderingMode(MyRenderingMode.RenderGeometryAndCastShadows);
 
-				if (ComputeShader.Version != chunk.meshGeneratedWithShaderVersion)
-					toGenerate.Add(chunk, float.MaxValue);
+				if (Generateheights.Version != segment.meshGeneratedWithShaderVersion)
+					toGenerate.Add(segment, float.MaxValue);
 			}
 
 
 
 			if (recursionDepth < SubdivisionMaxRecurisonDepth)
 			{
-				var areAllChildsGenerated = chunk.Children.Count > 0 && chunk.Children.All(c => c.IsGenerationDone);
+				var areAllChildsGenerated = segment.Children.Count > 0 && segment.Children.All(c => c.IsGenerationDone);
 
 				// hide only if all our childs are visible, they might still be generating
 				if (areAllChildsGenerated)
 				{
-					chunk.Renderer?.SetRenderingMode(MyRenderingMode.DontRender);
+					segment.Renderer?.SetRenderingMode(MyRenderingMode.DontRender);
 
-					foreach (var child in chunk.Children)
+					foreach (var child in segment.Children)
 					{
-						Chunks_UpdateVisibility(child, toGenerate, recursionDepth + 1);
+						UpdateVisibility(child, toGenerate, recursionDepth + 1);
 					}
 				}
 				else
@@ -310,7 +308,7 @@ namespace MyGame.PlanetaryBody
 
 
 		// new SortedList<double, Chunk>(ReverseComparer<double>.Default)
-		class ChunkWeightedList : Dictionary<Segment, double>
+		class WeightedSegmentsList : Dictionary<Segment, double>
 		{
 			public Camera cam;
 
@@ -322,35 +320,35 @@ namespace MyGame.PlanetaryBody
 				while (chunk.parent != null && chunk.parent.GenerationBegan == false)
 				{
 					chunk = chunk.parent;
-					var w = chunk.GetSizeOnScreen(cam);
+					var w = chunk.GetGenerationWeight(cam);
 					PrivateAdd1(chunk, Math.Max(w, weight));
 				}
 			}
-			private void PrivateAdd1(Segment chunk, double weight)
+			private void PrivateAdd1(Segment segment, double weight)
 			{
-				PrivateAdd2(chunk, weight);
+				PrivateAdd2(segment, weight);
 
 				// if we want to show this chunk, our neighbours have the same weight, because we cant be shown without our neighbours
-				if (chunk.parent != null)
+				if (segment.parent != null)
 				{
-					foreach (var neighbour in chunk.parent.Children)
+					foreach (var neighbour in segment.parent.Children)
 					{
 						if (neighbour.GenerationBegan == false)
 						{
-							var w = neighbour.GetSizeOnScreen(cam);
+							var w = neighbour.GetGenerationWeight(cam);
 							PrivateAdd2(neighbour, Math.Max(w, weight));
 						}
 					}
 				}
 			}
-			private void PrivateAdd2(Segment chunk, double weight)
+			private void PrivateAdd2(Segment segment, double weight)
 			{
-				if (this.TryGetValue(chunk, out double w))
+				if (this.TryGetValue(segment, out double w))
 				{
 					if (w > weight) return; // the weight already present is bigger, dont change it
 				}
 
-				this[chunk] = weight;
+				this[segment] = weight;
 			}
 			public IEnumerable<Segment> GetWeighted()
 			{
@@ -362,36 +360,36 @@ namespace MyGame.PlanetaryBody
 			}
 		}
 
-		Queue<Segment> toGenerateChunksOrderedByWeight;
-		ChunkWeightedList toGenerate;
+		Queue<Segment> toGenerateOrdered;
+		WeightedSegmentsList toGenerate;
 		public void TrySubdivideOver(WorldPos pos)
 		{
 			if (toGenerate == null)
-				toGenerate = new ChunkWeightedList() { cam = Camera };
+				toGenerate = new WeightedSegmentsList() { cam = Camera };
 			toGenerate.Clear();
 
-			foreach (var rootChunk in rootChunks)
+			foreach (var rootSegment in rootSegments)
 			{
-				if (rootChunk.GenerationBegan == false)
+				if (rootSegment.GenerationBegan == false)
 				{
 					// first generate rootCunks
-					toGenerate.Add(rootChunk, float.MaxValue);
+					toGenerate.Add(rootSegment, float.MaxValue);
 				}
 				else
 				{
 					// then their children
-					Chunks_GatherWeights(toGenerate, rootChunk, 0);
+					GatherWeights(toGenerate, rootSegment, 0);
 				}
 			}
 
-			foreach (var rootChunk in this.rootChunks)
+			foreach (var rootSegment in this.rootSegments)
 			{
-				Chunks_UpdateVisibility(rootChunk, toGenerate, 0);
+				UpdateVisibility(rootSegment, toGenerate, 0);
 			}
 
 
 			Debug.AddValue("generation / segments to generate", toGenerate.Count);
-			toGenerateChunksOrderedByWeight = new Queue<Segment>(toGenerate.GetWeighted());
+			toGenerateOrdered = new Queue<Segment>(toGenerate.GetWeighted());
 
 
 		}
@@ -399,37 +397,12 @@ namespace MyGame.PlanetaryBody
 
 
 
-		public class GenerationStats
-		{
-			ulong countChunksGenerated;
-			TimeSpan timeSpentGenerating;
-			MyDebug debug;
-			System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
-			public GenerationStats(MyDebug debug)
-			{
-				this.debug = debug;
-			}
-			public void Update()
-			{
-				debug.AddValue("generation / total chunks generated", countChunksGenerated);
-				debug.AddValue("generation / total time spent generating", timeSpentGenerating.TotalSeconds + " s");
-				debug.AddValue("generation / average time spent generating", (timeSpentGenerating.TotalSeconds / (float)countChunksGenerated) + " s");
-			}
-			public void Start()
-			{
-				stopwatch.Reset();
-				stopwatch.Start();
-			}
-			public void End()
-			{
-				stopwatch.Stop();
-				timeSpentGenerating += stopwatch.Elapsed;
-				countChunksGenerated++;
-			}
-		}
 
+		public Shader Generateheights => Factory.GetShader("shaders/planet.generateHeights.compute");
+		UniformsData generateHeightsUniforms = new UniformsData();
 
-		UniformsData computeShaderUniforms = new UniformsData();
+		public Shader MoveSkirts => Factory.GetShader("planet.moveSkirts.compute");
+		UniformsData moveSkirtsUniforms = new UniformsData();
 
 
 		JobRunner jobRunner = new JobRunner();
@@ -438,7 +411,9 @@ namespace MyGame.PlanetaryBody
 
 		void InitializeJobTemplate()
 		{
-			var useSkirts = true;
+			bool useSkirts = Debug.GetCVar("generation / use skirts", true);
+			bool moveSkirtsOnGPU = Debug.GetCVar("generation / move skirts on GPU", true);
+			bool calculateNormalsOnGPU = Debug.GetCVar("generation / calculate normals on GPU", true);
 
 			jobTemplate = new JobTemplate<Segment>();
 
@@ -481,38 +456,23 @@ namespace MyGame.PlanetaryBody
 				var mesh = chunk.Renderer.Mesh;
 
 				var verticesStartIndexOffset = 0;
-				var verticesCountMax = mesh.Vertices.Count;
-				var verticesCount = verticesCountMax;
+				var verticesCount = mesh.Vertices.Count;
 
 				var range = chunk.NoElevationRange;
 				if (useSkirts)
-				{
-					var z = range.CenterPos;
+					range = chunk.NoElevationRangeModifiedForSkirts;
 
-					double e = (double)ChunkNumberOfVerticesOnEdge;
-					double ratio = 1 / (e - 3);
-					double twoRatios = ratio * 2;
-					double rangeMultiplier = 1 + Math.Sqrt(twoRatios * twoRatios - ratio * ratio) * 2;
+				config.SetTo(generateHeightsUniforms);
+				generateHeightsUniforms.Set("param_offsetFromPlanetCenter", chunk.Renderer.Offset.ToVector3d());
+				generateHeightsUniforms.Set("param_numberOfVerticesOnEdge", ChunkNumberOfVerticesOnEdge);
+				generateHeightsUniforms.Set("param_cornerPositionA", range.a);
+				generateHeightsUniforms.Set("param_cornerPositionB", range.b);
+				generateHeightsUniforms.Set("param_cornerPositionC", range.c);
+				generateHeightsUniforms.Set("param_indiciesCount", mesh.TriangleIndicies.Count);
+				generateHeightsUniforms.Set("param_verticesStartIndexOffset", verticesStartIndexOffset);
 
-					range.a = (range.a - z) * rangeMultiplier + z;
-					range.b = (range.b - z) * rangeMultiplier + z;
-					range.c = (range.c - z) * rangeMultiplier + z;
-
-				}
-
-				config.SetTo(computeShaderUniforms);
-				computeShaderUniforms.Set("param_offsetFromPlanetCenter", chunk.Renderer.Offset.ToVector3d());
-				computeShaderUniforms.Set("param_numberOfVerticesOnEdge", ChunkNumberOfVerticesOnEdge);
-				computeShaderUniforms.Set("param_cornerPositionA", range.a);
-				computeShaderUniforms.Set("param_cornerPositionB", range.b);
-				computeShaderUniforms.Set("param_cornerPositionC", range.c);
-				computeShaderUniforms.Set("param_indiciesCount", mesh.TriangleIndicies.Count);
-				computeShaderUniforms.Set("param_verticesStartIndexOffset", verticesStartIndexOffset);
-
-				computeShaderUniforms.SendAllUniformsTo(ComputeShader.Uniforms);
-				ComputeShader.Bind();
-
-				stats.Start();
+				generateHeightsUniforms.SendAllUniformsTo(Generateheights.Uniforms);
+				Generateheights.Bind();
 
 				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 0, mesh.Vertices.VboHandle); MyGL.Check();
 				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 1, mesh.Normals.VboHandle); MyGL.Check();
@@ -520,8 +480,6 @@ namespace MyGame.PlanetaryBody
 				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 3, mesh.TriangleIndicies.VboHandle); MyGL.Check();
 				GL.DispatchCompute(verticesCount, 1, 1); MyGL.Check();
 
-				stats.End();
-				stats.Update();
 			}, "vygenerování výšek trojúhelníkové sítě na grafické kartě");
 
 			jobTemplate.AddTask(WhereToRun.GPUThread, chunk =>
@@ -540,34 +498,68 @@ namespace MyGame.PlanetaryBody
 			jobTemplate.AddTask(WhereToRun.GPUThread, chunk =>
 			{
 				var mesh = chunk.Renderer.Mesh;
-				CalculateNormalsOnGPU(mesh);
+				if (calculateNormalsOnGPU)
+					CalculateNormalsOnGPU(mesh);
+				else
+					mesh.RecalculateNormals();
 			}, "výpočet normál trojúhelníkové sítě na grafické kartě");
 
+			if (useSkirts)
+			{
+				if (moveSkirtsOnGPU)
+				{
+					var ed = GetEdgeVerticesIndexes();
+					for (int i = 0; i < ed.Length; i++)
+					{
+						moveSkirtsUniforms.Set("param_edgeVertexIndex[" + i + "]", ed[i]);
+					}
+
+					jobTemplate.AddTask(WhereToRun.GPUThread, chunk =>
+					{
+						var mesh = chunk.Renderer.Mesh;
+						var moveAmount = -chunk.NoElevationRange.CenterPos.Normalized().ToVector3() * (float)chunk.NoElevationRange.ToBoundingSphere().radius / 10;
+
+
+						config.SetTo(moveSkirtsUniforms);
+
+						moveSkirtsUniforms.Set("param_moveAmount", moveAmount);
+
+						moveSkirtsUniforms.SendAllUniformsTo(MoveSkirts.Uniforms);
+						MoveSkirts.Bind();
+
+						GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 0, mesh.Vertices.VboHandle); MyGL.Check();
+						GL.DispatchCompute(ed.Length, 1, 1); MyGL.Check();
+
+					}, "pokud jsou sukně zapnuty: posunutí vrcholú pro vytvoření sukní na grafické kartě");
+				}
+				else
+				{
+					jobTemplate.AddTask(chunk =>
+					{
+						var mesh = chunk.Renderer.Mesh;
+						var moveAmount = -chunk.NoElevationRange.CenterPos.Normalized().ToVector3() * (float)chunk.NoElevationRange.ToBoundingSphere().radius / 10;
+						foreach (var i in GetEdgeVerticesIndexes()) mesh.Vertices[i] += moveAmount;
+					}, "pokud jsou sukně zapnuty: posunutí vrcholú pro vytvoření sukní na centrální procesorové jednotce");
+
+					jobTemplate.AddTask(WhereToRun.GPUThread, chunk =>
+					{
+						var mesh = chunk.Renderer.Mesh;
+						mesh.Vertices.UploadDataToGPU();
+					}, "pokud jsou sukně zapnuty: přesun upravené trojúhelníkové sítě zpět na grafickou kartu");
+				}
+			}
+
+			ulong chunksGenerated = 0;
 			jobTemplate.AddTask(chunk =>
 			{
-				if (useSkirts)
-				{
-					var mesh = chunk.Renderer.Mesh;
-					var moveAmount = -chunk.NoElevationRange.CenterPos.Normalized().ToVector3() * (float)chunk.NoElevationRange.ToBoundingSphere().radius / 10;
-					foreach (var i in GetEdgeVerticesIndexes()) mesh.Vertices[i] += moveAmount;
-				}
-			}, "pokud jsou sukně zapnuty: vytvoření sukní na centrální procesorové jednotce");
-
-			jobTemplate.AddTask(WhereToRun.GPUThread, chunk =>
-			{
-				if (useSkirts)
-				{
-					var mesh = chunk.Renderer.Mesh;
-					mesh.Vertices.UploadDataToGPU();
-				}
-				chunk.meshGeneratedWithShaderVersion = ComputeShader.Version;
+				chunk.meshGeneratedWithShaderVersion = Generateheights.Version;
 				chunk.NotifyGenerationDone();
-			}, "pokud jsou sukně zapnuty: přesun upravené trojúhelníkové sítě zpět na grafickou kartu");
 
-			jobTemplate.AddTask(chunk =>
-			{
-				chunk.meshGeneratedWithShaderVersion = ComputeShader.Version;
-				chunk.NotifyGenerationDone();
+				chunksGenerated++;
+				Debug.AddValue("generation / total segments generated", chunksGenerated);
+				Debug.AddValue("generation / total time spent generating", Neitri.FormatUtils.SecondsToString(jobTemplate.SecondsTaken));
+				Debug.AddValue("generation / average time spent generating", Neitri.FormatUtils.SecondsToString(jobTemplate.AverageSeconds));
+
 			}, "ukončení generování");
 
 
@@ -590,7 +582,7 @@ namespace MyGame.PlanetaryBody
 
 		public void GPUThreadTick(FrameTime t)
 		{
-			if (toGenerateChunksOrderedByWeight == null) return;
+			if (toGenerateOrdered == null) return;
 
 			Func<double> secondLeftToUse;
 			if (Debug.GetCVar("generation / limit generation by fps", true))
@@ -602,9 +594,9 @@ namespace MyGame.PlanetaryBody
 			Func<IJob> jobFactory = () =>
 			{
 				Segment s = null;
-				while (toGenerateChunksOrderedByWeight.Count > 0 && s == null)
+				while (toGenerateOrdered.Count > 0 && s == null)
 				{
-					s = toGenerateChunksOrderedByWeight.Dequeue();
+					s = toGenerateOrdered.Dequeue();
 					if (s.GenerationBegan) s = null;
 				}
 
@@ -613,7 +605,7 @@ namespace MyGame.PlanetaryBody
 			};
 
 
-			if(Debug.GetCVar("generation / print statistics report").EatBoolIfTrue())
+			if (Debug.GetCVar("generation / print statistics report").EatBoolIfTrue())
 			{
 				Log.Trace(Environment.NewLine + jobTemplate.StatisticsReport());
 			}
