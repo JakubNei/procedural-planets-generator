@@ -1,13 +1,13 @@
 ﻿
 debug / show debug form = false = f1 
-generation / segment number of vertices on edge = 50
+generation / segment number of vertices on edge = 50 
 generation / segment subdivide if size on screen is bigger than = 1 
 generation / segment stop recursion at world size = 100 
 generation / planet segments pause subdivision and visibility updates = false 
 rendering / enable rasterizer rasterization = true 
-rendering / debug / show rasterizer contents = false 
+rendering / debug / show rasterizer contents = false = f8 
 rendering / fullscreen = false 
-rendering / debug / pause render prepare = false 
+rendering / debug / pause render prepare = false = p 
 rendering / target fps = 60 
 rendering / enable culling = true 
 rendering / parallelize render prepare = true 
@@ -30,3 +30,7 @@ generation / use skirts = true
 generation / move skirts on GPU = false 
 generation / calculate normals on GPU = true 
 rendering / debug / render white background = false 
+game / save camera position 1 = false 
+game / load camera position 1 = false 
+game / save camera position 2 = false 
+game / load camera position 2 = false 

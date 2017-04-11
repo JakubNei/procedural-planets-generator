@@ -68,17 +68,46 @@ namespace MyGame
 				Transform.Position = new WorldPos((float)-planet.RadiusMin, 0, 0) + planet.Transform.Position;
 		}
 
+		WorldPos savedPosition1;
+		Quaternion savedRotation1;
+
+		WorldPos savedPosition2;
+		Quaternion savedRotation2;
+
 		void Update(float deltaTime)
 		{
 			var rotation = Transform.Rotation;
 			var position = Transform.Position;
 
 
-			var planet = planets.GetClosestPlanet(Transform.Position);
+			if (Debug.GetCVar("game / save camera position 1").EatBoolIfTrue())
+			{
+				savedPosition1 = position;
+				savedRotation1 = rotation;
+			}
+			if (Debug.GetCVar("game / load camera position 1").EatBoolIfTrue())
+			{
+				position = Transform.Position = savedPosition1;
+				rotation = Transform.Rotation = savedRotation1;
+			}
+
+			if (Debug.GetCVar("game / save camera position 2").EatBoolIfTrue())
+			{
+				savedPosition2 = position;
+				savedRotation2 = rotation;
+			}
+			if (Debug.GetCVar("game / load camera position 2").EatBoolIfTrue())
+			{
+				position = Transform.Position = savedPosition2;
+				rotation = Transform.Rotation = savedRotation2;
+			}
+
+
+			var planet = planets.GetClosestPlanet(position);
 
 
 			Debug.AddValue("camera / speed modifier", cameraSpeedModifier);
-			Debug.AddValue("camera / position", Transform.Position);
+			Debug.AddValue("camera / position", position);
 
 			var mouse = Mouse.GetState();
 
@@ -178,20 +207,20 @@ namespace MyGame
 
 			if (Input.GetKeyDown(Key.C))
 			{
-				rotation = Transform.Position.Towards(planet.Transform.Position).ToVector3().LookRot();
+				rotation = position.Towards(planet.Transform.Position).ToVector3().LookRot();
 			}
 
 			if (WalkOnPlanet.Bool)
 			{
 
-				var up = planet.Center.Towards(Transform.Position).ToVector3().Normalized();
+				var up = planet.Center.Towards(position).ToVector3().Normalized();
 				var fwd = walkOnSphere_vectorForward;
 
 				if (walkOnShere_start)
 				{
 					walkOnSphere_lastVectorUp = up;
 
-					var pointOnPlanet = planet.Center.Towards(Transform.Position).ToVector3d();
+					var pointOnPlanet = planet.Center.Towards(position).ToVector3d();
 					var s = planet.CalestialToSpherical(pointOnPlanet);
 					s.latitude += 0.1f;
 					var fwdToPole = pointOnPlanet.Towards(planet.SphericalToCalestial(s)).Normalized().ToVector3().Normalized();

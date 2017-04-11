@@ -147,6 +147,8 @@
     <Compile Include="Neitri\Utils\TwoKeyDictionary.cs" />
     <Compile Include="Neitri\Utils\ValueChanged.cs" />
     <Compile Include="Neitri\VirtualBrain.cs" />
+    <Compile Include="ParallerRunner.cs" />
+    <Compile Include="ProfileStats.cs" />
     <Compile Include="ReverseComparer.cs" />
     <Compile Include="enums.cs" />
     <Compile Include="Events\EventSystem.cs" />

@@ -46,70 +46,70 @@ void main()
 
 [TessControlShader]
 
-	layout(vertices = 3) out;	
+layout(vertices = 3) out;	
 
-	in data {
-		vec3 worldPos;
-		vec3 modelPos;
-	  	vec3 normal; 
-		vec2 uv; 
-		vec3 tangent;
-	} i[];
+in data {
+	vec3 worldPos;
+	vec3 modelPos;
+  	vec3 normal; 
+	vec2 uv; 
+	vec3 tangent;
+} i[];
 
-	out data {
-		vec3 worldPos;
-		vec3 modelPos;
-	  	vec3 normal; 
-		vec2 uv; 
-		vec3 tangent;
-	} o[];
+out data {
+	vec3 worldPos;
+	vec3 modelPos;
+  	vec3 normal; 
+	vec2 uv; 
+	vec3 tangent;
+} o[];
 
-	float closestPowerOf2(float a) {
-		//return pow(2, ceil(log(a)/log(2)));
-		if(a>64) return 64;
-		if(a>32) return 32;
-		if(a>16) return 16;
-		if(a>8) return 8;
-		if(a>4) return 4;
-		if(a>2) return 2;
-		return 1;
-	}
-	float tessLevel(float d1, float d2) {		
-		float d=(d1+d2)/2;
-		//float r=clamp((1/d)*(keyIK*10), 1, 64);
-		//float r=clamp((1/d)*(100.0), 1, 64);
-		float r=clamp((1/d)*(100.0), 1, 64);
-		r=closestPowerOf2(r);
-		return r;		
-	}
+float closestPowerOf2(float a) {
+	//return pow(2, ceil(log(a)/log(2)));
+	if(a>64) return 64;
+	if(a>32) return 32;
+	if(a>16) return 16;
+	if(a>8) return 8;
+	if(a>4) return 4;
+	if(a>2) return 2;
+	return 1;
+}
+float tessLevel(float d1, float d2) {		
+	float d=(d1+d2)/2;
+	//float r=clamp((1/d)*(keyIK*10), 1, 64);
+	//float r=clamp((1/d)*(100.0), 1, 64);
+	float r=clamp((1/d)*(100.0), 1, 64);
+	r=closestPowerOf2(r);
+	return r;		
+}
 
-	void main() {
+void main() {
 
-		gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;
+	gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;
 
-		// COPY OVER PARAMS
-		o[gl_InvocationID].worldPos = i[gl_InvocationID].worldPos; 
-		o[gl_InvocationID].modelPos = i[gl_InvocationID].modelPos; 
-		o[gl_InvocationID].normal = i[gl_InvocationID].normal; 
-		o[gl_InvocationID].uv = i[gl_InvocationID].uv; 
-		o[gl_InvocationID].tangent = i[gl_InvocationID].tangent; 				
+	// COPY OVER PARAMS
+	o[gl_InvocationID].worldPos = i[gl_InvocationID].worldPos; 
+	o[gl_InvocationID].modelPos = i[gl_InvocationID].modelPos; 
+	o[gl_InvocationID].normal = i[gl_InvocationID].normal; 
+	o[gl_InvocationID].uv = i[gl_InvocationID].uv; 
+	o[gl_InvocationID].tangent = i[gl_InvocationID].tangent; 				
 
-		// TESS LEVEL BASED ON EYE DISTANCE
-		float d0=distance(i[0].worldPos,vec3(0));
-		float d1=distance(i[1].worldPos,vec3(0));
-		float d2=distance(i[2].worldPos,vec3(0));	
+	// TESS LEVEL BASED ON EYE DISTANCE
+	float d0=distance(i[0].worldPos,vec3(0));
+	float d1=distance(i[1].worldPos,vec3(0));
+	float d2=distance(i[2].worldPos,vec3(0));	
 
-		gl_TessLevelOuter[0] = tessLevel(d1,d2);
-		gl_TessLevelOuter[1] = tessLevel(d0,d2);
-		gl_TessLevelOuter[2] = tessLevel(d0,d1);
-		//gl_TessLevelOuter[3] = tess;
+	gl_TessLevelOuter[0] = tessLevel(d1,d2);
+	gl_TessLevelOuter[1] = tessLevel(d0,d2);
+	gl_TessLevelOuter[2] = tessLevel(d0,d1);
+	//gl_TessLevelOuter[3] = tess;
 
-		gl_TessLevelInner[0] = gl_TessLevelOuter[2];
-		//gl_TessLevelInner[1] = tess;
+	gl_TessLevelInner[0] = gl_TessLevelOuter[2];
+	//gl_TessLevelInner[1] = tess;
 
-		//DEBUG
-		//gl_TessLevelInner[0] = gl_TessLevelOuter[0] = gl_TessLevelOuter[1] = gl_TessLevelOuter[2] = 2;
-	}
+	//DEBUG
+	//gl_TessLevelInner[0] = gl_TessLevelOuter[0] = gl_TessLevelOuter[1] = gl_TessLevelOuter[2] = 2;
+}
 
 
 
@@ -117,99 +117,95 @@ void main()
 
 [TessEvaluationShader]
 
+layout(triangles, equal_spacing, ccw) in;
 
-	layout(triangles, equal_spacing, ccw) in;
+in data {
+	vec3 worldPos;
+	vec3 modelPos;
+  	vec3 normal; 
+	vec2 uv; 
+	vec3 tangent;
+} i[];
 
-	in data {
-		vec3 worldPos;
-		vec3 modelPos;
-	  	vec3 normal; 
-		vec2 uv; 
-		vec3 tangent;
-	} i[];
+out data {
+	vec3 worldPos;
+	vec3 modelPos;
+  	vec3 normal; 
+	vec2 uv; 
+	vec3 tangent;
+} o;
 
-	out data {
-		vec3 worldPos;
-		vec3 modelPos;
-	  	vec3 normal; 
-		vec2 uv; 
-		vec3 tangent;
-	} o;
+vec2 interpolate2D(vec2 v0, vec2 v1, vec2 v2) {
+	return vec2(gl_TessCoord.x)*v0 + vec2(gl_TessCoord.y)*v1 + vec2(gl_TessCoord.z)*v2;
+}
+vec2 interpolate2D(vec2 v0, vec2 v1, vec2 v2, vec2 v3) {
+	return mix(  mix(v0,v1,gl_TessCoord.x),  mix(v2,v3,gl_TessCoord.x),  gl_TessCoord.y);
+}
+vec3 interpolate3D(vec3 v0, vec3 v1, vec3 v2) {
+	return vec3(gl_TessCoord.x)*v0 + vec3(gl_TessCoord.y)*v1 + vec3(gl_TessCoord.z)*v2;
+}
+vec3 interpolate3D(vec3 v0, vec3 v1, vec3 v2, vec3 v3) {
+	return mix(  mix(v0,v1,gl_TessCoord.x),  mix(v2,v3,gl_TessCoord.x),  gl_TessCoord.y);
+}
 
-	vec2 interpolate2D(vec2 v0, vec2 v1, vec2 v2) {
-		return vec2(gl_TessCoord.x)*v0 + vec2(gl_TessCoord.y)*v1 + vec2(gl_TessCoord.z)*v2;
-	}
-	vec2 interpolate2D(vec2 v0, vec2 v1, vec2 v2, vec2 v3) {
-		return mix(  mix(v0,v1,gl_TessCoord.x),  mix(v2,v3,gl_TessCoord.x),  gl_TessCoord.y);
-	}
-	vec3 interpolate3D(vec3 v0, vec3 v1, vec3 v2) {
-		return vec3(gl_TessCoord.x)*v0 + vec3(gl_TessCoord.y)*v1 + vec3(gl_TessCoord.z)*v2;
-	}
-	vec3 interpolate3D(vec3 v0, vec3 v1, vec3 v2, vec3 v3) {
-		return mix(  mix(v0,v1,gl_TessCoord.x),  mix(v2,v3,gl_TessCoord.x),  gl_TessCoord.y);
-	}
-
-	float PerlinAt(float x, float y) {		
-		return texture2D(param_perlinNoise, vec2(x,y)).r;
-		//return perlinNoise(vec2(x,y));
-	}
-	float AdjustTerrainAt(float x, float y) {
-		int octaves=1;
-		float frequency=1;
-		float height=0.5;
-		float result=-height/2;
-		const float safe = 10000;
-		for(int i=0; i<octaves; i++) {
-			result += PerlinAt(x*frequency, y*frequency) * height;
-			height /= 2;
-			frequency *= 2;
-		}
-
-		return result;
-
-		// DEBUG
-		//const float c = 20;
-		//return mod(x, c) > c/2  ? 0.2 : 0;
-		
+float PerlinAt(float x, float y) {		
+	return texture2D(param_perlinNoise, vec2(x,y)).r;
+	//return perlinNoise(vec2(x,y));
+}
+float AdjustTerrainAt(float x, float y) {
+	int octaves=1;
+	float frequency=1;
+	float height=0.5;
+	float result=-height/2;
+	const float safe = 10000;
+	for(int i=0; i<octaves; i++) {
+		result += PerlinAt(x*frequency, y*frequency) * height;
+		height /= 2;
+		frequency *= 2;
 	}
 
+	return result;
+
+	// DEBUG
+	//const float c = 20;
+	//return mod(x, c) > c/2  ? 0.2 : 0;
+	
+}
 
 
-	void main()
-	{
 
-		// INTERPOLATE NEW PARAMS
-		o.worldPos	= interpolate3D(	i[0].worldPos,	i[1].worldPos,	i[2].worldPos	); 
-		o.modelPos	= interpolate3D(	i[0].modelPos,	i[1].modelPos,	i[2].modelPos	); 
-		o.normal	= interpolate3D(	i[0].normal,	i[1].normal,	i[2].normal		); 
-		o.uv		= interpolate2D(	i[0].uv,		i[1].uv,		i[2].uv			); 
-		o.tangent	= interpolate3D(	i[0].tangent,	i[1].tangent,	i[2].tangent	); 
+void main()
+{
+
+	// INTERPOLATE NEW PARAMS
+	o.worldPos	= interpolate3D(	i[0].worldPos,	i[1].worldPos,	i[2].worldPos	); 
+	o.modelPos	= interpolate3D(	i[0].modelPos,	i[1].modelPos,	i[2].modelPos	); 
+	o.normal	= interpolate3D(	i[0].normal,	i[1].normal,	i[2].normal		); 
+	o.uv		= interpolate2D(	i[0].uv,		i[1].uv,		i[2].uv			); 
+	o.tangent	= interpolate3D(	i[0].tangent,	i[1].tangent,	i[2].tangent	); 
 
 
-		// APPLY TERRAIN MODIFIER
-		vec2 xz = o.uv.xy * float(param_radiusMin);
-		// vec2 xz = o.uv.xy * 1000000;		
-		float x = xz.x;
-		float y = xz.y;
+	// APPLY TERRAIN MODIFIER
+	vec2 xz = o.uv.xy * float(param_radiusMin);
+	// vec2 xz = o.uv.xy * 1000000;		
+	float x = xz.x;
+	float y = xz.y;
 
-		vec3 direction;
-		direction = o.normal;
+	o.normal = normalize(o.normal);
+	o.worldPos += o.normal * AdjustTerrainAt(x, y);
+	
+	//o.worldPos+=o.normal*adjustedHeight;
+	//>>>>//o.normal.y+=adjustedHeight*adjustedHeight;
+	//vec3 n=o.normal;
+	/*o.normal=mix(
+		vec3(n.x)*i[0].normal + vec3(n.y)*i[1].normal + vec3(n.z)*i[2].normal,
+		o.normal,
+		t
+	);*/
 
-		o.worldPos += direction * AdjustTerrainAt(x, y);
-		
-		//o.worldPos+=o.normal*adjustedHeight;
-		//>>>>//o.normal.y+=adjustedHeight*adjustedHeight;
-		//vec3 n=o.normal;
-		/*o.normal=mix(
-			vec3(n.x)*i[0].normal + vec3(n.y)*i[1].normal + vec3(n.z)*i[2].normal,
-			o.normal,
-			t
-		);*/
+	gl_Position = engine.projectionMatrix * engine.viewMatrix * vec4(o.worldPos,1);
 
-		o.normal = normalize(o.normal);
-		gl_Position = engine.projectionMatrix * engine.viewMatrix * vec4(o.worldPos,1);
-
-	}
+}
 
 
 

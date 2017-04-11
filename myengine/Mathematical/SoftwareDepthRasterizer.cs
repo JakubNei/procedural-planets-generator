@@ -8,6 +8,7 @@ using OpenTK;
 using MyEngine.Components;
 using System.Collections;
 using System.Threading;
+using System.Diagnostics;
 
 namespace MyEngine
 {
@@ -121,99 +122,108 @@ namespace MyEngine
 		float PrepareX(float x) => (x + 1) * halfWidth;
 		float PrepareY(float y) => (y + 1) * halfHeight;
 
+		ProfileStats addTriangleStats = new ProfileStats("rendering / software rasterizer / add triangle");
+		ProfileStats areBoundsVisibleStats = new ProfileStats("rendering / software rasterizer / are bounds visible");
+
 		// based on half-space function approach
 		public void AddTriangle(ref Vector3 v1, ref Vector3 v2, ref Vector3 v3)
 		{
-			// 28.4 fixed-point coordinates
-			int Y1 = RoundToInt(16.0f * PrepareY(v1.Y));
-			int Y2 = RoundToInt(16.0f * PrepareY(v2.Y));
-			int Y3 = RoundToInt(16.0f * PrepareY(v3.Y));
-
-			int X1 = RoundToInt(16.0f * PrepareX(v1.X));
-			int X2 = RoundToInt(16.0f * PrepareX(v2.X));
-			int X3 = RoundToInt(16.0f * PrepareX(v3.X));
-
-			// Deltas
-			int DX12 = X1 - X2;
-			int DX23 = X2 - X3;
-			int DX31 = X3 - X1;
-
-			int DY12 = Y1 - Y2;
-			int DY23 = Y2 - Y3;
-			int DY31 = Y3 - Y1;
-
-			// Fixed-point deltas
-			int FDX12 = DX12 << 4;
-			int FDX23 = DX23 << 4;
-			int FDX31 = DX31 << 4;
-
-			int FDY12 = DY12 << 4;
-			int FDY23 = DY23 << 4;
-			int FDY31 = DY31 << 4;
-
-			// Bounding rectangle
-			int minx = (min(X1, X2, X3) + 0xF) >> 4;
-			int maxx = (max(X1, X2, X3) + 0xF) >> 4;
-			int miny = (min(Y1, Y2, Y3) + 0xF) >> 4;
-			int maxy = (max(Y1, Y2, Y3) + 0xF) >> 4;
-
-
-
-			if (minx < 0 && maxx < 0) return;
-			if (miny < 0 && maxy < 0) return;
-			if (minx > width && maxx > width) return;
-			if (miny > height && maxy > height) return;
-
-			if (minx < 0) minx = 0;
-			if (maxx >= widthMinusOne) maxx = widthMinusOne;
-			if (miny < 0) miny = 0;
-			if (maxy >= heightMinusOne) maxy = heightMinusOne;
-
-
-
-			float maxz = max(v1.Z, v2.Z, v3.Z);
-			int depthIndex = miny * width;
-
-
-			// Half-edge ants
-			int C1 = DY12 * X1 - DX12 * Y1;
-			int C2 = DY23 * X2 - DX23 * Y2;
-			int C3 = DY31 * X3 - DX31 * Y3;
-
-			// Correct for fill convention
-			if (DY12 < 0 || (DY12 == 0 && DX12 > 0)) C1++;
-			if (DY23 < 0 || (DY23 == 0 && DX23 > 0)) C2++;
-			if (DY31 < 0 || (DY31 == 0 && DX31 > 0)) C3++;
-
-			int CY1 = C1 + DX12 * (miny << 4) - DY12 * (minx << 4);
-			int CY2 = C2 + DX23 * (miny << 4) - DY23 * (minx << 4);
-			int CY3 = C3 + DX31 * (miny << 4) - DY31 * (minx << 4);
-
-			for (int y = miny; y < maxy; y++)
+			using (var time = addTriangleStats.Start())
 			{
-				int CX1 = CY1;
-				int CX2 = CY2;
-				int CX3 = CY3;
 
-				for (int x = minx; x < maxx; x++)
+				// 28.4 fixed-point coordinates
+				int Y1 = RoundToInt(16.0f * PrepareY(v1.Y));
+				int Y2 = RoundToInt(16.0f * PrepareY(v2.Y));
+				int Y3 = RoundToInt(16.0f * PrepareY(v3.Y));
+
+				int X1 = RoundToInt(16.0f * PrepareX(v1.X));
+				int X2 = RoundToInt(16.0f * PrepareX(v2.X));
+				int X3 = RoundToInt(16.0f * PrepareX(v3.X));
+
+				// Deltas
+				int DX12 = X1 - X2;
+				int DX23 = X2 - X3;
+				int DX31 = X3 - X1;
+
+				int DY12 = Y1 - Y2;
+				int DY23 = Y2 - Y3;
+				int DY31 = Y3 - Y1;
+
+				// Fixed-point deltas
+				int FDX12 = DX12 << 4;
+				int FDX23 = DX23 << 4;
+				int FDX31 = DX31 << 4;
+
+				int FDY12 = DY12 << 4;
+				int FDY23 = DY23 << 4;
+				int FDY31 = DY31 << 4;
+
+				// Bounding rectangle
+				int minx = (min(X1, X2, X3) + 0xF) >> 4;
+				int maxx = (max(X1, X2, X3) + 0xF) >> 4;
+				int miny = (min(Y1, Y2, Y3) + 0xF) >> 4;
+				int maxy = (max(Y1, Y2, Y3) + 0xF) >> 4;
+
+
+
+				if (minx < 0 && maxx < 0) return;
+				if (miny < 0 && maxy < 0) return;
+				if (minx > width && maxx > width) return;
+				if (miny > height && maxy > height) return;
+
+				if (minx < 0) minx = 0;
+				if (maxx >= widthMinusOne) maxx = widthMinusOne;
+				if (miny < 0) miny = 0;
+				if (maxy >= heightMinusOne) maxy = heightMinusOne;
+
+
+
+				float maxz = max(v1.Z, v2.Z, v3.Z);
+				int depthIndex = miny * width;
+
+
+				// Half-edge ants
+				int C1 = DY12 * X1 - DX12 * Y1;
+				int C2 = DY23 * X2 - DX23 * Y2;
+				int C3 = DY31 * X3 - DX31 * Y3;
+
+				// Correct for fill convention
+				if (DY12 < 0 || (DY12 == 0 && DX12 > 0)) C1++;
+				if (DY23 < 0 || (DY23 == 0 && DX23 > 0)) C2++;
+				if (DY31 < 0 || (DY31 == 0 && DX31 > 0)) C3++;
+
+				int CY1 = C1 + DX12 * (miny << 4) - DY12 * (minx << 4);
+				int CY2 = C2 + DX23 * (miny << 4) - DY23 * (minx << 4);
+				int CY3 = C3 + DX31 * (miny << 4) - DY31 * (minx << 4);
+
+				for (int y = miny; y < maxy; y++)
 				{
-					if (CX1 > 0 && CX2 > 0 && CX3 > 0)
+					int CX1 = CY1;
+					int CX2 = CY2;
+					int CX3 = CY3;
+
+					for (int x = minx; x < maxx; x++)
 					{
-						var index = depthIndex + x;
-						if (depthBuffer[index] > maxz)
-							depthBuffer[index] = maxz;
+						if (CX1 > 0 && CX2 > 0 && CX3 > 0)
+						{
+							var index = depthIndex + x;
+							if (depthBuffer[index] > maxz)
+								depthBuffer[index] = maxz;
+						}
+
+						CX1 -= FDY12;
+						CX2 -= FDY23;
+						CX3 -= FDY31;
 					}
 
-					CX1 -= FDY12;
-					CX2 -= FDY23;
-					CX3 -= FDY31;
+					CY1 += FDX12;
+					CY2 += FDX23;
+					CY3 += FDX31;
+
+					depthIndex += width;
 				}
 
-				CY1 += FDX12;
-				CY2 += FDX23;
-				CY3 += FDX31;
 
-				depthIndex += width;
 			}
 		}
 
@@ -224,39 +234,43 @@ namespace MyEngine
 		/// <returns></returns>
 		public bool AreBoundsVisible(CameraSpaceBounds bounds)
 		{
-			int minx = RoundToInt(PrepareX(bounds.minX));
-			int maxx = RoundToInt(PrepareX(bounds.maxX));
-
-			int miny = RoundToInt(PrepareY(bounds.minY));
-			int maxy = RoundToInt(PrepareY(bounds.maxY));
-
-
-			if (minx < 0 && maxx < 0) return false;
-			if (miny < 0 && maxy < 0) return false;
-			if (minx > width && maxx > width) return false;
-			if (miny > height && maxy > height) return false;
-
-			if (minx < 0) minx = 0;
-			if (maxx >= widthMinusOne) maxx = widthMinusOne;
-			if (miny < 0) miny = 0;
-			if (maxy >= heightMinusOne) maxy = heightMinusOne;
-
-
-
-			int depthIndex = miny * width;
-
-			for (int y = miny; y < maxy; y++)
+			using (var time = areBoundsVisibleStats.Start())
 			{
-				for (int x = minx; x < maxx; x++)
-				{
-					var index = depthIndex + x;
-					if (depthBuffer[index] > bounds.depthClosest)
-						return true;
-				}
-				depthIndex += width;
-			}
 
-			return false;
+				int minx = RoundToInt(PrepareX(bounds.minX));
+				int maxx = RoundToInt(PrepareX(bounds.maxX));
+
+				int miny = RoundToInt(PrepareY(bounds.minY));
+				int maxy = RoundToInt(PrepareY(bounds.maxY));
+
+
+				if (minx < 0 && maxx < 0) return false;
+				if (miny < 0 && maxy < 0) return false;
+				if (minx > width && maxx > width) return false;
+				if (miny > height && maxy > height) return false;
+
+				if (minx < 0) minx = 0;
+				if (maxx >= widthMinusOne) maxx = widthMinusOne;
+				if (miny < 0) miny = 0;
+				if (maxy >= heightMinusOne) maxy = heightMinusOne;
+
+
+
+				int depthIndex = miny * width;
+
+				for (int y = miny; y < maxy; y++)
+				{
+					for (int x = minx; x < maxx; x++)
+					{
+						var index = depthIndex + x;
+						if (depthBuffer[index] > bounds.depthClosest)
+							return true;
+					}
+					depthIndex += width;
+				}
+
+				return false;
+			}
 		}
 
 		// http://gamedev.stackexchange.com/questions/23743/whats-the-most-efficient-way-to-find-barycentric-coordinates
@@ -293,6 +307,8 @@ namespace MyEngine
 					return new Vector4(Vector3.One * ((d - min) / (max - min)), 1);
 				});
 			}
+			addTriangleStats.ShowStatsTime();
+			areBoundsVisibleStats.ShowStatsTime();
 		}
 		public void Show()
 		{
