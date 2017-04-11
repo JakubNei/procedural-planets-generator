@@ -111,22 +111,31 @@ namespace MyEngine
 			{
 				GBuffer.BindAllFrameBuffersForDrawing();
 
-				GL.DepthMask(true); MyGL.Check();
-				GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit); MyGL.Check();
+				GL.DepthMask(true); MyGL.Check();				
 
 				// SKYBOX PASS
-
-				if (SkyboxCubeMap != null)
+				if (Debug.GetCVar("rendering / debug / render white background"))
 				{
-					//GL.DepthRange(0.999, 1); MyGL.Check();
-					GL.Disable(EnableCap.DepthTest); MyGL.Check();
-					GL.DepthMask(false); MyGL.Check();
+					GL.ClearColor(System.Drawing.Color.White); MyGL.Check();
+					GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit); MyGL.Check();
+				}
+				else
+				{
+					GL.ClearColor(System.Drawing.Color.Black); MyGL.Check();
+					GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit); MyGL.Check();
 
-					var shader = Factory.GetShader("internal/deferred.skybox.shader");
-					shader.Uniforms.Set("skyboxCubeMap", SkyboxCubeMap);
-					shader.Bind();
+					if (SkyboxCubeMap != null)
+					{
+						//GL.DepthRange(0.999, 1); MyGL.Check();
+						GL.Disable(EnableCap.DepthTest); MyGL.Check();
+						GL.DepthMask(false); MyGL.Check();
 
-					Factory.SkyBoxMesh.Draw();
+						var shader = Factory.GetShader("internal/deferred.skybox.shader");
+						shader.Uniforms.Set("skyboxCubeMap", SkyboxCubeMap);
+						shader.Bind();
+
+						Factory.SkyBoxMesh.Draw();
+					}
 				}
 
 

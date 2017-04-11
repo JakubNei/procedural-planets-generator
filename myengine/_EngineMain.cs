@@ -170,9 +170,7 @@ namespace MyEngine
 			// Other state
 			//GL.Enable(EnableCap.Texture2D); My.Check();
 			//GL.Hint(HintTarget.PerspectiveCorrectionHint, HintMode.Nicest); My.Check();
-			//GL.Enable(EnableCap.Multisample); My.Check();
-
-			GL.ClearColor(System.Drawing.Color.Black); MyGL.Check();
+			//GL.Enable(EnableCap.Multisample); My.Check();		
 
 			gameWindow.Resize += (sender, e) => OnResize();
 			OnResize();
