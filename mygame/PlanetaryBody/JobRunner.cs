@@ -26,8 +26,12 @@ namespace MyGame.PlanetaryBody
 			var maxBudget = secondLeftToUse();
 
 			//Debug.AddValue("generation / generation jobs running", jobs.Count);
+			int totalJobsRan = 0;
 
-			while (secondLeftToUse() > 0)
+			while (
+				secondLeftToUse() > 0 ||
+				maxBudget < 0 // on shit computers, we still want to generate, albeit at big performnance cost
+			)
 			{
 				jobs.RemoveAll(j => j.WillNeverWantToBeExecuted);
 
@@ -38,17 +42,24 @@ namespace MyGame.PlanetaryBody
 					jobs.Add(j);
 				}
 
-				int jobsRan = 0;
+				int jobsRanThisLoop = 0;
 
 				foreach (var job in jobs)
 				{
 					while (job.WantsToBeExecutedNow)
 					{
 						var secondsNeeded = job.NextGPUThreadExecuteWillTakeSeconds();
-						if (secondsNeeded < secondLeftToUse())
+						if (
+							(secondsNeeded < secondLeftToUse()) || // either if we have time
+							(secondsNeeded > maxBudget * 0.9 && totalJobsRan == 0) // or if this is first job and it is too big
+						)
 						{
 							if (job.GPUThreadExecute())
-								jobsRan++;
+							{
+								if (maxBudget < 0) return; // if we are on shit computer, generate just one then end, lets generate at least something
+								totalJobsRan++;
+								jobsRanThisLoop++;
+							}
 						}
 						else
 						{
@@ -59,7 +70,7 @@ namespace MyGame.PlanetaryBody
 									var partsToSplitTo = (maxBudget / secondsNeeded).CeilToInt();
 									job.NextTask.TrySplitToParts((ushort)partsToSplitTo);
 
-									Log.Warn(
+									Log.Info(
 										"generation task exceeds budget limit " + Neitri.FormatUtils.SecondsToString(maxBudget) + " " +
 										"by " + Neitri.FormatUtils.SecondsToString(secondsNeeded - maxBudget) + ", " +
 										"splitting to " + partsToSplitTo + " parts: '" + job.NextTask.Name + "'"
@@ -67,10 +78,10 @@ namespace MyGame.PlanetaryBody
 								}
 								else
 								{
-									Log.Error(
-										"generation task exceeds budget limit " + Neitri.FormatUtils.SecondsToString(maxBudget) + " " +
+									Log.Warn(
+										"generation task (not splittable) exceeds budget limit " + Neitri.FormatUtils.SecondsToString(maxBudget) + " " +
 										"by " + Neitri.FormatUtils.SecondsToString(secondsNeeded - maxBudget) + ", " +
-										"unable to split: '" + job.NextTask.Name + "'"
+										"will slow down next frame'"
 									);
 								}
 							}
@@ -79,7 +90,7 @@ namespace MyGame.PlanetaryBody
 					}
 				}
 
-				if (jobsRan == 0) break;
+				if (jobsRanThisLoop == 0) break;
 			}
 		}
 	}

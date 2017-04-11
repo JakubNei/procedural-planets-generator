@@ -93,10 +93,14 @@ namespace MyGame.PlanetaryBody
 				}
 			}
 
+			bool warned = false;
 			public override void SetRenderingMode(MyRenderingMode renderingMode)
 			{
-				if (renderingMode.HasFlag(MyRenderingMode.RenderGeometry) && chunk.IsGenerationDone == false)
+				if (warned == false && renderingMode.HasFlag(MyRenderingMode.RenderGeometry) && chunk.IsGenerationDone == false)
+				{
 					Log.Warn("trying to render chunk " + chunk?.Renderer?.Mesh?.Name + " that did not finish generation");
+					warned = true;
+				}
 				base.SetRenderingMode(renderingMode);
 			}
 		}
@@ -196,7 +200,7 @@ namespace MyGame.PlanetaryBody
 				//distanceToCamera = renderer.Mesh.Vertices.FindClosest((v) => v.DistanceSqr(localCamPos)).Distance(localCamPos);
 				//isVisible = cam.GetFrustum().VsBounds(renderer.GetCameraSpaceBounds(cam.ViewPointPosition));
 				isVisible = Renderer.GetCameraRenderStatusFeedback(cam).HasFlag(RenderStatus.Rendered);
-			}			
+			}
 
 			var weight = GetSizeOnScreen(cam); // * (1 + MyMath.Clamp01(dotToCamera));
 			if (isVisible == false) weight *= 0.3f;

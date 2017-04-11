@@ -364,7 +364,7 @@ namespace MyEngine
 				}
 			}
 
-			if (Debug.GetCVar("rendering / throttle fps", true))
+			if (Debug.GetCVar("rendering / throttle fps", false))
 			{
 				var targetFps = TargetFps * 1.2;
 				var secondsWeCanSleep = 1 / targetFps - renderThreadTime.CurrentFrameElapsedSeconds;

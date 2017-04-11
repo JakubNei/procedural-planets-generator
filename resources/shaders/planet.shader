@@ -17,7 +17,7 @@ out data {
 	vec3 worldPos;
 	vec3 modelPos;
 	vec3 normal; 
-	flat vec2 uv; 
+	vec2 uv; 
 	vec3 tangent;
 } o;
 
@@ -52,7 +52,7 @@ void main()
 		vec3 worldPos;
 		vec3 modelPos;
 	  	vec3 normal; 
-		flat vec2 uv; 
+		vec2 uv; 
 		vec3 tangent;
 	} i[];
 
@@ -60,7 +60,7 @@ void main()
 		vec3 worldPos;
 		vec3 modelPos;
 	  	vec3 normal; 
-		flat vec2 uv; 
+		vec2 uv; 
 		vec3 tangent;
 	} o[];
 
@@ -124,7 +124,7 @@ void main()
 		vec3 worldPos;
 		vec3 modelPos;
 	  	vec3 normal; 
-		flat vec2 uv; 
+		vec2 uv; 
 		vec3 tangent;
 	} i[];
 
@@ -132,7 +132,7 @@ void main()
 		vec3 worldPos;
 		vec3 modelPos;
 	  	vec3 normal; 
-		flat vec2 uv; 
+		vec2 uv; 
 		vec3 tangent;
 	} o;
 
@@ -228,10 +228,8 @@ void main()
 in data {
 	vec3 worldPos;
 	vec3 modelPos;
-	vec3 normal; 
-	// has to be not interpolated, if it is interpolated there will be artefact on meridian
-	// the interpolation on meridian from 1 to 0 will cause whole splat map to be quickly interpolated on several meters
-	flat vec2 uv;
+	vec3 normal;
+	vec2 uv;
 	vec3 tangent;
 } i;
 
@@ -241,7 +239,7 @@ layout(location = 2) out vec3 out_normal;
 layout(location = 3) out vec4 out_data;
 
 
-//#define USE_NON_OPTIMIZED_TRIPLNAR
+#define USE_NON_OPTIMIZED_TRIPLNAR
 
 // TRIPLANAR TEXTURE PROJECTION
 vec3 triPlanar(sampler2D tex, vec3 position, vec3 normal, float scale) {
@@ -338,20 +336,16 @@ float getChannel(vec4 color, int channel)
 
 void getColor(out vec3 color, out vec3 normal) {
 
-	// DEBUG
-	//color = biomesSplatMapSample; return;
-	//color = vec3(i.uv.x, 0, 0);	return;
-	/*
-	AddBiome( \
-		color, \
-		normal, \
-		getChannel(texture2D(param_biomesSplatMap##ID##, i.uv), CHANNEL), \
-		param_biome##ID##CHANNEL##_diffuseMap, \
-		param_biome##ID##CHANNEL##_normalMap \
-	);
-	*/
+	//DEBUG
+	//color = vec3(i.uv.x, 0, 0); return;
+	//color = texture2D(param_biomesSplatMap1, i.uv).xyz; return;
+		
+	// must set default values, on some GPUs missing default values cause error in calculations, thus on some GPUs random old data is used
+	color = vec3(0);
 
 	bool calculateNormal = length(i.worldPos) < NORMAL_MAPPING_DISTANCE;
+	if(calculateNormal) normal = vec3(0);
+	else normal = vec3(0.5, 0.5, 1);
 
 	float amount;
 
@@ -371,9 +365,6 @@ void getColor(out vec3 color, out vec3 normal) {
     ADD_BIOME(1,1)
     ADD_BIOME(1,2)
     ADD_BIOME(1,3)
-
-    if(!calculateNormal)
-    	normal = vec3(0.5, 0.5, 1);
 
 }
 
@@ -410,8 +401,6 @@ void main()
 	} else {		
 		out_normal = i.normal;
 	}
-
-
 
 	out_color = vec4(pow(color,vec3(engine.gammaCorrectionTextureRead)),1);
 	//out_normal = i.normal;
