@@ -52,13 +52,16 @@ namespace MyEngine
 			depthBuffer = new float[width * height];
 			clearDepthBuffer = new float[depthBuffer.Length];
 			for (int i = 0; i < clearDepthBuffer.Length; i++)
-				clearDepthBuffer[i] = float.MaxValue;
+				clearDepthBuffer[i] = 1;
 		}
 
 		public void Clear()
 		{
 			UpdateDebugView();
 			Array.Copy(clearDepthBuffer, depthBuffer, depthBuffer.Length);
+
+			totalMaxZ = 0;
+			totalMinZ = 1;
 		}
 
 
@@ -125,6 +128,10 @@ namespace MyEngine
 		ProfileStats addTriangleStats = new ProfileStats("rendering / software rasterizer / add triangle");
 		ProfileStats areBoundsVisibleStats = new ProfileStats("rendering / software rasterizer / are bounds visible");
 
+
+		public float totalMaxZ;
+		public float totalMinZ;
+
 		// based on half-space function approach
 		public void AddTriangle(ref Vector3 v1, ref Vector3 v2, ref Vector3 v3)
 		{
@@ -179,6 +186,7 @@ namespace MyEngine
 
 
 				float maxz = max(v1.Z, v2.Z, v3.Z);
+				float minz = min(v1.Z, v2.Z, v3.Z);
 				int depthIndex = miny * width;
 
 
@@ -208,7 +216,11 @@ namespace MyEngine
 						{
 							var index = depthIndex + x;
 							if (depthBuffer[index] > maxz)
+							{
 								depthBuffer[index] = maxz;
+								if (maxz > totalMaxZ) totalMaxZ = maxz;
+								if (minz < totalMinZ) totalMinZ = minz;
+							}
 						}
 
 						CX1 -= FDY12;
@@ -298,12 +310,12 @@ namespace MyEngine
 		{
 			if (viewer?.Visible == true)
 			{
-				var min = depthBuffer.Where(d => d != float.MaxValue).DefaultIfEmpty(0).Min();
-				var max = depthBuffer.Where(d => d != float.MaxValue).DefaultIfEmpty(1).Max();
+				var min = totalMinZ;// depthBuffer.Where(d => d != float.MaxValue).DefaultIfEmpty(0).Min();
+				var max = totalMaxZ;// depthBuffer.Where(d => d != float.MaxValue).DefaultIfEmpty(1).Max();
 				viewer.SetData(width, height, (x, y) =>
 				{
 					var d = depthBuffer[(heightMinusOne - y) * width + x];
-					if (d == 0) return new Vector4(0, 0, 0.3f, 1);
+					if (d == 1) return new Vector4(0, 0, 0.3f, 1);
 					return new Vector4(Vector3.One * ((d - min) / (max - min)), 1);
 				});
 			}

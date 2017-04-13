@@ -44,16 +44,13 @@ namespace MyEngine.Components
 		bool ForcePassCulling { get; }
 
 		bool ShouldRenderInContext(Camera camera, RenderContext renderContext);
-
-		Bounds GetFloatingOriginSpaceBounds(WorldPos viewPointPos);
-
-		void UploadUBOandDraw(Camera camera, UniformBlock ubo);
-
 		void SetCameraRenderStatusFeedback(Camera camera, RenderStatus renderStatus);
 
-		IEnumerable<Vector3> GetCameraSpaceOccluderTriangles(Camera camera);
+		void UploadUBOandDraw(CameraData camera, UniformBlock ubo);
 
-		CameraSpaceBounds GetCameraSpaceBounds(Camera camera);
+		IEnumerable<Vector3> GetCameraSpaceOccluderTriangles(CameraData camera);
+		Bounds GetFloatingOriginSpaceBounds(WorldPos viewPointPos);
+		CameraSpaceBounds GetCameraSpaceBounds(CameraData camera);
 	}
 
 	public abstract class Renderer : ComponentWithShortcuts, IRenderable, IDisposable
@@ -77,7 +74,7 @@ namespace MyEngine.Components
 		public virtual void SetRenderingMode(MyRenderingMode renderingMode) => RenderingMode = renderingMode;
 		public abstract Bounds GetFloatingOriginSpaceBounds(WorldPos viewPointPos);
 
-		public virtual void UploadUBOandDraw(Camera camera, UniformBlock ubo)
+		public virtual void UploadUBOandDraw(CameraData camera, UniformBlock ubo)
 		{
 		}
 
@@ -108,7 +105,8 @@ namespace MyEngine.Components
 			return Entity.Name;
 		}
 
-		public abstract IEnumerable<Vector3> GetCameraSpaceOccluderTriangles(Camera camera);
-		public abstract CameraSpaceBounds GetCameraSpaceBounds(Camera camera);
+		public abstract IEnumerable<Vector3> GetCameraSpaceOccluderTriangles(CameraData camera);
+		public abstract CameraSpaceBounds GetCameraSpaceBounds(CameraData camera);
+
 	}
 }

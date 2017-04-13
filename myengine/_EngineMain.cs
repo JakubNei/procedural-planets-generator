@@ -340,7 +340,7 @@ namespace MyEngine
 				//if (renderThreadTime.FpsPer1Sec > 30)
 				renderManagerFront.SkyboxCubeMap = scene.skyBox;
 				//else renderManagerFront.SkyboxCubeMap = null;
-				renderManagerFront.RenderAll(ubo, camera, dataToRender.Lights, camera.postProcessEffects);
+				renderManagerFront.RenderAll(ubo, dataToRender.Lights, camera.postProcessEffects);
 			}
 
 			if (ShouldContinueRunning == false) return;

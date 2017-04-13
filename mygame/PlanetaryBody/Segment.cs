@@ -79,7 +79,7 @@ namespace MyGame.PlanetaryBody
 				return false;
 			}
 			*/
-			public override IEnumerable<Vector3> GetCameraSpaceOccluderTriangles(Camera camera)
+			public override IEnumerable<Vector3> GetCameraSpaceOccluderTriangles(CameraData camera)
 			{
 				//if (chunk.occluderTringles.Count < 9 && chunk.IsGenerationDone) throw new Exception("this should not happen");
 				if (chunk.IsGenerationDone && chunk.occluderTringles.Count == 9)

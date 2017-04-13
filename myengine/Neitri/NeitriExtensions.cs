@@ -8,7 +8,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 
 /// <summary>
-/// Version 2017-04-08
+/// Version 2017-04-12
 /// Many useful extensions I've made over the years.
 /// All in one class.
 /// </summary>
@@ -391,10 +391,43 @@ public static class NeitriExtensions
 	{
 		return System.Math.Abs(a);
 	}
-
 	public static float Pow(this float x, float power)
 	{
 		return (float)System.Math.Pow(x, power);
+	}
+	public static float Max(this float me, float other)
+	{
+		if (me > other) return me;
+		return other;
+	}
+	public static float Min(this float me, float other)
+	{
+		if (me < other) return me;
+		return other;
+	}
+	public static float Clamp(this float me, float inclusiveFrom, float inclusiveTo)
+	{
+		if (me > inclusiveTo) return inclusiveTo;
+		if (me < inclusiveFrom) return inclusiveFrom;
+		return me;
+	}
+	public static float Lerp(this float me, float towards, float t)
+	{
+		return me * (1 - t) + towards * t;
+	}
+	public static float MoveTo(this float me, float towards, float byAmount)
+	{
+		if (me < towards)
+		{
+			me += byAmount.Abs();
+			if (me > towards) me = towards;
+		}
+		else if (me > towards)
+		{
+			me -= byAmount.Abs();
+			if (me < towards) me = towards;
+		}
+		return me;
 	}
 
 	public static float Round(this float a)
@@ -436,26 +469,6 @@ public static class NeitriExtensions
 		return (long)System.Math.Floor(a);
 	}
 
-
-	public static float Lerp(this float me, float towards, float t)
-	{
-		return me * (1 - t) + towards * t;
-	}
-
-	public static float MoveTo(this float me, float towards, float byAmount)
-	{
-		if (me < towards)
-		{
-			me += byAmount.Abs();
-			if (me > towards) me = towards;
-		}
-		else if (me > towards)
-		{
-			me -= byAmount.Abs();
-			if (me < towards) me = towards;
-		}
-		return me;
-	}
 	public static int ToInt(this float a)
 	{
 		return (int)a;
@@ -474,6 +487,22 @@ public static class NeitriExtensions
 	public static double Pow(this double a, double power)
 	{
 		return (double)System.Math.Pow(a, power);
+	}
+	public static double Max(this double me, double other)
+	{
+		if (me > other) return me;
+		return other;
+	}
+	public static double Min(this double me, double other)
+	{
+		if (me < other) return me;
+		return other;
+	}
+	public static double Clamp(this double me, float inclusiveFrom, double inclusiveTo)
+	{
+		if (me > inclusiveTo) return inclusiveTo;
+		if (me < inclusiveFrom) return inclusiveFrom;
+		return me;
 	}
 	public static double Round(this double a)
 	{
@@ -520,6 +549,22 @@ public static class NeitriExtensions
 	{
 		if (val >= 0) return val;
 		return -val;
+	}
+	public static int Max(this int me, int other)
+	{
+		if (me > other) return me;
+		return other;
+	}
+	public static int Min(this int me, int other)
+	{
+		if (me < other) return me;
+		return other;
+	}
+	public static int Clamp(this int me, int inclusiveFrom, int inclusiveTo)
+	{
+		if (me > inclusiveTo) return inclusiveTo;
+		if (me < inclusiveFrom) return inclusiveFrom;
+		return me;
 	}
 	#endregion
 

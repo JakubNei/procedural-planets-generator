@@ -40,7 +40,6 @@ namespace MyGame
 					var cam = scene.MainCamera = entity.AddComponent<Camera>();
 					cam.NearClipPlane = 0.5f;
 					cam.FarClipPlane = 5000000;
-					cam.Recalculate();
 
 					// post process effects
 					{

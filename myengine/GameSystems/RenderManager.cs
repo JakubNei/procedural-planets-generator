@@ -64,8 +64,12 @@ namespace MyEngine
 			paraller = new ParallerRunner(Environment.ProcessorCount - 2, "render manager", ThreadPriority.Highest);
 		}
 
-		public void RenderAll(UniformBlock ubo, Camera camera, IList<ILight> allLights, IEnumerable<IPostProcessEffect> postProcessEffect)
+		CameraData prepardWithCameraData;
+
+		public void RenderAll(UniformBlock ubo, IList<ILight> allLights, IEnumerable<IPostProcessEffect> postProcessEffect)
 		{
+			var camera = prepardWithCameraData;
+
 			camera.UploadCameraDataToUBO(ubo); // bind camera view params and matrices only once
 
 			RenderGBuffer(ubo, camera);
@@ -103,9 +107,10 @@ namespace MyEngine
 			ErrorCode glError;
 			while ((glError = GL.GetError()) != ErrorCode.NoError)
 				Log.Error("GL Error: " + glError);
+
 		}
 
-		private void RenderGBuffer(UniformBlock ubo, Camera camera)
+		private void RenderGBuffer(UniformBlock ubo, CameraData camera)
 		{
 			// G BUFFER GRAB PASS
 			{
@@ -186,7 +191,7 @@ namespace MyEngine
 			}
 		}
 
-		private void RenderLights(UniformBlock ubo, Camera camera, IList<ILight> allLights)
+		private void RenderLights(UniformBlock ubo, CameraData camera, IList<ILight> allLights)
 		{
 			#region Lights rendering
 
@@ -305,7 +310,7 @@ namespace MyEngine
 			}
 		}
 
-		private void RenderDebugBounds(UniformBlock ubo, Camera camera)
+		private void RenderDebugBounds(UniformBlock ubo, CameraData camera)
 		{
 			if (Factory.GetShader("internal/debugDrawBounds.shader").Bind())
 			{
@@ -338,6 +343,8 @@ namespace MyEngine
 		}
 
 
+		public float SuggestedCameraZNear { get; private set; }
+		public float SuggestedCameraZFar { get; private set; }
 		SoftwareDepthRasterizer rasterizer;
 
 		const int maxToRenderAtOnce = 10000;
@@ -351,13 +358,15 @@ namespace MyEngine
 		int lastTotalPossible = 0;
 		public void PrepareRender(RenderableData data, Camera camera)
 		{
+			var cameraData = prepardWithCameraData = camera.GetDataCopy();
+
 			// without Parallel.ForEach = 130 fps
 			// with ConcurrentBag = 180 fps
 			// with ConcurrentQueue = 200 fps
 			// with lock List = 200 fps
 
-			var frustum = camera.GetFrustum();
-			var camPos = camera.Transform.Position;
+			var frustum = prepardWithCameraData.GetFrustum();
+			var camPos = prepardWithCameraData.ViewPointPosition;
 
 			var possibleRenderables = data.Renderers;
 			var possibleRenderablesCount = possibleRenderables.Count;
@@ -389,7 +398,7 @@ namespace MyEngine
 							{
 								var newIndex = Interlocked.Increment(ref passedFrustumCullingIndex) - 1;
 								passedFrustumCulling[newIndex] = renderable;
-								rasterizer?.AddTriangles(renderable.GetCameraSpaceOccluderTriangles(camera));
+								rasterizer?.AddTriangles(renderable.GetCameraSpaceOccluderTriangles(cameraData));
 							}
 							else
 							{
@@ -401,7 +410,7 @@ namespace MyEngine
 								{
 									var newIndex = Interlocked.Increment(ref passedFrustumCullingIndex) - 1;
 									passedFrustumCulling[newIndex] = renderable;
-									rasterizer?.AddTriangles(renderable.GetCameraSpaceOccluderTriangles(camera));
+									rasterizer?.AddTriangles(renderable.GetCameraSpaceOccluderTriangles(cameraData));
 								}
 								else
 								{
@@ -438,8 +447,10 @@ namespace MyEngine
 				if (rasterizer != null && EnableRasterizerCulling)
 				{
 
-					int passedRasterizationCullingIndex = 0;
+					var closest = new ThreadLocal<float>(() => float.MaxValue, true);
+					var furthest = new ThreadLocal<float>(() => float.MinValue, true);
 
+					int passedRasterizationCullingIndex = 0;
 					Action<IRenderable> work = renderable =>
 					{
 						if (renderable.ForcePassCulling)
@@ -451,9 +462,12 @@ namespace MyEngine
 						}
 						else
 						{
-							var bounds = renderable.GetCameraSpaceBounds(camera);
+							var bounds = renderable.GetCameraSpaceBounds(cameraData);
 							if (rasterizer.AreBoundsVisible(bounds))
 							{
+								if (bounds.depthClosest < closest.Value) closest.Value = bounds.depthClosest;
+								if (bounds.depthFurthest > furthest.Value) furthest.Value = bounds.depthFurthest;
+
 								renderable.SetCameraRenderStatusFeedback(camera, RenderStatus.RenderedAndVisible);
 								var newIndex = Interlocked.Increment(ref passedRasterizationCullingIndex) - 1;
 								passedRasterizationCulling[newIndex] = renderable;
@@ -465,7 +479,6 @@ namespace MyEngine
 							}
 						}
 					};
-
 
 					if (DoParallelize)
 					{
@@ -481,6 +494,21 @@ namespace MyEngine
 							work(passedFrustumCulling[i]);
 						}
 					}
+
+					var range = cameraData.FarClipPlane - cameraData.NearClipPlane;
+
+					//SuggestedCameraZNear = cameraData.NearClipPlane + closest.Values.DefaultIfEmpty(0).Min().Max(0) * range;
+					//SuggestedCameraZFar = cameraData.NearClipPlane + furthest.Values.DefaultIfEmpty(1).Max().Min(1) * range;
+
+					SuggestedCameraZNear = cameraData.NearClipPlane + rasterizer.totalMinZ.Clamp(0, 1) * range;
+					SuggestedCameraZFar = cameraData.NearClipPlane + rasterizer.totalMaxZ.Clamp(0, 1) * range;
+
+					if (SuggestedCameraZNear + 1 > SuggestedCameraZFar) SuggestedCameraZFar = SuggestedCameraZNear + 1;
+
+					cameraData.NearClipPlane = SuggestedCameraZNear * 0.5f;
+					cameraData.FarClipPlane = SuggestedCameraZFar;
+					cameraData.RecalculateProjectionMatrix();
+
 
 					Debug.AddValue("rendering / meshes / passed rasterization culling", passedRasterizationCullingIndex);
 

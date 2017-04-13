@@ -156,9 +156,9 @@ namespace MyGame
 				Debug.AddValue("camera / distance to surface", onPlanetDistanceToSurface);
 				{
 					var s = MyMath.SmoothStep(1, 30000, (float)onPlanetDistanceToSurface);
-					cam.NearClipPlane = 1000 * s + 0.5f;
-					cam.FarClipPlane = 5000000 * s + 100000;
-					cam.Recalculate();
+					//cam.NearClipPlane = 1000 * s + 0.5f;
+					//cam.FarClipPlane = 5000000 * s + 100000;
+					//cam.Recalculate();
 				}
 			}
 

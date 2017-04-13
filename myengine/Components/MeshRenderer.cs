@@ -92,9 +92,9 @@ namespace MyEngine.Components
 			return bounds;
 		}
 
-		public override void UploadUBOandDraw(Camera camera, UniformBlock ubo)
+		public override void UploadUBOandDraw(CameraData camera, UniformBlock ubo)
 		{
-			var modelMatrix = this.Entity.Transform.GetLocalToWorldMatrix(camera.Transform.Position - Offset);
+			var modelMatrix = this.Entity.Transform.GetLocalToWorldMatrix(camera.ViewPointPosition - Offset);
 			var modelViewMatrix = modelMatrix * camera.GetRotationMatrix();
 			ubo.model.modelMatrix = modelMatrix;
 			ubo.model.modelViewMatrix = modelViewMatrix;
@@ -108,15 +108,15 @@ namespace MyEngine.Components
 			return Mesh != null && Material != null && Material.DepthGrabShader != null && base.ShouldRenderInContext(camera, renderContext);
 		}
 
-		public Matrix4 GetModelViewProjectionMatrix(Camera camera)
+		public Matrix4 GetModelViewProjectionMatrix(CameraData camera)
 		{
-			var modelMatrix = this.Entity.Transform.GetLocalToWorldMatrix(camera.Transform.Position - Offset);
+			var modelMatrix = this.Entity.Transform.GetLocalToWorldMatrix(camera.ViewPointPosition - Offset);
 			var modelViewMatrix = modelMatrix * camera.GetRotationMatrix();
 			var modelViewProjectionMatrix = modelViewMatrix * camera.GetProjectionMatrix();
 			return modelViewProjectionMatrix;
 		}
 
-		public override IEnumerable<Vector3> GetCameraSpaceOccluderTriangles(Camera camera)
+		public override IEnumerable<Vector3> GetCameraSpaceOccluderTriangles(CameraData camera)
 		{
 			return null;
 
@@ -133,7 +133,7 @@ namespace MyEngine.Components
 			*/
 		}
 
-		public override CameraSpaceBounds GetCameraSpaceBounds(Camera camera)
+		public override CameraSpaceBounds GetCameraSpaceBounds(CameraData camera)
 		{
 			var b = new CameraSpaceBounds();
 			if (Mesh == null) return b;

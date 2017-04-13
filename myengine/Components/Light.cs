@@ -32,7 +32,7 @@ namespace MyEngine.Components
 		bool HasShadows { get; }
 		ShadowMap ShadowMap { get; }
 
-		void UploadUBOdata(Camera camera, UniformBlock ubo, int lightIndex);
+		void UploadUBOdata(CameraData camera, UniformBlock ubo, int lightIndex);
 	}
 
 	public class Light : ComponentWithShortcuts, IDisposable, ILight
@@ -69,7 +69,7 @@ namespace MyEngine.Components
 			entity.Scene.DataToRender.Add(this);
 		}
 
-		public void UploadUBOdata(Camera camera, UniformBlock ubo, int lightIndex)
+		public void UploadUBOdata(CameraData camera, UniformBlock ubo, int lightIndex)
 		{
 			ubo.light.color = this.Color;
 

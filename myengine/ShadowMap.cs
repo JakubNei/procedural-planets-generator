@@ -24,7 +24,7 @@ namespace MyEngine
 
 			ShadowViewCamera = light.Entity.AddComponent<Camera>();
 			ShadowViewCamera.SetSize(width, height);
-			ShadowViewCamera.Orthographic = true;
+			ShadowViewCamera.IsOrthographic = true;
 			ShadowViewCamera.OrthographicSize = 50;
 
 			this.Width = width;
