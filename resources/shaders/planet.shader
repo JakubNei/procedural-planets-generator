@@ -81,12 +81,11 @@ int closestPowerOf2(float a) {
 	if(a>2) return 2;
 	return 1;
 }
-int tessLevel(float d1, float d2, float c) {		
+int tessLevel(float d1, float d2) {		
 	float d=(d1+d2)/2;
 	//float r=clamp((1/d)*(keyIK*10), 1, 64);
 	//float r=clamp((1/d)*(100.0), 1, 64);
-	//float r=clamp(100/d, 1, 64);
-	float r = clamp(c/d * 30, 1, 64);
+	float r=clamp(100/d, 1, 64);
 	return closestPowerOf2(r);
 }
 
@@ -106,11 +105,9 @@ void main() {
 	float d1=distance(i[1].worldPos,vec3(0));
 	float d2=distance(i[2].worldPos,vec3(0));	
 
-	float c = distance(i[0].worldPos, i[1].worldPos) + distance(i[1].worldPos, i[2].worldPos);
-
-	gl_TessLevelOuter[0] = tessLevel(d1,d2,c);
-	gl_TessLevelOuter[1] = tessLevel(d0,d2,c);
-	gl_TessLevelOuter[2] = tessLevel(d0,d1,c);
+	gl_TessLevelOuter[0] = tessLevel(d1,d2);
+	gl_TessLevelOuter[1] = tessLevel(d0,d2);
+	gl_TessLevelOuter[2] = tessLevel(d0,d1);
 	//gl_TessLevelOuter[3] = tess;
 
 	gl_TessLevelInner[0] = gl_TessLevelOuter[2];
@@ -189,22 +186,18 @@ void main()
 	o.worldPos	= interpolate3D(	i[0].worldPos,	i[1].worldPos,	i[2].worldPos	); 
 	o.modelPos	= interpolate3D(	i[0].modelPos,	i[1].modelPos,	i[2].modelPos	); 
 	o.normal	= interpolate3D(	i[0].normal,	i[1].normal,	i[2].normal		); 
-	o.uv		= interpolate2D(	i[0].uv,		i[1].uv,		i[2].uv			); 
+	//o.uv		= interpolate2D(	i[0].uv,		i[1].uv,		i[2].uv			); 
 	o.tangent	= interpolate3D(	i[0].tangent,	i[1].tangent,	i[2].tangent	); 
 
-
-
-	o.uv = calestialToSpherical(o.modelPos + param_offsetFromPlanetCenter).xy;
-
-	//o.normal = normalize(o.normal);
+	//o.uv = calestialToSpherical(o.modelPos + param_offsetFromPlanetCenter).xy;
 
 	// APPLY TERRAIN MODIFIER
 	vec3 pos = o.modelPos + param_offsetFromPlanetCenter;
 	// make it uniform across different planet sizes
 	pos *= 200000 / float(param_radiusMin);
-	//uv = mod(uv * 10000000, 1);
 
 	o.worldPos += o.normal * AdjustTerrainAt(pos);
+	o.normal = normalize(o.normal);
 
 	gl_Position = engine.projectionMatrix * engine.viewMatrix * vec4(o.worldPos,1);
 
@@ -331,7 +324,7 @@ float getChannel(vec4 color, int channel)
 
 
 
-void getColor(out vec3 color, out vec3 normal) {
+void getColor(vec2 uv, out vec3 color, out vec3 normal) {
 
 	//DEBUG
 	//color = vec3(i.uv.x, 0, 0); return;
@@ -347,7 +340,7 @@ void getColor(out vec3 color, out vec3 normal) {
 	float amount;
 
 #define ADD_BIOME(ID, CHANNEL) \
-	amount = getChannel(texture2D(param_biomesSplatMap##ID##, i.uv), CHANNEL); \
+	amount = getChannel(texture2D(param_biomesSplatMap##ID##, uv), CHANNEL); \
 	if(amount > 0) { \
 		color += amount * getBiomeColor(param_biome##ID##CHANNEL##_diffuseMap); \
 		if(calculateNormal) \
@@ -374,9 +367,10 @@ void main()
 
 	// BASE COLOR
 	//float pixelDepth = gl_FragCoord.z/gl_FragCoord.w; //distance(EyePosition, i.worldPos);
+	vec2 uv = calestialToSpherical(i.modelPos + param_offsetFromPlanetCenter).xy;
 	vec3 color;
 	vec3 normalColorFromTexture;
-	getColor(color, normalColorFromTexture);
+	getColor(uv, color, normalColorFromTexture);
 
 	float distToCamera = length(i.worldPos);
 	float defaultNormalWeight = smoothstep(NORMAL_MAPPING_DISTANCE * 0.9, NORMAL_MAPPING_DISTANCE, distToCamera);
