@@ -249,8 +249,10 @@ namespace Neitri
 
 		public DirectoryPath GetDirectory(params string[] pathParts)
 		{
-			var dir = new DirectoryPath(CombinePathParts(this.PathParts, pathParts));
-			dir.RootDirectory = this.RootDirectory;
+			var dir = new DirectoryPath(CombinePathParts(this.PathParts, pathParts))
+			{
+				RootDirectory = this.RootDirectory
+			};
 			return dir;
 		}
 

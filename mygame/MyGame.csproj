@@ -67,17 +67,12 @@
     <Compile Include="_Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="GeographicCoords.cs" />
-    <Compile Include="VisualisePosition.cs" />
     <Compile Include="VisualizeDir.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MyEngine\MyEngine.csproj">
       <Project>{f11accad-6e5f-464a-b496-33ef0c6b10f4}</Project>
       <Name>MyEngine</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ProceduralMath\ProceduralMath.vcxproj">
-      <Project>{9CA20FC2-2340-4D23-9245-FF8264789C98}</Project>
-      <Name>ProceduralMath</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

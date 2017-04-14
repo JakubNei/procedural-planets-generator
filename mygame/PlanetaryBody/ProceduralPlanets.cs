@@ -51,9 +51,6 @@ namespace MyGame
 		}
 
 
-
-		PlanetaryBody.Planet planet;
-
 		public PlanetaryBody.Planet AddPlanet()
 		{
 			var planet = scene.AddEntity("procedural planet #" + planets.Count + 1).AddComponent<PlanetaryBody.Planet>();

@@ -13,11 +13,9 @@ namespace MyEngine
 {
 	public static class MyGL
 	{
-		//[Conditional("DEBUG")]
+		[Conditional("DEBUG_OPENGL")]
 		public static void Check()
 		{
-			return;
-
 			ErrorCode err;
 			while ((err = GL.GetError()) != ErrorCode.NoError)
 			{

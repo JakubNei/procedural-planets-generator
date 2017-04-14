@@ -381,11 +381,11 @@ namespace MyEngine
 		{
 			// http://developer.download.nvidia.com/opengl/specs/GL_NVX_gpu_memory_info.txt
 
-			var GPU_MEMORY_INFO_DEDICATED_VIDMEM_NVX = 0x9047;
+			//var GPU_MEMORY_INFO_DEDICATED_VIDMEM_NVX = 0x9047;
 			var GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX = 0x9048;
 			var GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX = 0x9049;
-			var GPU_MEMORY_INFO_EVICTION_COUNT_NVX = 0x904A;
-			var GPU_MEMORY_INFO_EVICTED_MEMORY_NVX = 0x904;
+			//var GPU_MEMORY_INFO_EVICTION_COUNT_NVX = 0x904A;
+			//var GPU_MEMORY_INFO_EVICTED_MEMORY_NVX = 0x904;
 
 			int totalAvailableKb, currentAvailableKb;
 			GL.GetInteger((GetPName)GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX, out totalAvailableKb); MyGL.Check();

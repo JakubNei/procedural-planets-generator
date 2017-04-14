@@ -22,7 +22,7 @@ namespace MyEngine
 
 		class LoadJob
 		{
-			public ILog Log => Singletons.Log;
+			public ILog Log => Singletons.Log.Scope("loading " + this.file.VirtualPath);
 			public FileSystem FileSystem => Singletons.FileSystem;
 
 
@@ -35,8 +35,8 @@ namespace MyEngine
 			List<Vector2> uvsMesh = new List<Vector2>();
 			List<int> triangleIndiciesMesh = new List<int>();
 
-			bool gotUvs = false;
 			bool gotNormal = false;
+			bool gotUvs = false;
 
 			Dictionary<string, int> objFaceToMeshIndicie = new Dictionary<string, int>();
 
@@ -151,7 +151,7 @@ namespace MyEngine
 
 				if (appendToEntity != null) return EndObjPart(appendToEntity);
 
-				Log.Info("Loaded " + file + " vertices:" + verticesMesh.Count + " faces:" + triangleIndiciesMesh.Count / 3);
+				Log.Info("loaded, vertices:" + verticesMesh.Count + " faces:" + triangleIndiciesMesh.Count / 3);
 
 				return EndMesh();
 			}
@@ -165,11 +165,13 @@ namespace MyEngine
 				mesh.UVs.SetData(uvsMesh);
 				mesh.TriangleIndicies.SetData(triangleIndiciesMesh);
 
-				if (failedParse > 0) Log.Warn("Failed to parse data " + failedParse + " times");
+				if (failedParse > 0) Log.Warn("failed to parse data " + failedParse + " times");
 				failedParse = 0;
 
 				if (gotNormal) mesh.Normals.SetData(normalsMesh);
 				else mesh.RecalculateNormals();
+
+				if (gotUvs == false) Log.Warn("no normals loaded");
 
 				return mesh;
 			}

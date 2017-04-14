@@ -80,6 +80,7 @@ namespace MyGame.PlanetaryBody
 			InitializeJobTemplate();
 		}
 
+		CVar GetSurfaceHeightDebug => Debug.GetCVar("planets / debug / get surface height");
 
 		public GeographicCoords CalestialToSpherical(Vector3d c) => GeographicCoords.ToGeographic(c);
 		public GeographicCoords CalestialToSpherical(Vector3 c) => GeographicCoords.ToSpherical(c);
@@ -103,7 +104,7 @@ namespace MyGame.PlanetaryBody
 
 			if (chunk != null)
 			{
-				lock (chunk)
+				//lock (chunk)
 				{
 					int safe = 100;
 					while (chunk.Children.Count > 0 && chunk.Children.Any(c => c.IsGenerationDone) && safe-- > 0)
@@ -123,9 +124,7 @@ namespace MyGame.PlanetaryBody
 				height = chunk.GetHeight(chunkLocalPosition);
 			}
 
-
-			const bool getSurfaceHeightDebug = false;
-			if (getSurfaceHeightDebug)
+			if (GetSurfaceHeightDebug)
 			{
 				if (height == -1)
 				{

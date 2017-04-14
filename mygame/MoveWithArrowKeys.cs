@@ -19,14 +19,10 @@ namespace MyGame
         public float velocityChangeSpeed = 10.0f;
 
         private Vector3 up = Vector3.UnitY;
-        private float pitch = 0.0f;
-        private float facing = 0.0f;
 
         public bool disabledInput = false;
 
         float speedModifier = 10.0f;
-        Point lastMousePos;
-        int scrollWheelValue;
         Vector3 currentVelocity;
 
 

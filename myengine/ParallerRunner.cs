@@ -53,7 +53,6 @@ namespace MyEngine
 		Action<int> body;
 		int currentIndex;
 
-		SemaphoreSlim s;
 		private void ExecuteNext(int workerThreadIndex)
 		{
 			var myCurrentIndex = Interlocked.Increment(ref currentIndex) - 1;

@@ -91,7 +91,7 @@ namespace MyEngine
 				GL.Disable(EnableCap.CullFace); MyGL.Check();
 				GL.Disable(EnableCap.Blend); MyGL.Check();
 
-				FinalDrawShader.Uniforms.Set("finalDrawTexture", GBuffer.finalTextureToRead);
+				FinalDrawShader.Uniforms.Set("finalDrawTexture", GBuffer.FinalTextureToRead);
 				if (FinalDrawShader.Bind())
 				{
 					Factory.QuadMesh.Draw();

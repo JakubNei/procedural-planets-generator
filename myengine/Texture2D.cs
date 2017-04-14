@@ -179,7 +179,6 @@ namespace MyEngine
 			UpdateIsOnGpu();
 		}
 
-		static int? maxAniso;
 
 		void UpdateIsOnGpu()
 		{

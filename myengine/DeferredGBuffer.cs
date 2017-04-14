@@ -15,10 +15,10 @@ namespace MyEngine
 
 		Texture2D[] textures;
 		bool readFirstFinalTexture = true;
-		public Texture2D finalTextureToRead { get { if (readFirstFinalTexture) return finalTexture1; else return finalTexture2; } }
-		public Texture2D finalTextureToWriteTo { get { if (readFirstFinalTexture == false) return finalTexture1; else return finalTexture2; } }
-		Texture2D finalTexture1 { get { return textures[4]; } }
-		Texture2D finalTexture2 { get { return textures[5]; } }
+		public Texture2D FinalTextureToRead { get { if (readFirstFinalTexture) return FinalTexture1; else return FinalTexture2; } }
+		public Texture2D FinalTextureToWriteTo { get { if (readFirstFinalTexture == false) return FinalTexture1; else return FinalTexture2; } }
+		Texture2D FinalTexture1 { get { return textures[4]; } }
+		Texture2D FinalTexture2 { get { return textures[5]; } }
 
 		Texture2D depthTexture;
 
@@ -141,7 +141,7 @@ namespace MyEngine
                 GL.GenerateMipmap(GenerateMipmapTarget.Texture2D); My.Check();*/
 
 				GL.ActiveTexture(TextureUnit.Texture0); MyGL.Check();
-				GL.BindTexture(TextureTarget.Texture2D, finalTextureToRead.GetNativeTextureID()); MyGL.Check();
+				GL.BindTexture(TextureTarget.Texture2D, FinalTextureToRead.GetNativeTextureID()); MyGL.Check();
 				GL.GenerateMipmap(GenerateMipmapTarget.Texture2D); MyGL.Check();
 			}
 
@@ -162,7 +162,7 @@ namespace MyEngine
 			}
 
 			shader.Uniforms.Set("gBufferUniform.depth", depthTexture);
-			shader.Uniforms.Set("gBufferUniform.final", finalTextureToRead);
+			shader.Uniforms.Set("gBufferUniform.final", FinalTextureToRead);
 
 			for (int i = 0; i < textures.Length - 2; i++)
 			{
@@ -178,9 +178,6 @@ namespace MyEngine
 
 			int qh = height / 4;
 			int qw = width / 4;
-
-			int x = 0;
-			int y = 0;
 
 			if (readFirstFinalTexture) DrawBufferToQuarterOfScreen(ReadBufferMode.ColorAttachment4, qw * 1, qh * 0);
 			else DrawBufferToQuarterOfScreen(ReadBufferMode.ColorAttachment5, qw * 1, qh * 0);

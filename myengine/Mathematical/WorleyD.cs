@@ -23,7 +23,6 @@ namespace MyEngine
 
 		uint seed;
 		DistanceFunction distanceFunction;
-		List<Vector2d> points;
 
 		public WorleyD(uint seed, DistanceFunction distanceFunction)
 		{
@@ -62,7 +61,7 @@ namespace MyEngine
 					var random = new Random((int)FnvHash((uint)(cubeX), (uint)(cubeY), seed));
 
 					//3. Determine how many feature points are in the cube
-					numberFeaturePoints = probLookup((uint)random.Next(0, int.MaxValue));
+					numberFeaturePoints = ProbLookup((uint)random.Next(0, int.MaxValue));
 					//4. Randomly place the feature points in the cube
 					for (uint l = 0; l < numberFeaturePoints; ++l)
 					{
@@ -72,7 +71,7 @@ namespace MyEngine
 
 						//5. Find the feature point closest to the evaluation point. 
 						//This is done by inserting the distances to the feature points into a sorted list
-						insert(distanceArray, returnArrayLen, Distance(input, featurePoint, distanceFunction));
+						Insert(distanceArray, returnArrayLen, Distance(input, featurePoint, distanceFunction));
 					}
 					//6. Check the neighboring cubes to ensure their are no closer evaluation points.
 					// This is done by repeating steps 1 through 5 above for each neighboring cube
@@ -118,7 +117,7 @@ namespace MyEngine
 						var random = new Random((int)FnvHash((uint)(cubeX), (uint)(cubeY), (uint)(cubeZ), seed));
 
 						//3. Determine how many feature points are in the cube
-						numberFeaturePoints = probLookup((uint)random.Next(0, int.MaxValue));
+						numberFeaturePoints = ProbLookup((uint)random.Next(0, int.MaxValue));
 						//4. Randomly place the feature points in the cube
 						for (uint l = 0; l < numberFeaturePoints; ++l)
 						{
@@ -133,7 +132,7 @@ namespace MyEngine
 
 							//5. Find the feature point closest to the evaluation point. 
 							//This is done by inserting the distances to the feature points into a sorted list
-							insert(distanceArray, returnArrayLen, Distance(input, featurePoint, distanceFunction));
+							Insert(distanceArray, returnArrayLen, Distance(input, featurePoint, distanceFunction));
 						}
 						//6. Check the neighboring cubes to ensure their are no closer evaluation points.
 						// This is done by repeating steps 1 through 5 above for each neighboring cube
@@ -153,7 +152,7 @@ namespace MyEngine
 		/// <returns>The number of feature points in a cube.</returns>
 		// Generated using mathmatica with "AccountingForm[N[Table[CDF[PoissonDistribution[4], i], {i, 1, 9}], 20]*2^32]"
 
-		uint probLookup(uint value)
+		uint ProbLookup(uint value)
 		{
 			if (value < 393325350) return 1;
 			if (value < 1022645910) return 2;
@@ -174,7 +173,7 @@ namespace MyEngine
 		/// <param name="arr">The array to insert the value into.</param>
 		/// <param name="value">The value to insert into the array.</param>
 
-		void insert(double[] arr, int arrSize, double value)
+		void Insert(double[] arr, int arrSize, double value)
 		{
 			double temp;
 			for (int i = arrSize - 1; ; i--)

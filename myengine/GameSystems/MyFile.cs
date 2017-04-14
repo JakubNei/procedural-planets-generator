@@ -4,11 +4,13 @@ using System.IO;
 using System.Collections.Generic;
 using System.Text;
 using Neitri.Base;
+using System.Linq;
 
 namespace MyEngine
 {
 	public class MyFile
 	{
+		public string Name { get { return VirtualPath.Split('/', '\\').LastOrDefault() ?? "no name"; } }
 		public MyFolder Folder { get { return FileSystem.GetFolder(this); } }
 		public FileSystem FileSystem { get; private set; }
 		public string VirtualPath { get; private set; }

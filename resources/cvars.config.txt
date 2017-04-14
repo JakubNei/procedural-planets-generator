@@ -35,3 +35,4 @@ game / camera position 1 / save = false
 game / camera position 1 / load = false 
 game / camera position 2 / save = false 
 game / camera position 2 / load = false 
+planets / debug / get surface height = false 

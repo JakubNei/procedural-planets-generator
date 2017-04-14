@@ -29,8 +29,6 @@ namespace MyEngine
 		[ContractPublicPropertyName("Count")]
 		private int _size;
 		private int _version;
-		[NonSerialized]
-		private Object _syncRoot;
 
 		static readonly T[] _emptyArray = new T[0];
 

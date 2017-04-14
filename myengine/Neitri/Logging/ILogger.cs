@@ -7,7 +7,7 @@ namespace Neitri
 {
 	public interface ILog
 	{
-		void Log(LogEntry LogEntry);
+		void Log(LogEntry logEntry);
 	}
 
 
@@ -23,11 +23,12 @@ namespace Neitri
 			this.scopeName = scopeName;
 		}
 
-		public void Log(LogEntry LogEntry)
+		public void Log(LogEntry logEntry)
 		{
 			parent.Log(new LogEntry(
-				LogEntry.Type,
-				scopeName + " - " + LogEntry.Message
+				logEntry.Type,
+				scopeName + " - " + logEntry.Message,
+				logEntry.Caller
 			));
 		}
 
@@ -54,9 +55,7 @@ namespace Neitri
 
 	public class LogProfile : LogScope
 	{
-		string name;
 		Stopwatch time;
-		ILog Log;
 
 		public LogProfile(ILog parent, string scopeName) : base(parent, scopeName)
 		{
