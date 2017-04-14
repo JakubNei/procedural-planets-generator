@@ -30,9 +30,9 @@ namespace MyEngine
 		CVar DebugBounds => Debug.GetCVar("rendering / debug / draw mesh bouding boxes");
 		CVar ShadowsEnabled => Debug.GetCVar("rendering / shadows enabled");
 
-		CVar EnableCulling => Debug.GetCVar("rendering / enable culling", true);
-		CVar EnableRasterizerRasterization => Debug.GetCVar("rendering / enable rasterizer rasterization", true);
-		CVar EnableRasterizerCulling => Debug.GetCVar("rendering / enable rasterizer culling", true);
+		CVar EnableCulling => Debug.GetCVar("rendering / occlusion culling / enabled", true);
+		CVar EnableRasterizerRasterization => Debug.GetCVar("rendering / occlusion culling / enable rasterizer rasterization", true);
+		CVar EnableRasterizerCulling => Debug.GetCVar("rendering / occlusion culling / enable rasterizer culling", true);
 		CVar ShowRasterizerContents => Debug.GetCVar("rendering / debug / show rasterizer contents");
 		CVar SortRenderables => Debug.GetCVar("rendering / sort renderables", true);
 		CVar DoParallelize => Debug.GetCVar("rendering / parallelize render prepare", true);

@@ -87,7 +87,8 @@ namespace MyGame.PlanetaryBody
 			Renderer.chunk = this;
 			Renderer.Mesh = mesh;
 			Renderer.Offset += offsetCenter;
-			Renderer.Material = planetInfo.PlanetMaterial;
+			Renderer.Material = planetInfo.PlanetMaterial.CloneTyped();
+			Renderer.Material.Uniforms.Set("param_offsetFromPlanetCenter", Renderer.Offset.ToVector3());
 			Renderer.RenderingMode = MyRenderingMode.DontRender;
 		}
 

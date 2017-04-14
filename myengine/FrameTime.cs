@@ -69,7 +69,7 @@ namespace MyEngine
 		}
 		public override string ToString()
 		{
-			return $"current FPS {Fps.ToString("0.")}, average FPS over 1 second {FpsPer1Sec.ToString("0.")}, average FPS over 10 seconds {FpsPer10Sec.ToString("0.")}";
+			return $"current FPS: {Fps.ToString("0.")} | average FPS over 1 second {FpsPer1Sec.ToString("0.")} | average FPS over 10 seconds {FpsPer10Sec.ToString("0.")}";
 		}
 	}
 }

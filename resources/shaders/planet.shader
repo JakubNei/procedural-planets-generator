@@ -3,7 +3,13 @@
 [include shaders/include.planet.glsl]
 
 uniform sampler2D param_perlinNoise;
+uniform vec3 param_offsetFromPlanetCenter;
 
+
+
+
+// #define USE_NON_OPTIMIZED_TRIPLNAR
+#define NORMAL_MAPPING_DISTANCE 1000.0
 
 [VertexShader]
 
@@ -64,8 +70,9 @@ out data {
 	vec3 tangent;
 } o[];
 
-float closestPowerOf2(float a) {
+int closestPowerOf2(float a) {
 	//return pow(2, ceil(log(a)/log(2)));
+	//return 1;
 	if(a>64) return 64;
 	if(a>32) return 32;
 	if(a>16) return 16;
@@ -74,13 +81,13 @@ float closestPowerOf2(float a) {
 	if(a>2) return 2;
 	return 1;
 }
-float tessLevel(float d1, float d2) {		
+int tessLevel(float d1, float d2, float c) {		
 	float d=(d1+d2)/2;
 	//float r=clamp((1/d)*(keyIK*10), 1, 64);
 	//float r=clamp((1/d)*(100.0), 1, 64);
-	float r=clamp((1/d)*(100.0), 1, 64);
-	r=closestPowerOf2(r);
-	return r;		
+	//float r=clamp(100/d, 1, 64);
+	float r = clamp(c/d * 30, 1, 64);
+	return closestPowerOf2(r);
 }
 
 void main() {
@@ -99,9 +106,11 @@ void main() {
 	float d1=distance(i[1].worldPos,vec3(0));
 	float d2=distance(i[2].worldPos,vec3(0));	
 
-	gl_TessLevelOuter[0] = tessLevel(d1,d2);
-	gl_TessLevelOuter[1] = tessLevel(d0,d2);
-	gl_TessLevelOuter[2] = tessLevel(d0,d1);
+	float c = distance(i[0].worldPos, i[1].worldPos) + distance(i[1].worldPos, i[2].worldPos);
+
+	gl_TessLevelOuter[0] = tessLevel(d1,d2,c);
+	gl_TessLevelOuter[1] = tessLevel(d0,d2,c);
+	gl_TessLevelOuter[2] = tessLevel(d0,d1,c);
 	//gl_TessLevelOuter[3] = tess;
 
 	gl_TessLevelInner[0] = gl_TessLevelOuter[2];
@@ -148,18 +157,17 @@ vec3 interpolate3D(vec3 v0, vec3 v1, vec3 v2, vec3 v3) {
 	return mix(  mix(v0,v1,gl_TessCoord.x),  mix(v2,v3,gl_TessCoord.x),  gl_TessCoord.y);
 }
 
-float PerlinAt(float x, float y) {		
-	return texture2D(param_perlinNoise, vec2(x,y)).r;
-	//return perlinNoise(vec2(x,y));
-}
-float AdjustTerrainAt(float x, float y) {
-	int octaves=1;
+//float PerlinAt(vec2 uv) {		
+	//return texture2D(param_perlinNoise, uv).r;
+	//return perlinNoise(uv);
+//}
+float AdjustTerrainAt(vec3 pos) {
+	int octaves=3;
 	float frequency=1;
 	float height=0.5;
 	float result=-height/2;
-	const float safe = 10000;
 	for(int i=0; i<octaves; i++) {
-		result += PerlinAt(x*frequency, y*frequency) * height;
+		result += perlinNoise(pos*frequency) * height;
 		height /= 2;
 		frequency *= 2;
 	}
@@ -185,23 +193,18 @@ void main()
 	o.tangent	= interpolate3D(	i[0].tangent,	i[1].tangent,	i[2].tangent	); 
 
 
-	// APPLY TERRAIN MODIFIER
-	vec2 xz = o.uv.xy * float(param_radiusMin);
-	// vec2 xz = o.uv.xy * 1000000;		
-	float x = xz.x;
-	float y = xz.y;
 
-	o.normal = normalize(o.normal);
-	o.worldPos += o.normal * AdjustTerrainAt(x, y);
-	
-	//o.worldPos+=o.normal*adjustedHeight;
-	//>>>>//o.normal.y+=adjustedHeight*adjustedHeight;
-	//vec3 n=o.normal;
-	/*o.normal=mix(
-		vec3(n.x)*i[0].normal + vec3(n.y)*i[1].normal + vec3(n.z)*i[2].normal,
-		o.normal,
-		t
-	);*/
+	o.uv = calestialToSpherical(o.modelPos + param_offsetFromPlanetCenter).xy;
+
+	//o.normal = normalize(o.normal);
+
+	// APPLY TERRAIN MODIFIER
+	vec3 pos = o.modelPos + param_offsetFromPlanetCenter;
+	// make it uniform across different planet sizes
+	pos *= 200000 / float(param_radiusMin);
+	//uv = mod(uv * 10000000, 1);
+
+	o.worldPos += o.normal * AdjustTerrainAt(pos);
 
 	gl_Position = engine.projectionMatrix * engine.viewMatrix * vec4(o.worldPos,1);
 
@@ -234,8 +237,6 @@ layout(location = 1) out vec3 out_position;
 layout(location = 2) out vec3 out_normal;
 layout(location = 3) out vec4 out_data;
 
-
-#define USE_NON_OPTIMIZED_TRIPLNAR
 
 // TRIPLANAR TEXTURE PROJECTION
 vec3 triPlanar(sampler2D tex, vec3 position, vec3 normal, float scale) {
@@ -328,7 +329,7 @@ float getChannel(vec4 color, int channel)
 	return color.w;
 }
 
-#define NORMAL_MAPPING_DISTANCE 1000.0
+
 
 void getColor(out vec3 color, out vec3 normal) {
 
@@ -399,6 +400,8 @@ void main()
 	}
 
 	out_color = vec4(pow(color,vec3(engine.gammaCorrectionTextureRead)),1);
+	//out_color = vec4(color,1);
+
 	//out_normal = i.normal;
 	out_position = i.worldPos;
 	out_data = vec4(0);
@@ -410,6 +413,7 @@ void main()
 	//out_color = vec4(vec3(param_finalPosWeight,0,0),1);
 	//out_color = vec4(param_debugWeight,0,0,1);
 	//out_color = vec4(i.tangent,1);
+	//out_color = vec4(i.normal,1);
 }
 
 	

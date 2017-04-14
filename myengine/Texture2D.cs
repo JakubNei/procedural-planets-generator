@@ -1,4 +1,5 @@
-﻿using OpenTK;
+﻿using Neitri;
+using OpenTK;
 using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Collections.Generic;
@@ -11,6 +12,8 @@ namespace MyEngine
 {
 	public class Texture2D : Texture, IDisposable
 	{
+		ILog Log => Singletons.Log.Scope(nameof(Texture2D) + " " + file.VirtualPath);
+
 		public bool IsOnGpu { get; private set; }
 		public bool WantsToBeUploadedToGpu { get; private set; }
 		public bool KeepLocalCopyOfTexture { get; set; }

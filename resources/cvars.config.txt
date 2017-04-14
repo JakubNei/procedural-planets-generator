@@ -1,17 +1,20 @@
-﻿
-debug / show debug form = false = f1 
+﻿debug / show debug form = false = f1 
+game / camera position 1 / load = false 
+game / camera position 1 / save = false 
+game / camera position 2 / load = false 
+game / camera position 2 / save = false 
 game / move camera to planet surface on start = false 
 game / walk on planet = false = g 
 generation / calculate normals on GPU = true 
 generation / limit generation by fps = true 
-generation / move skirts on GPU = false 
+generation / move skirts on GPU = true 
 generation / planet segments pause subdivision and visibility updates = false 
 generation / print statistics report = false 
 generation / segment number of vertices on edge = 50 
 generation / segment stop recursion at world size = 100 
-generation / segment subdivide if size on screen is bigger than = 1 
+generation / segment subdivide if size on screen is bigger than = 0.3 
 generation / use skirts = true 
-rendering / automatically adjust target fps = true 
+planets / debug / get surface height = false 
 rendering / debug / draw gbuffer contents = false = f10 
 rendering / debug / draw lines = false = f11 
 rendering / debug / draw mesh bouding boxes = false = f7 
@@ -20,19 +23,15 @@ rendering / debug / pause render prepare = false = p
 rendering / debug / reload all shaders = false 
 rendering / debug / render white background = false 
 rendering / debug / show rasterizer contents = false = f8 
-rendering / enable culling = true 
 rendering / enable post process effects = false 
-rendering / enable rasterizer culling = true 
-rendering / enable rasterizer rasterization = true 
+rendering / fps / automatically adjust target fps = false 
+rendering / fps / fps throttling enabled = false 
+rendering / fps / target fps = 60 
 rendering / fullscreen = false 
+rendering / occlusion culling / enable rasterizer culling = true 
+rendering / occlusion culling / enable rasterizer rasterization = true 
+rendering / occlusion culling / enabled = true 
 rendering / parallelize render prepare = true 
 rendering / render only front of triangles = true 
 rendering / shadows enabled = false 
 rendering / sort renderables = true 
-rendering / target fps = 60 
-rendering / throttle fps = false 
-game / camera position 1 / save = false 
-game / camera position 1 / load = false 
-game / camera position 2 / save = false 
-game / camera position 2 / load = false 
-planets / debug / get surface height = false 

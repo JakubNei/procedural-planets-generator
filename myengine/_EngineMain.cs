@@ -70,7 +70,7 @@ namespace MyEngine
 		public bool ShouldContinueRunning => gameWindow.IsStoppingOrStopped == false && ExitRequested == false;
 
 		CVar PauseRenderPrepare => Debug.GetCVar("rendering / debug / pause render prepare");
-		CVar TargetFps => Debug.GetCVar("rendering / target fps", 60);
+		CVar TargetFps => Debug.GetCVar("rendering / fps / target fps", 60);
 
 		// to simulate OpenTk.GameWindow functionalty, see it's source https://github.com/mono/opentk/blob/master/Source/OpenTK/GameWindow.cs
 		private MyGameWindow gameWindow;
@@ -207,8 +207,6 @@ namespace MyEngine
 
 
 
-
-
 		void StartOtherThreads()
 		{
 			var t = new Thread(() =>
@@ -261,17 +259,6 @@ namespace MyEngine
 		}
 
 		FrameTime eventThreadTime = new FrameTime();
-
-		//void EventThreadMain()
-		//{
-		//	Debug.Tick("event");
-		//	eventThreadTime.Tick();
-
-		//	EventSystem.Raise(new MyEngine.Events.EventThreadUpdate(eventThreadTime));
-
-		//	Thread.Sleep(5);
-		//}
-
 		FrameTime renderThreadTime = new FrameTime();
 
 
@@ -355,22 +342,22 @@ namespace MyEngine
 
 			EventSystem.Raise(new MyEngine.Events.FrameEnded(renderThreadTime));
 
-			if (Debug.GetCVar("rendering / automatically adjust target fps", true))
+			if (Debug.GetCVar("rendering / fps / automatically adjust target fps", false))
 			{
 				if (renderThreadTime.FrameCounter > TargetFps.Number * 10 && renderThreadTime.FpsPer10Sec < TargetFps)
 				{
 					TargetFps.Number = (float)renderThreadTime.FpsPer1Sec;
-					Debug.AddValue("rendering / adjusted target fps", TargetFps.Number);
+					Debug.AddValue("rendering / fps / adjusted target fps", TargetFps.Number);
 				}
 			}
 
-			if (Debug.GetCVar("rendering / throttle fps", false))
+			if (Debug.GetCVar("rendering / fps / fps throttling enabled", false))
 			{
 				var targetFps = TargetFps * 1.2;
 				var secondsWeCanSleep = 1 / targetFps - renderThreadTime.CurrentFrameElapsedSeconds;
 				if (secondsWeCanSleep > 0)
 				{
-					Debug.AddValue("rendering / theoretical unthrottled fps", renderThreadTime.CurrentFrameElapsedTimeFps + " fps");
+					Debug.AddValue("rendering /fps / theoretical unthrottled fps", renderThreadTime.CurrentFrameElapsedTimeFps + " fps");
 					Thread.Sleep((1000 * secondsWeCanSleep).FloorToInt());
 				}
 			}

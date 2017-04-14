@@ -70,19 +70,19 @@ namespace MyGame.PlanetaryBody
 									var partsToSplitTo = (maxBudget / secondsNeeded).CeilToInt();
 									job.NextTask.TrySplitToParts((ushort)partsToSplitTo);
 
-									Log.Info(
-										"generation task exceeds budget limit " + Neitri.FormatUtils.SecondsToString(maxBudget) + " " +
-										"by " + Neitri.FormatUtils.SecondsToString(secondsNeeded - maxBudget) + ", " +
-										"splitting to " + partsToSplitTo + " parts: '" + job.NextTask.Name + "'"
-									);
+									//Log.Info(
+									//	"task '" + job.NextTask.Name + "' exceeds budget limit " + Neitri.FormatUtils.SecondsToString(maxBudget) + " " +
+									//	"by " + Neitri.FormatUtils.SecondsToString(secondsNeeded - maxBudget) + ", " +
+									//	"splitting to " + partsToSplitTo + " parts"
+									//);
 								}
 								else
 								{
-									Log.Warn(
-										"generation task (not splittable) exceeds budget limit " + Neitri.FormatUtils.SecondsToString(maxBudget) + " " +
-										"by " + Neitri.FormatUtils.SecondsToString(secondsNeeded - maxBudget) + ", " +
-										"will slow down next frame'"
-									);
+									//Log.Warn(
+									//	"task '" + job.NextTask.Name + "' exceeds budget limit " + Neitri.FormatUtils.SecondsToString(maxBudget) + " " +
+									//	"by " + Neitri.FormatUtils.SecondsToString(secondsNeeded - maxBudget) + ", " +
+									//	"will execute in and slow down next frame"
+									//);
 								}
 							}
 							break;
