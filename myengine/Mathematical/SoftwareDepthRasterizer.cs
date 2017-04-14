@@ -218,8 +218,8 @@ namespace MyEngine
 							if (depthBuffer[index] > maxz)
 							{
 								depthBuffer[index] = maxz;
-								if (maxz > totalMaxZ) totalMaxZ = maxz;
-								if (minz < totalMinZ) totalMinZ = minz;
+								//if (maxz > totalMaxZ) totalMaxZ = maxz;
+								//if (minz < totalMinZ) totalMinZ = minz;
 							}
 						}
 

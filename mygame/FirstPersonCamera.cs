@@ -35,9 +35,9 @@ namespace MyGame
 
 		Camera cam => Scene.MainCamera;
 		CVar WalkOnPlanet => Debug.GetCVar("game / walk on planet");
+		CVar MoveCameraToSurfaceOnStart => Debug.GetCVar("game / move camera to planet surface on start");
 
 		public ProceduralPlanets planets;
-		const bool moveCameraToSurfaceOnStart = false;
 
 
 		public override void OnAddedToEntity(Entity entity)
@@ -64,7 +64,7 @@ namespace MyGame
 
 			var planet = planets.GetClosestPlanet(Transform.Position);
 			Transform.LookAt(planet.Transform.Position);
-			if (moveCameraToSurfaceOnStart)
+			if (MoveCameraToSurfaceOnStart)
 				Transform.Position = new WorldPos((float)-planet.RadiusMin, 0, 0) + planet.Transform.Position;
 
 			Update(0.1f); // spool up
@@ -82,23 +82,23 @@ namespace MyGame
 			var position = Transform.Position;
 
 
-			if (Debug.GetCVar("game / save camera position 1").EatBoolIfTrue())
+			if (Debug.GetCVar("game / camera position 1 / save").EatBoolIfTrue())
 			{
 				savedPosition1 = position;
 				savedRotation1 = rotation;
 			}
-			if (Debug.GetCVar("game / load camera position 1").EatBoolIfTrue())
+			if (Debug.GetCVar("game / camera position 1 / load").EatBoolIfTrue())
 			{
 				position = Transform.Position = savedPosition1;
 				rotation = Transform.Rotation = savedRotation1;
 			}
 
-			if (Debug.GetCVar("game / save camera position 2").EatBoolIfTrue())
+			if (Debug.GetCVar("game / camera position 2 / save").EatBoolIfTrue())
 			{
 				savedPosition2 = position;
 				savedRotation2 = rotation;
 			}
-			if (Debug.GetCVar("game / load camera position 2").EatBoolIfTrue())
+			if (Debug.GetCVar("game / camera position 2 / load").EatBoolIfTrue())
 			{
 				position = Transform.Position = savedPosition2;
 				rotation = Transform.Rotation = savedRotation2;
@@ -155,10 +155,9 @@ namespace MyGame
 			{
 				Debug.AddValue("camera / distance to surface", onPlanetDistanceToSurface);
 				{
-					var s = MyMath.SmoothStep(1, 30000, (float)onPlanetDistanceToSurface);
-					//cam.NearClipPlane = 1000 * s + 0.5f;
-					//cam.FarClipPlane = 5000000 * s + 100000;
-					//cam.Recalculate();
+					 var s = MyMath.SmoothStep(1, 30000, (float)onPlanetDistanceToSurface);
+					cam.NearClipPlane = 1000 * s + 0.5f;
+					cam.FarClipPlane = 5000000 * s + 100000;
 				}
 			}
 

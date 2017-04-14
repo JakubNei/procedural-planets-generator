@@ -81,11 +81,11 @@ namespace MyEngine
 					var name = dataParts[0].Trim();
 					cvar = GetCVar(name);
 
-                    bool typedBoolValue;
-                    float typedFloatValue;
-                    OpenTK.Input.Key keyTyped;
+					bool typedBoolValue;
+					float typedFloatValue;
+					OpenTK.Input.Key keyTyped;
 
-                    var value = dataParts[1].Trim();
+					var value = dataParts[1].Trim();
 					if (value == "not set")
 					{
 

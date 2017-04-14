@@ -292,7 +292,7 @@ namespace MyEngine
 				Log.Error(e);
 			}
 
-			this.WindowTitle = defaultWindowTitle + " " + renderThreadTime;
+			this.WindowTitle = defaultWindowTitle + " - " + renderThreadTime;
 			Debug.Tick("rendering / main render");
 
 			// if window is not focused we dont want to have our character and camera responding to keyboard and mouse inputs

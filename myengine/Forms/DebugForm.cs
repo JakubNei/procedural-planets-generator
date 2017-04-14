@@ -61,17 +61,17 @@ namespace MyEngine
 				cvarValuesWatcher.OnAdded += (key, item) =>
 				{
 					items.Add(new ListViewItem(new string[] {
-								item.ToogleKey.ToString(),
 								item.Name,
 								item.ValueAsTring,
+								item.ToogleKey == OpenTK.Input.Key.Unknown ? "" : item.ToogleKey.ToString(),
 							})
 					{ Tag = item });
 				};
 				cvarValuesWatcher.OnUpdated += (key, item) =>
 				{
 					var subItems = items.OfType<ListViewItem>().First(i => i.Tag == item).SubItems;
-					subItems[0].Text = item.ToogleKey.ToString();
-					subItems[2].Text = item.ValueAsTring;
+					subItems[1].Text = item.ValueAsTring;
+					subItems[2].Text = item.ToogleKey == OpenTK.Input.Key.Unknown ? "" : item.ToogleKey.ToString();
 				};
 				cvarValuesWatcher.OnRemoved += (key, item) => items.Remove(items.OfType<ListViewItem>().First(i => i.Tag == item));
 			}

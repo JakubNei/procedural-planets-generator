@@ -447,9 +447,6 @@ namespace MyEngine
 				if (rasterizer != null && EnableRasterizerCulling)
 				{
 
-					var closest = new ThreadLocal<float>(() => float.MaxValue, true);
-					var furthest = new ThreadLocal<float>(() => float.MinValue, true);
-
 					int passedRasterizationCullingIndex = 0;
 					Action<IRenderable> work = renderable =>
 					{
@@ -465,9 +462,6 @@ namespace MyEngine
 							var bounds = renderable.GetCameraSpaceBounds(cameraData);
 							if (rasterizer.AreBoundsVisible(bounds))
 							{
-								if (bounds.depthClosest < closest.Value) closest.Value = bounds.depthClosest;
-								if (bounds.depthFurthest > furthest.Value) furthest.Value = bounds.depthFurthest;
-
 								renderable.SetCameraRenderStatusFeedback(camera, RenderStatus.RenderedAndVisible);
 								var newIndex = Interlocked.Increment(ref passedRasterizationCullingIndex) - 1;
 								passedRasterizationCulling[newIndex] = renderable;
@@ -495,19 +489,16 @@ namespace MyEngine
 						}
 					}
 
-					var range = cameraData.FarClipPlane - cameraData.NearClipPlane;
+					//var range = cameraData.FarClipPlane - cameraData.NearClipPlane;
 
-					//SuggestedCameraZNear = cameraData.NearClipPlane + closest.Values.DefaultIfEmpty(0).Min().Max(0) * range;
-					//SuggestedCameraZFar = cameraData.NearClipPlane + furthest.Values.DefaultIfEmpty(1).Max().Min(1) * range;
+					//SuggestedCameraZNear = cameraData.NearClipPlane + rasterizer.totalMinZ.Clamp(0, 1) * range;
+					//SuggestedCameraZFar = cameraData.NearClipPlane + rasterizer.totalMaxZ.Clamp(0, 1) * range;
 
-					SuggestedCameraZNear = cameraData.NearClipPlane + rasterizer.totalMinZ.Clamp(0, 1) * range;
-					SuggestedCameraZFar = cameraData.NearClipPlane + rasterizer.totalMaxZ.Clamp(0, 1) * range;
+					//if (SuggestedCameraZNear + 1 > SuggestedCameraZFar) SuggestedCameraZFar = SuggestedCameraZNear + 1;
 
-					if (SuggestedCameraZNear + 1 > SuggestedCameraZFar) SuggestedCameraZFar = SuggestedCameraZNear + 1;
-
-					cameraData.NearClipPlane = SuggestedCameraZNear * 0.5f;
-					cameraData.FarClipPlane = SuggestedCameraZFar;
-					cameraData.RecalculateProjectionMatrix();
+					//cameraData.NearClipPlane = SuggestedCameraZNear * 0.5f;
+					//cameraData.FarClipPlane = SuggestedCameraZFar;
+					//cameraData.RecalculateProjectionMatrix();
 
 
 					Debug.AddValue("rendering / meshes / passed rasterization culling", passedRasterizationCullingIndex);

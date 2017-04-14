@@ -32,7 +32,7 @@ namespace MyEngine
 			if ((now - frameTimes10sec.Peek()).TotalSeconds < 9) FpsPer10Sec = 60;
 			else FpsPer10Sec = frameTimes10sec.Count / 10.0f;
 
-			debug.AddValue(name, $"FPS:{FpsPer1Sec.ToString("0.")}, average FPS over 10s:{FpsPer10Sec.ToString("0.")}");
+			debug.AddValue(name, $"average FPS over 1 second {FpsPer1Sec.ToString("0.")}, average FPS over 10 seconds {FpsPer10Sec.ToString("0.")}");
 		}
 	}
 

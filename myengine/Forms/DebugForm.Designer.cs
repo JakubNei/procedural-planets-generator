@@ -59,18 +59,18 @@ namespace MyEngine
 			// 
 			// columnHeader1
 			// 
-			columnHeader1.Text = "Key";
-			columnHeader1.Width = 71;
+			columnHeader1.Text = "Name";
+			columnHeader1.Width = 390;
 			// 
 			// columnHeader2
 			// 
-			columnHeader2.Text = "Name";
-			columnHeader2.Width = 318;
+			columnHeader2.Text = "Value";
+			columnHeader2.Width = 41;
 			// 
 			// columnHeader3
 			// 
-			columnHeader3.Text = "Value";
-			columnHeader3.Width = 91;
+			columnHeader3.Text = "Key";
+			columnHeader3.Width = 31;
 			// 
 			// listView1
 			// 
