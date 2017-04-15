@@ -27,7 +27,7 @@ namespace MyEngine
 			this.RealPath = realPath;
 		}
 
-		public Stream GetDataStream(int numOfRetries = 5)
+		public Stream OpenReadWrite(int numOfRetries = 5)
 		{
 			while (numOfRetries >= 0)
 			{
@@ -51,7 +51,7 @@ namespace MyEngine
 			{
 				try
 				{
-					using (var sr = new StreamReader(GetDataStream(numOfRetries), Encoding.Default))
+					using (var sr = new StreamReader(OpenReadWrite(numOfRetries), Encoding.Default))
 						return sr.ReadToEnd();
 				}
 				catch (Exception e)

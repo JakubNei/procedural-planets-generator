@@ -49,6 +49,17 @@ namespace MyGame.PlanetaryBody
 		/// </summary>
 		public int CIndex => BIndex + (ChunkNumberOfVerticesOnEdge - 1);
 
+
+		public int AIndexWithSkirts => AIndex + 4;
+		public int BIndexWithSkirts => BIndex - (ChunkNumberOfVerticesOnEdge - 1) + 1;
+		public int CIndexWithSkirts => BIndexWithSkirts + ((ChunkNumberOfVerticesOnEdge - 3) - 1);
+
+
+		public int AIndexReal => useSkirts ? AIndexWithSkirts : AIndex;
+		public int BIndexReal => useSkirts ? BIndexWithSkirts : BIndex;
+		public int CIndexReal => useSkirts ? CIndexWithSkirts : CIndex;
+
+
 		List<int> indiciesList;
 
 		public List<int> GetIndiciesList()

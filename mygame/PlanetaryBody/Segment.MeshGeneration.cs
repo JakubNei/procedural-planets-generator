@@ -17,8 +17,8 @@ namespace MyGame.PlanetaryBody
 	{
 
 		static ulong numberOfChunksGenerated = 0;
-		public bool GenerationBegan { get; private set; } = false;
-		public bool IsGenerationDone { get; private set; } = false;
+		public bool GenerationBegan { get; set; } = false;
+		public bool IsGenerationDone { get; set; } = false;
 
 		public void CreateRendererAndBasicMesh()
 		{

@@ -132,11 +132,22 @@ namespace MyEngine
 		public float totalMaxZ;
 		public float totalMinZ;
 
+		/// <summary>
+		/// input vector are in screen space cooridnates, -1 .. 1
+		/// </summary>
+		/// <param name="v1"></param>
+		/// <param name="v2"></param>
+		/// <param name="v3"></param>
 		// based on half-space function approach
 		public void AddTriangle(ref Vector3 v1, ref Vector3 v2, ref Vector3 v3)
 		{
 			using (var time = addTriangleStats.Start())
 			{
+				float maxz = max(v1.Z, v2.Z, v3.Z);
+				if (maxz < -1) return;
+
+				float minz = min(v1.Z, v2.Z, v3.Z);
+				if (minz > 1) return;
 
 				// 28.4 fixed-point coordinates
 				int Y1 = RoundToInt(16.0f * PrepareY(v1.Y));
@@ -166,29 +177,25 @@ namespace MyEngine
 				int FDY31 = DY31 << 4;
 
 				// Bounding rectangle
+
 				int minx = (min(X1, X2, X3) + 0xF) >> 4;
 				int maxx = (max(X1, X2, X3) + 0xF) >> 4;
+
+				if (minx < 0 && maxx < 0) return;
+				if (minx > width && maxx > width) return;
+				if (minx < 0) minx = 0;
+				if (maxx >= widthMinusOne) maxx = widthMinusOne;
+
 				int miny = (min(Y1, Y2, Y3) + 0xF) >> 4;
 				int maxy = (max(Y1, Y2, Y3) + 0xF) >> 4;
 
-
-
-				if (minx < 0 && maxx < 0) return;
 				if (miny < 0 && maxy < 0) return;
-				if (minx > width && maxx > width) return;
 				if (miny > height && maxy > height) return;
-
-				if (minx < 0) minx = 0;
-				if (maxx >= widthMinusOne) maxx = widthMinusOne;
 				if (miny < 0) miny = 0;
 				if (maxy >= heightMinusOne) maxy = heightMinusOne;
 
 
-
-				float maxz = max(v1.Z, v2.Z, v3.Z);
-				float minz = min(v1.Z, v2.Z, v3.Z);
 				int depthIndex = miny * width;
-
 
 				// Half-edge ants
 				int C1 = DY12 * X1 - DX12 * Y1;
@@ -248,24 +255,24 @@ namespace MyEngine
 		{
 			using (var time = areBoundsVisibleStats.Start())
 			{
+				if (bounds.depthClosest > 1) return false;
+				if (bounds.depthFurthest < -1) return false;
 
 				int minx = RoundToInt(PrepareX(bounds.minX));
 				int maxx = RoundToInt(PrepareX(bounds.maxX));
 
+				if (minx < 0 && maxx < 0) return false;
+				if (minx > width && maxx > width) return false;
+				if (minx < 0) minx = 0;
+				if (maxx >= widthMinusOne) maxx = widthMinusOne;
+
 				int miny = RoundToInt(PrepareY(bounds.minY));
 				int maxy = RoundToInt(PrepareY(bounds.maxY));
 
-
-				if (minx < 0 && maxx < 0) return false;
 				if (miny < 0 && maxy < 0) return false;
-				if (minx > width && maxx > width) return false;
 				if (miny > height && maxy > height) return false;
-
-				if (minx < 0) minx = 0;
-				if (maxx >= widthMinusOne) maxx = widthMinusOne;
 				if (miny < 0) miny = 0;
 				if (maxy >= heightMinusOne) maxy = heightMinusOne;
-
 
 
 				int depthIndex = miny * width;
@@ -310,8 +317,8 @@ namespace MyEngine
 		{
 			if (viewer?.Visible == true)
 			{
-				var min = totalMinZ;// depthBuffer.Where(d => d != float.MaxValue).DefaultIfEmpty(0).Min();
-				var max = totalMaxZ;// depthBuffer.Where(d => d != float.MaxValue).DefaultIfEmpty(1).Max();
+				var min = depthBuffer.Where(d => d != 1).DefaultIfEmpty(0).Min();
+				var max = depthBuffer.Where(d => d != 1).DefaultIfEmpty(1).Max();
 				viewer.SetData(width, height, (x, y) =>
 				{
 					var d = depthBuffer[(heightMinusOne - y) * width + x];

@@ -303,8 +303,8 @@ namespace MyEngine
 				Factory.ReloadAllShaders();
 
 			ubo.engine.totalElapsedSecondsSinceEngineStart = (float)stopwatchSinceStart.Elapsed.TotalSeconds;
-			ubo.engine.gammaCorrectionTextureRead = 2.2f;
-			ubo.engine.gammaCorrectionFinalColor = 1 / 2.2f;
+			ubo.engine.gammaCorrectionTextureRead = Debug.GetCVar("rendering / gamma correction", 2.2f);
+			ubo.engine.gammaCorrectionFinalColor = 1 / ubo.engine.gammaCorrectionTextureRead;
 
 			//GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit); My.Check();
 			EventSystem.Raise(new MyEngine.Events.PreRenderUpdate(renderThreadTime));

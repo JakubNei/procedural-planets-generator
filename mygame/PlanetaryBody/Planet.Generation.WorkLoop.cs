@@ -30,9 +30,11 @@ namespace MyGame.PlanetaryBody
 
 		JobTemplate<Segment> jobTemplate;
 
+		bool useSkirts;
+
 		void InitializeJobTemplate()
 		{
-			bool useSkirts = Debug.GetCVar("generation / use skirts", true);
+			useSkirts = Debug.GetCVar("generation / use skirts", true);
 			bool moveSkirtsOnGPU = Debug.GetCVar("generation / move skirts on GPU", false);
 			bool calculateNormalsOnGPU = Debug.GetCVar("generation / calculate normals on GPU", true);
 

@@ -62,7 +62,7 @@ namespace MyEngine
 
 			public Mesh Parse()
 			{
-				using (StreamReader textReader = new StreamReader(file.GetDataStream()))
+				using (StreamReader textReader = new StreamReader(file.OpenReadWrite()))
 				{
 					int i1, i2, i3, i4;
 

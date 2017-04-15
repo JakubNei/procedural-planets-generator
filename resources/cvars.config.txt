@@ -7,6 +7,7 @@ game / move camera to planet surface on start = false
 game / walk on planet = false = g 
 generation / calculate normals on GPU = true 
 generation / limit generation by fps = true 
+generation / move skirts on GPU = false 
 generation / planet segments pause subdivision and visibility updates = false 
 generation / print statistics report = false 
 generation / segment number of vertices on edge = 50 
@@ -27,6 +28,7 @@ rendering / fps / automatically adjust target fps = false
 rendering / fps / fps throttling enabled = false 
 rendering / fps / target fps = 60 
 rendering / fullscreen = false 
+rendering / gamma correction = 2.2 
 rendering / occlusion culling / enable rasterizer culling = true 
 rendering / occlusion culling / enable rasterizer rasterization = true 
 rendering / occlusion culling / enabled = true 

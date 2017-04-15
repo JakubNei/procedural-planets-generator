@@ -214,16 +214,16 @@ namespace MyGame.PlanetaryBody
 		{
 			if (occluderTringles.Count != 0) return;
 
-			var a = Renderer.Mesh.Vertices[planetInfo.AIndex];
-			var b = Renderer.Mesh.Vertices[planetInfo.BIndex];
-			var c = Renderer.Mesh.Vertices[planetInfo.CIndex];
+			var a = Renderer.Mesh.Vertices[planetInfo.AIndexReal];
+			var b = Renderer.Mesh.Vertices[planetInfo.BIndexReal];
+			var c = Renderer.Mesh.Vertices[planetInfo.CIndexReal];
 
 			var o = Renderer.Offset.ToVector3d();
 			realVisibleRange.a = a.ToVector3d() + o;
 			realVisibleRange.b = b.ToVector3d() + o;
 			realVisibleRange.c = c.ToVector3d() + o;
 
-			rangeToCalculateScreenSizeOn = NoElevationRange;
+			rangeToCalculateScreenSizeOn = realVisibleRange;
 
 			var z = a.Distance(b) / 5000.0f * -realVisibleRange.Normal.ToVector3();
 

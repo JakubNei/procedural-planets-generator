@@ -127,7 +127,7 @@ namespace MyEngine
 		{
 			for (int i = 0; i < 6; i++)
 			{
-				using (var s = files[i].GetDataStream())
+				using (var s = files[i].OpenReadWrite())
 					bmps[i] = new Bitmap(s);
 			}
 		}
@@ -170,7 +170,7 @@ namespace MyEngine
 				var bmp = bmps[i];
 				if (bmp == null)
 				{
-					s = files[i].GetDataStream();
+					s = files[i].OpenReadWrite();
 					bmp = new Bitmap(s);
 				}
 				lock (bmp)

@@ -107,7 +107,7 @@ namespace MyEngine
 
 		void LoadLocalCopy()
 		{
-			using (var s = file.GetDataStream())
+			using (var s = file.OpenReadWrite())
 				bmp = new Bitmap(s);
 		}
 
@@ -125,7 +125,7 @@ namespace MyEngine
 
 			if (bmp == null)
 			{
-				stream = file.GetDataStream();
+				stream = file.OpenReadWrite();
 				bmp = new Bitmap(stream);
 				this.Width = bmp.Width;
 				this.Height = bmp.Height;

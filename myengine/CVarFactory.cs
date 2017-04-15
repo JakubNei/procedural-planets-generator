@@ -28,18 +28,30 @@ namespace MyEngine
 		List<LineHolder> lines = new List<LineHolder>();
 
 
-		Func<Stream> configFileFactory;
-		public CVarFactory(Func<Stream> configFileFactory, ILog log)
+		MyFile file;
+		DateTime fileLastSaved = DateTime.MinValue;
+		public CVarFactory(MyFile file, ILog log)
 		{
+
 			this.Log = log;
-			this.configFileFactory = configFileFactory;
+			this.file = file;
 			TryReadConfig();
 			doSaveNewCvars = true;
+
+			file.OnFileChanged(() =>
+			{
+				// make sure our save does not trigger file changed event and reload
+				if (fileLastSaved.IsOver(seconds: 2).InPastComparedTo(DateTime.Now))
+				{
+					TryReadConfig();
+				}
+			});
+
 		}
 
 		void TryReadConfig()
 		{
-			var configFile = configFileFactory();
+			var configFile = file.OpenReadWrite();
 			if (!configFile.CanRead)
 			{
 				Log.Fatal("can not read config file");
@@ -52,6 +64,7 @@ namespace MyEngine
 			reader.Close();
 
 			var textLines = allText.Split(new char[] { '\r' });
+			lines.Clear();
 
 			int lineNumber = 0;
 			foreach (var _line in textLines)
@@ -132,7 +145,9 @@ namespace MyEngine
 
 		private void SaveData()
 		{
-			var configFile = configFileFactory();
+			fileLastSaved = DateTime.Now;
+
+			var configFile = file.OpenReadWrite();
 			if (!configFile.CanSeek)
 			{
 				Log.Fatal("can not seek config file");

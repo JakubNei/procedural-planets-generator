@@ -23,7 +23,7 @@ namespace MyEngine
 
 		void Prepend(MyFile name)
 		{
-			using (var fs = new System.IO.StreamReader(name.GetDataStream()))
+			using (var fs = new System.IO.StreamReader(name.OpenReadWrite()))
 				prependSource += fs.ReadToEnd();
 		}
 

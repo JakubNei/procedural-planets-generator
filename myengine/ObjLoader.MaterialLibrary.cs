@@ -21,7 +21,7 @@ namespace MyEngine
 
 			public MaterialLibrary(MyFile file)
 			{
-				using (var s = file.GetDataStream())
+				using (var s = file.OpenReadWrite())
 				using (StreamReader textReader = new StreamReader(s))
 				{
 					MaterialPBR lastMat = new MaterialPBR();

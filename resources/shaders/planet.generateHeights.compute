@@ -22,8 +22,8 @@ float GetHeightAt(vec3 initialPos)
 		vec3 pos = initialPos;
 		int octaves = 8;
 		float freq = 400;
-		float ampModifier = 0.1;
-		float freqModifier = 10;
+		float ampModifier = 0.15;
+		float freqModifier = 5;
 		float amp = 1;
 		pos *= freq;
 		for (int i = 0; i < octaves; i++)
@@ -34,17 +34,20 @@ float GetHeightAt(vec3 initialPos)
 		}
 	}
 	
-
+	/*
 	{ // hill tops
 		float p = perlinNoise(initialPos * 10);
 		if(p > 0) result -= p * 2;
 	}
-	
+	*/
+
+	/*
 	{ // craters
 
-		/*vec2 w = worleyNoise(initialPos*3, 1, false);
-		result += smoothstep(0.0, 0.4, w.x) * 10;*/
+		vec2 w = worleyNoise(initialPos*10, 1, false);
+		result += smoothstep(0.0, 0.4, w.x) * 100;
 	}
+	*/
 
 	return result;
 
