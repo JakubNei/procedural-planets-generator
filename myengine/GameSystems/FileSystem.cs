@@ -69,7 +69,7 @@ namespace MyEngine
 			if (GlobSearch.IsNeeded(virtualPath))
 			{
 				var fileInfo = GlobSearch.FindFile(realPath);
-				file = new MyFile(this, fileInfo.FullName.RemoveFromBegin(rootResourceDirectoryInfo.FullName.Length + 1), fileInfo.FullName);
+				file = new MyFile(this, fileInfo.FullName.RemoveFromBegin(rootResourceDirectoryInfo.FullName.Length), fileInfo.FullName);
 				return true;
 			}
 			else

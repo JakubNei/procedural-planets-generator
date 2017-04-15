@@ -101,7 +101,7 @@ namespace MyGame
 			// 6371000 earth radius
 			var cfg = new PlanetaryBody.Config();
 			cfg.chunkNumberOfVerticesOnEdge = Debug.GetCVar("generation / segment number of vertices on edge", 50);
-			cfg.sizeOnScreenNeededToSubdivide = Debug.GetCVar("generation / segment subdivide if size on screen is bigger than", 0.3f);
+			cfg.weightNeededToSubdivide = Debug.GetCVar("generation / segment subdivide if weight is bigger than", 0.2f);
 			cfg.stopSegmentRecursionAtWorldSize = Debug.GetCVar("generation / segment stop recursion at world size", 100);
 
 			cfg.radiusMin = 1000000;
@@ -120,9 +120,8 @@ namespace MyGame
 
 
 			var planet = AddPlanet();
-			planet.Initialize(cfg);
-			planet.Transform.Position = new WorldPos(planet.RadiusMin * 3, 0, 0);
 
+			planet.Transform.Position = new WorldPos(cfg.radiusMin * 3, 0, 0);
 			var planetShader = Factory.GetShader("shaders/planet.shader");
 			var planetMaterial = new Material();
 			planetMaterial.GBufferShader = planetShader;
@@ -130,7 +129,7 @@ namespace MyGame
 			planetMaterial.Uniforms.Set("param_baseHeightMap", cfg.baseHeightMap);
 			planet.PlanetMaterial = planetMaterial;
 
-			planet.Initialize();
+			planet.Initialize(cfg);
 		}
 
 		public PlanetaryBody.Planet GetClosestPlanet(WorldPos pos)

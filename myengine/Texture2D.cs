@@ -12,7 +12,7 @@ namespace MyEngine
 {
 	public class Texture2D : Texture, IDisposable
 	{
-		ILog Log => Singletons.Log.Scope(nameof(Texture2D) + " " + file.VirtualPath);
+		ILog Log => Singletons.Log.Scope(typeof(Texture2D) + " " + file.VirtualPath);
 
 		public bool IsOnGpu { get; private set; }
 		public bool WantsToBeUploadedToGpu { get; private set; }
@@ -113,6 +113,8 @@ namespace MyEngine
 
 		void UploadToGpu()
 		{
+			Log.Info("uploading to GPU - start");
+
 			if (textureHandle == -1)
 			{
 				textureHandle = GL.GenTexture(); MyGL.Check();
@@ -180,6 +182,8 @@ namespace MyEngine
 
 
 			UpdateIsOnGpu();
+
+			Log.Info("uploading to GPU - end");
 		}
 
 

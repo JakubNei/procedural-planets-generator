@@ -55,6 +55,7 @@
     <Compile Include="FirstPersonCamera.cs" />
     <Compile Include="GameTimeController.cs" />
     <Compile Include="MoveWithArrowKeys.cs" />
+    <Compile Include="PlanetaryBody\Planet.Generation.WorkLoop.cs" />
     <Compile Include="PlanetaryBody\Segment.MeshGeneration.cs" />
     <Compile Include="PlanetaryBody\Config.cs" />
     <Compile Include="PlanetaryBody\IJob.cs" />
@@ -81,6 +82,7 @@
     <None Include="OpenTK.dll.config" />
     <None Include="packages.config" />
     <Compile Include="PlanetaryBody\Planet.ChunkHelpers.cs" />
+    <Compile Include="PlanetaryBody\Planet.Generation.PrepareLoop.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

@@ -202,7 +202,10 @@ namespace MyGame.PlanetaryBody
 				isVisible = Renderer.GetCameraRenderStatusFeedback(cam).HasFlag(RenderStatus.Rendered);
 			}
 
-			var weight = GetSizeOnScreen(cam); // * (1 + MyMath.Clamp01(dotToCamera));
+			var weight = GetSizeOnScreen(cam);
+
+			weight *= (1 + MyMath.Clamp01(dotToCamera));
+
 			if (isVisible == false) weight *= 0.3f;
 			return weight;
 		}
@@ -220,7 +223,7 @@ namespace MyGame.PlanetaryBody
 			realVisibleRange.b = b.ToVector3d() + o;
 			realVisibleRange.c = c.ToVector3d() + o;
 
-			rangeToCalculateScreenSizeOn = realVisibleRange;
+			rangeToCalculateScreenSizeOn = NoElevationRange;
 
 			var z = a.Distance(b) / 5000.0f * -realVisibleRange.Normal.ToVector3();
 
@@ -251,7 +254,7 @@ namespace MyGame.PlanetaryBody
 			child.rangeToCalculateScreenSizeOn = range;
 		}
 
-		public void CreateChildren()
+		public void EnsureChildrenAreCreated()
 		{
 			if (Children.Count <= 0)
 			{
@@ -273,16 +276,46 @@ namespace MyGame.PlanetaryBody
 			}
 		}
 
-		public void DeleteChildren()
+
+		bool lastVisible = false;
+		public void SetVisible(bool visible) // TODO: DestroyRenderer if visible == false for over CVar 60 seconds ?
+		{
+			if (Renderer != null)
+			{
+				if (visible == lastVisible) return;
+				lastVisible = visible;
+			}
+
+			if (visible)
+			{
+				Renderer?.SetRenderingMode(MyRenderingMode.RenderGeometryAndCastShadows);
+				if (Children.Count > 0)
+				{
+					foreach (var child in Children)
+					{
+						child.SetVisible(false);
+					}
+				}
+			}
+			else
+			{
+				Renderer?.SetRenderingMode(MyRenderingMode.DontRender);
+			}
+		}
+
+		public bool ShouldBeVisible { get; set; }
+
+		public void ShouldChildrenBeVisible(bool shouldBeVisible)
 		{
 			if (Children.Count > 0)
 			{
 				foreach (var child in Children)
 				{
-					child.DeleteChildren();
-					child.DestroyRenderer();
+					child.ShouldBeVisible = shouldBeVisible;
+					child.ShouldChildrenBeVisible(shouldBeVisible);
+					//child.DestroyRenderer();
 				}
-				Children.Clear();
+				//Children.Clear();
 			}
 		}
 

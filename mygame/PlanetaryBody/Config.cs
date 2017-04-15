@@ -12,7 +12,7 @@ namespace MyGame.PlanetaryBody
 	{
 
 		public int chunkNumberOfVerticesOnEdge = 50;
-		public float sizeOnScreenNeededToSubdivide = 0.3f;
+		public float weightNeededToSubdivide = 0.3f;
 		public int stopSegmentRecursionAtWorldSize = 100;
 
 		public double radiusMin;
