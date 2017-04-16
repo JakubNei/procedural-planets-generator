@@ -1,13 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26020.0
+VisualStudioVersion = 15.0.26403.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyEngine", "MyEngine\MyEngine.csproj", "{F11ACCAD-6E5F-464A-B496-33EF0C6B10F4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyGame", "MyGame\MyGame.csproj", "{4391747C-59FA-429F-AAE9-42D9C80AFBE7}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ProceduralMath", "ProceduralMath\ProceduralMath.vcxproj", "{9CA20FC2-2340-4D23-9245-FF8264789C98}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PreparePlanetData", "PreparePlanetData\PreparePlanetData.csproj", "{6264CF2A-08F0-4BD3-9508-BD1E3E8FD8C9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -74,6 +76,26 @@ Global
 		{9CA20FC2-2340-4D23-9245-FF8264789C98}.Release|x64.ActiveCfg = Release|x64
 		{9CA20FC2-2340-4D23-9245-FF8264789C98}.Release|x64.Build.0 = Release|x64
 		{9CA20FC2-2340-4D23-9245-FF8264789C98}.Release|x86.ActiveCfg = Release|x64
+		{6264CF2A-08F0-4BD3-9508-BD1E3E8FD8C9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6264CF2A-08F0-4BD3-9508-BD1E3E8FD8C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6264CF2A-08F0-4BD3-9508-BD1E3E8FD8C9}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{6264CF2A-08F0-4BD3-9508-BD1E3E8FD8C9}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{6264CF2A-08F0-4BD3-9508-BD1E3E8FD8C9}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{6264CF2A-08F0-4BD3-9508-BD1E3E8FD8C9}.Debug|Win32.Build.0 = Debug|Any CPU
+		{6264CF2A-08F0-4BD3-9508-BD1E3E8FD8C9}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{6264CF2A-08F0-4BD3-9508-BD1E3E8FD8C9}.Debug|x64.Build.0 = Debug|Any CPU
+		{6264CF2A-08F0-4BD3-9508-BD1E3E8FD8C9}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{6264CF2A-08F0-4BD3-9508-BD1E3E8FD8C9}.Debug|x86.Build.0 = Debug|Any CPU
+		{6264CF2A-08F0-4BD3-9508-BD1E3E8FD8C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6264CF2A-08F0-4BD3-9508-BD1E3E8FD8C9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6264CF2A-08F0-4BD3-9508-BD1E3E8FD8C9}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{6264CF2A-08F0-4BD3-9508-BD1E3E8FD8C9}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{6264CF2A-08F0-4BD3-9508-BD1E3E8FD8C9}.Release|Win32.ActiveCfg = Release|Any CPU
+		{6264CF2A-08F0-4BD3-9508-BD1E3E8FD8C9}.Release|Win32.Build.0 = Release|Any CPU
+		{6264CF2A-08F0-4BD3-9508-BD1E3E8FD8C9}.Release|x64.ActiveCfg = Release|Any CPU
+		{6264CF2A-08F0-4BD3-9508-BD1E3E8FD8C9}.Release|x64.Build.0 = Release|Any CPU
+		{6264CF2A-08F0-4BD3-9508-BD1E3E8FD8C9}.Release|x86.ActiveCfg = Release|Any CPU
+		{6264CF2A-08F0-4BD3-9508-BD1E3E8FD8C9}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

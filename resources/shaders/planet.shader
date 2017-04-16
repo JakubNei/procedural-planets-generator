@@ -186,7 +186,7 @@ void main()
 	o.worldPos	= interpolate3D(	i[0].worldPos,	i[1].worldPos,	i[2].worldPos	); 
 	o.modelPos	= interpolate3D(	i[0].modelPos,	i[1].modelPos,	i[2].modelPos	); 
 	o.normal	= interpolate3D(	i[0].normal,	i[1].normal,	i[2].normal		); 
-	//o.uv		= interpolate2D(	i[0].uv,		i[1].uv,		i[2].uv			); 
+	o.uv		= interpolate2D(	i[0].uv,		i[1].uv,		i[2].uv			); 
 	o.tangent	= interpolate3D(	i[0].tangent,	i[1].tangent,	i[2].tangent	); 
 
 	//o.uv = calestialToSpherical(o.modelPos + param_offsetFromPlanetCenter).xy;
@@ -403,7 +403,7 @@ void main()
 	//DEBUG
 	//out_color = vec4(vec3(defaultNormalWeight,0,0),1);
 	//out_color = vec4(i.uv,0,1);
-	//out_color = vec4(texture2D(param_baseHeightMap, i.uv).xyz, 1);
+	//out_color = vec4(vec3(texture2D(param_biomesSplatMap0, i.uv).x), 1);
 	//out_color = vec4(vec3(param_finalPosWeight,0,0),1);
 	//out_color = vec4(param_debugWeight,0,0,1);
 	//out_color = vec4(i.tangent,1);

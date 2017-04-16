@@ -1,7 +1,0 @@
-texture:'biomes_splat_map_channels0.png'  channel:0  originalColor:'x:1,y:1,z:1'  id:0
-texture:'biomes_splat_map_channels0.png'  channel:1  originalColor:'x:0,y:0,z:1'  id:1
-texture:'biomes_splat_map_channels0.png'  channel:2  originalColor:'x:0.2509804,y:0.5019608,z:0.2509804'  id:2
-texture:'biomes_splat_map_channels0.png'  channel:3  originalColor:'x:0.5019608,y:0.5019608,z:0.5019608'  id:3
-texture:'biomes_splat_map_channels1.png'  channel:0  originalColor:'x:0.8784314,y:0.8784314,z:0.5019608'  id:4
-texture:'biomes_splat_map_channels1.png'  channel:1  originalColor:'x:0,y:0.5019608,z:0'  id:5
-texture:'biomes_splat_map_channels1.png'  channel:2  originalColor:'x:1,y:1,z:0'  id:6

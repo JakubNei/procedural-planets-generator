@@ -12,10 +12,11 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using MyGame.PlanetaryBody;
 
 namespace MyGame
 {
-	public class ProceduralPlanets
+	public class ProceduralPlanets : SingletonsPropertyAccesor
 	{
 		public List<PlanetaryBody.Planet> planets = new List<PlanetaryBody.Planet>();
 		SceneSystem scene;
@@ -58,8 +59,20 @@ namespace MyGame
 			return planet;
 		}
 
+
+
 		void Initialize()
 		{
+
+			var biomesAtlas = new BiomesAtlas();
+
+			biomesAtlas.AddBiome(new Vector3(255, 255, 255), Factory.GetTexture2D("planet/biomes/snow_d.*"), Factory.DefaultNormalMap); // white, 1,1,1
+			biomesAtlas.AddBiome(new Vector3(128, 128, 128), Factory.GetTexture2D("planet/biomes/tundra_d.*"), Factory.GetTexture2D("planet/biomes/tundra_n.*")); // grey,  0.5,0.5,0.5
+			biomesAtlas.AddBiome(new Vector3(64, 128, 64), Factory.GetTexture2D("planet/biomes/tundra2_d.*"), Factory.GetTexture2D("planet/biomes/tundra2_n.*")); // green-vomit,  0.25,0.5,0.25
+			biomesAtlas.AddBiome(new Vector3(255, 255, 128), Factory.GetTexture2D("planet/biomes/sand_d.*"), Factory.GetTexture2D("planet/biomes/sand_n.*")); // sand,  1,1,0.5
+			biomesAtlas.AddBiome(new Vector3(255, 255, 0), Factory.GetTexture2D("planet/biomes/sand2_d.*"), Factory.DefaultNormalMap); // yellow, 1,1,0
+			biomesAtlas.AddBiome(new Vector3(0, 128, 0), Factory.GetTexture2D("planet/biomes/forest_d.*"), Factory.GetTexture2D("planet/biomes/forest_n.*")); // green, 0,0.5,0
+			biomesAtlas.AddBiome(new Vector3(0, 0, 255), Factory.GetTexture2D("planet/biomes/water_d.*"), Factory.DefaultNormalMap); // blue, 0,0,1
 
 			/*{
 				// procedural stars or space dust
@@ -105,18 +118,12 @@ namespace MyGame
 			cfg.stopSegmentRecursionAtWorldSize = Debug.GetCVar("generation / segment stop recursion at world size", 100);
 
 			cfg.radiusMin = 1000000;
-			cfg.baseHeightMap = Factory.GetTexture2D("textures/earth_elevation_map.*");
+			cfg.baseHeightMap = Factory.GetTexture2D("planet/data/earth/height_map.*");
 			cfg.baseHeightMapMultiplier = 20000; //20 km
-			cfg.noiseMultiplier = 500;
-			cfg.AddControlSplatMap(0, Factory.GetTexture2D("textures/biomes_splat_map_channels0.*"));
-			cfg.AddControlSplatMap(1, Factory.GetTexture2D("textures/biomes_splat_map_channels1.*"));
-			cfg.AddBiome(0, Factory.GetTexture2D("biomes/snow_d.*"), Factory.DefaultNormalMap); // white, 1,1,1
-			cfg.AddBiome(6, Factory.GetTexture2D("biomes/sand2_d.*"), Factory.DefaultNormalMap); // yellow, 1,1,0
-			cfg.AddBiome(4, Factory.GetTexture2D("biomes/sand_d.*"), Factory.GetTexture2D("biomes/sand_n.*")); // sand,  1,1,0.5
-			cfg.AddBiome(3, Factory.GetTexture2D("biomes/tundra_d.*"), Factory.GetTexture2D("biomes/tundra_n.*")); // grey,  0.5,0.5,0.5
-			cfg.AddBiome(5, Factory.GetTexture2D("biomes/forest_d.*"), Factory.GetTexture2D("biomes/forest_n.*")); // green, 0,0.5,0
-			cfg.AddBiome(2, Factory.GetTexture2D("biomes/tundra2_d.*"), Factory.GetTexture2D("biomes/tundra2_n.*")); // green-vomit,  0.25,0.5,0.25
-			cfg.AddBiome(1, Factory.GetTexture2D("biomes/water_d.*"), Factory.DefaultNormalMap); // blue, 0,0,1
+			cfg.noiseMultiplier = 200;
+			cfg.AddControlSplatMap(0, Factory.GetTexture2D("planet/data/earth/biomes_splat_map_0.*"));
+			cfg.AddControlSplatMap(1, Factory.GetTexture2D("planet/data/earth/biomes_splat_map_1.*"));
+			cfg.LoadConfig(FileSystem.FindFile("planet/data/earth/biomes_splat_maps_metadata.xml"), biomesAtlas);
 
 
 			var planet = AddPlanet();

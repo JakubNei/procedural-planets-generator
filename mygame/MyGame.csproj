@@ -55,6 +55,7 @@
     <Compile Include="FirstPersonCamera.cs" />
     <Compile Include="GameTimeController.cs" />
     <Compile Include="MoveWithArrowKeys.cs" />
+    <Compile Include="PlanetaryBody\Biomes.cs" />
     <Compile Include="PlanetaryBody\Planet.Generation.WorkLoop.cs" />
     <Compile Include="PlanetaryBody\Segment.MeshGeneration.cs" />
     <Compile Include="PlanetaryBody\Config.cs" />
