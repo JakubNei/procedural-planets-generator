@@ -126,7 +126,7 @@ namespace MyGame
 				cfg.radiusMin = 1000000;
 				cfg.baseHeightMap = Factory.GetTexture2D("planet/data/earth/height_map.*");
 				cfg.baseHeightMapMultiplier = 20000; //20 km
-				cfg.noiseMultiplier = 200;
+				cfg.noiseMultiplier = 300;
 				cfg.AddControlSplatMap(0, Factory.GetTexture2D("planet/data/earth/biomes_splat_map_0.*"));
 				cfg.AddControlSplatMap(1, Factory.GetTexture2D("planet/data/earth/biomes_splat_map_1.*"));
 				cfg.LoadConfig(FileSystem.FindFile("planet/data/earth/biomes_splat_maps_metadata.xml"), biomesAtlas);
@@ -152,7 +152,7 @@ namespace MyGame
 				cfg.radiusMin = 100000;
 				cfg.baseHeightMap = Factory.GetTexture2D("planet/data/myplanet1/height_map.*");
 				cfg.baseHeightMapMultiplier = 2000;
-				cfg.noiseMultiplier = 200;
+				cfg.noiseMultiplier = 400;
 				cfg.AddControlSplatMap(0, Factory.GetTexture2D("planet/data/myplanet1/biomes_splat_map_0.*"));
 				cfg.AddControlSplatMap(1, Factory.GetTexture2D("planet/data/myplanet1/biomes_splat_map_1.*"));
 				cfg.LoadConfig(FileSystem.FindFile("planet/data/myplanet1/biomes_splat_maps_metadata.xml"), biomesAtlas);

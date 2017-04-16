@@ -58,7 +58,7 @@ namespace MyGame.PlanetaryBody
 
 		public Segment parent;
 		public List<Segment> Children { get; } = new List<Segment>();
-		public CustomChunkMeshRenderer Renderer { get; set; }
+		public CustomChunkMeshRenderer Renderer { get; private set; }
 
 		public class CustomChunkMeshRenderer : MeshRenderer
 		{
@@ -83,7 +83,7 @@ namespace MyGame.PlanetaryBody
 			public override IEnumerable<Vector3> GetCameraSpaceOccluderTriangles(CameraData camera)
 			{
 				//if (chunk.occluderTringles.Count < 9 && chunk.IsGenerationDone) throw new Exception("this should not happen");
-				if (chunk.IsGenerationDone && chunk.occluderTringles.Count == 9)
+				if (chunk?.IsGenerationDone == true && chunk?.occluderTringles.Count == 9)
 				{
 					var mvp = GetModelViewProjectionMatrix(camera);
 					return chunk.occluderTringles.Select(v3 => v3.Multiply(ref mvp));
@@ -94,14 +94,19 @@ namespace MyGame.PlanetaryBody
 				}
 			}
 
-			public override void SetRenderingMode(MyRenderingMode renderingMode)
+			public override MyRenderingMode RenderingMode
 			{
-				if (renderingMode.HasFlag(MyRenderingMode.RenderGeometry) && chunk.IsGenerationDone == false)
+				get => base.RenderingMode;
+				set
 				{
-					Log.Warn("trying to render segment " + this + " that did not finish generation");
+					if (value.HasFlag(MyRenderingMode.RenderGeometry) && chunk?.IsGenerationDone == false)
+					{
+						Log.Warn("trying to render segment " + this + " that did not finish generation");
+					}
+					base.RenderingMode = value;
 				}
-				base.SetRenderingMode(renderingMode);
 			}
+
 		}
 
 
@@ -122,11 +127,11 @@ namespace MyGame.PlanetaryBody
 			NoneNoParent = -1,
 		}
 
-		static ulong numberOfSegmentsCreated = 0;
-
+		public readonly long ID;
+		static long nextId = 0;
 		public Segment(Planet planetInfo, TriangleD noElevationRange, Segment parentChunk, ChildPosition childPosition = ChildPosition.NoneNoParent)
 		{
-			numberOfSegmentsCreated++;
+			ID = Interlocked.Increment(ref nextId);
 			this.planetInfo = planetInfo;
 			this.parent = parentChunk;
 			this.childPosition = childPosition;
@@ -293,7 +298,7 @@ namespace MyGame.PlanetaryBody
 				if (this.GenerationBegan == false) Log.Warn("trying to show segment " + this + " that did not begin generation");
 				else if (this.IsGenerationDone == false) Log.Warn("trying to show segment " + this + " that did not finish generation");
 				else if (Renderer == null) Log.Warn("trying to show segment " + this + " that does not have renderer");
-				else Renderer.SetRenderingMode(MyRenderingMode.RenderGeometryAndCastShadows);
+				else Renderer.RenderingMode = MyRenderingMode.RenderGeometryAndCastShadows;
 
 				if (Children.Count > 0)
 				{
@@ -305,7 +310,7 @@ namespace MyGame.PlanetaryBody
 			}
 			else
 			{
-				Renderer?.SetRenderingMode(MyRenderingMode.DontRender);
+				if (Renderer != null) Renderer.RenderingMode = MyRenderingMode.DontRender;
 			}
 		}
 
@@ -325,6 +330,7 @@ namespace MyGame.PlanetaryBody
 			}
 		}
 
+		/*
 		private void DestroyRenderer()
 		{
 			lock (this)
@@ -332,10 +338,11 @@ namespace MyGame.PlanetaryBody
 				GenerationBegan = false;
 				IsGenerationDone = false;
 			}
-			Renderer?.SetRenderingMode(MyRenderingMode.DontRender);
+			if (Renderer != null) Renderer.RenderingMode = MyRenderingMode.DontRender;
 			planetInfo.Entity.DestroyComponent(Renderer);
 			Renderer = null;
 		}
+		*/
 
 
 		public void NotifyGenerationDone()
@@ -348,7 +355,7 @@ namespace MyGame.PlanetaryBody
 
 		public override string ToString()
 		{
-			return "PlanetaryBodyChunk generation:" + subdivisionDepth + " id:" + numberOfSegmentsCreated;
+			return typeof(Segment) + " planet:#" + planetInfo.ID + " id:#" + ID + " generation:" + subdivisionDepth;
 		}
 
 

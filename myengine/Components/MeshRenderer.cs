@@ -35,6 +35,7 @@ namespace MyEngine.Components
 			{
 				if (mesh != value)
 				{
+					DataToRender.IncreaseVersion();
 					lock (this)
 					{
 						mesh = value;
@@ -62,7 +63,6 @@ namespace MyEngine.Components
 		public override void OnAddedToEntity(Entity entity)
 		{
 			base.OnAddedToEntity(entity);
-
 
 			Material = new Material();
 			RenderingMode = MyRenderingMode.RenderGeometryAndCastShadows;

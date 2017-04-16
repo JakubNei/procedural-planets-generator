@@ -55,14 +55,51 @@ namespace MyEngine.Components
 
 	public abstract class Renderer : ComponentWithShortcuts, IRenderable, IDisposable
 	{
-		public virtual MyRenderingMode RenderingMode { get; set; }
-		public virtual Material Material { get; set; }
+		MyRenderingMode renderingMode;
+		public virtual MyRenderingMode RenderingMode
+		{
+			get => renderingMode;
+			set
+			{
+				if (value != renderingMode)
+				{
+					DataToRender.IncreaseVersion();
+					renderingMode = value;
+				}
+			}
+		}
+
+		Material material;
+		public virtual Material Material
+		{
+			get => material;
+			set
+			{
+				if (value != material)
+				{
+					DataToRender.IncreaseVersion();
+					material = value;
+				}
+			}
+		}
 
 		Dictionary<Camera, RenderStatus> cameraToRenderStatus = new Dictionary<Camera, RenderStatus>();
 
-		public virtual bool ForcePassCulling { get; set; }
+		bool forcePassCulling;
+		public virtual bool ForcePassCulling
+		{
+			get => forcePassCulling;
+			set
+			{
+				if (value != forcePassCulling)
+				{
+					DataToRender.IncreaseVersion();
+					forcePassCulling = value;
+				}
+			}
+		}
 
-		RenderableData DataToRender => Entity.Scene.DataToRender;
+		protected RenderableData DataToRender => Entity.Scene.DataToRender;
 
 		public override void OnAddedToEntity(Entity entity)
 		{
@@ -71,7 +108,6 @@ namespace MyEngine.Components
 			DataToRender.Add(this);
 		}
 
-		public virtual void SetRenderingMode(MyRenderingMode renderingMode) => RenderingMode = renderingMode;
 		public abstract Bounds GetFloatingOriginSpaceBounds(WorldPos viewPointPos);
 
 		public virtual void UploadUBOandDraw(CameraData camera, UniformBlock ubo)

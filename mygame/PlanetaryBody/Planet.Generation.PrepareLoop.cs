@@ -78,8 +78,8 @@ namespace MyGame.PlanetaryBody
 
 			if (Generateheights.Version != segment.meshGeneratedWithShaderVersion)
 			{
-				segment.GenerationBegan = false;
-				segment.IsGenerationDone = false;
+				//segment.GenerationBegan = false;
+				//segment.IsGenerationDone = false;
 				toGenerate.Add(segment, float.MaxValue);
 			}
 		}

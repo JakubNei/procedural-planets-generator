@@ -58,6 +58,13 @@ namespace MyGame.PlanetaryBody
 
 		public Config config;
 
+		public readonly long ID;
+		static long nextId;
+		public Planet()
+		{
+			ID = Interlocked.Increment(ref nextId);
+		}
+
 
 		//ProceduralMath proceduralMath;
 

@@ -204,6 +204,8 @@ namespace MyGame.PlanetaryBody
 				}
 
 				if (s == null) return null;
+				Log.Info("generating " + s);
+
 				return jobTemplate.MakeInstanceWithData(s);
 			};
 

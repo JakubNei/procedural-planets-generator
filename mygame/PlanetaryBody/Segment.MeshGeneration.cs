@@ -15,14 +15,14 @@ namespace MyGame.PlanetaryBody
 {
 	public partial class Segment
 	{
-		public bool GenerationBegan { get; set; } = false;
-		public bool IsGenerationDone { get; set; } = false;
+		public bool GenerationBegan { get; private set; } = false;
+		public bool IsGenerationDone { get; private set; } = false;
 
 		public void CreateRendererAndBasicMesh()
 		{
 			lock (this)
 			{
-				if (GenerationBegan) return;// throw new Exception("generation already began");
+				if (GenerationBegan) throw new Exception("generation already began");
 				GenerationBegan = true;
 			}
 			var offsetCenter = NoElevationRange.CenterPos;
@@ -85,7 +85,6 @@ namespace MyGame.PlanetaryBody
 			Renderer.Offset += offsetCenter;
 			Renderer.Material = planetInfo.PlanetMaterial.CloneTyped();
 			Renderer.Material.Uniforms.Set("param_offsetFromPlanetCenter", Renderer.Offset.ToVector3());
-			Renderer.SetRenderingMode(MyRenderingMode.DontRender);
 		}
 
 	}

@@ -169,15 +169,15 @@ namespace MyGame.PlanetaryBody
 				Action action = () =>
 				{
 					var stopWatch = Stopwatch.StartNew();
-					try
+					//try
 					{
 						currentAction(data);
 					}
-					catch (Exception e)
+					/*catch (Exception e)
 					{
 						IsFaulted = true;
 						Exception = e;
-					}
+					}*/
 					if (task.taskTemplate.CanMeasure)
 					{
 						task.taskTemplate.timeTaken += stopWatch.Elapsed;
@@ -189,9 +189,14 @@ namespace MyGame.PlanetaryBody
 					}
 				};
 				if (task.taskTemplate.whereToRun == WhereToRun.GPUThread)
+				{
 					action();
+				}
 				else
-					lastSystemTask = Task.Run(action);
+				{
+					action();
+					//lastSystemTask = Task.Run(action);
+				}
 
 
 				return true;
