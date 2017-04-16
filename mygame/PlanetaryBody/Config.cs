@@ -6,6 +6,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using BiomesMetadataFile = PreparePlanetData.BiomesMetadataFile;
+
 namespace MyGame.PlanetaryBody
 {
 	public class Config
@@ -41,8 +43,7 @@ namespace MyGame.PlanetaryBody
 			var data = BiomesMetadataFile.Load(path.RealPath);
 			foreach (var i in data.data)
 			{
-				var color = new Vector3(i.ColorRed, i.ColorGreen, i.ColorBlue);
-				var b = atlas.GetBiome(color);
+				var b = atlas.GetBiome(i.Color);
 				AddBiome(i.BiomeId, b);
 			}
 		}

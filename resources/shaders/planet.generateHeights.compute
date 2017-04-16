@@ -176,7 +176,7 @@ void main() {
 	
 	if(param_baseHeightMapMultiplier > 0) height += param_baseHeightMapMultiplier * texture2D(param_baseHeightMap, uv).r; 
 			
-	height += param_noiseMultiplier * GetHeightAt(_p);
+	height += param_noiseMultiplier * GetHeightAt(_p * (float(param_radiusMin)/1000000));
 
 
 	p *= height;

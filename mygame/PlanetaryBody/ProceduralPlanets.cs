@@ -13,15 +13,14 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MyGame.PlanetaryBody;
+using System.Drawing;
 
 namespace MyGame
 {
 	public class ProceduralPlanets : SingletonsPropertyAccesor
 	{
 		public List<PlanetaryBody.Planet> planets = new List<PlanetaryBody.Planet>();
-		SceneSystem scene;
-		Factory Factory => scene.Factory;
-		MyDebug Debug => scene.Debug;
+		readonly SceneSystem scene;
 
 		Camera Cam { get { return scene.MainCamera; } }
 
@@ -66,13 +65,13 @@ namespace MyGame
 
 			var biomesAtlas = new BiomesAtlas();
 
-			biomesAtlas.AddBiome(new Vector3(255, 255, 255), Factory.GetTexture2D("planet/biomes/snow_d.*"), Factory.DefaultNormalMap); // white, 1,1,1
-			biomesAtlas.AddBiome(new Vector3(128, 128, 128), Factory.GetTexture2D("planet/biomes/tundra_d.*"), Factory.GetTexture2D("planet/biomes/tundra_n.*")); // grey,  0.5,0.5,0.5
-			biomesAtlas.AddBiome(new Vector3(64, 128, 64), Factory.GetTexture2D("planet/biomes/tundra2_d.*"), Factory.GetTexture2D("planet/biomes/tundra2_n.*")); // green-vomit,  0.25,0.5,0.25
-			biomesAtlas.AddBiome(new Vector3(255, 255, 128), Factory.GetTexture2D("planet/biomes/sand_d.*"), Factory.GetTexture2D("planet/biomes/sand_n.*")); // sand,  1,1,0.5
-			biomesAtlas.AddBiome(new Vector3(255, 255, 0), Factory.GetTexture2D("planet/biomes/sand2_d.*"), Factory.DefaultNormalMap); // yellow, 1,1,0
-			biomesAtlas.AddBiome(new Vector3(0, 128, 0), Factory.GetTexture2D("planet/biomes/forest_d.*"), Factory.GetTexture2D("planet/biomes/forest_n.*")); // green, 0,0.5,0
-			biomesAtlas.AddBiome(new Vector3(0, 0, 255), Factory.GetTexture2D("planet/biomes/water_d.*"), Factory.DefaultNormalMap); // blue, 0,0,1
+			biomesAtlas.AddBiome(Color.FromArgb(255, 255, 255), Factory.GetTexture2D("planet/biomes/snow_d.*"), Factory.DefaultNormalMap); // white, 1,1,1
+			biomesAtlas.AddBiome(Color.FromArgb(128, 128, 128), Factory.GetTexture2D("planet/biomes/tundra_d.*"), Factory.GetTexture2D("planet/biomes/tundra_n.*")); // grey,  0.5,0.5,0.5
+			biomesAtlas.AddBiome(Color.FromArgb(64, 128, 64), Factory.GetTexture2D("planet/biomes/tundra2_d.*"), Factory.GetTexture2D("planet/biomes/tundra2_n.*")); // green-vomit,  0.25,0.5,0.25
+			biomesAtlas.AddBiome(Color.FromArgb(255, 255, 128), Factory.GetTexture2D("planet/biomes/sand_d.*"), Factory.GetTexture2D("planet/biomes/sand_n.*")); // sand,  1,1,0.5
+			biomesAtlas.AddBiome(Color.FromArgb(255, 255, 0), Factory.GetTexture2D("planet/biomes/sand2_d.*"), Factory.DefaultNormalMap); // yellow, 1,1,0
+			biomesAtlas.AddBiome(Color.FromArgb(0, 128, 0), Factory.GetTexture2D("planet/biomes/forest_d.*"), Factory.GetTexture2D("planet/biomes/forest_n.*")); // green, 0,0.5,0
+			biomesAtlas.AddBiome(Color.FromArgb(0, 0, 255), Factory.GetTexture2D("planet/biomes/water_d.*"), Factory.DefaultNormalMap); // blue, 0,0,1
 
 			/*{
 				// procedural stars or space dust
@@ -111,32 +110,57 @@ namespace MyGame
             */
 
 
-			// 6371000 earth radius
-			var cfg = new PlanetaryBody.Config();
-			cfg.chunkNumberOfVerticesOnEdge = Debug.GetCVar("generation / segment number of vertices on edge", 50);
-			cfg.weightNeededToSubdivide = Debug.GetCVar("generation / segment subdivide if weight is bigger than", 0.2f);
-			cfg.stopSegmentRecursionAtWorldSize = Debug.GetCVar("generation / segment stop recursion at world size", 100);
+			{
+				var cfg = new PlanetaryBody.Config();
+				cfg.chunkNumberOfVerticesOnEdge = Debug.GetCVar("generation / segment number of vertices on edge", 50);
+				cfg.weightNeededToSubdivide = Debug.GetCVar("generation / segment subdivide if weight is bigger than", 0.2f);
+				cfg.stopSegmentRecursionAtWorldSize = Debug.GetCVar("generation / segment stop recursion at world size", 100);
 
-			cfg.radiusMin = 1000000;
-			cfg.baseHeightMap = Factory.GetTexture2D("planet/data/earth/height_map.*");
-			cfg.baseHeightMapMultiplier = 20000; //20 km
-			cfg.noiseMultiplier = 200;
-			cfg.AddControlSplatMap(0, Factory.GetTexture2D("planet/data/earth/biomes_splat_map_0.*"));
-			cfg.AddControlSplatMap(1, Factory.GetTexture2D("planet/data/earth/biomes_splat_map_1.*"));
-			cfg.LoadConfig(FileSystem.FindFile("planet/data/earth/biomes_splat_maps_metadata.xml"), biomesAtlas);
+				// 6371000m is earth radius
+				cfg.radiusMin = 1000000;
+				cfg.baseHeightMap = Factory.GetTexture2D("planet/data/earth/height_map.*");
+				cfg.baseHeightMapMultiplier = 20000; //20 km
+				cfg.noiseMultiplier = 200;
+				cfg.AddControlSplatMap(0, Factory.GetTexture2D("planet/data/earth/biomes_splat_map_0.*"));
+				cfg.AddControlSplatMap(1, Factory.GetTexture2D("planet/data/earth/biomes_splat_map_1.*"));
+				cfg.LoadConfig(FileSystem.FindFile("planet/data/earth/biomes_splat_maps_metadata.xml"), biomesAtlas);
+
+				var planetShader = Factory.GetShader("shaders/planet.shader");
+				var planetMaterial = new Material();
+				planetMaterial.GBufferShader = planetShader;
+
+				var planet = AddPlanet();
+				planet.Transform.Position = new WorldPos(cfg.radiusMin * 3, 0, 0);
+				planet.PlanetMaterial = planetMaterial;
+				planet.Initialize(cfg);
+			}
 
 
-			var planet = AddPlanet();
 
-			planet.Transform.Position = new WorldPos(cfg.radiusMin * 3, 0, 0);
-			var planetShader = Factory.GetShader("shaders/planet.shader");
-			var planetMaterial = new Material();
-			planetMaterial.GBufferShader = planetShader;
-			planetMaterial.Uniforms.Set("param_perlinNoise", Factory.GetTexture2D("textures/perlin_noise.*"));
-			planetMaterial.Uniforms.Set("param_baseHeightMap", cfg.baseHeightMap);
-			planet.PlanetMaterial = planetMaterial;
+			{
+				var cfg = new PlanetaryBody.Config();
+				cfg.chunkNumberOfVerticesOnEdge = Debug.GetCVar("generation / segment number of vertices on edge", 50);
+				cfg.weightNeededToSubdivide = Debug.GetCVar("generation / segment subdivide if weight is bigger than", 0.2f);
+				cfg.stopSegmentRecursionAtWorldSize = Debug.GetCVar("generation / segment stop recursion at world size", 100);
 
-			planet.Initialize(cfg);
+				cfg.radiusMin = 100000;
+				cfg.baseHeightMap = Factory.GetTexture2D("planet/data/myplanet1/height_map.*");
+				cfg.baseHeightMapMultiplier = 2000;
+				cfg.noiseMultiplier = 200;
+				cfg.AddControlSplatMap(0, Factory.GetTexture2D("planet/data/myplanet1/biomes_splat_map_0.*"));
+				cfg.AddControlSplatMap(1, Factory.GetTexture2D("planet/data/myplanet1/biomes_splat_map_1.*"));
+				cfg.LoadConfig(FileSystem.FindFile("planet/data/myplanet1/biomes_splat_maps_metadata.xml"), biomesAtlas);
+
+				var planetShader = Factory.GetShader("shaders/planet.shader");
+				var planetMaterial = new Material();
+				planetMaterial.GBufferShader = planetShader;
+
+				var planet = AddPlanet();
+				planet.Transform.Position = new WorldPos(1000000 * 5, 0, 0);
+				planet.PlanetMaterial = planetMaterial;
+				planet.Initialize(cfg);
+			}
+
 		}
 
 		public PlanetaryBody.Planet GetClosestPlanet(WorldPos pos)

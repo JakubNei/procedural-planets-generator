@@ -76,6 +76,10 @@
       <Project>{f11accad-6e5f-464a-b496-33ef0c6b10f4}</Project>
       <Name>MyEngine</Name>
     </ProjectReference>
+    <ProjectReference Include="..\PreparePlanetData\PreparePlanetData.csproj">
+      <Project>{6264cf2a-08f0-4bd3-9508-bd1e3e8fd8c9}</Project>
+      <Name>PreparePlanetData</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
