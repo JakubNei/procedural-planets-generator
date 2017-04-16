@@ -358,6 +358,8 @@ namespace MyEngine
 		int lastTotalPossible = 0;
 		public void PrepareRender(RenderableData data, Camera camera)
 		{
+			var dataVersion = data.Version;
+
 			var cameraData = prepardWithCameraData = camera.GetDataCopy();
 
 			// without Parallel.ForEach = 130 fps
@@ -387,13 +389,14 @@ namespace MyEngine
 
 			if (EnableCulling)
 			{
-
+				int wantToBeRendered = 0;
 				int passedFrustumCullingIndex = 0;
 				{
 					Action<IRenderable> work = renderable =>
 					{
 						if (renderable.ShouldRenderInContext(camera, RenderContext))
 						{
+							Interlocked.Increment(ref wantToBeRendered);
 							if (renderable.ForcePassCulling)
 							{
 								var newIndex = Interlocked.Increment(ref passedFrustumCullingIndex) - 1;
@@ -439,6 +442,7 @@ namespace MyEngine
 						}
 					}
 
+					Debug.AddValue("rendering / meshes / want to be rendered", wantToBeRendered);
 				}
 
 
@@ -527,6 +531,11 @@ namespace MyEngine
 				toRenderRenderablesCount = a.Length;
 			}
 
+
+			if(dataVersion != data.Version)
+			{
+				Log.Warn("started render prepare with different data to render version");
+			}
 
 		}
 

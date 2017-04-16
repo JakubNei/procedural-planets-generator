@@ -47,6 +47,12 @@ namespace MyGame
 				t.Start();
 			}
 
+			scene.EventSystem.On<RenderPrepareEnded>(e =>
+			{				
+				if (runPlanetLogicInOwnThread) canRunNextLogicUpdate.Set();
+				else PlanetLogicUpdate();
+			});
+
 			scene.EventSystem.On<FrameEnded>(GPUThreadUpdate);
 		}
 
@@ -194,14 +200,10 @@ namespace MyGame
 
 		void GPUThreadUpdate(FrameTimeEvent r)
 		{
-			if (!runPlanetLogicInOwnThread) PlanetLogicUpdate();
-
 			foreach (var p in planets)
 			{
 				p.GPUThreadTick(r.FrameTime);
 			}
-
-			if (runPlanetLogicInOwnThread) canRunNextLogicUpdate.Set();
 		}
 	}
 }

@@ -246,7 +246,9 @@ namespace MyEngine
 					{
 						try
 						{
+							EventSystem.Raise(new Events.RenderPrepareStarted());
 							renderManagerBack.PrepareRender(dataToRender, camera);
+							EventSystem.Raise(new Events.RenderPrepareEnded());
 						}
 						catch (Exception e)
 						{

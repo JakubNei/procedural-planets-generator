@@ -15,8 +15,6 @@ namespace MyGame.PlanetaryBody
 {
 	public partial class Segment
 	{
-
-		static ulong numberOfChunksGenerated = 0;
 		public bool GenerationBegan { get; set; } = false;
 		public bool IsGenerationDone { get; set; } = false;
 
@@ -27,11 +25,9 @@ namespace MyGame.PlanetaryBody
 				if (GenerationBegan) return;// throw new Exception("generation already began");
 				GenerationBegan = true;
 			}
-			numberOfChunksGenerated++;
-
 			var offsetCenter = NoElevationRange.CenterPos;
 			var mesh = new Mesh();
-			mesh.Name = "PlanetaryBodyChunk generation:" + subdivisionDepth + " id:" + numberOfChunksGenerated;
+			mesh.Name = this.ToString();
 
 
 			var normals = mesh.Normals;
@@ -89,7 +85,7 @@ namespace MyGame.PlanetaryBody
 			Renderer.Offset += offsetCenter;
 			Renderer.Material = planetInfo.PlanetMaterial.CloneTyped();
 			Renderer.Material.Uniforms.Set("param_offsetFromPlanetCenter", Renderer.Offset.ToVector3());
-			Renderer.RenderingMode = MyRenderingMode.DontRender;
+			Renderer.SetRenderingMode(MyRenderingMode.DontRender);
 		}
 
 	}

@@ -74,4 +74,13 @@ namespace MyEngine.Events
 			this.NewPixelHeight = height;
 		}
 	}
+
+	public class RenderPrepareStarted : IEvent
+	{
+
+	}
+	public class RenderPrepareEnded : IEvent
+	{
+
+	}
 }

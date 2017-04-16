@@ -90,16 +90,16 @@ namespace MyGame.PlanetaryBody
 		{
 			public Camera cam;
 
-			public new void Add(Segment chunk, double weight)
+			public new void Add(Segment segment, double weight)
 			{
-				PrivateAdd1(chunk, weight);
+				PrivateAdd1(segment, weight);
 
 				// we have to generate all our parents first
-				while (chunk.parent != null && chunk.parent.GenerationBegan == false)
+				while (segment.parent != null && segment.parent.GenerationBegan == false)
 				{
-					chunk = chunk.parent;
-					var w = chunk.GetGenerationWeight(cam);
-					PrivateAdd1(chunk, Math.Max(w, weight));
+					segment = segment.parent;
+					var w = segment.GetGenerationWeight(cam);
+					PrivateAdd1(segment, Math.Max(w, weight));
 				}
 			}
 			private void PrivateAdd1(Segment segment, double weight)
@@ -121,6 +121,8 @@ namespace MyGame.PlanetaryBody
 			}
 			private void PrivateAdd2(Segment segment, double weight)
 			{
+				if (segment.GenerationBegan) return;
+
 				double w;
 				if (this.TryGetValue(segment, out w))
 				{
