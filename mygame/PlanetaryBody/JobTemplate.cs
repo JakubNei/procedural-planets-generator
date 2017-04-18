@@ -74,7 +74,9 @@ namespace MyGame.PlanetaryBody
 		public string StatisticsReport()
 		{
 			var t = tasksToRun.Sum(j => j.AvergeSeconds);
-			return tasksToRun.Select(j => j.name + " & " + Neitri.FormatUtils.SecondsToString(j.AvergeSeconds) + " & " + (j.AvergeSeconds / t * 100) + " %").Join(Environment.NewLine);
+			var lines = "součet & " + Neitri.FormatUtils.SecondsToString(t) + " & 100\\%";
+			lines += tasksToRun.Select(j => j.name + " & " + Neitri.FormatUtils.SecondsToString(j.AvergeSeconds) + " & " + (j.AvergeSeconds / t * 100) + "\\%").Join(Environment.NewLine);
+			return lines;
 		}
 
 		class JobInstance : IJob

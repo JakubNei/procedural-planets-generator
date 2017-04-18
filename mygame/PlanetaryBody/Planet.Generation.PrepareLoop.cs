@@ -63,7 +63,6 @@ namespace MyGame.PlanetaryBody
 				// hide only if all our childs are visible, they might still be generating or they might want to be hidden
 				if (canAllChildrenBeVisible)
 				{
-
 					foreach (var child in segment.Children)
 					{
 						UpdateVisibility(child, toGenerate, recursionDepth + 1);
@@ -76,10 +75,9 @@ namespace MyGame.PlanetaryBody
 
 			segment.SetVisible(true);
 
-			if (Generateheights.Version != segment.meshGeneratedWithShaderVersion)
+			if (segment.IsGenerationDone && Generateheights.Version != segment.meshGeneratedWithShaderVersion)
 			{
-				//segment.GenerationBegan = false;
-				//segment.IsGenerationDone = false;
+				segment.DestroyRenderer();
 				toGenerate.Add(segment, float.MaxValue);
 			}
 		}

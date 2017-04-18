@@ -8,6 +8,23 @@ using System.Linq;
 
 namespace MyEngine
 {
+
+	/// <summary>
+	/// Does not need to exist.
+	/// </summary>
+	public class MyOptionalFile : MyFile
+	{
+		public readonly bool Exists;
+
+		public MyOptionalFile(FileSystem FileSystem, string virtualPath, string realPath, bool exists) : base(FileSystem, virtualPath, realPath)
+		{
+			this.Exists = exists;
+		}
+	}
+
+	/// <summary>
+	/// Must exist.
+	/// </summary>
 	public class MyFile
 	{
 		public string Name { get { return VirtualPath.Split('/', '\\').LastOrDefault() ?? "no name"; } }

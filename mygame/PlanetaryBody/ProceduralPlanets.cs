@@ -48,7 +48,7 @@ namespace MyGame
 			}
 
 			scene.EventSystem.On<RenderPrepareEnded>(e =>
-			{				
+			{
 				if (runPlanetLogicInOwnThread) canRunNextLogicUpdate.Set();
 				else PlanetLogicUpdate();
 			});
@@ -71,13 +71,13 @@ namespace MyGame
 
 			var biomesAtlas = new BiomesAtlas();
 
-			biomesAtlas.AddBiome(Color.FromArgb(255, 255, 255), Factory.GetTexture2D("planet/biomes/snow_d.*"), Factory.DefaultNormalMap); // white, 1,1,1
-			biomesAtlas.AddBiome(Color.FromArgb(128, 128, 128), Factory.GetTexture2D("planet/biomes/tundra_d.*"), Factory.GetTexture2D("planet/biomes/tundra_n.*")); // grey,  0.5,0.5,0.5
-			biomesAtlas.AddBiome(Color.FromArgb(64, 128, 64), Factory.GetTexture2D("planet/biomes/tundra2_d.*"), Factory.GetTexture2D("planet/biomes/tundra2_n.*")); // green-vomit,  0.25,0.5,0.25
-			biomesAtlas.AddBiome(Color.FromArgb(255, 255, 128), Factory.GetTexture2D("planet/biomes/sand_d.*"), Factory.GetTexture2D("planet/biomes/sand_n.*")); // sand,  1,1,0.5
-			biomesAtlas.AddBiome(Color.FromArgb(255, 255, 0), Factory.GetTexture2D("planet/biomes/sand2_d.*"), Factory.DefaultNormalMap); // yellow, 1,1,0
-			biomesAtlas.AddBiome(Color.FromArgb(0, 128, 0), Factory.GetTexture2D("planet/biomes/forest_d.*"), Factory.GetTexture2D("planet/biomes/forest_n.*")); // green, 0,0.5,0
-			biomesAtlas.AddBiome(Color.FromArgb(0, 0, 255), Factory.GetTexture2D("planet/biomes/water_d.*"), Factory.DefaultNormalMap); // blue, 0,0,1
+			biomesAtlas.AddBiome(Color.FromArgb(255, 255, 255), "planet/biomes/snow"); // white, 1,1,1
+			biomesAtlas.AddBiome(Color.FromArgb(128, 128, 128), "planet/biomes/tundra"); // grey,  0.5,0.5,0.5
+			biomesAtlas.AddBiome(Color.FromArgb(64, 128, 64), "planet/biomes/tundra2"); // green-vomit,  0.25,0.5,0.25
+			biomesAtlas.AddBiome(Color.FromArgb(255, 255, 128), "planet/biomes/sand"); // sand,  1,1,0.5
+			biomesAtlas.AddBiome(Color.FromArgb(255, 255, 0), "planet/biomes/sand2"); // yellow, 1,1,0
+			biomesAtlas.AddBiome(Color.FromArgb(0, 128, 0), "planet/biomes/grass"); // green, 0,0.5,0
+			biomesAtlas.AddBiome(Color.FromArgb(0, 0, 255), "planet/biomes/water"); // blue, 0,0,1
 
 			/*{
 				// procedural stars or space dust
@@ -129,7 +129,7 @@ namespace MyGame
 				cfg.noiseMultiplier = 300;
 				cfg.AddControlSplatMap(0, Factory.GetTexture2D("planet/data/earth/biomes_splat_map_0.*"));
 				cfg.AddControlSplatMap(1, Factory.GetTexture2D("planet/data/earth/biomes_splat_map_1.*"));
-				cfg.LoadConfig(FileSystem.FindFile("planet/data/earth/biomes_splat_maps_metadata.xml"), biomesAtlas);
+				cfg.LoadConfig(FileSystem.FileExistingFile("planet/data/earth/biomes_splat_maps_metadata.xml"), biomesAtlas);
 
 				var planetShader = Factory.GetShader("shaders/planet.shader");
 				var planetMaterial = new Material();
@@ -155,7 +155,7 @@ namespace MyGame
 				cfg.noiseMultiplier = 400;
 				cfg.AddControlSplatMap(0, Factory.GetTexture2D("planet/data/myplanet1/biomes_splat_map_0.*"));
 				cfg.AddControlSplatMap(1, Factory.GetTexture2D("planet/data/myplanet1/biomes_splat_map_1.*"));
-				cfg.LoadConfig(FileSystem.FindFile("planet/data/myplanet1/biomes_splat_maps_metadata.xml"), biomesAtlas);
+				cfg.LoadConfig(FileSystem.FileExistingFile("planet/data/myplanet1/biomes_splat_maps_metadata.xml"), biomesAtlas);
 
 				var planetShader = Factory.GetShader("shaders/planet.shader");
 				var planetMaterial = new Material();

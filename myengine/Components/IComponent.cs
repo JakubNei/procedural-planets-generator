@@ -9,6 +9,7 @@ namespace MyEngine.Components
     public interface IComponent
     {
 		void OnAddedToEntity(Entity entity);
+		void OnRemovedFromEntity(Entity entity);
         Entity Entity { get; }
     }
 }

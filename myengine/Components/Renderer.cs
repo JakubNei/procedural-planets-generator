@@ -53,7 +53,7 @@ namespace MyEngine.Components
 		CameraSpaceBounds GetCameraSpaceBounds(CameraData camera);
 	}
 
-	public abstract class Renderer : ComponentWithShortcuts, IRenderable, IDisposable
+	public abstract class Renderer : ComponentWithShortcuts, IRenderable
 	{
 		MyRenderingMode renderingMode;
 		public virtual MyRenderingMode RenderingMode
@@ -104,9 +104,15 @@ namespace MyEngine.Components
 		public override void OnAddedToEntity(Entity entity)
 		{
 			base.OnAddedToEntity(entity);
-
 			DataToRender.Add(this);
 		}
+
+		public override void OnRemovedFromEntity(Entity entity)
+		{
+			DataToRender.Remove(this);
+			base.OnRemovedFromEntity(entity);
+		}
+
 
 		public abstract Bounds GetFloatingOriginSpaceBounds(WorldPos viewPointPos);
 
@@ -131,10 +137,6 @@ namespace MyEngine.Components
 			return false;
 		}
 
-		public void Dispose()
-		{
-			DataToRender.Remove(this);
-		}
 
 		public override string ToString()
 		{

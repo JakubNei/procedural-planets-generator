@@ -213,7 +213,10 @@ namespace MyEngine
 			{
 				while (ShouldContinueRunning)
 				{
-					BuildRenderListMain();
+					if (RenderPrepareInOwnThread)
+						RenderPrepareMain();
+					else
+						Thread.Sleep(1000);
 				}
 			});
 			t.Name = "prepare render";
@@ -227,10 +230,15 @@ namespace MyEngine
 		RenderManager renderManagerFront;
 		RenderManager renderManagerBack;
 
-		void BuildRenderListMain()
+		CVar RenderPrepareInOwnThread => Debug.GetCVar("rendering / run render prepare in own thread", true);
+
+		void RenderPrepareMain()
 		{
-			renderManagerPrepareNext.Wait();
-			renderManagerPrepareNext.Reset();
+			if (RenderPrepareInOwnThread)
+			{
+				renderManagerPrepareNext.Wait();
+				renderManagerPrepareNext.Reset();
+			}
 			if (PauseRenderPrepare)
 			{
 				Debug.AddValue("rendering / render prepare", "paused");
@@ -257,7 +265,10 @@ namespace MyEngine
 					}
 				}
 			}
-			renderManagerBackReady.Set();
+			if (RenderPrepareInOwnThread)
+			{
+				renderManagerBackReady.Set();
+			}
 		}
 
 		FrameTime eventThreadTime = new FrameTime();
@@ -313,12 +324,22 @@ namespace MyEngine
 
 			if (PauseRenderPrepare == false)
 			{
-				renderManagerBackReady.Wait();
-				renderManagerBackReady.Reset();
+				if (RenderPrepareInOwnThread)
+				{
+					renderManagerBackReady.Wait();
+					renderManagerBackReady.Reset();
+				}
+				else
+				{
+					RenderPrepareMain();
+				}
 				var tmp = renderManagerFront;
 				renderManagerFront = renderManagerBack;
 				renderManagerBack = tmp;
-				renderManagerPrepareNext.Set();
+				if (RenderPrepareInOwnThread)
+				{
+					renderManagerPrepareNext.Set();
+				}
 			}
 
 			{

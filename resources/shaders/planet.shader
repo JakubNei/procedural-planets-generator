@@ -298,19 +298,21 @@ vec3 getBiomeColor(sampler2D diffuseMap)
 {
 	vec3 pos = i.modelPos;
 	return
-		(
-			triPlanar(diffuseMap, pos, i.normal, 0.05) +
-			triPlanar(diffuseMap, pos, i.normal, 0.5) 
-		) / 2;
+		mix(
+			triPlanar(diffuseMap, pos, i.normal, 0.05),
+			triPlanar(diffuseMap, pos, i.normal, 0.5),
+			1
+		);
 }
 vec3 getBiomeNormal(sampler2D normalMap)
 {
 	vec3 pos = i.modelPos;
 	return  
-		(
-			triPlanar(normalMap, pos, i.normal, 0.05) +
-			triPlanar(normalMap, pos, i.normal, 0.5) 
-		) / 2;
+		mix(
+			triPlanar(normalMap, pos, i.normal, 0.05),
+			triPlanar(normalMap, pos, i.normal, 0.5),
+			1
+		);
 }
 
 

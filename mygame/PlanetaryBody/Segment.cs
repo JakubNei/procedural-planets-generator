@@ -289,7 +289,7 @@ namespace MyGame.PlanetaryBody
 		{
 			if (Renderer != null && this.GenerationBegan && this.IsGenerationDone)
 			{
-				if (visible == lastVisible) return;
+				//if (visible == lastVisible) return;
 				lastVisible = visible;
 			}
 
@@ -330,26 +330,25 @@ namespace MyGame.PlanetaryBody
 			}
 		}
 
-		/*
-		private void DestroyRenderer()
-		{
-			lock (this)
-			{
-				GenerationBegan = false;
-				IsGenerationDone = false;
-			}
-			if (Renderer != null) Renderer.RenderingMode = MyRenderingMode.DontRender;
-			planetInfo.Entity.DestroyComponent(Renderer);
-			Renderer = null;
-		}
-		*/
-
 
 		public void NotifyGenerationDone()
 		{
 			lock (this)
 			{
 				IsGenerationDone = true;
+			}
+		}
+		public void DestroyRenderer()
+		{
+			lock (this)
+			{
+				GenerationBegan = false;
+				IsGenerationDone = false;
+			}
+			if (Renderer != null)
+			{
+				planetInfo.Entity.DestroyComponent(Renderer);
+				Renderer = null;
 			}
 		}
 

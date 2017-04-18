@@ -35,7 +35,7 @@ namespace MyEngine
 		}
 		public MyDebug()
 		{
-			cvars = new CVarFactory(FileSystem.FindFile("cvars.*"), Log);
+			cvars = new CVarFactory(FileSystem.FileExistingFile("cvars.*"), Log);
 			CommonCVars = new CommonCVars(this);
 			AddCommonCvars();
 

@@ -36,3 +36,4 @@ rendering / parallelize render prepare = true
 rendering / render only front of triangles = true 
 rendering / shadows enabled = false 
 rendering / sort renderables = true 
+rendering / run render prepare in own thread = true 

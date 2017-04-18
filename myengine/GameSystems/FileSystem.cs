@@ -69,8 +69,16 @@ namespace MyEngine
 			if (GlobSearch.IsNeeded(virtualPath))
 			{
 				var fileInfo = GlobSearch.FindFile(realPath);
-				file = new MyFile(this, fileInfo.FullName.RemoveFromBegin(rootResourceDirectoryInfo.FullName.Length), fileInfo.FullName);
-				return true;
+				if (fileInfo == null)
+				{
+					file = null;
+					return false;
+				}
+				else
+				{
+					file = new MyFile(this, fileInfo.FullName.RemoveFromBegin(rootResourceDirectoryInfo.FullName.Length), fileInfo.FullName);
+					return true;
+				}
 			}
 			else
 			{
@@ -84,10 +92,25 @@ namespace MyEngine
 			return false;
 		}
 
-		public MyFile FindFile(string virtualPath)
+		public MyOptionalFile FindOptionalFile(string virtualPath)
 		{
-            MyFile file;
-            if (TryFindFile(virtualPath, out file)) return file;
+			MyFile file;
+			bool exists = TryFindFile(virtualPath, out file);
+
+			if (file == null)
+			{
+				return new MyOptionalFile(this, virtualPath, GetPhysicalPath(virtualPath), exists);
+			}
+			else
+			{
+				return new MyOptionalFile(this, file.VirtualPath, file.RealPath, exists);
+			}
+		}
+
+		public MyFile FileExistingFile(string virtualPath)
+		{
+			MyFile file;
+			if (TryFindFile(virtualPath, out file)) return file;
 			throw new FileNotFoundException("File " + virtualPath + " doesnt exits");
 		}
 
@@ -96,7 +119,7 @@ namespace MyEngine
 			var ret = new List<MyFile>();
 			foreach (var p in virtualPaths)
 			{
-				ret.Add(FindFile(p));
+				ret.Add(FileExistingFile(p));
 			}
 			return ret;
 		}

@@ -17,6 +17,11 @@ namespace MyEngine.Components
 			this.entity = entity;
 		}
 
+		public virtual void OnRemovedFromEntity(Entity entity)
+		{
+			
+		}
+
 		/// <summary>
 		/// The Entity that this Component is attached to
 		/// </summary>

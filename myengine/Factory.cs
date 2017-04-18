@@ -15,11 +15,12 @@ namespace MyEngine
 		public Mesh SkyBoxMesh => GetMesh("internal/skybox.obj");
 		public Mesh QuadMesh => GetMesh("internal/quad.obj");
 
-		public Texture2D WhiteTexture => GetTexture2D("internal/white.png");
-		public Texture2D GreyTexture => GetTexture2D("internal/grey.png");
-		public Texture2D BlackTexture => GetTexture2D("internal/black.png");
-		public Texture2D DefaultNormalMap => GetTexture2D("internal/normal.png");
-
+		public Texture2D WhiteTexture => GetTexture2D("internal/white.*");
+		public Texture2D GreyTexture => GetTexture2D("internal/grey.*");
+		public Texture2D BlackTexture => GetTexture2D("internal/black.*");
+		public Texture2D DefaultNormalMap => GetTexture2D("internal/normal.*");
+		public Texture2D TestTexture => GetTexture2D("internal/test.*");
+		
 
 		ConcurrentDictionary<string, Shader> allShaders = new ConcurrentDictionary<string, Shader>();
 
@@ -29,7 +30,7 @@ namespace MyEngine
 			Shader s;
 			if (!allShaders.TryGetValue(file, out s))
 			{
-				s = new Shader(FileSystem.FindFile(file));
+				s = new Shader(FileSystem.FileExistingFile(file));
 				allShaders[file] = s;
 			}
 			return s;
@@ -60,7 +61,7 @@ namespace MyEngine
 			Mesh s;
 			if (allowDuplicates || !allMeshes.TryGetValue(file, out s))
 			{
-				s = objLoader.Load(this.FileSystem.FindFile(file));
+				s = objLoader.Load(this.FileSystem.FileExistingFile(file));
 				allMeshes[file] = s;
 			}
 			return s;
@@ -75,7 +76,7 @@ namespace MyEngine
 
 			if (texture == null)
 			{
-				var f = this.FileSystem.FindFile(file);
+				var f = this.FileSystem.FileExistingFile(file);
 				texture = new Texture2D(f);
 				allTexture2Ds[f.VirtualPath] = texture;
 			}
