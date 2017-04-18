@@ -10,6 +10,7 @@ using OpenTK.Graphics.OpenGL4;
 
 using vec2 = OpenTK.Vector2;
 using vec3 = OpenTK.Vector3;
+using dvec3 = OpenTK.Vector3d;
 using mat4 = OpenTK.Matrix4;
 
 namespace MyEngine
@@ -49,7 +50,8 @@ namespace MyEngine
             public mat4 modelMatrix;
             public mat4 modelViewMatrix;
             public mat4 modelViewProjectionMatrix;
-        }
+			public vec3 worldPosition;
+		}
         public ModelUniformStruct model;
         public UniformBufferObject<ModelUniformStruct> modelUBO;
 

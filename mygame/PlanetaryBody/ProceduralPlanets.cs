@@ -121,12 +121,11 @@ namespace MyGame
 				cfg.chunkNumberOfVerticesOnEdge = Debug.GetCVar("generation / segment number of vertices on edge", 50);
 				cfg.weightNeededToSubdivide = Debug.GetCVar("generation / segment subdivide if weight is bigger than", 0.2f);
 				cfg.stopSegmentRecursionAtWorldSize = Debug.GetCVar("generation / segment stop recursion at world size", 100);
-
-				// 6371000m is earth radius
-				cfg.radiusMin = 1000000;
+				
+				cfg.radiusMin = 100000; // 6371000m is earth radius
 				cfg.baseHeightMap = Factory.GetTexture2D("planet/data/earth/height_map.*");
-				cfg.baseHeightMapMultiplier = 20000; //20 km
-				cfg.noiseMultiplier = 300;
+				cfg.baseHeightMapMultiplier = 300; // 20000m is highest earth point
+				cfg.noiseMultiplier = 40;
 				cfg.AddControlSplatMap(0, Factory.GetTexture2D("planet/data/earth/biomes_splat_map_0.*"));
 				cfg.AddControlSplatMap(1, Factory.GetTexture2D("planet/data/earth/biomes_splat_map_1.*"));
 				cfg.LoadConfig(FileSystem.FileExistingFile("planet/data/earth/biomes_splat_maps_metadata.xml"), biomesAtlas);
@@ -143,16 +142,16 @@ namespace MyGame
 
 
 
-			{
+			if(false) {
 				var cfg = new PlanetaryBody.Config();
 				cfg.chunkNumberOfVerticesOnEdge = Debug.GetCVar("generation / segment number of vertices on edge", 50);
 				cfg.weightNeededToSubdivide = Debug.GetCVar("generation / segment subdivide if weight is bigger than", 0.2f);
 				cfg.stopSegmentRecursionAtWorldSize = Debug.GetCVar("generation / segment stop recursion at world size", 100);
 
-				cfg.radiusMin = 100000;
+				cfg.radiusMin = 10000;
 				cfg.baseHeightMap = Factory.GetTexture2D("planet/data/myplanet1/height_map.*");
-				cfg.baseHeightMapMultiplier = 2000;
-				cfg.noiseMultiplier = 400;
+				cfg.baseHeightMapMultiplier = 500;
+				cfg.noiseMultiplier = 40;
 				cfg.AddControlSplatMap(0, Factory.GetTexture2D("planet/data/myplanet1/biomes_splat_map_0.*"));
 				cfg.AddControlSplatMap(1, Factory.GetTexture2D("planet/data/myplanet1/biomes_splat_map_1.*"));
 				cfg.LoadConfig(FileSystem.FileExistingFile("planet/data/myplanet1/biomes_splat_maps_metadata.xml"), biomesAtlas);

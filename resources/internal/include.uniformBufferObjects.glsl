@@ -29,6 +29,7 @@ layout(std140) uniform model_block {
 	mat4 modelMatrix;
 	mat4 modelViewMatrix;
 	mat4 modelViewProjectionMatrix;
+	vec3 worldPosition;
 } model;
 
 

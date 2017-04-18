@@ -65,7 +65,6 @@ namespace MyEngine.Components
 			base.OnAddedToEntity(entity);
 
 			Material = new Material();
-			RenderingMode = MyRenderingMode.RenderGeometryAndCastShadows;
 		}
 
 		public override Bounds GetFloatingOriginSpaceBounds(WorldPos viewPointPos)
@@ -99,6 +98,7 @@ namespace MyEngine.Components
 			ubo.model.modelMatrix = modelMatrix;
 			ubo.model.modelViewMatrix = modelViewMatrix;
 			ubo.model.modelViewProjectionMatrix = modelViewMatrix * camera.GetProjectionMatrix();
+			ubo.model.worldPosition = this.Entity.Transform.Position.ToVector3();
 			ubo.modelUBO.UploadToGPU();
 			Mesh.Draw(Material.GBufferShader.HasTesselation);
 		}

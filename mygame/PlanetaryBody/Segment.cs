@@ -31,7 +31,7 @@ namespace MyGame.PlanetaryBody
 				double e = (double)planetInfo.ChunkNumberOfVerticesOnEdge;
 				double ratio = 1 / (e - 3);
 				double twoRatios = ratio * 2;
-				double rangeMultiplier = 1 + Math.Sqrt(twoRatios * twoRatios - ratio * ratio) * 1.8;
+				double rangeMultiplier = 1 + Math.Sqrt(twoRatios * twoRatios - ratio * ratio) * 1.85;
 
 				range.a = (range.a - z) * rangeMultiplier + z;
 				range.b = (range.b - z) * rangeMultiplier + z;

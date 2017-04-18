@@ -3,7 +3,7 @@
 [include shaders/include.planet.glsl]
 
 uniform sampler2D param_perlinNoise;
-uniform vec3 param_offsetFromPlanetCenter;
+uniform dvec3 param_offsetFromPlanetCenter;
 
 
 
@@ -161,7 +161,7 @@ vec3 interpolate3D(vec3 v0, vec3 v1, vec3 v2, vec3 v3) {
 float AdjustTerrainAt(vec3 pos) {
 	int octaves=3;
 	float frequency=1;
-	float height=0.5;
+	float height=1;
 	float result=-height/2;
 	for(int i=0; i<octaves; i++) {
 		result += perlinNoise(pos*frequency) * height;
@@ -192,12 +192,17 @@ void main()
 	//o.uv = calestialToSpherical(o.modelPos + param_offsetFromPlanetCenter).xy;
 
 	// APPLY TERRAIN MODIFIER
-	vec3 pos = o.modelPos + param_offsetFromPlanetCenter;
+	vec3 pos = vec3(o.modelPos + param_offsetFromPlanetCenter);
 	// make it uniform across different planet sizes
-	pos *= 200000 / float(param_radiusMin);
+	//pos *= float(param_radiusMin) / 20000;
+	float amount = AdjustTerrainAt(pos) * 0.3;
+	o.worldPos += o.normal * amount;
 
-	o.worldPos += o.normal * AdjustTerrainAt(pos);
-	o.normal = normalize(o.normal);
+	//o.normal *= 1 + amount;
+	//o.normal = normalize(o.normal);
+
+	//o.tangent *= 1 + amount;
+	//o.tangent = normalize(o.tangent);
 
 	gl_Position = engine.projectionMatrix * engine.viewMatrix * vec4(o.worldPos,1);
 
@@ -215,7 +220,7 @@ void main()
 
 
 [FragmentShader]
-#line 227
+#line 119
 
 in data {
 	vec3 worldPos;
@@ -234,7 +239,8 @@ layout(location = 3) out vec4 out_data;
 // TRIPLANAR TEXTURE PROJECTION
 vec3 triPlanar(sampler2D tex, vec3 position, vec3 normal, float scale) {
 
-//return vec3(0);
+	//DEBUG
+	//return vec3(0);
 
 	vec3 blendWeights = pow(abs(normal), vec3(20));
 	blendWeights /= blendWeights.x + blendWeights.y + blendWeights.z;
@@ -255,10 +261,19 @@ vec3 triPlanar(sampler2D tex, vec3 position, vec3 normal, float scale) {
 
 #else
 
-	const float threshold = 0.01;
-	if(blendWeights.x > threshold) result += blendWeights.x * texture2D(tex, position.yz * scale).xyz;
-	if(blendWeights.y > threshold) result += blendWeights.y * texture2D(tex, position.zx * scale).xyz;
-	if(blendWeights.z > threshold) result += blendWeights.z * texture2D(tex, position.xy * scale).xyz;
+	const float threshold = 0.05;
+
+	vec3 finalWeights = vec3(0);
+
+	if(blendWeights.x > threshold) finalWeights.x = blendWeights.x;
+	if(blendWeights.y > threshold) finalWeights.y = blendWeights.y;
+	if(blendWeights.z > threshold) finalWeights.z = blendWeights.z;
+
+	finalWeights /= finalWeights.x + finalWeights.y + finalWeights.z;
+
+	if(finalWeights.x > 0) result += finalWeights.x * texture2D(tex, position.yz * scale).xyz;
+	if(finalWeights.y > 0) result += finalWeights.y * texture2D(tex, position.zx * scale).xyz;
+	if(finalWeights.z > 0) result += finalWeights.z * texture2D(tex, position.xy * scale).xyz;
 
 #endif
 
@@ -278,12 +293,6 @@ if(numOfReads == 3) result = vec3(1,0,0);
 }
 
 
-
-
-
-
-
-
 float myLog(float base, float num) {
 	return log2(num)/log2(base);
 }
@@ -296,23 +305,16 @@ float rand(vec2 co){
 
 vec3 getBiomeColor(sampler2D diffuseMap)
 {
-	vec3 pos = i.modelPos;
-	return
-		mix(
-			triPlanar(diffuseMap, pos, i.normal, 0.05),
-			triPlanar(diffuseMap, pos, i.normal, 0.5),
-			1
-		);
+	vec3 pos;
+	pos = vec3(i.modelPos + param_offsetFromPlanetCenter);
+	pos = i.modelPos;
+	return triPlanar(diffuseMap, pos, i.normal, 0.5);
 }
 vec3 getBiomeNormal(sampler2D normalMap)
 {
-	vec3 pos = i.modelPos;
-	return  
-		mix(
-			triPlanar(normalMap, pos, i.normal, 0.05),
-			triPlanar(normalMap, pos, i.normal, 0.5),
-			1
-		);
+	vec3 pos;
+	pos = vec3(i.modelPos + param_offsetFromPlanetCenter);
+	return triPlanar(normalMap, pos, i.normal, 0.5);
 }
 
 
@@ -339,6 +341,8 @@ void getColor(vec2 uv, out vec3 color, out vec3 normal) {
 	if(calculateNormal) normal = vec3(0);
 	else normal = vec3(0.5, 0.5, 1);
 
+	vec3 pos = vec3(i.modelPos + param_offsetFromPlanetCenter);
+
 	float amount;
 
 #define ADD_BIOME(ID, CHANNEL) \
@@ -363,13 +367,22 @@ void getColor(vec2 uv, out vec3 color, out vec3 normal) {
 
 void main()
 {
+
 	// if(param_visibility != 1)	{
 	//	if(clamp(rand(gl_FragCoord.xy),0,1) > param_visibility) discard;
 	// }	
 
 	// BASE COLOR
 	//float pixelDepth = gl_FragCoord.z/gl_FragCoord.w; //distance(EyePosition, i.worldPos);
-	vec2 uv = calestialToSpherical(i.modelPos + param_offsetFromPlanetCenter).xy;
+
+
+	vec3 pos = vec3(i.modelPos + param_offsetFromPlanetCenter);
+
+	vec2 uv = calestialToSpherical(pos).xy;
+
+	//uv.x += perlinNoise(pos / 10000) / 200;
+	//uv.y += perlinNoise(pos.yxz / 10000) / 200;
+
 	vec3 color;
 	vec3 normalColorFromTexture;
 	getColor(uv, color, normalColorFromTexture);

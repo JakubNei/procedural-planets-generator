@@ -84,7 +84,7 @@ namespace MyGame.PlanetaryBody
 			Renderer.Mesh = mesh;
 			Renderer.Offset += offsetCenter;
 			Renderer.Material = planetInfo.PlanetMaterial.CloneTyped();
-			Renderer.Material.Uniforms.Set("param_offsetFromPlanetCenter", Renderer.Offset.ToVector3());
+			Renderer.Material.Uniforms.Set("param_offsetFromPlanetCenter", Renderer.Offset.ToVector3d());
 		}
 
 	}
