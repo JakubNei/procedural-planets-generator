@@ -62,7 +62,7 @@ namespace MyGame.PlanetaryBody
 
 		public class CustomChunkMeshRenderer : MeshRenderer
 		{
-			public Segment chunk;
+			public Segment segment;
 
 			/*
 			public override bool ShouldRenderInContext(Camera camera, RenderContext renderContext)
@@ -83,10 +83,10 @@ namespace MyGame.PlanetaryBody
 			public override IEnumerable<Vector3> GetCameraSpaceOccluderTriangles(CameraData camera)
 			{
 				//if (chunk.occluderTringles.Count < 9 && chunk.IsGenerationDone) throw new Exception("this should not happen");
-				if (chunk?.IsGenerationDone == true && chunk?.occluderTringles.Count == 9)
+				if (segment?.IsGenerationDone == true && segment?.occluderTringles.Count == 9)
 				{
 					var mvp = GetModelViewProjectionMatrix(camera);
-					return chunk.occluderTringles.Select(v3 => v3.Multiply(ref mvp));
+					return segment.occluderTringles.Select(v3 => v3.Multiply(ref mvp));
 				}
 				else
 				{
@@ -96,13 +96,22 @@ namespace MyGame.PlanetaryBody
 
 			public override MyRenderingMode RenderingMode
 			{
-				get => base.RenderingMode;
+				get
+                {
+                    return base.RenderingMode;
+                }
 				set
 				{
-					if (value.HasFlag(MyRenderingMode.RenderGeometry) && chunk?.IsGenerationDone == false)
+					if (value.HasFlag(MyRenderingMode.RenderGeometry) && segment?.IsGenerationDone == false)
 					{
-						Log.Warn("trying to render segment " + this + " that did not finish generation");
+						Log.Warn("trying to render segment " + segment + " that did not finish generation");
 					}
+
+                    if(segment != null && segment.parent != null && segment.parent.Children.Count == 0)
+                    {
+                        Log.Error("parent segment had to children, should not happen, " + segment);
+                    }
+
 					base.RenderingMode = value;
 				}
 			}

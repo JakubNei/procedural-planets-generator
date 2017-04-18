@@ -80,7 +80,7 @@ namespace MyGame.PlanetaryBody
 
 			if (Renderer != null) throw new Exception("something went terribly wrong, renderer should be null");
 			Renderer = planetInfo.Entity.AddComponent<CustomChunkMeshRenderer>();
-			Renderer.chunk = this;
+			Renderer.segment = this;
 			Renderer.Mesh = mesh;
 			Renderer.Offset += offsetCenter;
 			Renderer.Material = planetInfo.PlanetMaterial.CloneTyped();

@@ -58,7 +58,10 @@ namespace MyEngine.Components
 		MyRenderingMode renderingMode;
 		public virtual MyRenderingMode RenderingMode
 		{
-			get => renderingMode;
+			get
+            {
+                return renderingMode;
+            }
 			set
 			{
 				if (value != renderingMode)
@@ -72,7 +75,10 @@ namespace MyEngine.Components
 		Material material;
 		public virtual Material Material
 		{
-			get => material;
+			get
+            {
+                return material;
+            }
 			set
 			{
 				if (value != material)
@@ -88,7 +94,10 @@ namespace MyEngine.Components
 		bool forcePassCulling;
 		public virtual bool ForcePassCulling
 		{
-			get => forcePassCulling;
+			get
+            {
+                return forcePassCulling;
+            }
 			set
 			{
 				if (value != forcePassCulling)

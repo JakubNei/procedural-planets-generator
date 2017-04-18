@@ -16,16 +16,16 @@ namespace MyEngine.Components
 	public class Camera : ComponentWithShortcuts
 	{
 
-		public float AspectRatio { get => currentData.AspectRatio; set => currentData.AspectRatio = value; }
-		public float FieldOfView { get => currentData.FieldOfView; set => currentData.FieldOfView = value; }
-		public float NearClipPlane { get => currentData.NearClipPlane; set => currentData.NearClipPlane = value; }
-		public float FarClipPlane { get => currentData.FarClipPlane; set => currentData.FarClipPlane = value; }
-		public bool IsOrthographic { get => currentData.IsOrthographic; set => currentData.IsOrthographic = value; }
-		public float OrthographicSize { get => currentData.OrthographicSize; set => currentData.OrthographicSize = value; }
-		public int PixelWidth { get => currentData.PixelWidth; private set => currentData.PixelWidth = value; }
-		public int PixelHeight { get => currentData.PixelHeight; private set => currentData.PixelHeight = value; }
-		public Vector2 ScreenSize { get => currentData.ScreenSize; private set => currentData.ScreenSize = value; }
-		public Vector3 AmbientColor { get => currentData.AmbientColor; private set => currentData.AmbientColor = value; }
+		public float AspectRatio { get { return currentData.AspectRatio; } set {currentData.AspectRatio = value; } }
+		public float FieldOfView { get { return currentData.FieldOfView; } set {currentData.FieldOfView = value; } }
+		public float NearClipPlane { get { return currentData.NearClipPlane; } set {currentData.NearClipPlane = value; } }
+		public float FarClipPlane { get { return currentData.FarClipPlane; } set {currentData.FarClipPlane = value; } }
+		public bool IsOrthographic { get { return currentData.IsOrthographic; } set {currentData.IsOrthographic = value; } }
+		public float OrthographicSize { get { return currentData.OrthographicSize; } set {currentData.OrthographicSize = value; } }
+		public int PixelWidth { get { return currentData.PixelWidth; } private set { currentData.PixelWidth = value; } }
+		public int PixelHeight { get { return currentData.PixelHeight; } private set { currentData.PixelHeight = value; } }
+		public Vector2 ScreenSize { get { return currentData.ScreenSize; } private set { currentData.ScreenSize = value; } }
+		public Vector3 AmbientColor { get { return currentData.AmbientColor; } private set { currentData.AmbientColor = value; } }
 
 
 		public WorldPos ViewPointPosition => this.Entity.Transform.Position;
