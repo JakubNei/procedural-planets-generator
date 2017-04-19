@@ -80,11 +80,13 @@ namespace MyGame.PlanetaryBody
 
 			if (Renderer != null) throw new Exception("something went terribly wrong, renderer should be null");
 			Renderer = planetInfo.Entity.AddComponent<CustomChunkMeshRenderer>();
+			Renderer.RenderingMode = MyRenderingMode.DontRender;
 			Renderer.segment = this;
 			Renderer.Mesh = mesh;
 			Renderer.Offset += offsetCenter;
 			Renderer.Material = planetInfo.PlanetMaterial.CloneTyped();
 			Renderer.Material.Uniforms.Set("param_offsetFromPlanetCenter", Renderer.Offset.ToVector3d());
+			Renderer.Material.Uniforms.Set("param_remainderOffset", Renderer.Offset.Remainder());
 		}
 
 	}

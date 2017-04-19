@@ -23,7 +23,7 @@ namespace MyEngine
 		CVarFactory factory;
 
 
-		public CvarValueType ValueType { get; private set; }
+		public CvarValueType ValueType { get; set; }
 
 		public bool HasValue => ValueType != CvarValueType.NotSet;
 

@@ -220,9 +220,9 @@ namespace MyGame.PlanetaryBody
 
 			var weight = GetSizeOnScreen(cam);
 
-			weight *= (1 + MyMath.Clamp01(dotToCamera));
+			//weight *= (1 + MyMath.Clamp01(dotToCamera));
 
-			if (isVisible == false) weight *= 0.3f;
+			//if (isVisible == false) weight *= 0.3f;
 			return weight;
 		}
 
@@ -309,27 +309,23 @@ namespace MyGame.PlanetaryBody
 				else if (Renderer == null) Log.Warn("trying to show segment " + this + " that does not have renderer");
 				else Renderer.RenderingMode = MyRenderingMode.RenderGeometryAndCastShadows;
 
-				if (Children.Count > 0)
-				{
-					foreach (var child in Children)
-					{
-						child.SetVisible(false);
-					}
-				}
+				foreach (var child in Children)
+					child.SetVisible(false);
 			}
 			else
 			{
-				if (Renderer != null) Renderer.RenderingMode = MyRenderingMode.DontRender;
+				if (Renderer != null)
+					Renderer.RenderingMode = MyRenderingMode.DontRender;
 			}
 		}
 
-		public bool ShouldBeVisible { get; set; }
+		public bool WantsToBeVisible { get; set; }
 
-		public void SetShouldBeVisible(bool shouldBeVisible)
+		public void SetWantsToBeVisible(bool visible)
 		{
-			ShouldBeVisible = shouldBeVisible;
+			WantsToBeVisible = visible;
 
-			if(shouldBeVisible)
+			if(visible)
 			{
 				foreach (var c in Children)
 					c.ShouldNotBeVisible();
@@ -338,7 +334,7 @@ namespace MyGame.PlanetaryBody
 
 		void ShouldNotBeVisible()
 		{
-			this.ShouldBeVisible = false;
+			this.WantsToBeVisible = false;
 			foreach (var c in Children)
 				c.ShouldNotBeVisible();
 		}

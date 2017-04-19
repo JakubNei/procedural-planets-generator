@@ -4,7 +4,7 @@
 
 uniform sampler2D param_perlinNoise;
 uniform dvec3 param_offsetFromPlanetCenter;
-
+uniform vec3 param_remainderOffset;
 
 
 
@@ -306,14 +306,15 @@ float rand(vec2 co){
 vec3 getBiomeColor(sampler2D diffuseMap)
 {
 	vec3 pos;
-	pos = vec3(i.modelPos + param_offsetFromPlanetCenter);
-	pos = i.modelPos;
+	//pos = vec3(i.modelPos + param_offsetFromPlanetCenter);
+	//pos = i.modelPos;
+	pos = vec3(i.modelPos + param_remainderOffset);	
 	return triPlanar(diffuseMap, pos, i.normal, 0.5);
 }
 vec3 getBiomeNormal(sampler2D normalMap)
 {
 	vec3 pos;
-	pos = vec3(i.modelPos + param_offsetFromPlanetCenter);
+	pos = vec3(i.modelPos + param_remainderOffset);
 	return triPlanar(normalMap, pos, i.normal, 0.5);
 }
 

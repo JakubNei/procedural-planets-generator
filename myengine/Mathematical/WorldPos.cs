@@ -40,6 +40,19 @@ namespace MyEngine
 			MoveSectorIfNeeded();
 		}
 
+		public Vector3 Remainder()
+		{
+			var x = insideSectorPosition.X.Floor();
+			var y = insideSectorPosition.Y.Floor();
+			var z = insideSectorPosition.Z.Floor();
+
+			return new Vector3(
+				(float)(insideSectorPosition.X - x),
+				(float)(insideSectorPosition.Y - y),
+				(float)(insideSectorPosition.Z - z)
+			);
+		}
+
 		void MoveSectorIfNeeded()
 		{
 			long sector_add;

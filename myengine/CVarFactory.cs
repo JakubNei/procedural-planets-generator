@@ -101,7 +101,7 @@ namespace MyEngine
 					var value = dataParts[1].Trim();
 					if (value == "not set")
 					{
-
+						cvar.ValueType = CvarValueType.NotSet;
 					}
 					else if (bool.TryParse(value, out typedBoolValue))
 					{
@@ -121,7 +121,7 @@ namespace MyEngine
 							Log.Warn("invalid toggle key for cvar: " + toggleKey);
 					}
 
-					Log.Info("loaded cvar: '" + ToSaveString(cvar) + "'");
+					Log.Info("loaded cvar: '" + ToSaveString(cvar) + "' from line: '" + _line + "'");
 				}
 
 				lines.Add(new LineHolder() { associatedCvar = cvar, commentPart = commentPart, dataPart = dataPart });
@@ -200,6 +200,7 @@ namespace MyEngine
 
 		public CVar GetCVar(string name)
 		{
+			name = name.Trim();
 			CVar cvar;
 			if (!nameToCVar.TryGetValue(name, out cvar))
 			{
@@ -211,6 +212,7 @@ namespace MyEngine
 		}
 		public CVar GetCVar(string name, bool defaultValue = false)
 		{
+			name = name.Trim();
 			CVar cvar;
 			if (!nameToCVar.TryGetValue(name, out cvar))
 			{
@@ -223,6 +225,7 @@ namespace MyEngine
 		}
 		public CVar GetCVar(string name, float defaultValue = 0)
 		{
+			name = name.Trim();
 			CVar cvar;
 			if (!nameToCVar.TryGetValue(name, out cvar))
 			{
