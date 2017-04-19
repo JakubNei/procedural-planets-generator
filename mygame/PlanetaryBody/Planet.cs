@@ -80,6 +80,7 @@ namespace MyGame.PlanetaryBody
 			config.SetTo(PlanetMaterial.Uniforms);
 			InitializeRootSegments();
 			InitializeJobTemplate();
+			InitializePrepareLoop();
 		}
 
 		CVar GetSurfaceHeightDebug => Debug.GetCVar("planets / debug / get surface height");

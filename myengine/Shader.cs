@@ -32,7 +32,9 @@ namespace MyEngine
 		/// <summary>
 		/// Increases by one every time the shader is (re)loaded.
 		/// </summary>
-		public int Version { get; private set; } = 1;
+		public int VersionOnGpu { get; private set; } = 0;
+
+		public int VersionInFile { get; private set; } = 1;
 
 		public bool shouldReload;
 
@@ -80,7 +82,7 @@ namespace MyEngine
 			{
 				Log.Info(typeof(Shader) + " " + file + " loaded successfully");
 				LoadState = State.LoadedSuccess;
-				Version++;
+				VersionOnGpu = VersionInFile;
 			}
 			else
 			{
@@ -89,6 +91,7 @@ namespace MyEngine
 
 			fileWatcher.WatchFile(file.RealPath, (string newFilePath) =>
 			{
+				VersionInFile++;
 				fileWatcher.StopAllWatchers();
 				shouldReload = true;
 			});

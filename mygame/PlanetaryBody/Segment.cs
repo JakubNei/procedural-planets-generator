@@ -52,9 +52,6 @@ namespace MyGame.PlanetaryBody
 
 		List<Vector3> occluderTringles = new List<Vector3>();
 
-		public int meshGeneratedWithShaderVersion;
-
-
 
 		public Segment parent;
 		public List<Segment> Children { get; } = new List<Segment>();
@@ -346,6 +343,7 @@ namespace MyGame.PlanetaryBody
 				IsGenerationDone = true;
 			}
 		}
+
 		public void DestroyRenderer()
 		{
 			lock (this)
@@ -358,6 +356,23 @@ namespace MyGame.PlanetaryBody
 				planetInfo.Entity.DestroyComponent(Renderer);
 				Renderer = null;
 			}
+		}
+
+		static public void DestroyAll(Segment segment)
+		{
+			segment.DestroyRenderer();
+			foreach (var c in segment.Children)
+				DestroyAll(c);
+			segment.Children.Clear();
+		}
+
+
+		static public void MarkForRegeneration(Segment segment)
+		{
+			segment.IsGenerationDone = false;
+			segment.GenerationBegan = false;
+			foreach (var c in segment.Children)
+				MarkForRegeneration(c);
 		}
 
 		public override string ToString()

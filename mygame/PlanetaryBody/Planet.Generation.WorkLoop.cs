@@ -155,7 +155,6 @@ namespace MyGame.PlanetaryBody
 			ulong chunksGenerated = 0;
 			jobTemplate.AddTask(segment =>
 			{
-				segment.meshGeneratedWithShaderVersion = GenerateHeights.Version;
 				segment.NotifyGenerationDone();
 
 				chunksGenerated++;

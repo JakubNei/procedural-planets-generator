@@ -81,12 +81,6 @@ namespace MyGame.PlanetaryBody
 			}
 
 			segment.SetVisible(true);
-
-			if (segment.IsGenerationDone && GenerateHeights.Version != segment.meshGeneratedWithShaderVersion)
-			{
-				segment.DestroyRenderer();
-				toGenerate.Add(segment, float.MaxValue);
-			}
 		}
 
 
@@ -146,6 +140,9 @@ namespace MyGame.PlanetaryBody
 			}
 		}
 
+
+	
+
 		Queue<Segment> toGenerateOrdered;
 		WeightedSegmentsList toGenerate;
 		public void TrySubdivideOver(WorldPos pos)
@@ -153,6 +150,8 @@ namespace MyGame.PlanetaryBody
 			if (toGenerate == null)
 				toGenerate = new WeightedSegmentsList() { cam = Camera };
 			toGenerate.Clear();
+
+			ShadersReloadedCheck();
 
 			foreach (var rootSegment in rootSegments)
 			{
@@ -176,6 +175,23 @@ namespace MyGame.PlanetaryBody
 
 			Debug.AddValue("generation / segments to generate", toGenerate.Count);
 			toGenerateOrdered = new Queue<Segment>(toGenerate.GetWeighted());
+		}
+
+		int shaderVersion;
+		void InitializePrepareLoop()
+		{
+			shaderVersion = GenerateHeights.VersionInFile;
+		}
+		void ShadersReloadedCheck()
+		{
+			if (shaderVersion != GenerateHeights.VersionInFile)
+			{
+				shaderVersion = GenerateHeights.VersionInFile;
+				foreach (var rootSegment in this.rootSegments)
+				{
+					Segment.MarkForRegeneration(rootSegment);
+				}
+			}
 		}
 
 
