@@ -124,16 +124,15 @@ uniform int param_verticesStartIndexOffset;
 
 float GetHeightAt(vec3 initialPos)
 {
-	float result = -0.5;
+	float result = 0;
 	
 	{ // base noise
-		vec3 pos = initialPos;
-		int octaves = 8;
-		float freq = 400;
+		float freq = 10;
+		vec3 pos = initialPos * freq;
+		int octaves = 10;
 		float ampModifier = 0.15;
 		float freqModifier = 5;
 		float amp = 1;
-		pos *= freq;
 		for (int i = 0; i < octaves; i++)
 		{
 			result += perlinNoise(pos) * amp;
@@ -178,9 +177,15 @@ double GetHeight(vec3 uv)
 	vec3 direction = sphericalToCalestial(uv) ;
 	return GetHeight(direction, uv);
 }
+
+double RealHeightTo01(double height)
+{
+	return height / param_baseHeightMapMultiplier;
+	//return height / (param_baseHeightMapMultiplier + param_noiseMultiplier);
+}
 double GetHeight01(vec3 uv)
 {
-	return GetHeight(uv) / (param_baseHeightMapMultiplier + param_noiseMultiplier);
+	return RealHeightTo01(GetHeight(uv));
 }
 
 float GetHumidity(vec3 uvCenter)
@@ -190,7 +195,7 @@ float GetHumidity(vec3 uvCenter)
 	vec3 uv = uvCenter;
 	if(GetHeight01(uv) < waterHeight) return 1;
 
-	const float maxDistanceToWater = 0.02;
+	const float maxDistanceToWater = 0.05;
 	const float distanceToWaterIncrease = 0.001;
 	float distanceToWater = 0;	
 
@@ -254,7 +259,7 @@ void main() {
 	double height = GetHeight(p, uv);
 
 	// passing data to generate biomes in computer shader
-	biomes1.x = float(height / (param_baseHeightMapMultiplier + param_noiseMultiplier));
+	biomes1.x = float(RealHeightTo01(height));
 	biomes1.y = GetHumidity(uv);
 
 	p *= param_radiusMin + height;

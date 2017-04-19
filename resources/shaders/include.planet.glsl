@@ -15,31 +15,39 @@ uniform sampler2D param_biomesControlMap;
 
 
 // water
-uniform sampler2D param_biome1r_diffuseMap;
-uniform sampler2D param_biome1r_normalMap;
+uniform sampler2D 	param_biome1r_diffuseMap;
+uniform sampler2D 	param_biome1r_normalMap;
+uniform vec3 		param_biome1r_color;
 
-uniform sampler2D param_biome1g_diffuseMap;
-uniform sampler2D param_biome1g_normalMap;
+uniform sampler2D 	param_biome1g_diffuseMap;
+uniform sampler2D 	param_biome1g_normalMap;
+uniform vec3 		param_biome1g_color;
 
-uniform sampler2D param_biome1b_diffuseMap;
-uniform sampler2D param_biome1b_normalMap;
+uniform sampler2D 	param_biome1b_diffuseMap;
+uniform sampler2D 	param_biome1b_normalMap;
+uniform vec3 		param_biome1b_color;
 
-uniform sampler2D param_biome1a_diffuseMap;
-uniform sampler2D param_biome1a_normalMap;
+uniform sampler2D 	param_biome1a_diffuseMap;
+uniform sampler2D 	param_biome1a_normalMap;
+uniform vec3 		param_biome1a_color;
 
 
 
-uniform sampler2D param_biome2r_diffuseMap;
-uniform sampler2D param_biome2r_normalMap;
+uniform sampler2D 	param_biome2r_diffuseMap;
+uniform sampler2D 	param_biome2r_normalMap;
+uniform vec3 		param_biome2r_color;
 
-uniform sampler2D param_biome2g_diffuseMap;
-uniform sampler2D param_biome2g_normalMap;
+uniform sampler2D 	param_biome2g_diffuseMap;
+uniform sampler2D 	param_biome2g_normalMap;
+uniform vec3 		param_biome2g_color;
 
-uniform sampler2D param_biome2b_diffuseMap;
-uniform sampler2D param_biome2b_normalMap;
+uniform sampler2D 	param_biome2b_diffuseMap;
+uniform sampler2D 	param_biome2b_normalMap;
+uniform vec3 		param_biome2b_color;
 
-uniform sampler2D param_biome2a_diffuseMap;
-uniform sampler2D param_biome2a_normalMap;
+uniform sampler2D 	param_biome2a_diffuseMap;
+uniform sampler2D 	param_biome2a_normalMap;
+uniform vec3 		param_biome2a_color;
 
 
 

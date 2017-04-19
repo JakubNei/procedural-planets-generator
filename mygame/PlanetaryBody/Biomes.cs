@@ -14,13 +14,21 @@ namespace MyGame.PlanetaryBody
 
 	public class Biome
 	{
+		public int atlasId;
 		public Texture2D diffuse;
 		public Texture2D normal;
+		public Color color;
+		public Vector3 VectorColor => color.ToVector4().Xyz;
+
 	}
 
 	public class BiomesAtlas : SingletonsPropertyAccesor
 	{
-		Dictionary<Color, Biome> biomes = new Dictionary<Color, Biome>();
+		int nextId = 0;
+
+
+
+		public Dictionary<Color, Biome> biomes = new Dictionary<Color, Biome>();
 		public void AddBiome(Color color, string textureVirtualPath)
 		{
 			Texture2D diffuse;
@@ -43,7 +51,10 @@ namespace MyGame.PlanetaryBody
 			{
 				diffuse = diffuse,
 				normal = normal,
+				atlasId = nextId,
+				color = color,
 			};
+			nextId++;
 			biomes[color] = b;
 		}
 

@@ -10,9 +10,9 @@ generation / limit generation by fps = true
 generation / move skirts on GPU = false 
 generation / planet segments pause subdivision and visibility updates = false 
 generation / print statistics report = false 
-generation / segment number of vertices on edge = 30 
-generation / segment stop recursion at world size = 100 
-generation / segment subdivide if weight is bigger than = 0.7 
+generation / segment number of vertices on edge = 80 
+generation / segment stop recursion at world size = 50 
+generation / segment subdivide if weight is bigger than = 0.5 
 generation / use skirts = true 
 planets / debug / get surface height = false 
 rendering / debug / draw gbuffer contents = false = f10 
@@ -27,10 +27,10 @@ rendering / enable post process effects = false
 rendering / fps / automatically adjust target fps = false 
 rendering / fps / fps throttling enabled = false 
 rendering / fps / target fps = 60 
-rendering / fullscreen = false 
+rendering / fullscreen = false = f 
 rendering / gamma correction = 2.2 
-rendering / occlusion culling / enable rasterizer culling = false 
-rendering / occlusion culling / enable rasterizer rasterization = false 
+rendering / occlusion culling / enable rasterizer culling = true 
+rendering / occlusion culling / enable rasterizer rasterization = true 
 rendering / occlusion culling / enabled = true 
 rendering / parallelize render prepare = true 
 rendering / render only front of triangles = true 

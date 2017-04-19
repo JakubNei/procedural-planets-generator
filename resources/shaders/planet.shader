@@ -216,10 +216,40 @@ void main()
 	o.biomes1	= interpolate4D(	i[0].biomes1,	i[1].biomes1,	i[2].biomes1	); 
 	o.biomes2	= interpolate4D(	i[0].biomes2,	i[1].biomes2,	i[2].biomes2	); 
 
+	vec3 pos = vec3(o.modelPos + param_offsetFromPlanetCenter);
+
+	/*{
+		// add some random variaton to biomes boundaries
+		vec3 pp = o.modelPos;
+		const float cw = 0.5;
+		const float pw = 1;
+
+	    o.biomes1.x *= cw + perlinNoise(pp / 200) * pw;
+	    o.biomes1.y *= cw + perlinNoise(pp / 225) * pw;
+	    o.biomes1.z *= cw + perlinNoise(pp / 250) * pw;
+	    o.biomes1.w *= cw + perlinNoise(pp / 275) * pw;
+
+	    o.biomes2.x *= cw + perlinNoise(pp / 300) * pw;
+	    o.biomes2.y *= cw + perlinNoise(pp / 325) * pw;
+	    o.biomes2.z *= cw + perlinNoise(pp / 350) * pw;
+	    o.biomes2.w *= cw + perlinNoise(pp / 375) * pw;
+
+	    o.biomes1 = clamp(o.biomes1, 0, 1);
+	    o.biomes2 = clamp(o.biomes2, 0, 1);
+
+		float sum = 
+			o.biomes1.x + o.biomes1.y + o.biomes1.z + o.biomes1.w +
+			o.biomes2.x + o.biomes2.y + o.biomes2.z + o.biomes2.w;
+
+		o.biomes1 /= sum;
+		o.biomes2 /= sum;
+	}*/
+
+
 	//o.uv = calestialToSpherical(o.modelPos + param_offsetFromPlanetCenter).xy;
 
 	// APPLY TERRAIN MODIFIER
-	vec3 pos = vec3(o.modelPos + param_offsetFromPlanetCenter);
+	
 	// make it uniform across different planet sizes
 	//pos *= float(param_radiusMin) / 20000;
 	float amount = AdjustTerrainAt(pos) * 0.1;
@@ -334,16 +364,23 @@ float rand(vec2 co){
 
 vec3 getBiomeColor(sampler2D diffuseMap)
 {
-	vec3 pos;
-	//pos = vec3(i.modelPos + param_offsetFromPlanetCenter);
-	//pos = i.modelPos;
-	pos = vec3(i.modelPos + param_remainderOffset);	
+	vec3 pos = vec3(i.modelPos + param_remainderOffset);	
 	return triPlanar(diffuseMap, pos, i.normal, 0.5);
 }
 vec3 getBiomeNormal(sampler2D normalMap)
 {
-	vec3 pos;
-	pos = vec3(i.modelPos + param_remainderOffset);
+	vec3 pos = vec3(i.modelPos + param_remainderOffset);
+	return triPlanar(normalMap, pos, i.normal, 0.5);
+}
+
+vec3 getBiomeColor(sampler2D diffuseMap, vec3 offset)
+{
+	vec3 pos = vec3(i.modelPos + param_remainderOffset + offset);	
+	return triPlanar(diffuseMap, pos, i.normal, 0.5);
+}
+vec3 getBiomeNormal(sampler2D normalMap, vec3 offset)
+{
+	vec3 pos = vec3(i.modelPos + param_remainderOffset + offset);
 	return triPlanar(normalMap, pos, i.normal, 0.5);
 }
 
@@ -374,7 +411,16 @@ void getColor(vec2 uv, out vec3 color, out vec3 normal) {
 			normal += amount * getBiomeNormal(param_biome##ID##CHANNEL##_normalMap); \
 	}
 
-    RENDER_BIOME(1,r)
+    //RENDER_BIOME(1,r)
+    //special handling for water
+	amount = i.biomes1.r;
+	if(amount > 0) {
+		vec3 offset = vec3(engine.totalElapsedSecondsSinceEngineStart);
+		color += amount * getBiomeColor(param_biome1r_diffuseMap, offset);
+		if(shouldCalculateNormal)
+			normal += amount * getBiomeNormal(param_biome1r_normalMap, offset);
+	}
+
     RENDER_BIOME(1,g)
     RENDER_BIOME(1,b)
     RENDER_BIOME(1,a)
@@ -447,7 +493,7 @@ void main()
 	//out_color = vec4(i.normal,1);
 	//out_color = vec4(vec3(i.biomes1.r),1);
 	//out_color = vec4(vec3(i.biomes1.g),1);
-	out_color = vec4(vec3(i.biomes2),1);
+	//out_color = vec4(vec3(i.biomes2),1);
 }
 
 	

@@ -24,33 +24,16 @@ namespace MyGame.PlanetaryBody
 		public double baseHeightMapMultiplier;
 
 		public Texture2D biomesControlMap;
-		//public Texture2D waterMap = new Texture2D(64, 64) { FilterMode = FilterMode.Point, UseMipMaps = false };
 
-		private Dictionary<int, Texture2D> splatMaps = new Dictionary<int, Texture2D>();
-		/// <summary>
-		/// Every splat map has 4 channels, every channel controls biome intensity.
-		/// splatMapTexture = splatMaps[floor(biome.id / 4)];
-		/// splatMapChannel = splatMaps[biome.id % 4];
-		/// </summary>
-		/// <param name="id"></param>
-		/// <param name="splatMap"></param>
-		public void AddControlSplatMap(int id, Texture2D splatMap)
-		{
-			splatMaps.Add(id, splatMap);
-		}
+
 
 		private Dictionary<int, Biome> biomes = new Dictionary<int, Biome>();
 
-		public void LoadConfig(FileExisting path, BiomesAtlas atlas)
+		public void AddBiomes(BiomesAtlas atlas)
 		{
-			var data = BiomesMetadataFile.Load(path.RealPath);
-			foreach (var i in data.data)
-			{
-				var b = atlas.GetBiome(i.Color);
-				AddBiome(i.BiomeId, b);
-			}
+			foreach (var b in atlas.biomes.Values)
+				AddBiome(b.atlasId, b);
 		}
-
 		public void AddBiome(int id, Biome biome)
 		{
 			biomes.Add(id, biome);
@@ -66,11 +49,6 @@ namespace MyGame.PlanetaryBody
 
 			uniforms.Set("param_biomesControlMap", biomesControlMap);
 
-			foreach (var splatMap in splatMaps)
-			{
-				uniforms.Set("param_biomesSplatMap" + splatMap.Key, splatMap.Value);
-			}
-
 			foreach (var biome in biomes)
 			{
 				var splatMapTextureId = (biome.Key / 4.0).FloorToInt();
@@ -80,6 +58,7 @@ namespace MyGame.PlanetaryBody
 				splatMapTextureId += 1;
 				uniforms.Set("param_biome" + splatMapTextureId + "" + channel + "_diffuseMap", biome.Value.diffuse);
 				uniforms.Set("param_biome" + splatMapTextureId + "" + channel + "_normalMap", biome.Value.normal);
+				uniforms.Set("param_biome" + splatMapTextureId + "" + channel + "_color", biome.Value.VectorColor);
 			}
 		}
 	}

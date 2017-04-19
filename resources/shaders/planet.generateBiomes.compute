@@ -106,29 +106,59 @@ void main() {
 
 	int verticeIndex = int(gl_GlobalInvocationID.x) + param_verticesStartIndexOffset;
 
+	vec3 position = fromStruct(positions[verticeIndex]);
 	vec3 normal = fromStruct(normals[verticeIndex]);
 	vec2 uv = fromStruct(uvs[verticeIndex]);
 	vec4 biomes1 = fromStruct(out_biomes1[verticeIndex]);
 	vec4 biomes2 = fromStruct(out_biomes2[verticeIndex]);
 
+	dvec3 planetPosition = position + param_offsetFromPlanetCenter;
+	vec3 dirFromPlanet = vec3(normalize(planetPosition));
+
 	// passed from generate heights shader
 	float altFromBottomOfSea = biomes1.x;
 	float humidity = biomes1.y;
 
+	biomes1 = vec4(0);
+	biomes2 = vec4(0);
+
 	//altFromSea /= (param_baseHeightMapMultiplier + param_noiseMultiplier);
-
 	//if(altFromBottomOfSea < 0.5) { color=vec3(0,0,1); return; }
-
 	float altFromSea = altFromBottomOfSea - 0.5;
 
 	// 1 at meridian.. 0 at poles
 	float distanceFromPoles = 1 - abs(uv.y - 0.5) * 2;
 	float temperature = (1 - altFromSea) * distanceFromPoles;
 
-	vec3 color = texture2D(param_biomesControlMap, vec2(temperature, humidity)).rgb;
-	biomes2.rgb = color;
+	// 1 = supet steep, 0 = flat
+	float steepness = 1 - clamp(dot(normal, dirFromPlanet), 0, 1); 
 
-	biomes1.x = temperature;
+	vec3 biome = texture2D(param_biomesControlMap, vec2(temperature, humidity)).rgb;
+
+#define TRY_BIOME(ID, CHANNEL) \
+	if(distance(param_biome##ID##CHANNEL##_color, biome) < 0.01) { \
+		biomes##ID##.##CHANNEL = 1; \
+	}
+
+    TRY_BIOME(1,r)
+    TRY_BIOME(1,g)
+    TRY_BIOME(1,b)
+    TRY_BIOME(1,a)
+    TRY_BIOME(2,r)
+    TRY_BIOME(2,g)
+    TRY_BIOME(2,b)
+    TRY_BIOME(2,a)
+
+
+    biomes1 = clamp(biomes1, 0, 1);
+    biomes2 = clamp(biomes2, 0, 1);
+
+	float sum = 
+		biomes1.x + biomes1.y + biomes1.z + biomes1.w +
+		biomes2.x + biomes2.y + biomes2.z + biomes2.w;
+
+	biomes1 /= sum;
+	biomes2 /= sum;
 
 	out_biomes1[verticeIndex] = toStruct(biomes1);
 	out_biomes2[verticeIndex] = toStruct(biomes2);

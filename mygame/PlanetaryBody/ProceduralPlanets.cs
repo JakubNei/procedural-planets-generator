@@ -71,13 +71,13 @@ namespace MyGame
 
 			var biomesAtlas = new BiomesAtlas();
 
-			biomesAtlas.AddBiome(Color.FromArgb(255, 255, 255), "planet/biomes/snow"); // white, 1,1,1
+			biomesAtlas.AddBiome(Color.FromArgb(0, 0, 255), "planet/biomes/water"); // blue, 0,0,1
 			biomesAtlas.AddBiome(Color.FromArgb(128, 128, 128), "planet/biomes/tundra"); // grey,  0.5,0.5,0.5
+			biomesAtlas.AddBiome(Color.FromArgb(255, 255, 255), "planet/biomes/snow"); // white, 1,1,1
 			biomesAtlas.AddBiome(Color.FromArgb(64, 128, 64), "planet/biomes/tundra2"); // green-vomit,  0.25,0.5,0.25
 			biomesAtlas.AddBiome(Color.FromArgb(255, 255, 128), "planet/biomes/sand"); // sand,  1,1,0.5
 			biomesAtlas.AddBiome(Color.FromArgb(255, 255, 0), "planet/biomes/sand2"); // yellow, 1,1,0
 			biomesAtlas.AddBiome(Color.FromArgb(0, 128, 0), "planet/biomes/grass"); // green, 0,0.5,0
-			biomesAtlas.AddBiome(Color.FromArgb(0, 0, 255), "planet/biomes/water"); // blue, 0,0,1
 
 			/*{
 				// procedural stars or space dust
@@ -124,13 +124,11 @@ namespace MyGame
 
 				cfg.radiusMin = 100000;//100000; // 6371000m is earth radius
 				cfg.baseHeightMap = Factory.GetTexture2D("planet/data/earth/height_map.*");
-				cfg.baseHeightMapMultiplier = 500; // 20000m is highest earth point
-				cfg.noiseMultiplier = 0;
+				cfg.baseHeightMapMultiplier = 1000; // 20000m is highest earth point
+				cfg.noiseMultiplier = 300;
 				cfg.biomesControlMap = new Texture2D(FileSystem.FindExistingFile("planet/data/earth/biomes_control_map.*"))
 										{ FilterMode = FilterMode.Point, WrapMode = MyEngine.TextureWrapMode.Clamp, UseMipMaps = false };
-				cfg.AddControlSplatMap(0, Factory.GetTexture2D("planet/data/earth/biomes_splat_map_0.*"));
-				cfg.AddControlSplatMap(1, Factory.GetTexture2D("planet/data/earth/biomes_splat_map_1.*"));
-				cfg.LoadConfig(FileSystem.FindExistingFile("planet/data/earth/biomes_splat_maps_metadata.xml"), biomesAtlas);
+				cfg.AddBiomes(biomesAtlas);
 
 				var planetShader = Factory.GetShader("shaders/planet.shader");
 				var planetMaterial = new Material();
@@ -157,9 +155,7 @@ namespace MyGame
 				cfg.noiseMultiplier = 50;
 				cfg.biomesControlMap = new Texture2D(FileSystem.FindExistingFile("planet/data/myplanet1/biomes_control_map.*"))
 										{ FilterMode = FilterMode.Point, WrapMode = MyEngine.TextureWrapMode.Clamp, UseMipMaps = false };
-				cfg.AddControlSplatMap(0, Factory.GetTexture2D("planet/data/myplanet1/biomes_splat_map_0.*"));
-				cfg.AddControlSplatMap(1, Factory.GetTexture2D("planet/data/myplanet1/biomes_splat_map_1.*"));
-				cfg.LoadConfig(FileSystem.FindExistingFile("planet/data/myplanet1/biomes_splat_maps_metadata.xml"), biomesAtlas);
+				cfg.AddBiomes(biomesAtlas);
 
 				var planetShader = Factory.GetShader("shaders/planet.shader");
 				var planetMaterial = new Material();
