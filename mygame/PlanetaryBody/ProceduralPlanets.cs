@@ -126,6 +126,7 @@ namespace MyGame
 				cfg.baseHeightMap = Factory.GetTexture2D("planet/data/earth/height_map.*");
 				cfg.baseHeightMapMultiplier = 500; // 20000m is highest earth point
 				cfg.noiseMultiplier = 100;
+				cfg.biomesControlMap = Factory.GetTexture2D("planet/data/earth/biomes_control_map.*");
 				cfg.AddControlSplatMap(0, Factory.GetTexture2D("planet/data/earth/biomes_splat_map_0.*"));
 				cfg.AddControlSplatMap(1, Factory.GetTexture2D("planet/data/earth/biomes_splat_map_1.*"));
 				cfg.LoadConfig(FileSystem.FindExistingFile("planet/data/earth/biomes_splat_maps_metadata.xml"), biomesAtlas);
@@ -152,6 +153,7 @@ namespace MyGame
 				cfg.baseHeightMap = Factory.GetTexture2D("planet/data/myplanet1/height_map.*");
 				cfg.baseHeightMapMultiplier = 500;
 				cfg.noiseMultiplier = 50;
+				cfg.biomesControlMap = Factory.GetTexture2D("planet/data/myplanet1/biomes_control_map.*");
 				cfg.AddControlSplatMap(0, Factory.GetTexture2D("planet/data/myplanet1/biomes_splat_map_0.*"));
 				cfg.AddControlSplatMap(1, Factory.GetTexture2D("planet/data/myplanet1/biomes_splat_map_1.*"));
 				cfg.LoadConfig(FileSystem.FindExistingFile("planet/data/myplanet1/biomes_splat_maps_metadata.xml"), biomesAtlas);

@@ -1,0 +1,134 @@
+#version 430
+[ComputeShader]
+[include shaders/include.planet.glsl]
+#line 5
+
+
+
+struct vec2_struct
+{
+    float x;
+    float y;
+};
+vec2 fromStruct(vec2_struct p)
+{
+	return vec2(p.x, p.y);
+}
+vec2_struct toStruct(vec2 p)
+{
+	vec2_struct s;
+	s.x = p.x;
+	s.y = p.y;
+	return s;
+}
+
+
+struct vec3_struct
+{
+    float x;
+    float y;
+    float z;
+};
+vec3 fromStruct(vec3_struct p)
+{
+	return vec3(p.x, p.y, p.z);
+}
+vec3_struct toStruct(vec3 p)
+{
+	vec3_struct s;
+	s.x = p.x;
+	s.y = p.y;
+	s.z = p.z;
+	return s;
+}
+
+
+struct vec4_struct
+{
+    float x;
+    float y;
+    float z;
+    float w;
+};
+vec4 fromStruct(vec4_struct p)
+{
+	return vec4(p.x, p.y, p.z, p.w);
+}
+vec4_struct toStruct(vec4 p)
+{
+	vec4_struct s;
+	s.x = p.x;
+	s.y = p.y;
+	s.z = p.z;
+	s.w = p.w;
+	return s;
+}
+
+
+
+layout( binding=0 ) buffer buffer0 {
+    vec3_struct positions[];
+};
+layout( binding=1 ) buffer buffer1 {
+    vec3_struct normals[];
+};
+layout( binding=2 ) buffer buffer2 {
+    vec2_struct uvs[];
+};
+layout( binding=3 ) buffer buffer3 {
+    int indicies[];
+};
+layout( binding=4 ) buffer buffer4 {
+    vec4_struct out_biomes1[];
+};
+layout( binding=5 ) buffer buffer5 {
+    vec4_struct out_biomes2[];
+};
+
+
+layout( local_size_x = 1, local_size_y = 1, local_size_z = 1 ) in;
+
+
+uniform dvec3 param_offsetFromPlanetCenter;
+uniform int param_numberOfVerticesOnEdge;
+uniform dvec3 param_cornerPositionA;
+uniform dvec3 param_cornerPositionB;
+uniform dvec3 param_cornerPositionC;
+uniform int param_indiciesCount;
+uniform int param_verticesStartIndexOffset;
+
+
+
+
+
+
+void main() {
+
+	vec3 normal = fromStruct(normals[verticeIndex]);
+	vec2 uv = fromStruct(uvs[verticeIndex]);
+	vec4 biomes1 = fromStruct(out_biomes1[verticeIndex]);
+	vec4 biomes2 = fromStruct(out_biomes2[verticeIndex]);
+
+	// passed from generate heights shader
+	float altFromBottomOfSea = biomes1.x;
+
+	//altFromSea /= (param_baseHeightMapMultiplier + param_noiseMultiplier);
+
+	//if(altFromBottomOfSea < 0.5) { color=vec3(0,0,1); return; }
+
+	double altFromSea = altFromBottomOfSea - 0.5;
+
+	// 1 at meridian.. 0 at poles
+	double distanceFromPoles = 1 - abs(uv.y - 0.5) * 2;
+	double temperature = (1 - altFromSea) * distanceFromPoles;
+
+
+
+
+
+
+	out_biomes1[verticeIndex] = toStruct(biomes1);
+	out_biomes2[verticeIndex] = toStruct(biomes2);
+
+}
+

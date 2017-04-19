@@ -87,6 +87,11 @@ namespace MyEngine
 			else
 			{
 				LoadState = State.LoadedError;
+				Log.Error("fix the error then press any key to reload ...");
+				Console.ReadKey();
+				Log.Error("reloading ...");
+				Load();
+				return;
 			}
 
 			fileWatcher.WatchFile(file.RealPath, (string newFilePath) =>
@@ -154,6 +159,7 @@ namespace MyEngine
 			if (logInfo.Length > 0)
 			{
 				Log.Error($"Error occured during compilation of {type} from '{resource}'\n{logInfo}");
+				return false;
 			}
 
 			int statusCode = 0;

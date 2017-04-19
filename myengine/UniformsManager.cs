@@ -19,10 +19,10 @@ namespace MyEngine
 		HashSet<string> uniformTexturesChanged = new HashSet<string>();
 
 
-		public void SendAllUniformsTo(UniformsData uniformManager)
+		public void SendAllUniformsTo(UniformsData uniforms)
 		{
-			foreach (var kvp in uniformStructsData) uniformManager.GenericSet(kvp.Key, kvp.Value);
-			foreach (var kvp in uniformTexturesData) uniformManager.Set(kvp.Key, kvp.Value);
+			foreach (var kvp in uniformStructsData) uniforms.GenericSet(kvp.Key, kvp.Value);
+			foreach (var kvp in uniformTexturesData) uniforms.Set(kvp.Key, kvp.Value);
 		}
 
 		/// <summary>

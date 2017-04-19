@@ -13,6 +13,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PreparePlanetData", "Prepar
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug OpenGL|Any CPU = Debug OpenGL|Any CPU
+		Debug OpenGL|Mixed Platforms = Debug OpenGL|Mixed Platforms
+		Debug OpenGL|Win32 = Debug OpenGL|Win32
+		Debug OpenGL|x64 = Debug OpenGL|x64
+		Debug OpenGL|x86 = Debug OpenGL|x86
 		Debug|Any CPU = Debug|Any CPU
 		Debug|Mixed Platforms = Debug|Mixed Platforms
 		Debug|Win32 = Debug|Win32
@@ -25,6 +30,16 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F11ACCAD-6E5F-464A-B496-33EF0C6B10F4}.Debug OpenGL|Any CPU.ActiveCfg = Debug OpenGL|Any CPU
+		{F11ACCAD-6E5F-464A-B496-33EF0C6B10F4}.Debug OpenGL|Any CPU.Build.0 = Debug OpenGL|Any CPU
+		{F11ACCAD-6E5F-464A-B496-33EF0C6B10F4}.Debug OpenGL|Mixed Platforms.ActiveCfg = Debug OpenGL|Any CPU
+		{F11ACCAD-6E5F-464A-B496-33EF0C6B10F4}.Debug OpenGL|Mixed Platforms.Build.0 = Debug OpenGL|Any CPU
+		{F11ACCAD-6E5F-464A-B496-33EF0C6B10F4}.Debug OpenGL|Win32.ActiveCfg = Debug OpenGL|Any CPU
+		{F11ACCAD-6E5F-464A-B496-33EF0C6B10F4}.Debug OpenGL|Win32.Build.0 = Debug OpenGL|Any CPU
+		{F11ACCAD-6E5F-464A-B496-33EF0C6B10F4}.Debug OpenGL|x64.ActiveCfg = Debug OpenGL|Any CPU
+		{F11ACCAD-6E5F-464A-B496-33EF0C6B10F4}.Debug OpenGL|x64.Build.0 = Debug OpenGL|Any CPU
+		{F11ACCAD-6E5F-464A-B496-33EF0C6B10F4}.Debug OpenGL|x86.ActiveCfg = Debug OpenGL|Any CPU
+		{F11ACCAD-6E5F-464A-B496-33EF0C6B10F4}.Debug OpenGL|x86.Build.0 = Debug OpenGL|Any CPU
 		{F11ACCAD-6E5F-464A-B496-33EF0C6B10F4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F11ACCAD-6E5F-464A-B496-33EF0C6B10F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F11ACCAD-6E5F-464A-B496-33EF0C6B10F4}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
@@ -43,6 +58,16 @@ Global
 		{F11ACCAD-6E5F-464A-B496-33EF0C6B10F4}.Release|x64.Build.0 = Release|Any CPU
 		{F11ACCAD-6E5F-464A-B496-33EF0C6B10F4}.Release|x86.ActiveCfg = Release|Any CPU
 		{F11ACCAD-6E5F-464A-B496-33EF0C6B10F4}.Release|x86.Build.0 = Release|Any CPU
+		{4391747C-59FA-429F-AAE9-42D9C80AFBE7}.Debug OpenGL|Any CPU.ActiveCfg = Debug OpenGL|Any CPU
+		{4391747C-59FA-429F-AAE9-42D9C80AFBE7}.Debug OpenGL|Any CPU.Build.0 = Debug OpenGL|Any CPU
+		{4391747C-59FA-429F-AAE9-42D9C80AFBE7}.Debug OpenGL|Mixed Platforms.ActiveCfg = Debug OpenGL|Any CPU
+		{4391747C-59FA-429F-AAE9-42D9C80AFBE7}.Debug OpenGL|Mixed Platforms.Build.0 = Debug OpenGL|Any CPU
+		{4391747C-59FA-429F-AAE9-42D9C80AFBE7}.Debug OpenGL|Win32.ActiveCfg = Debug OpenGL|Any CPU
+		{4391747C-59FA-429F-AAE9-42D9C80AFBE7}.Debug OpenGL|Win32.Build.0 = Debug OpenGL|Any CPU
+		{4391747C-59FA-429F-AAE9-42D9C80AFBE7}.Debug OpenGL|x64.ActiveCfg = Debug OpenGL|Any CPU
+		{4391747C-59FA-429F-AAE9-42D9C80AFBE7}.Debug OpenGL|x64.Build.0 = Debug OpenGL|Any CPU
+		{4391747C-59FA-429F-AAE9-42D9C80AFBE7}.Debug OpenGL|x86.ActiveCfg = Debug OpenGL|Any CPU
+		{4391747C-59FA-429F-AAE9-42D9C80AFBE7}.Debug OpenGL|x86.Build.0 = Debug OpenGL|Any CPU
 		{4391747C-59FA-429F-AAE9-42D9C80AFBE7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{4391747C-59FA-429F-AAE9-42D9C80AFBE7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4391747C-59FA-429F-AAE9-42D9C80AFBE7}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
@@ -61,6 +86,11 @@ Global
 		{4391747C-59FA-429F-AAE9-42D9C80AFBE7}.Release|x64.Build.0 = Release|Any CPU
 		{4391747C-59FA-429F-AAE9-42D9C80AFBE7}.Release|x86.ActiveCfg = Release|Any CPU
 		{4391747C-59FA-429F-AAE9-42D9C80AFBE7}.Release|x86.Build.0 = Release|Any CPU
+		{9CA20FC2-2340-4D23-9245-FF8264789C98}.Debug OpenGL|Any CPU.ActiveCfg = Release|x64
+		{9CA20FC2-2340-4D23-9245-FF8264789C98}.Debug OpenGL|Mixed Platforms.ActiveCfg = Debug|x64
+		{9CA20FC2-2340-4D23-9245-FF8264789C98}.Debug OpenGL|Win32.ActiveCfg = Release|x64
+		{9CA20FC2-2340-4D23-9245-FF8264789C98}.Debug OpenGL|x64.ActiveCfg = Debug|x64
+		{9CA20FC2-2340-4D23-9245-FF8264789C98}.Debug OpenGL|x86.ActiveCfg = Release|x64
 		{9CA20FC2-2340-4D23-9245-FF8264789C98}.Debug|Any CPU.ActiveCfg = Debug|x64
 		{9CA20FC2-2340-4D23-9245-FF8264789C98}.Debug|Mixed Platforms.ActiveCfg = Debug|x64
 		{9CA20FC2-2340-4D23-9245-FF8264789C98}.Debug|Mixed Platforms.Build.0 = Debug|x64
@@ -76,6 +106,16 @@ Global
 		{9CA20FC2-2340-4D23-9245-FF8264789C98}.Release|x64.ActiveCfg = Release|x64
 		{9CA20FC2-2340-4D23-9245-FF8264789C98}.Release|x64.Build.0 = Release|x64
 		{9CA20FC2-2340-4D23-9245-FF8264789C98}.Release|x86.ActiveCfg = Release|x64
+		{6264CF2A-08F0-4BD3-9508-BD1E3E8FD8C9}.Debug OpenGL|Any CPU.ActiveCfg = Debug OpenGL|Any CPU
+		{6264CF2A-08F0-4BD3-9508-BD1E3E8FD8C9}.Debug OpenGL|Any CPU.Build.0 = Debug OpenGL|Any CPU
+		{6264CF2A-08F0-4BD3-9508-BD1E3E8FD8C9}.Debug OpenGL|Mixed Platforms.ActiveCfg = Debug OpenGL|Any CPU
+		{6264CF2A-08F0-4BD3-9508-BD1E3E8FD8C9}.Debug OpenGL|Mixed Platforms.Build.0 = Debug OpenGL|Any CPU
+		{6264CF2A-08F0-4BD3-9508-BD1E3E8FD8C9}.Debug OpenGL|Win32.ActiveCfg = Debug OpenGL|Any CPU
+		{6264CF2A-08F0-4BD3-9508-BD1E3E8FD8C9}.Debug OpenGL|Win32.Build.0 = Debug OpenGL|Any CPU
+		{6264CF2A-08F0-4BD3-9508-BD1E3E8FD8C9}.Debug OpenGL|x64.ActiveCfg = Debug OpenGL|Any CPU
+		{6264CF2A-08F0-4BD3-9508-BD1E3E8FD8C9}.Debug OpenGL|x64.Build.0 = Debug OpenGL|Any CPU
+		{6264CF2A-08F0-4BD3-9508-BD1E3E8FD8C9}.Debug OpenGL|x86.ActiveCfg = Debug OpenGL|Any CPU
+		{6264CF2A-08F0-4BD3-9508-BD1E3E8FD8C9}.Debug OpenGL|x86.Build.0 = Debug OpenGL|Any CPU
 		{6264CF2A-08F0-4BD3-9508-BD1E3E8FD8C9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6264CF2A-08F0-4BD3-9508-BD1E3E8FD8C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6264CF2A-08F0-4BD3-9508-BD1E3E8FD8C9}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU

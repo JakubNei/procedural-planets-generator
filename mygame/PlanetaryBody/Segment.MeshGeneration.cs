@@ -86,7 +86,7 @@ namespace MyGame.PlanetaryBody
 				mesh.Bounds.Encapsulate(NoElevationRange.CenterPos.ToVector3() - n * c - o);
 			}
 
-			if (Renderer != null) throw new Exception("something went terribly wrong, renderer should be null");
+			//if (Renderer != null) throw new Exception("something went terribly wrong, renderer should be null"); // or we marked segment for regeneration
 			Renderer = planetInfo.Entity.AddComponent<CustomChunkMeshRenderer>();
 			Renderer.RenderingMode = MyRenderingMode.DontRender;
 			Renderer.segment = this;

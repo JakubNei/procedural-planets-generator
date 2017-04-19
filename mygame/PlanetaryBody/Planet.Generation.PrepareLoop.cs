@@ -141,7 +141,7 @@ namespace MyGame.PlanetaryBody
 		}
 
 
-	
+
 
 		Queue<Segment> toGenerateOrdered;
 		WeightedSegmentsList toGenerate;
@@ -177,20 +177,25 @@ namespace MyGame.PlanetaryBody
 			toGenerateOrdered = new Queue<Segment>(toGenerate.GetWeighted());
 		}
 
-		int shaderVersion;
+
+
+		int shader1Version;
+		int shader2Version;
+
 		void InitializePrepareLoop()
 		{
-			shaderVersion = GenerateHeights.VersionInFile;
+			shader1Version = GenerateHeights.VersionInFile;
+			shader2Version = GenerateBiomes.VersionInFile;
 		}
+
 		void ShadersReloadedCheck()
 		{
-			if (shaderVersion != GenerateHeights.VersionInFile)
+			if (shader1Version != GenerateHeights.VersionInFile || shader2Version != GenerateBiomes.VersionInFile)
 			{
-				shaderVersion = GenerateHeights.VersionInFile;
+				shader1Version = GenerateHeights.VersionInFile;
+				shader2Version = GenerateBiomes.VersionInFile;
 				foreach (var rootSegment in this.rootSegments)
-				{
 					Segment.MarkForRegeneration(rootSegment);
-				}
 			}
 		}
 

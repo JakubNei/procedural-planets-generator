@@ -344,40 +344,14 @@ vec3 getBiomeNormal(sampler2D normalMap)
 	return triPlanar(normalMap, pos, i.normal, 0.5);
 }
 
-
-float getChannel(vec4 color, int channel)
-{
-	if(channel == 0) return color.x;
-	if(channel == 1) return color.y;
-	if(channel == 2) return color.z;
-	return color.w;
-}
-
-
-
 void getColor(vec2 uv, out vec3 color, out vec3 normal) {
 
-
-	double distanceFromCenter = length(i.modelPos + param_offsetFromPlanetCenter);
-
-
-	double altFromBottomOfSea = distanceFromCenter - param_radiusMin;
-	altFromBottomOfSea /= param_baseHeightMapMultiplier;
-	//altFromSea /= (param_baseHeightMapMultiplier + param_noiseMultiplier);
-
-	//if(altFromBottomOfSea < 0.5) { color=vec3(0,0,1); return; }
-
-	double altFromSea = altFromBottomOfSea - 0.5;
-
-	// 1 at meridian.. 0 at poles
-	double distanceFromPoles = 1 - abs(uv.y - 0.5) * 2;
-	double temperature = (1 - altFromSea) * distanceFromPoles;
 
 	//DEBUG
 	//color = vec3(i.uv.x, 0, 0); return;
 	//color = texture2D(param_biomesSplatMap1, i.uv).xyz; return;
 	//color = vec3(temperature); return;
-	color = i.biomes1.xyz; return;
+	//color = i.biomes1.xyz; return;
 		
 	// must set default values, on some GPUs missing default values cause error in calculations, thus on some GPUs random old data is used
 	color = vec3(0);
@@ -387,65 +361,24 @@ void getColor(vec2 uv, out vec3 color, out vec3 normal) {
 	else normal = vec3(0.5, 0.5, 1);
 
 
-	vec4 biome0 = vec4(0);
-	vec4 biome1 = vec4(0);	
-
 	float amount;
 
-#define PREPARE_BIOME(ID, CHANNEL, CHANNEL_NAMED) \
-	amount = texture2D(param_biomesSplatMap##ID##, uv).##CHANNEL_NAMED; \
-	if(amount > 0) { \
-		biome##ID##.##CHANNEL_NAMED = amount; \
-	}
-
-    PREPARE_BIOME(0,0,x)
-    PREPARE_BIOME(0,1,y)
-    PREPARE_BIOME(0,2,z)
-    PREPARE_BIOME(0,3,w)
-    PREPARE_BIOME(1,0,x)
-    PREPARE_BIOME(1,1,y)
-    PREPARE_BIOME(1,2,z)
-    PREPARE_BIOME(1,3,w)
-
-	vec3 pos = vec3(i.modelPos + param_offsetFromPlanetCenter);
-	const float cw = 0.5;
-	const float pw = 0.5;
-    biome0.x *= cw + perlinNoise(pos / 200) * pw;
-    biome0.y *= cw + perlinNoise(pos / 250) * pw;
-    biome0.z *= cw + perlinNoise(pos / 300) * pw;
-    biome0.w *= cw + perlinNoise(pos / 350) * pw;
-
-    biome1.x *= cw + perlinNoise(pos / 220) * pw;
-    biome1.y *= cw + perlinNoise(pos / 270) * pw;
-    biome1.z *= cw + perlinNoise(pos / 320) * pw;
-    biome1.w *= cw + perlinNoise(pos / 370) * pw;
-
-    //biome0 = clamp(biome0, 0, 1);
-    //biome1 = clamp(biome1, 0, 1);
-
-    float sum = 
-    	biome0.x + biome0.y + biome0.z + biome0.w +
-    	biome1.x + biome1.y + biome1.z + biome1.w;
-
-    biome0 /= sum;
-    biome1 /= sum;
-
-#define RENDER_BIOME(ID, CHANNEL, CHANNEL_NAMED) \
-	amount = biome##ID##.##CHANNEL_NAMED; \
+#define RENDER_BIOME(ID, CHANNEL) \
+	amount = i.biomes##ID##.##CHANNEL; \
 	if(amount > 0) { \
 		color += amount * getBiomeColor(param_biome##ID##CHANNEL##_diffuseMap); \
 		if(shouldCalculateNormal) \
 			normal += amount * getBiomeNormal(param_biome##ID##CHANNEL##_normalMap); \
 	}
 
-    RENDER_BIOME(0,0,x)
-    RENDER_BIOME(0,1,y)
-    RENDER_BIOME(0,2,z)
-    RENDER_BIOME(0,3,w)
-    RENDER_BIOME(1,0,x)
-    RENDER_BIOME(1,1,y)
-    RENDER_BIOME(1,2,z)
-    RENDER_BIOME(1,3,w)
+    RENDER_BIOME(1,r)
+    RENDER_BIOME(1,g)
+    RENDER_BIOME(1,b)
+    RENDER_BIOME(1,a)
+    RENDER_BIOME(2,r)
+    RENDER_BIOME(2,g)
+    RENDER_BIOME(2,b)
+    RENDER_BIOME(2,a)
 
 }
 
@@ -504,10 +437,13 @@ void main()
 	//out_color = vec4(vec3(defaultNormalWeight,0,0),1);
 	//out_color = vec4(i.uv,0,1);
 	//out_color = vec4(vec3(texture2D(param_biomesSplatMap0, i.uv).x), 1);
+	//out_color = vec4(vec3(texture2D(param_humidityMap, i.uv).r), 1);	
 	//out_color = vec4(vec3(param_finalPosWeight,0,0),1);
 	//out_color = vec4(param_debugWeight,0,0,1);
 	//out_color = vec4(i.tangent,1);
 	//out_color = vec4(i.normal,1);
+	//out_color = vec4(vec3(i.biomes1.r),1);
+	out_color = vec4(vec3(i.biomes1.g),1);
 }
 
 	

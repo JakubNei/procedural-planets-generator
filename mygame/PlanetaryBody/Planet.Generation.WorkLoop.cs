@@ -20,10 +20,9 @@ namespace MyGame.PlanetaryBody
 	{
 
 		public Shader GenerateHeights => Factory.GetShader("shaders/planet.generateHeights.compute");
-		UniformsData generateHeightsUniforms = new UniformsData();
+		public Shader GenerateBiomes => Factory.GetShader("shaders/planet.generateBiomes.compute");
 
 		public Shader MoveSkirts => Factory.GetShader("planet.moveSkirts.compute");
-		UniformsData moveSkirtsUniforms = new UniformsData();
 
 
 		JobRunner jobRunner = new JobRunner();
@@ -63,16 +62,17 @@ namespace MyGame.PlanetaryBody
 				if (useSkirts)
 					range = segment.NoElevationRangeModifiedForSkirts;
 
-				config.SetTo(generateHeightsUniforms);
-				generateHeightsUniforms.Set("param_offsetFromPlanetCenter", segment.Renderer.Offset.ToVector3d());
-				generateHeightsUniforms.Set("param_numberOfVerticesOnEdge", ChunkNumberOfVerticesOnEdge);
-				generateHeightsUniforms.Set("param_cornerPositionA", range.a);
-				generateHeightsUniforms.Set("param_cornerPositionB", range.b);
-				generateHeightsUniforms.Set("param_cornerPositionC", range.c);
-				generateHeightsUniforms.Set("param_indiciesCount", mesh.TriangleIndicies.Count);
-				generateHeightsUniforms.Set("param_verticesStartIndexOffset", verticesStartIndexOffset);
+				var uniforms = GenerateHeights.Uniforms;
 
-				generateHeightsUniforms.SendAllUniformsTo(GenerateHeights.Uniforms);
+				config.SetTo(uniforms);
+				uniforms.Set("param_offsetFromPlanetCenter", segment.Renderer.Offset.ToVector3d());
+				uniforms.Set("param_numberOfVerticesOnEdge", ChunkNumberOfVerticesOnEdge);
+				uniforms.Set("param_cornerPositionA", range.a);
+				uniforms.Set("param_cornerPositionB", range.b);
+				uniforms.Set("param_cornerPositionC", range.c);
+				uniforms.Set("param_indiciesCount", mesh.TriangleIndicies.Count);
+				uniforms.Set("param_verticesStartIndexOffset", verticesStartIndexOffset);
+
 				GenerateHeights.Bind();
 
 				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 0, mesh.Vertices.VboHandle); MyGL.Check();
@@ -111,10 +111,12 @@ namespace MyGame.PlanetaryBody
 			{
 				if (false && moveSkirtsOnGPU) // TODO: move skirts on gpu
 				{
+					var uniforms = MoveSkirts.Uniforms;
+
 					var ed = GetEdgeVerticesIndexes();
 					for (int i = 0; i < ed.Length; i++)
 					{
-						moveSkirtsUniforms.Set("param_edgeVertexIndex[" + i + "]", ed[i]);
+						uniforms.Set("param_edgeVertexIndex[" + i + "]", ed[i]);
 					}
 
 					jobTemplate.AddTask(WhereToRun.GPUThread, segment =>
@@ -123,11 +125,10 @@ namespace MyGame.PlanetaryBody
 						var moveAmount = -segment.NoElevationRange.CenterPos.Normalized().ToVector3() * (float)segment.NoElevationRange.ToBoundingSphere().radius / 10;
 
 
-						config.SetTo(moveSkirtsUniforms);
+						config.SetTo(uniforms);
 
-						moveSkirtsUniforms.Set("param_moveAmount", moveAmount);
+						uniforms.Set("param_moveAmount", moveAmount);
 
-						moveSkirtsUniforms.SendAllUniformsTo(MoveSkirts.Uniforms);
 						MoveSkirts.Bind();
 
 						GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 0, mesh.Vertices.VboHandle); MyGL.Check();
@@ -151,7 +152,42 @@ namespace MyGame.PlanetaryBody
 					}, "pokud jsou sukně zapnuty: přesun upravené trojúhelníkové sítě zpět na grafickou kartu");
 				}
 			}
+			/*
+			jobTemplate.AddTask(WhereToRun.GPUThread, segment =>
+			{
+				var mesh = segment.Renderer.Mesh;
 
+				var verticesStartIndexOffset = 0;
+				var verticesCount = mesh.Vertices.Count;
+
+				var range = segment.NoElevationRange;
+				if (useSkirts)
+					range = segment.NoElevationRangeModifiedForSkirts;
+
+				var uniforms = GenerateBiomes.Uniforms;
+
+
+				config.SetTo(uniforms);
+				uniforms.Set("param_offsetFromPlanetCenter", segment.Renderer.Offset.ToVector3d());
+				uniforms.Set("param_numberOfVerticesOnEdge", ChunkNumberOfVerticesOnEdge);
+				uniforms.Set("param_cornerPositionA", range.a);
+				uniforms.Set("param_cornerPositionB", range.b);
+				uniforms.Set("param_cornerPositionC", range.c);
+				uniforms.Set("param_indiciesCount", mesh.TriangleIndicies.Count);
+				uniforms.Set("param_verticesStartIndexOffset", verticesStartIndexOffset);
+
+				GenerateBiomes.Bind();
+
+				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 0, mesh.Vertices.VboHandle); MyGL.Check();
+				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 1, mesh.Normals.VboHandle); MyGL.Check();
+				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 2, mesh.UVs.VboHandle); MyGL.Check();
+				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 3, mesh.TriangleIndicies.VboHandle); MyGL.Check();
+				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 4, mesh.VertexArray.GetVertexBuffer("biomes1").VboHandle); MyGL.Check();
+				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 5, mesh.VertexArray.GetVertexBuffer("biomes2").VboHandle); MyGL.Check();
+				GL.DispatchCompute(verticesCount, 1, 1); MyGL.Check();
+
+			}, "vygenerování biomů na grafické kartě");
+			*/
 			ulong chunksGenerated = 0;
 			jobTemplate.AddTask(segment =>
 			{

@@ -1,4 +1,3 @@
 # Visual Studio C# project .csproj .gitignore 2017-02-14
 /obj/*
-/bin/[Rr]elease/*
-/bin/[Dd]ebug/*
+/bin/*

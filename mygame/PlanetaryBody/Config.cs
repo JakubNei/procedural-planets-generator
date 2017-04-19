@@ -23,6 +23,9 @@ namespace MyGame.PlanetaryBody
 		public Texture2D baseHeightMap;
 		public double baseHeightMapMultiplier;
 
+		public Texture2D biomesControlMap;
+		//public Texture2D waterMap = new Texture2D(64, 64) { FilterMode = FilterMode.Point, UseMipMaps = false };
+
 		private Dictionary<int, Texture2D> splatMaps = new Dictionary<int, Texture2D>();
 		/// <summary>
 		/// Every splat map has 4 channels, every channel controls biome intensity.
@@ -61,6 +64,8 @@ namespace MyGame.PlanetaryBody
 			uniforms.Set("param_baseHeightMap", baseHeightMap);
 			uniforms.Set("param_baseHeightMapMultiplier", (double)baseHeightMapMultiplier);
 
+			uniforms.Set("param_biomesControlMap", biomesControlMap);
+
 			foreach (var splatMap in splatMaps)
 			{
 				uniforms.Set("param_biomesSplatMap" + splatMap.Key, splatMap.Value);
@@ -70,8 +75,11 @@ namespace MyGame.PlanetaryBody
 			{
 				var splatMapTextureId = (biome.Key / 4.0).FloorToInt();
 				var splatMapTextureChannel = biome.Key % 4;
-				uniforms.Set("param_biome" + splatMapTextureId + "" + splatMapTextureChannel + "_diffuseMap", biome.Value.diffuse);
-				uniforms.Set("param_biome" + splatMapTextureId + "" + splatMapTextureChannel + "_normalMap", biome.Value.normal);
+
+				var channel = new string[] { "r", "g", "b", "a" }[splatMapTextureChannel];
+				splatMapTextureId += 1;
+				uniforms.Set("param_biome" + splatMapTextureId + "" + channel + "_diffuseMap", biome.Value.diffuse);
+				uniforms.Set("param_biome" + splatMapTextureId + "" + channel + "_normalMap", biome.Value.normal);
 			}
 		}
 	}
