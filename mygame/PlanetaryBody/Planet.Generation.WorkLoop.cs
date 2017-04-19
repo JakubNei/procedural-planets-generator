@@ -152,7 +152,7 @@ namespace MyGame.PlanetaryBody
 					}, "pokud jsou sukně zapnuty: přesun upravené trojúhelníkové sítě zpět na grafickou kartu");
 				}
 			}
-			/*
+			
 			jobTemplate.AddTask(WhereToRun.GPUThread, segment =>
 			{
 				var mesh = segment.Renderer.Mesh;
@@ -187,7 +187,7 @@ namespace MyGame.PlanetaryBody
 				GL.DispatchCompute(verticesCount, 1, 1); MyGL.Check();
 
 			}, "vygenerování biomů na grafické kartě");
-			*/
+			
 			ulong chunksGenerated = 0;
 			jobTemplate.AddTask(segment =>
 			{

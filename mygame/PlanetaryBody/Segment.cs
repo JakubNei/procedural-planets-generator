@@ -353,6 +353,7 @@ namespace MyGame.PlanetaryBody
 			}
 			if (Renderer != null)
 			{
+				Renderer.RenderingMode = MyRenderingMode.DontRender;
 				planetInfo.Entity.DestroyComponent(Renderer);
 				Renderer = null;
 			}
@@ -369,10 +370,10 @@ namespace MyGame.PlanetaryBody
 
 		static public void MarkForRegeneration(Segment segment)
 		{
-			segment.IsGenerationDone = false;
-			segment.GenerationBegan = false;
+			segment.DestroyRenderer();
 			foreach (var c in segment.Children)
 				MarkForRegeneration(c);
+			segment.Children.Clear();
 		}
 
 		public override string ToString()

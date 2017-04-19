@@ -104,6 +104,8 @@ uniform int param_verticesStartIndexOffset;
 
 void main() {
 
+	int verticeIndex = int(gl_GlobalInvocationID.x) + param_verticesStartIndexOffset;
+
 	vec3 normal = fromStruct(normals[verticeIndex]);
 	vec2 uv = fromStruct(uvs[verticeIndex]);
 	vec4 biomes1 = fromStruct(out_biomes1[verticeIndex]);
@@ -111,21 +113,22 @@ void main() {
 
 	// passed from generate heights shader
 	float altFromBottomOfSea = biomes1.x;
+	float humidity = biomes1.y;
 
 	//altFromSea /= (param_baseHeightMapMultiplier + param_noiseMultiplier);
 
 	//if(altFromBottomOfSea < 0.5) { color=vec3(0,0,1); return; }
 
-	double altFromSea = altFromBottomOfSea - 0.5;
+	float altFromSea = altFromBottomOfSea - 0.5;
 
 	// 1 at meridian.. 0 at poles
-	double distanceFromPoles = 1 - abs(uv.y - 0.5) * 2;
-	double temperature = (1 - altFromSea) * distanceFromPoles;
+	float distanceFromPoles = 1 - abs(uv.y - 0.5) * 2;
+	float temperature = (1 - altFromSea) * distanceFromPoles;
 
+	vec3 color = texture2D(param_biomesControlMap, vec2(temperature, humidity)).rgb;
+	biomes2.rgb = color;
 
-
-
-
+	biomes1.x = temperature;
 
 	out_biomes1[verticeIndex] = toStruct(biomes1);
 	out_biomes2[verticeIndex] = toStruct(biomes2);

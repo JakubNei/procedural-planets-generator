@@ -125,8 +125,9 @@ namespace MyGame
 				cfg.radiusMin = 100000;//100000; // 6371000m is earth radius
 				cfg.baseHeightMap = Factory.GetTexture2D("planet/data/earth/height_map.*");
 				cfg.baseHeightMapMultiplier = 500; // 20000m is highest earth point
-				cfg.noiseMultiplier = 100;
-				cfg.biomesControlMap = Factory.GetTexture2D("planet/data/earth/biomes_control_map.*");
+				cfg.noiseMultiplier = 0;
+				cfg.biomesControlMap = new Texture2D(FileSystem.FindExistingFile("planet/data/earth/biomes_control_map.*"))
+										{ FilterMode = FilterMode.Point, WrapMode = MyEngine.TextureWrapMode.Clamp, UseMipMaps = false };
 				cfg.AddControlSplatMap(0, Factory.GetTexture2D("planet/data/earth/biomes_splat_map_0.*"));
 				cfg.AddControlSplatMap(1, Factory.GetTexture2D("planet/data/earth/biomes_splat_map_1.*"));
 				cfg.LoadConfig(FileSystem.FindExistingFile("planet/data/earth/biomes_splat_maps_metadata.xml"), biomesAtlas);
@@ -143,7 +144,8 @@ namespace MyGame
 
 
 
-			if(false) {
+			if (false)
+			{
 				var cfg = new PlanetaryBody.Config();
 				cfg.chunkNumberOfVerticesOnEdge = Debug.GetCVar("generation / segment number of vertices on edge", 50);
 				cfg.weightNeededToSubdivide = Debug.GetCVar("generation / segment subdivide if weight is bigger than", 0.2f);
@@ -153,7 +155,8 @@ namespace MyGame
 				cfg.baseHeightMap = Factory.GetTexture2D("planet/data/myplanet1/height_map.*");
 				cfg.baseHeightMapMultiplier = 500;
 				cfg.noiseMultiplier = 50;
-				cfg.biomesControlMap = Factory.GetTexture2D("planet/data/myplanet1/biomes_control_map.*");
+				cfg.biomesControlMap = new Texture2D(FileSystem.FindExistingFile("planet/data/myplanet1/biomes_control_map.*"))
+										{ FilterMode = FilterMode.Point, WrapMode = MyEngine.TextureWrapMode.Clamp, UseMipMaps = false };
 				cfg.AddControlSplatMap(0, Factory.GetTexture2D("planet/data/myplanet1/biomes_splat_map_0.*"));
 				cfg.AddControlSplatMap(1, Factory.GetTexture2D("planet/data/myplanet1/biomes_splat_map_1.*"));
 				cfg.LoadConfig(FileSystem.FindExistingFile("planet/data/myplanet1/biomes_splat_maps_metadata.xml"), biomesAtlas);

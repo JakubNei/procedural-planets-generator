@@ -45,6 +45,9 @@ void main()
 	o.uv = in_uv;
 	o.biomes1 = in_biomes1;
 	o.biomes2 = in_biomes2;
+
+	//DEBUG
+	//o.biomes2 = vec4(1,0,0,0);
 }
 
 
@@ -443,7 +446,8 @@ void main()
 	//out_color = vec4(i.tangent,1);
 	//out_color = vec4(i.normal,1);
 	//out_color = vec4(vec3(i.biomes1.r),1);
-	out_color = vec4(vec3(i.biomes1.g),1);
+	//out_color = vec4(vec3(i.biomes1.g),1);
+	out_color = vec4(vec3(i.biomes2),1);
 }
 
 	

@@ -185,7 +185,7 @@ double GetHeight01(vec3 uv)
 
 float GetHumidity(vec3 uvCenter)
 {
-	const float waterHeight = 0.3;
+	const float waterHeight = 0.5;
 
 	vec3 uv = uvCenter;
 	if(GetHeight01(uv) < waterHeight) return 1;
@@ -218,11 +218,12 @@ float GetHumidity(vec3 uvCenter)
 
 
 void main() {
+
+	int verticeIndex = int(gl_GlobalInvocationID.x) + param_verticesStartIndexOffset;
 	
 	vec4 biomes1 = vec4(0);
 	vec4 biomes2 = vec4(0);
-
-	int verticeIndex = int(gl_GlobalInvocationID.x) + param_verticesStartIndexOffset;
+	
 	int tempVerticeIndex = verticeIndex;
 	int ix = 0;
 	int iy = 0;
