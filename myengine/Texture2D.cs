@@ -35,7 +35,7 @@ namespace MyEngine
 
 		int textureHandle = -1;
 		Bitmap bmp;
-		MyFile file;
+		FileExisting file;
 
 		public Texture2D(int width, int height)
 		{
@@ -50,7 +50,7 @@ namespace MyEngine
 			UpdateIsOnGpu();
 		}
 
-		public Texture2D(MyFile file) 
+		public Texture2D(FileExisting file) 
 		{
 			UseMipMaps = true;
 			this.file = file;

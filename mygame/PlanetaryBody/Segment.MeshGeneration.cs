@@ -36,6 +36,14 @@ namespace MyGame.PlanetaryBody
 			var vertices = planetInfo.GetVerticesList();
 			var indicies = planetInfo.GetIndiciesList();
 
+			var biomes1 = new Mesh.BufferObjectVector4();
+			biomes1.SetData(planetInfo.GetDefaultBiomesList());
+			mesh.VertexArray.AddVertexBuffer("biomes1", biomes1);
+
+			var biomes2 = new Mesh.BufferObjectVector4();
+			biomes2.SetData(planetInfo.GetDefaultBiomesList());
+			mesh.VertexArray.AddVertexBuffer("biomes2", biomes2);
+
 			mesh.Vertices.SetData(vertices);
 			mesh.TriangleIndicies.SetData(indicies);
 

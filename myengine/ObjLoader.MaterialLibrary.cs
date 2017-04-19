@@ -19,7 +19,7 @@ namespace MyEngine
 					failedParse++;
 			}
 
-			public MaterialLibrary(MyFile file)
+			public MaterialLibrary(FileExisting file)
 			{
 				using (var s = file.OpenReadWrite())
 				using (StreamReader textReader = new StreamReader(s))

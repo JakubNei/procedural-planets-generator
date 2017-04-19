@@ -19,7 +19,7 @@ namespace MyGame.PlanetaryBody
 	public partial class Planet
 	{
 
-		public Shader Generateheights => Factory.GetShader("shaders/planet.generateHeights.compute");
+		public Shader GenerateHeights => Factory.GetShader("shaders/planet.generateHeights.compute");
 		UniformsData generateHeightsUniforms = new UniformsData();
 
 		public Shader MoveSkirts => Factory.GetShader("planet.moveSkirts.compute");
@@ -72,13 +72,15 @@ namespace MyGame.PlanetaryBody
 				generateHeightsUniforms.Set("param_indiciesCount", mesh.TriangleIndicies.Count);
 				generateHeightsUniforms.Set("param_verticesStartIndexOffset", verticesStartIndexOffset);
 
-				generateHeightsUniforms.SendAllUniformsTo(Generateheights.Uniforms);
-				Generateheights.Bind();
+				generateHeightsUniforms.SendAllUniformsTo(GenerateHeights.Uniforms);
+				GenerateHeights.Bind();
 
 				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 0, mesh.Vertices.VboHandle); MyGL.Check();
 				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 1, mesh.Normals.VboHandle); MyGL.Check();
 				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 2, mesh.UVs.VboHandle); MyGL.Check();
 				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 3, mesh.TriangleIndicies.VboHandle); MyGL.Check();
+				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 4, mesh.VertexArray.GetVertexBuffer("biomes1").VboHandle); MyGL.Check();
+				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 5, mesh.VertexArray.GetVertexBuffer("biomes2").VboHandle); MyGL.Check();
 				GL.DispatchCompute(verticesCount, 1, 1); MyGL.Check();
 
 			}, "vygenerování výšek trojúhelníkové sítě na grafické kartě");
@@ -153,7 +155,7 @@ namespace MyGame.PlanetaryBody
 			ulong chunksGenerated = 0;
 			jobTemplate.AddTask(segment =>
 			{
-				segment.meshGeneratedWithShaderVersion = Generateheights.Version;
+				segment.meshGeneratedWithShaderVersion = GenerateHeights.Version;
 				segment.NotifyGenerationDone();
 
 				chunksGenerated++;

@@ -12,11 +12,11 @@ namespace MyEngine
 	/// <summary>
 	/// Does not need to exist.
 	/// </summary>
-	public class MyOptionalFile : MyFile
+	public class FileOptional : FileExisting
 	{
 		public readonly bool Exists;
 
-		public MyOptionalFile(FileSystem FileSystem, string virtualPath, string realPath, bool exists) : base(FileSystem, virtualPath, realPath)
+		public FileOptional(FileSystem FileSystem, string virtualPath, string realPath, bool exists) : base(FileSystem, virtualPath, realPath)
 		{
 			this.Exists = exists;
 		}
@@ -25,10 +25,10 @@ namespace MyEngine
 	/// <summary>
 	/// Must exist.
 	/// </summary>
-	public class MyFile
+	public class FileExisting
 	{
 		public string Name { get { return VirtualPath.Split('/', '\\').LastOrDefault() ?? "no name"; } }
-		public MyFolder Folder { get { return FileSystem.GetFolder(this); } }
+		public FolderExisting Folder { get { return FileSystem.GetFolder(this); } }
 		public FileSystem FileSystem { get; private set; }
 		public string VirtualPath { get; private set; }
 		public bool HasRealPath { get { return string.IsNullOrWhiteSpace(RealPath) == false; } }
@@ -37,7 +37,7 @@ namespace MyEngine
 		FileChangedWatcher fileWatcher;
 		event Action onFileChanged;
 
-		public MyFile(FileSystem FileSystem, string virtualPath, string realPath)
+		public FileExisting(FileSystem FileSystem, string virtualPath, string realPath)
 		{
 			this.FileSystem = FileSystem;
 			this.VirtualPath = virtualPath;

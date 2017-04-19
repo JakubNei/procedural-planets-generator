@@ -13,7 +13,7 @@ namespace MyEngine
         {
 
         }
-        public T LoadResource<T>(MyFile path) where T : Resource
+        public T LoadResource<T>(FileExisting path) where T : Resource
         {
             return default(T);
         }
@@ -26,11 +26,11 @@ namespace MyEngine
     }
     public class ResourceFactory<T> : ResourceFactory where T : Resource
     {
-        public virtual bool CanCreate(MyFile path)
+        public virtual bool CanCreate(FileExisting path)
         {
             return false;
         }
-        public virtual T Create(MyFile path)
+        public virtual T Create(FileExisting path)
         {
             return default(T);
         }
@@ -39,11 +39,11 @@ namespace MyEngine
 
     public class ResourceCubemapFactory : ResourceFactory<ResourceCubemap>
     {
-        public override bool CanCreate(MyFile path)
+        public override bool CanCreate(FileExisting path)
         {
             return path.ToString().EndsWith(".cubemap");
         }
-        public override ResourceCubemap Create(MyFile path)
+        public override ResourceCubemap Create(FileExisting path)
         {
             return null;
         }

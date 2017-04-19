@@ -11,6 +11,8 @@ uniform double param_baseHeightMapMultiplier;
 uniform double param_noiseMultiplier;
 
 
+uniform sampler2D param_humidityMap;
+
 
 uniform sampler2D param_biomesSplatMap0;
 

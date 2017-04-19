@@ -38,7 +38,7 @@ namespace MyGame.PlanetaryBody
 
 		private Dictionary<int, Biome> biomes = new Dictionary<int, Biome>();
 
-		public void LoadConfig(MyFile path, BiomesAtlas atlas)
+		public void LoadConfig(FileExisting path, BiomesAtlas atlas)
 		{
 			var data = BiomesMetadataFile.Load(path.RealPath);
 			foreach (var i in data.data)

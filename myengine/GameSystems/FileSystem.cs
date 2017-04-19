@@ -39,7 +39,7 @@ namespace MyEngine
 			return System.IO.File.Exists(realPath);
 		}
 
-		public bool FileExists(string virtualPath, MyFolder startSearchInFolder)
+		public bool FileExists(string virtualPath, FolderExisting startSearchInFolder)
 		{
 			var realPath = CombineDirectory(rootResourceDirectoryPath, startSearchInFolder.VirtualPath, virtualPath);
 			if (System.IO.File.Exists(realPath))
@@ -63,7 +63,7 @@ namespace MyEngine
 			return realPath;
 		}
 
-		public bool TryFindFile(string virtualPath, out MyFile file)
+		public bool TryFindFile(string virtualPath, out FileExisting file)
 		{
 			var realPath = CombineDirectory(rootResourceDirectoryPath, virtualPath);
 			if (GlobSearch.IsNeeded(virtualPath))
@@ -76,7 +76,7 @@ namespace MyEngine
 				}
 				else
 				{
-					file = new MyFile(this, fileInfo.FullName.RemoveFromBegin(rootResourceDirectoryInfo.FullName.Length), fileInfo.FullName);
+					file = new FileExisting(this, fileInfo.FullName.RemoveFromBegin(rootResourceDirectoryInfo.FullName.Length), fileInfo.FullName);
 					return true;
 				}
 			}
@@ -84,7 +84,7 @@ namespace MyEngine
 			{
 				if (System.IO.File.Exists(realPath))
 				{
-					file = new MyFile(this, virtualPath, realPath);
+					file = new FileExisting(this, virtualPath, realPath);
 					return true;
 				}
 			}
@@ -92,51 +92,51 @@ namespace MyEngine
 			return false;
 		}
 
-		public MyOptionalFile FindOptionalFile(string virtualPath)
+		public FileOptional FindOptionalFile(string virtualPath)
 		{
-			MyFile file;
+			FileExisting file;
 			bool exists = TryFindFile(virtualPath, out file);
 
 			if (file == null)
 			{
-				return new MyOptionalFile(this, virtualPath, GetPhysicalPath(virtualPath), exists);
+				return new FileOptional(this, virtualPath, GetPhysicalPath(virtualPath), exists);
 			}
 			else
 			{
-				return new MyOptionalFile(this, file.VirtualPath, file.RealPath, exists);
+				return new FileOptional(this, file.VirtualPath, file.RealPath, exists);
 			}
 		}
 
-		public MyFile FileExistingFile(string virtualPath)
+		public FileExisting FindExistingFile(string virtualPath)
 		{
-			MyFile file;
+			FileExisting file;
 			if (TryFindFile(virtualPath, out file)) return file;
 			throw new FileNotFoundException("File " + virtualPath + " doesnt exits");
 		}
 
-		public List<MyFile> Findfiles(params string[] virtualPaths)
+		public List<FileExisting> Findfiles(params string[] virtualPaths)
 		{
-			var ret = new List<MyFile>();
+			var ret = new List<FileExisting>();
 			foreach (var p in virtualPaths)
 			{
-				ret.Add(FileExistingFile(p));
+				ret.Add(FindExistingFile(p));
 			}
 			return ret;
 		}
 
-		public MyFile FindFile(string virtualPath, MyFolder startSearchInFolder)
+		public FileExisting FindFile(string virtualPath, FolderExisting startSearchInFolder)
 		{
 			var realPath = CombineDirectory(rootResourceDirectoryPath, startSearchInFolder.VirtualPath, virtualPath);
 			if (System.IO.File.Exists(realPath))
 			{
-				return new MyFile(this, CombineDirectory(startSearchInFolder.VirtualPath, virtualPath), realPath);
+				return new FileExisting(this, CombineDirectory(startSearchInFolder.VirtualPath, virtualPath), realPath);
 			}
 			else
 			{
 				realPath = CombineDirectory(rootResourceDirectoryPath, virtualPath);
 				if (System.IO.File.Exists(realPath))
 				{
-					return new MyFile(this, virtualPath, realPath);
+					return new FileExisting(this, virtualPath, realPath);
 				}
 				else
 				{
@@ -145,10 +145,10 @@ namespace MyEngine
 			}
 		}
 
-		public MyFolder GetFolder(MyFile file)
+		public FolderExisting GetFolder(FileExisting file)
 		{
 			var virtualDir = Path.GetDirectoryName(file.VirtualPath);
-			return new MyFolder(virtualDir);
+			return new FolderExisting(virtualDir);
 		}
 	}
 }

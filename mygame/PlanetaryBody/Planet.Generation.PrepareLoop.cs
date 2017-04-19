@@ -82,7 +82,7 @@ namespace MyGame.PlanetaryBody
 
 			segment.SetVisible(true);
 
-			if (segment.IsGenerationDone && Generateheights.Version != segment.meshGeneratedWithShaderVersion)
+			if (segment.IsGenerationDone && GenerateHeights.Version != segment.meshGeneratedWithShaderVersion)
 			{
 				segment.DestroyRenderer();
 				toGenerate.Add(segment, float.MaxValue);

@@ -10,7 +10,7 @@ namespace MyEngine
 	public partial class ObjLoader
 	{
 
-		public Mesh Load(MyFile resource, Entity appendToEntity = null)
+		public Mesh Load(FileExisting resource, Entity appendToEntity = null)
 		{
 			var loadJob = new LoadJob(resource, appendToEntity);
 			var mesh = loadJob.Parse();
@@ -45,10 +45,10 @@ namespace MyEngine
 
 			int failedParse = 0;
 
-			MyFile file;
+			FileExisting file;
 			Entity appendToEntity;
 
-			public LoadJob(MyFile file, Entity appendToEntity)
+			public LoadJob(FileExisting file, Entity appendToEntity)
 			{
 				this.file = file;
 				this.appendToEntity = appendToEntity;

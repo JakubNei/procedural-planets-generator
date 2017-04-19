@@ -44,13 +44,13 @@ namespace MyEngine
 
 
 
-		MyFile file;
+		FileExisting file;
 
 		FileChangedWatcher fileWatcher = new FileChangedWatcher();
 
 		static int lastBindedShaderHandle;
 
-		public Shader(MyFile file)
+		public Shader(FileExisting file)
 		{
 			this.file = file;
 			this.Uniforms = new UniformsData();

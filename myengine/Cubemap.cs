@@ -45,7 +45,7 @@ namespace MyEngine
 
 		int textureHandle = -1;
 		Bitmap[] bmps;
-		MyFile[] files;
+		FileExisting[] files;
 
 		static readonly TextureTarget[] textureTargets = new TextureTarget[] {
 			TextureTarget.TextureCubeMapNegativeX,
@@ -61,7 +61,7 @@ namespace MyEngine
 			this.textureHandle = textureHandle;
 			UpdateIsOnGpu();
 		}
-		public Cubemap(MyFile[] files)
+		public Cubemap(FileExisting[] files)
 		{
 			this.files = files;
 			bmps = new Bitmap[6];

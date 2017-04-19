@@ -17,6 +17,8 @@ layout(location = 0) in vec3 in_position;
 layout(location = 1) in vec3 in_normal;
 layout(location = 2) in vec3 in_tangent;
 layout(location = 3) in vec2 in_uv;
+layout(location = 4) in vec4 in_biomes1;
+layout(location = 5) in vec4 in_biomes2;
 // in mat4 in_modelMatrix; // instanced rendering
 
 out data {
@@ -25,6 +27,8 @@ out data {
 	vec3 normal; 
 	vec2 uv; 
 	vec3 tangent;
+	vec4 biomes1;
+	vec4 biomes2;
 } o;
 
 void main()
@@ -36,9 +40,11 @@ void main()
 	gl_Position = model.modelViewProjectionMatrix * vec4(modelPos,1);
 	o.worldPos = worldPos3;
 	o.modelPos = modelPos;
-	o.uv = in_uv;
 	o.normal = (model.modelMatrix * vec4(in_normal,0)).xyz;
 	o.tangent = (model.modelMatrix * vec4(in_tangent,0)).xyz;
+	o.uv = in_uv;
+	o.biomes1 = in_biomes1;
+	o.biomes2 = in_biomes2;
 }
 
 
@@ -57,17 +63,21 @@ layout(vertices = 3) out;
 in data {
 	vec3 worldPos;
 	vec3 modelPos;
-  	vec3 normal; 
+	vec3 normal; 
 	vec2 uv; 
 	vec3 tangent;
+	vec4 biomes1;
+	vec4 biomes2;
 } i[];
 
 out data {
 	vec3 worldPos;
 	vec3 modelPos;
-  	vec3 normal; 
+	vec3 normal; 
 	vec2 uv; 
 	vec3 tangent;
+	vec4 biomes1;
+	vec4 biomes2;		
 } o[];
 
 int closestPowerOf2(float a) {
@@ -94,11 +104,13 @@ void main() {
 	gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;
 
 	// COPY OVER PARAMS
-	o[gl_InvocationID].worldPos = i[gl_InvocationID].worldPos; 
-	o[gl_InvocationID].modelPos = i[gl_InvocationID].modelPos; 
-	o[gl_InvocationID].normal = i[gl_InvocationID].normal; 
-	o[gl_InvocationID].uv = i[gl_InvocationID].uv; 
-	o[gl_InvocationID].tangent = i[gl_InvocationID].tangent; 				
+	o[gl_InvocationID].worldPos = i[gl_InvocationID].worldPos;
+	o[gl_InvocationID].modelPos = i[gl_InvocationID].modelPos;
+	o[gl_InvocationID].normal 	= i[gl_InvocationID].normal;
+	o[gl_InvocationID].uv 		= i[gl_InvocationID].uv;
+	o[gl_InvocationID].tangent 	= i[gl_InvocationID].tangent;
+	o[gl_InvocationID].biomes1 	= i[gl_InvocationID].biomes1;
+	o[gl_InvocationID].biomes2 	= i[gl_InvocationID].biomes2;
 
 	// TESS LEVEL BASED ON EYE DISTANCE
 	float d0=distance(i[0].worldPos,vec3(0));
@@ -128,17 +140,21 @@ layout(triangles, equal_spacing, ccw) in;
 in data {
 	vec3 worldPos;
 	vec3 modelPos;
-  	vec3 normal; 
+	vec3 normal; 
 	vec2 uv; 
 	vec3 tangent;
+	vec4 biomes1;
+	vec4 biomes2;
 } i[];
 
 out data {
 	vec3 worldPos;
 	vec3 modelPos;
-  	vec3 normal; 
+	vec3 normal; 
 	vec2 uv; 
 	vec3 tangent;
+	vec4 biomes1;
+	vec4 biomes2;
 } o;
 
 vec2 interpolate2D(vec2 v0, vec2 v1, vec2 v2) {
@@ -151,6 +167,12 @@ vec3 interpolate3D(vec3 v0, vec3 v1, vec3 v2) {
 	return vec3(gl_TessCoord.x)*v0 + vec3(gl_TessCoord.y)*v1 + vec3(gl_TessCoord.z)*v2;
 }
 vec3 interpolate3D(vec3 v0, vec3 v1, vec3 v2, vec3 v3) {
+	return mix(  mix(v0,v1,gl_TessCoord.x),  mix(v2,v3,gl_TessCoord.x),  gl_TessCoord.y);
+}
+vec4 interpolate4D(vec4 v0, vec4 v1, vec4 v2) {
+	return vec4(gl_TessCoord.x)*v0 + vec4(gl_TessCoord.y)*v1 + vec4(gl_TessCoord.z)*v2;
+}
+vec4 interpolate4D(vec4 v0, vec4 v1, vec4 v2, vec4 v3) {
 	return mix(  mix(v0,v1,gl_TessCoord.x),  mix(v2,v3,gl_TessCoord.x),  gl_TessCoord.y);
 }
 
@@ -188,6 +210,8 @@ void main()
 	o.normal	= interpolate3D(	i[0].normal,	i[1].normal,	i[2].normal		); 
 	o.uv		= interpolate2D(	i[0].uv,		i[1].uv,		i[2].uv			); 
 	o.tangent	= interpolate3D(	i[0].tangent,	i[1].tangent,	i[2].tangent	); 
+	o.biomes1	= interpolate4D(	i[0].biomes1,	i[1].biomes1,	i[2].biomes1	); 
+	o.biomes2	= interpolate4D(	i[0].biomes2,	i[1].biomes2,	i[2].biomes2	); 
 
 	//o.uv = calestialToSpherical(o.modelPos + param_offsetFromPlanetCenter).xy;
 
@@ -220,14 +244,16 @@ void main()
 
 
 [FragmentShader]
-#line 119
+#line 224
 
 in data {
 	vec3 worldPos;
 	vec3 modelPos;
-	vec3 normal;
-	vec2 uv;
+	vec3 normal; 
+	vec2 uv; 
 	vec3 tangent;
+	vec4 biomes1;
+	vec4 biomes2;
 } i;
 
 layout(location = 0) out vec4 out_color;
@@ -331,9 +357,27 @@ float getChannel(vec4 color, int channel)
 
 void getColor(vec2 uv, out vec3 color, out vec3 normal) {
 
+
+	double distanceFromCenter = length(i.modelPos + param_offsetFromPlanetCenter);
+
+
+	double altFromBottomOfSea = distanceFromCenter - param_radiusMin;
+	altFromBottomOfSea /= param_baseHeightMapMultiplier;
+	//altFromSea /= (param_baseHeightMapMultiplier + param_noiseMultiplier);
+
+	//if(altFromBottomOfSea < 0.5) { color=vec3(0,0,1); return; }
+
+	double altFromSea = altFromBottomOfSea - 0.5;
+
+	// 1 at meridian.. 0 at poles
+	double distanceFromPoles = 1 - abs(uv.y - 0.5) * 2;
+	double temperature = (1 - altFromSea) * distanceFromPoles;
+
 	//DEBUG
 	//color = vec3(i.uv.x, 0, 0); return;
 	//color = texture2D(param_biomesSplatMap1, i.uv).xyz; return;
+	//color = vec3(temperature); return;
+	color = i.biomes1.xyz; return;
 		
 	// must set default values, on some GPUs missing default values cause error in calculations, thus on some GPUs random old data is used
 	color = vec3(0);

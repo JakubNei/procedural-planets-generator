@@ -24,13 +24,24 @@ namespace MyGame.PlanetaryBody
 
 			var r = new Random();
 			while (verticesList.Count < NumberOfVerticesNeededTotal)
-				verticesList.Add(new Vector3d(r.NextDouble(), r.NextDouble(), r.NextDouble()).ToVector3()); // WTF WTF WTF WTF FUCK
-																											// THE FUCK IS THIS
-																											// WHY THE FUCK DOES IT NOT WORK WITH ZEROS OR ONES
+				verticesList.Add(Vector3.Zero);
+			//verticesList.Add(new Vector3d(r.NextDouble(), r.NextDouble(), r.NextDouble()).ToVector3());
+			// this used to not work if we only had zeros, thus i had to use random
 			return verticesList;
 		}
 
 
+
+		List<Vector4> biomesList = new List<Vector4>();
+		public List<Vector4> GetDefaultBiomesList()
+		{
+			if (biomesList.Count > 0) return biomesList;
+
+			while (biomesList.Count < NumberOfVerticesNeededTotal)
+				biomesList.Add(Vector4.Zero);
+
+			return biomesList;
+		}
 
 
 

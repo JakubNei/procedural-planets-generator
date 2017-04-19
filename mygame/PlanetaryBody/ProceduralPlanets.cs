@@ -121,14 +121,14 @@ namespace MyGame
 				cfg.chunkNumberOfVerticesOnEdge = Debug.GetCVar("generation / segment number of vertices on edge", 50);
 				cfg.weightNeededToSubdivide = Debug.GetCVar("generation / segment subdivide if weight is bigger than", 0.2f);
 				cfg.stopSegmentRecursionAtWorldSize = Debug.GetCVar("generation / segment stop recursion at world size", 100);
-				
-				cfg.radiusMin = 100000; // 6371000m is earth radius
+
+				cfg.radiusMin = 100000;//100000; // 6371000m is earth radius
 				cfg.baseHeightMap = Factory.GetTexture2D("planet/data/earth/height_map.*");
 				cfg.baseHeightMapMultiplier = 500; // 20000m is highest earth point
 				cfg.noiseMultiplier = 100;
 				cfg.AddControlSplatMap(0, Factory.GetTexture2D("planet/data/earth/biomes_splat_map_0.*"));
 				cfg.AddControlSplatMap(1, Factory.GetTexture2D("planet/data/earth/biomes_splat_map_1.*"));
-				cfg.LoadConfig(FileSystem.FileExistingFile("planet/data/earth/biomes_splat_maps_metadata.xml"), biomesAtlas);
+				cfg.LoadConfig(FileSystem.FindExistingFile("planet/data/earth/biomes_splat_maps_metadata.xml"), biomesAtlas);
 
 				var planetShader = Factory.GetShader("shaders/planet.shader");
 				var planetMaterial = new Material();
@@ -142,7 +142,7 @@ namespace MyGame
 
 
 
-			{
+			if(false) {
 				var cfg = new PlanetaryBody.Config();
 				cfg.chunkNumberOfVerticesOnEdge = Debug.GetCVar("generation / segment number of vertices on edge", 50);
 				cfg.weightNeededToSubdivide = Debug.GetCVar("generation / segment subdivide if weight is bigger than", 0.2f);
@@ -154,7 +154,7 @@ namespace MyGame
 				cfg.noiseMultiplier = 50;
 				cfg.AddControlSplatMap(0, Factory.GetTexture2D("planet/data/myplanet1/biomes_splat_map_0.*"));
 				cfg.AddControlSplatMap(1, Factory.GetTexture2D("planet/data/myplanet1/biomes_splat_map_1.*"));
-				cfg.LoadConfig(FileSystem.FileExistingFile("planet/data/myplanet1/biomes_splat_maps_metadata.xml"), biomesAtlas);
+				cfg.LoadConfig(FileSystem.FindExistingFile("planet/data/myplanet1/biomes_splat_maps_metadata.xml"), biomesAtlas);
 
 				var planetShader = Factory.GetShader("shaders/planet.shader");
 				var planetMaterial = new Material();

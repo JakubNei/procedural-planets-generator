@@ -97,9 +97,9 @@ namespace MyGame.PlanetaryBody
 			public override MyRenderingMode RenderingMode
 			{
 				get
-                {
-                    return base.RenderingMode;
-                }
+				{
+					return base.RenderingMode;
+				}
 				set
 				{
 					if (value.HasFlag(MyRenderingMode.RenderGeometry) && segment?.IsGenerationDone == false)
@@ -107,10 +107,10 @@ namespace MyGame.PlanetaryBody
 						Log.Warn("trying to render segment " + segment + " that did not finish generation");
 					}
 
-                    if(segment != null && segment.parent != null && segment.parent.Children.Count == 0)
-                    {
-                        Log.Error("parent segment had to children, should not happen, " + segment);
-                    }
+					if (segment != null && segment.parent != null && segment.parent.Children.Count == 0)
+					{
+						Log.Error("parent segment had to children, should not happen, " + segment);
+					}
 
 					base.RenderingMode = value;
 				}
@@ -136,11 +136,10 @@ namespace MyGame.PlanetaryBody
 			NoneNoParent = -1,
 		}
 
-		public readonly long ID;
-		static long nextId = 0;
-		public Segment(Planet planetInfo, TriangleD noElevationRange, Segment parentChunk, ChildPosition childPosition = ChildPosition.NoneNoParent)
+		public readonly ulong ID;
+		public Segment(Planet planetInfo, TriangleD noElevationRange, Segment parentChunk, ulong id, ChildPosition childPosition = ChildPosition.NoneNoParent)
 		{
-			ID = Interlocked.Increment(ref nextId);
+			ID = id;
 			this.planetInfo = planetInfo;
 			this.parent = parentChunk;
 			this.childPosition = childPosition;
@@ -256,7 +255,7 @@ namespace MyGame.PlanetaryBody
 			occluderTringles.Add(a);
 		}
 
-		void AddChild(Vector3d a, Vector3d b, Vector3d c, ChildPosition cp)
+		void AddChild(Vector3d a, Vector3d b, Vector3d c, ChildPosition cp, ulong id)
 		{
 			var range = new TriangleD()
 			{
@@ -264,7 +263,7 @@ namespace MyGame.PlanetaryBody
 				b = b,
 				c = c
 			};
-			var child = new Segment(planetInfo, range, this, cp);
+			var child = new Segment(planetInfo, range, this, this.ID << 2 | id);
 			Children.Add(child);
 			child.subdivisionDepth = subdivisionDepth + 1;
 			child.rangeToCalculateScreenSizeOn = range;
@@ -285,10 +284,10 @@ namespace MyGame.PlanetaryBody
 				ac *= planetInfo.RadiusMin;
 				bc *= planetInfo.RadiusMin;
 
-				AddChild(a, ab, ac, ChildPosition.Top);
-				AddChild(ab, b, bc, ChildPosition.Left);
-				AddChild(ac, bc, c, ChildPosition.Right);
-				AddChild(ab, bc, ac, ChildPosition.Middle);
+				AddChild(a, ab, ac, ChildPosition.Top, 0);
+				AddChild(ab, b, bc, ChildPosition.Left, 1);
+				AddChild(ac, bc, c, ChildPosition.Right, 2);
+				AddChild(ab, bc, ac, ChildPosition.Middle, 3);
 			}
 		}
 
@@ -325,11 +324,11 @@ namespace MyGame.PlanetaryBody
 		{
 			WantsToBeVisible = visible;
 
-			if(visible)
+			if (visible)
 			{
 				foreach (var c in Children)
 					c.ShouldNotBeVisible();
-			}		
+			}
 		}
 
 		void ShouldNotBeVisible()

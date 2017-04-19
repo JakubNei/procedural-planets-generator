@@ -30,7 +30,7 @@ namespace MyEngine
 			Shader s;
 			if (!allShaders.TryGetValue(file, out s))
 			{
-				s = new Shader(FileSystem.FileExistingFile(file));
+				s = new Shader(FileSystem.FindExistingFile(file));
 				allShaders[file] = s;
 			}
 			return s;
@@ -61,7 +61,7 @@ namespace MyEngine
 			Mesh s;
 			if (allowDuplicates || !allMeshes.TryGetValue(file, out s))
 			{
-				s = objLoader.Load(this.FileSystem.FileExistingFile(file));
+				s = objLoader.Load(this.FileSystem.FindExistingFile(file));
 				allMeshes[file] = s;
 			}
 			return s;
@@ -76,7 +76,7 @@ namespace MyEngine
 
 			if (texture == null)
 			{
-				var f = this.FileSystem.FileExistingFile(file);
+				var f = this.FileSystem.FindExistingFile(file);
 				texture = new Texture2D(f);
 				allTexture2Ds[f.VirtualPath] = texture;
 			}

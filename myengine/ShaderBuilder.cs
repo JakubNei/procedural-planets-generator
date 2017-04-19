@@ -21,13 +21,13 @@ namespace MyEngine
             FileSystem = fileSystem;
 		}
 
-		void Prepend(MyFile name)
+		void Prepend(FileExisting name)
 		{
 			using (var fs = new System.IO.StreamReader(name.OpenReadWrite()))
 				prependSource += fs.ReadToEnd();
 		}
 
-		public void LoadAndParse(MyFile file)
+		public void LoadAndParse(FileExisting file)
 		{
 			string source = file.ReadAllText();
 
@@ -77,7 +77,7 @@ namespace MyEngine
 
 		HashSet<string> f = new HashSet<string>();
 
-		string GetIncludeFileContents(string virtualPath, MyFolder folder)
+		string GetIncludeFileContents(string virtualPath, FolderExisting folder)
 		{
 			var file = FileSystem.FindFile(virtualPath, folder);
 
@@ -88,7 +88,7 @@ namespace MyEngine
 			return source;
 		}
 
-		string ReplaceIncludeDirectiveWithFileContents(string source, MyFolder folder)
+		string ReplaceIncludeDirectiveWithFileContents(string source, FolderExisting folder)
 		{
 			while (true)
 			{

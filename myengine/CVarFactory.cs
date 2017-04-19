@@ -28,9 +28,9 @@ namespace MyEngine
 		List<LineHolder> lines = new List<LineHolder>();
 
 
-		MyFile file;
+		FileExisting file;
 		DateTime fileLastSaved = DateTime.MinValue;
-		public CVarFactory(MyFile file, ILog log)
+		public CVarFactory(FileExisting file, ILog log)
 		{
 
 			this.Log = log;

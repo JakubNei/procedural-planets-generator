@@ -20,7 +20,7 @@ namespace MyEngine
 		public BufferObjectVector2 UVs { get; private set; }
 		public BufferObjectInt TriangleIndicies { get; private set; }
 
-		public MyFile file;
+		public FileExisting file;
 
 		public bool BoundsNeedRecalculation { get; set; }
 

@@ -92,19 +92,46 @@ vec3_struct toStruct(vec3 p)
 }
 
 
+struct vec4_struct
+{
+    float x;
+    float y;
+    float z;
+    float w;
+};
+vec4 fromStruct(vec4_struct p)
+{
+	return vec4(p.x, p.y, p.z, p.w);
+}
+vec4_struct toStruct(vec4 p)
+{
+	vec4_struct s;
+	s.x = p.x;
+	s.y = p.y;
+	s.z = p.z;
+	s.w = p.w;
+	return s;
+}
 
 
-layout( binding=0 ) buffer buffer1 {
+
+layout( binding=0 ) buffer buffer0 {
     vec3_struct positions[];
 };
-layout( binding=1 ) buffer buffer2 {
+layout( binding=1 ) buffer buffer1 {
     vec3_struct normals[];
 };
-layout( binding=2 ) buffer buffer3 {
+layout( binding=2 ) buffer buffer2 {
     vec2_struct uvs[];
 };
-layout( binding=3 ) buffer buffer4 {
+layout( binding=3 ) buffer buffer3 {
     int indicies[];
+};
+layout( binding=4 ) buffer buffer4 {
+    vec4_struct out_biomes1[];
+};
+layout( binding=5 ) buffer buffer5 {
+    vec4_struct out_biomes2[];
 };
 
 
@@ -140,7 +167,8 @@ uniform int param_verticesStartIndexOffset;
 
 void main() {
 	
-
+	vec4 biomes1 = vec4(1,1,0,0);
+	vec4 biomes2 = vec4(0);
 
 	int verticeIndex = int(gl_GlobalInvocationID.x) + param_verticesStartIndexOffset;
 	int tempVerticeIndex = verticeIndex;
@@ -188,5 +216,8 @@ void main() {
 
 	positions[verticeIndex] = toStruct(vec3(p));
 	uvs[verticeIndex] = toStruct(uv);
+	out_biomes1[verticeIndex] = toStruct(biomes1);
+	out_biomes2[verticeIndex] = toStruct(biomes2);
+
 }
 

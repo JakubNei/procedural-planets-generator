@@ -38,7 +38,7 @@ namespace MyEngine
 				OnChanged?.Invoke();
 			}
 
-			public IBufferObject GetVertexArrayBufferObject(string name)
+			public IBufferObject GetVertexBuffer(string name)
 			{
 				return nameToVbo[name];
 			}
@@ -124,6 +124,26 @@ namespace MyEngine
 			ControlElementArray,
 		}
 
+		public class BufferObjectVector4 : BufferObject<Vector4>
+		{
+			public BufferObjectVector4()
+			{
+				ElementType = typeof(float);
+				DataStrideInElementsNumber = 4;
+			}
+
+			public override unsafe void SetData(IntPtr ptr, int countOfVector4s)
+			{
+				lock (this)
+				{
+					var p = (float*)ptr.ToPointer();
+					for (int i = 0; i < countOfVector4s; i++)
+					{
+						this[i] = new Vector4(*p++, *p++, *p++, *p++);
+					}
+				}
+			}
+		}
 		public class BufferObjectVector3 : BufferObject<Vector3>
 		{
 			public BufferObjectVector3()

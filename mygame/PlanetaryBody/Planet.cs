@@ -162,7 +162,7 @@ namespace MyGame.PlanetaryBody
 		}
 
 
-		void AddRootChunk(List<Vector3d> vertices, int A, int B, int C)
+		void AddRootChunk(ulong id, List<Vector3d> vertices, int A, int B, int C)
 		{
 			var range = new TriangleD()
 			{
@@ -170,10 +170,9 @@ namespace MyGame.PlanetaryBody
 				b = vertices[B],
 				c = vertices[C]
 			};
-			var child = new Segment(this, range, null);
+			var child = new Segment(this, range, null, id);
 			this.rootSegments.Add(child);
 		}
-
 
 		private void InitializeRootSegments()
 		{
@@ -203,32 +202,32 @@ namespace MyGame.PlanetaryBody
 			vertices.Add(new Vector3d(-t, 0, d));
 
 			// 5 faces around point 0
-			AddRootChunk(vertices, 0, 11, 5);
-			AddRootChunk(vertices, 0, 5, 1);
-			AddRootChunk(vertices, 0, 1, 7);
-			AddRootChunk(vertices, 0, 7, 10);
-			AddRootChunk(vertices, 0, 10, 11);
+			AddRootChunk(0, vertices, 0, 11, 5);
+			AddRootChunk(1, vertices, 0, 5, 1);
+			AddRootChunk(2, vertices, 0, 1, 7);
+			AddRootChunk(3, vertices, 0, 7, 10);
+			AddRootChunk(4, vertices, 0, 10, 11);
 
 			// 5 adjacent faces
-			AddRootChunk(vertices, 1, 5, 9);
-			AddRootChunk(vertices, 5, 11, 4);
-			AddRootChunk(vertices, 11, 10, 2);
-			AddRootChunk(vertices, 10, 7, 6);
-			AddRootChunk(vertices, 7, 1, 8);
+			AddRootChunk(5, vertices, 1, 5, 9);
+			AddRootChunk(6, vertices, 5, 11, 4);
+			AddRootChunk(7, vertices, 11, 10, 2);
+			AddRootChunk(8, vertices, 10, 7, 6);
+			AddRootChunk(9, vertices, 7, 1, 8);
 
 			// 5 faces around point 3
-			AddRootChunk(vertices, 3, 9, 4);
-			AddRootChunk(vertices, 3, 4, 2);
-			AddRootChunk(vertices, 3, 2, 6);
-			AddRootChunk(vertices, 3, 6, 8);
-			AddRootChunk(vertices, 3, 8, 9);
+			AddRootChunk(10, vertices, 3, 9, 4);
+			AddRootChunk(11, vertices, 3, 4, 2);
+			AddRootChunk(12, vertices, 3, 2, 6);
+			AddRootChunk(13, vertices, 3, 6, 8);
+			AddRootChunk(14, vertices, 3, 8, 9);
 
 			// 5 adjacent faces
-			AddRootChunk(vertices, 4, 9, 5);
-			AddRootChunk(vertices, 2, 4, 11);
-			AddRootChunk(vertices, 6, 2, 10);
-			AddRootChunk(vertices, 8, 6, 7);
-			AddRootChunk(vertices, 9, 8, 1);
+			AddRootChunk(15, vertices, 4, 9, 5);
+			AddRootChunk(16, vertices, 2, 4, 11);
+			AddRootChunk(17, vertices, 6, 2, 10);
+			AddRootChunk(18, vertices, 8, 6, 7);
+			AddRootChunk(19, vertices, 9, 8, 1);
 
 		}
 
