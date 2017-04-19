@@ -24,12 +24,17 @@ namespace PreparePlanetData
 			Console.WriteLine("enter max pixel distance to sea (default 20):");
 			p.maxDistanceToSea = float.Parse(Console.ReadLine());
 
+			Console.WriteLine("enter maximum biomes splat map wiedth (default 1024):");
+			p.maximumBiomesSplatMapwWidth = int.Parse(Console.ReadLine());
+
 			p.Run();
 		}
 
 		public string targetFolder = "../../../resources/planet/data/earth/";
 		public float maxDistanceToSea = 20;
 		public float distanceToSieaIncreasePerPixel = 1;
+
+		public int maximumBiomesSplatMapwWidth = 1024;
 
 		public void Run()
 		{
@@ -73,19 +78,18 @@ namespace PreparePlanetData
 			Console.WriteLine("combined " + nameof(oceanElevation) + " and " + nameof(surfaceElevation) + " into " + nameof(finalHeightTexture));
 
 
-			const int widthThreshold = 1024;
 
-			if (finalHeightTexture.Width > widthThreshold)
+			if (finalHeightTexture.Width > maximumBiomesSplatMapwWidth)
 				finalHeightTexture.SaveAsJPG(targetFolder + "height_map.jpg", 70);
 			else
 				finalHeightTexture.Save(targetFolder + "height_map.png");
 
 			Console.WriteLine(nameof(finalHeightTexture) + " too big for subsequent generation, gotta downsize");
-			if (finalHeightTexture.Width > widthThreshold)
+			if (finalHeightTexture.Width > maximumBiomesSplatMapwWidth)
 			{
-				surfaceElevation.Resize(widthThreshold, widthThreshold);
-				oceanElevation.Resize(widthThreshold, widthThreshold);
-				finalHeightTexture.Resize(widthThreshold, widthThreshold);
+				surfaceElevation.Resize(maximumBiomesSplatMapwWidth, maximumBiomesSplatMapwWidth);
+				oceanElevation.Resize(maximumBiomesSplatMapwWidth, maximumBiomesSplatMapwWidth);
+				finalHeightTexture.Resize(maximumBiomesSplatMapwWidth, maximumBiomesSplatMapwWidth);
 			}
 
 

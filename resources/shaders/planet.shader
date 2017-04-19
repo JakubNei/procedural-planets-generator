@@ -337,30 +337,70 @@ void getColor(vec2 uv, out vec3 color, out vec3 normal) {
 	// must set default values, on some GPUs missing default values cause error in calculations, thus on some GPUs random old data is used
 	color = vec3(0);
 
-	bool calculateNormal = length(i.worldPos) < NORMAL_MAPPING_DISTANCE;
-	if(calculateNormal) normal = vec3(0);
+	bool shouldCalculateNormal = length(i.worldPos) < NORMAL_MAPPING_DISTANCE;
+	if(shouldCalculateNormal) normal = vec3(0);
 	else normal = vec3(0.5, 0.5, 1);
 
-	vec3 pos = vec3(i.modelPos + param_offsetFromPlanetCenter);
+
+	vec4 biome0 = vec4(0);
+	vec4 biome1 = vec4(0);	
 
 	float amount;
 
-#define ADD_BIOME(ID, CHANNEL) \
-	amount = getChannel(texture2D(param_biomesSplatMap##ID##, uv), CHANNEL); \
+#define PREPARE_BIOME(ID, CHANNEL, CHANNEL_NAMED) \
+	amount = texture2D(param_biomesSplatMap##ID##, uv).##CHANNEL_NAMED; \
+	if(amount > 0) { \
+		biome##ID##.##CHANNEL_NAMED = amount; \
+	}
+
+    PREPARE_BIOME(0,0,x)
+    PREPARE_BIOME(0,1,y)
+    PREPARE_BIOME(0,2,z)
+    PREPARE_BIOME(0,3,w)
+    PREPARE_BIOME(1,0,x)
+    PREPARE_BIOME(1,1,y)
+    PREPARE_BIOME(1,2,z)
+    PREPARE_BIOME(1,3,w)
+
+	vec3 pos = vec3(i.modelPos + param_offsetFromPlanetCenter);
+	const float cw = 0.5;
+	const float pw = 0.5;
+    biome0.x *= cw + perlinNoise(pos / 200) * pw;
+    biome0.y *= cw + perlinNoise(pos / 250) * pw;
+    biome0.z *= cw + perlinNoise(pos / 300) * pw;
+    biome0.w *= cw + perlinNoise(pos / 350) * pw;
+
+    biome1.x *= cw + perlinNoise(pos / 220) * pw;
+    biome1.y *= cw + perlinNoise(pos / 270) * pw;
+    biome1.z *= cw + perlinNoise(pos / 320) * pw;
+    biome1.w *= cw + perlinNoise(pos / 370) * pw;
+
+    //biome0 = clamp(biome0, 0, 1);
+    //biome1 = clamp(biome1, 0, 1);
+
+    float sum = 
+    	biome0.x + biome0.y + biome0.z + biome0.w +
+    	biome1.x + biome1.y + biome1.z + biome1.w;
+
+    biome0 /= sum;
+    biome1 /= sum;
+
+#define RENDER_BIOME(ID, CHANNEL, CHANNEL_NAMED) \
+	amount = biome##ID##.##CHANNEL_NAMED; \
 	if(amount > 0) { \
 		color += amount * getBiomeColor(param_biome##ID##CHANNEL##_diffuseMap); \
-		if(calculateNormal) \
+		if(shouldCalculateNormal) \
 			normal += amount * getBiomeNormal(param_biome##ID##CHANNEL##_normalMap); \
 	}
 
-    ADD_BIOME(0,0)
-    ADD_BIOME(0,1)
-    ADD_BIOME(0,2)
-    ADD_BIOME(0,3)
-    ADD_BIOME(1,0)
-    ADD_BIOME(1,1)
-    ADD_BIOME(1,2)
-    ADD_BIOME(1,3)
+    RENDER_BIOME(0,0,x)
+    RENDER_BIOME(0,1,y)
+    RENDER_BIOME(0,2,z)
+    RENDER_BIOME(0,3,w)
+    RENDER_BIOME(1,0,x)
+    RENDER_BIOME(1,1,y)
+    RENDER_BIOME(1,2,z)
+    RENDER_BIOME(1,3,w)
 
 }
 
