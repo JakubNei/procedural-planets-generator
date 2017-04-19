@@ -125,7 +125,7 @@ namespace MyGame
 				cfg.radiusMin = 100000; // 6371000m is earth radius
 				cfg.baseHeightMap = Factory.GetTexture2D("planet/data/earth/height_map.*");
 				cfg.baseHeightMapMultiplier = 500; // 20000m is highest earth point
-				cfg.noiseMultiplier = 200;
+				cfg.noiseMultiplier = 100;
 				cfg.AddControlSplatMap(0, Factory.GetTexture2D("planet/data/earth/biomes_splat_map_0.*"));
 				cfg.AddControlSplatMap(1, Factory.GetTexture2D("planet/data/earth/biomes_splat_map_1.*"));
 				cfg.LoadConfig(FileSystem.FileExistingFile("planet/data/earth/biomes_splat_maps_metadata.xml"), biomesAtlas);

@@ -33,7 +33,7 @@ namespace MyGame.PlanetaryBody
 				if (weight > WeightNeededToSubdivide)
 				{
 					segment.EnsureChildrenAreCreated();
-					segment.ShouldChildrenBeVisible(true);
+					segment.SetShouldBeVisible(false);
 					foreach (var child in segment.Children)
 					{
 						GatherWeights(toGenerate, child, recursionDepth + 1);
@@ -41,11 +41,12 @@ namespace MyGame.PlanetaryBody
 				}
 				else
 				{
-					segment.ShouldChildrenBeVisible(false);
+					segment.SetShouldBeVisible(true);
 				}
 			}
 			else
 			{
+				segment.SetShouldBeVisible(true);
 				//Log.Warn("recursion depth is over: " + SubdivisionMaxRecurisonDepth);
 			}
 		}
@@ -58,16 +59,16 @@ namespace MyGame.PlanetaryBody
 		{
 			if (recursionDepth < SubdivisionMaxRecurisonDepth)
 			{
-				var canAllChildrenBeVisible = segment.Children.Count > 0 && segment.Children.All(c => c.ShouldBeVisible && c.IsGenerationDone);
+				var canAllChildrenBeVisible = segment.Children.Count > 0 && segment.Children.All(c => c.IsGenerationDone) && segment.Children.Any(c => c.ShouldBeVisible);
 
 				// hide only if all our childs are visible, they might still be generating or they might want to be hidden
 				if (canAllChildrenBeVisible)
 				{
+					segment.SetVisible(false);
 					foreach (var child in segment.Children)
 					{
 						UpdateVisibility(child, toGenerate, recursionDepth + 1);
 					}
-					segment.SetVisible(false);
 
 					return;
 				}

@@ -325,18 +325,22 @@ namespace MyGame.PlanetaryBody
 
 		public bool ShouldBeVisible { get; set; }
 
-		public void ShouldChildrenBeVisible(bool shouldBeVisible)
+		public void SetShouldBeVisible(bool shouldBeVisible)
 		{
-			if (Children.Count > 0)
+			ShouldBeVisible = shouldBeVisible;
+
+			if(shouldBeVisible)
 			{
-				foreach (var child in Children)
-				{
-					child.ShouldBeVisible = shouldBeVisible;
-					child.ShouldChildrenBeVisible(shouldBeVisible);
-					//child.DestroyRenderer();
-				}
-				//Children.Clear();
-			}
+				foreach (var c in Children)
+					c.ShouldNotBeVisible();
+			}		
+		}
+
+		void ShouldNotBeVisible()
+		{
+			this.ShouldBeVisible = false;
+			foreach (var c in Children)
+				c.ShouldNotBeVisible();
 		}
 
 

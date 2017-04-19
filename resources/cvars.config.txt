@@ -12,7 +12,7 @@ generation / planet segments pause subdivision and visibility updates = false
 generation / print statistics report = false 
 generation / segment number of vertices on edge = 80 
 generation / segment stop recursion at world size = 100 
-generation / segment subdivide if weight is bigger than = 0.5 
+generation / segment subdivide if weight is bigger than = 0.3 
 generation / use skirts = true 
 planets / debug / get surface height = false 
 rendering / debug / draw gbuffer contents = false = f10 
