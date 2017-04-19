@@ -195,7 +195,7 @@ void main()
 	vec3 pos = vec3(o.modelPos + param_offsetFromPlanetCenter);
 	// make it uniform across different planet sizes
 	//pos *= float(param_radiusMin) / 20000;
-	float amount = AdjustTerrainAt(pos) * 0.3;
+	float amount = AdjustTerrainAt(pos) * 0.1;
 	o.worldPos += o.normal * amount;
 
 	//o.normal *= 1 + amount;
