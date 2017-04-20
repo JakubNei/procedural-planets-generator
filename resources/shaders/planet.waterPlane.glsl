@@ -190,6 +190,7 @@ void main()
 
 
 [FragmentShader]
+#line 194
 
 in data {
 	vec3 worldPos;
@@ -260,18 +261,19 @@ float noise( in vec2 p ) {
 }
 
 // lighting
-float diffuse(vec3 n,vec3 l,float p) {
-    return pow(dot(n,l) * 0.4 + 0.6,p);
+float diffuse(vec3 normal,vec3 dirToLight,float p) {
+    return pow(dot(normal,dirToLight) * 0.4 + 0.6,p);
 }
-float specular(vec3 n,vec3 l,vec3 e,float s) {    
+float specular(vec3 normal,vec3 dirToLight,vec3 dirToCamera,float s) {    
     float nrm = (s + 8.0) / (3.1415 * 8.0);
-    return pow(max(dot(reflect(e,n),l),0.0),s) * nrm;
+    return pow(max(dot(reflect(dirToCamera,normal),dirToLight),0.0),s) * nrm;
 }
 
 // sky
-vec3 getSkyColor(vec3 e) {
-    e.y = max(e.y,0.0);
-    return vec3(pow(1.0-e.y,2.0), 1.0-e.y, 0.6+(1.0-e.y)*0.4);
+vec3 getSkyColor(vec3 dirToCamera) {
+    dirToCamera.y = max(dirToCamera.y,0.0);
+    return vec3(1,1,1);
+    return vec3(pow(1.0-dirToCamera.y,2.0), 1.0-dirToCamera.y, 0.6+(1.0-dirToCamera.y)*0.4);
 }
 
 // sea
@@ -283,11 +285,11 @@ float sea_octave(vec2 uv, float choppy) {
     return pow(1.0-pow(wv.x * wv.y,0.65),choppy);
 }
 
-float map(vec3 p) {
-    float freq = SEA_FREQ;
+
+float map(vec2 uv) {
+	float freq = SEA_FREQ;
     float amp = SEA_HEIGHT;
     float choppy = SEA_CHOPPY;
-    vec2 uv = p.xz; uv.x *= 0.75;
     
     float d, h = 0.0;    
     for(int i = 0; i < ITER_GEOMETRY; i++) {        
@@ -297,14 +299,15 @@ float map(vec3 p) {
     	uv *= octave_m; freq *= 1.9; amp *= 0.22;
         choppy = mix(choppy,1.0,0.2);
     }
-    return p.y - h;
+    //return -h;
+    return -h;
 }
 
-float map_detailed(vec3 p) {
+
+float map_detailed(vec2 uv) {
     float freq = SEA_FREQ;
     float amp = SEA_HEIGHT;
     float choppy = SEA_CHOPPY;
-    vec2 uv = p.xz; uv.x *= 0.75;
     
     float d, h = 0.0;    
     for(int i = 0; i < ITER_FRAGMENT; i++) {        
@@ -314,102 +317,93 @@ float map_detailed(vec3 p) {
     	uv *= octave_m; freq *= 1.9; amp *= 0.22;
         choppy = mix(choppy,1.0,0.2);
     }
-    return p.y - h;
+    return -h;
 }
 
-vec3 getSeaColor(vec3 p, vec3 n, vec3 l, vec3 eye, vec3 dist) {  
-    float fresnel = clamp(1.0 - dot(n,-eye), 0.0, 1.0);
-    fresnel = pow(fresnel,3.0) * 0.65;
-        
-    vec3 reflected = getSkyColor(reflect(eye,n));    
-    vec3 refracted = SEA_BASE + diffuse(n,l,80.0) * SEA_WATER_COLOR * 0.12; 
+vec3 getSeaColor(float height, vec3 normal, vec3 dirToLight, vec3 dirToCamera) {  
     
-    vec3 color = mix(refracted,reflected,fresnel);
+    vec3 color = vec3(0);
     
-    float atten = max(1.0 - dot(dist,dist) * 0.001, 0.0);
-    color += SEA_WATER_COLOR * (p.y - SEA_HEIGHT) * 0.18 * atten;
+    float fresnel = clamp(1.0 - dot(normal,-dirToCamera), 0.0, 1.0);
+    fresnel = pow(fresnel,3.0) * 0.65;        
+    vec3 reflected = getSkyColor(reflect(dirToCamera,normal));    
+    vec3 refracted = SEA_BASE + diffuse(normal,dirToLight,80.0) * SEA_WATER_COLOR * 0.12; 
+	color += mix(refracted,reflected,fresnel);    
     
-    color += vec3(specular(n,l,eye,60.0));
+	//color += getSkyColor(reflect(dirToCamera,normal));
+
+    float dist = length(i.worldPos);
+    //dist = 100;
+    float atten = max(1.0 - dist * 0.001, 0.0); 
+    color += SEA_WATER_COLOR * (-height) * 0.18 * atten;
+    
+    color += vec3(specular(normal,dirToLight,dirToCamera,60.0));
     
     return color;
 }
 
-// tracing
-vec3 getNormal(vec3 p, float eps) {
-    vec3 n;
-    n.y = map_detailed(p);    
-    n.x = map_detailed(vec3(p.x+eps,p.y,p.z)) - n.y;
-    n.z = map_detailed(vec3(p.x,p.y,p.z+eps)) - n.y;
-    n.y = eps;
-    return normalize(n);
-}
 
-float heightMapTracing(vec3 ori, vec3 dir, out vec3 p) {  
-    float tm = 0.0;
-    float tx = 1000.0;    
-    float hx = map(ori + dir * tx);
-    if(hx > 0.0) return tx;   
-    float hm = map(ori + dir * tm);    
-    float tmid = 0.0;
-    for(int i = 0; i < NUM_STEPS; i++) {
-        tmid = mix(tm,tx, hm/(hm-hx));                   
-        p = ori + dir * tmid;                   
-    	float hmid = map(p);
-		if(hmid < 0.0) {
-        	tx = tmid;
-            hx = hmid;
-        } else {
-            tm = tmid;
-            hm = hmid;
-        }
-    }
-    return tmid;
-}
-
-// main
-void mainImage(out vec4 fragColor, in vec2 fragCoord ) {
-
-
-    // ray
-    vec3 ori = vec3(1);
-    vec3 dir = normalize(i.modelPos); 
-    dir = normalize(dir);
-    
-    // tracing
-    vec3 p;
-    heightMapTracing(ori,dir,p);
-    vec3 dist = p - ori;
-    vec3 n = getNormal(p, dot(dist,dist) * EPSILON_NRM);
-    vec3 light = normalize(vec3(0.0,1.0,0.8)); 
-             
-    // color
-    vec3 color = mix(
-        getSkyColor(dir),
-        getSeaColor(p,n,light,dir,dist),
-    	pow(smoothstep(0.0,-0.05,dir.y),0.3));
-        
-    // post
-	fragColor = vec4(pow(color,vec3(0.75)), 1.0);
+vec3 getNormal(vec2 uv, float eps) {
+    vec3 normal;
+    normal.y = map_detailed(uv); 
+    normal.x = map_detailed(vec2(uv.x+eps,uv.y)) - normal.y;
+    normal.z = map_detailed(vec2(uv.x,uv.y+eps)) - normal.y;
+    normal.y = eps;
+    return normalize(normal);
 }
 
 
 
 
-
-
-
-
+vec3 normalMap(vec3 normal) {
+	vec3 N = i.normal;
+	vec3 T = i.tangent;
+	vec3 T2 = T - N * dot(N, T); // Gram-Schmidt orthogonalization of T
+	vec3 B = normalize(cross(N,T2));
+	//if (dot(B2, B) < 0) B2 *= -1;
+	mat3 normalMatrix = mat3(T,B,N); // column0, column1, column2		
+	return normalMatrix * normal;
+}
 
 
 void main()
 {
 
-	vec4 color = vec4(0);	
+	const float startAtCameraDist = 5000;
 
-	mainImage(color, gl_FragCoord.xy);
+	const vec3 defaultColor = vec3(0.5,0.7,1);
 
-	out_color = color;
-	//out_color = pow(color,engine.gammaCorrectionTextureRead);
+	vec3 color = defaultColor;	
+
+	float dist = length(i.worldPos);
+
+	if(dist < startAtCameraDist) {
+
+		//mainImage(color, gl_FragCoord.xy);
+
+		vec2 uv = i.uv*100000;
+		float height = map(uv);
+		vec3 normal = getNormal(uv, 100 * EPSILON_NRM);
+
+		//normal = vec3(0,1,0);
+		//normal = normalMap(normal);
+
+
+
+		vec3 dirToCamera = normalize(vec3(0) - i.worldPos);
+		vec3 dirToLight = vec3(0,1,0);
+		color = getSeaColor(height, normal, dirToLight, dirToCamera);
+
+		color = mix(defaultColor, color, smoothstep(startAtCameraDist, startAtCameraDist/2, dist));
+	}
+
+	//DEBUG
+	//color = vec3(height);
+	//color = normal;	
+
+	color = pow(color,vec3(engine.gammaCorrectionTextureRead));
+	vec4 color4 = vec4(color, 0.5);
+	out_color = color4;
 
 }
 
