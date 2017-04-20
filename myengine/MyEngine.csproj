@@ -99,6 +99,7 @@
     <Compile Include="FrameTime.cs" />
     <Compile Include="DictionaryWatcher.cs" />
     <Compile Include="GLError.cs" />
+    <Compile Include="IHasVersion.cs" />
     <Compile Include="Mathematical\Ray.cs" />
     <Compile Include="Mathematical\Sphere.cs" />
     <Compile Include="Mathematical\Triangle.cs" />

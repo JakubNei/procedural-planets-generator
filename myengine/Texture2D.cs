@@ -10,7 +10,7 @@ using System.Text;
 
 namespace MyEngine
 {
-	public class Texture2D : Texture, IDisposable
+	public class Texture2D : Texture, IDisposable, IHasVersion
 	{
 		ILog Log => Singletons.Log.Scope(typeof(Texture2D) + " " + file.VirtualPath);
 
@@ -20,6 +20,10 @@ namespace MyEngine
 
 		public int Width { get; private set; }
 		public int Height { get; private set; }
+
+		public ulong Version { get { return VersionInFile; } }
+		public ulong VersionOnGpu { get; private set; } = 0;
+		public ulong VersionInFile { get; private set; } = 1;
 
 		public Color this[int x, int y]
 		{
@@ -50,11 +54,15 @@ namespace MyEngine
 			UpdateIsOnGpu();
 		}
 
-		public Texture2D(FileExisting file) 
+		public Texture2D(FileExisting file)
 		{
 			UseMipMaps = true;
 			this.file = file;
-			file.OnFileChanged(() => WantsToBeUploadedToGpu = true);
+			file.OnFileChanged(() =>
+			{
+				WantsToBeUploadedToGpu = true;
+				VersionInFile++;
+			});
 			WantsToBeUploadedToGpu = true;
 		}
 
@@ -69,7 +77,7 @@ namespace MyEngine
 			}
 			WantsToBeUploadedToGpu = true;
 		}
-		
+
 
 		public Color GetPixel(int x, int y)
 		{
@@ -180,7 +188,7 @@ namespace MyEngine
 			//	);
 			//}
 
-
+			VersionOnGpu = VersionInFile;
 			UpdateIsOnGpu();
 
 			Log.Info("uploading to GPU - end");

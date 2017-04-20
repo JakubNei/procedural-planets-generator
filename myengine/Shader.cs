@@ -12,7 +12,7 @@ using Neitri.Base;
 
 namespace MyEngine
 {
-	public partial class Shader : SingletonsPropertyAccesor, IDisposable
+	public partial class Shader : SingletonsPropertyAccesor, IDisposable, IHasVersion
 	{
 		public const int positionLocation = 0;
 		public const int normalLocation = 1;
@@ -31,12 +31,9 @@ namespace MyEngine
 
 		public bool IsTransparent { get; set; }
 
-		/// <summary>
-		/// Increases by one every time the shader is (re)loaded.
-		/// </summary>
-		public int VersionOnGpu { get; private set; } = 0;
-
-		public int VersionInFile { get; private set; } = 1;
+		public ulong Version { get { return VersionInFile; } }
+		public ulong VersionOnGpu { get; private set; } = 0;
+		public ulong VersionInFile { get; private set; } = 1;
 
 		public bool shouldReload;
 

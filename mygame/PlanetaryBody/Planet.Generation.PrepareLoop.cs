@@ -177,26 +177,63 @@ namespace MyGame.PlanetaryBody
 			toGenerateOrdered = new Queue<Segment>(toGenerate.GetWeighted());
 		}
 
+		public class VersionWatcher
+		{
+
+			public event Action OnAnyVersionChanged;
+
+			Dictionary<IHasVersion, ulong> watch = new Dictionary<IHasVersion, ulong>();
+			public void Watch(IHasVersion v)
+			{
+				this.watch[v] = v.Version;
+			}
+
+			public void Tick()
+			{
+				bool anyVersionChanged = false;
+				foreach(var kvp in watch)
+				{
+					var version = kvp.Value;
+					var hasVersion = kvp.Key;
+
+					if(version != hasVersion.Version)
+					{
+						anyVersionChanged = true;
+						break;
+					}
+				}
+
+				if(anyVersionChanged)
+				{
+					foreach (var hasVersion in watch.Keys.ToArray())
+					{
+						watch[hasVersion] = hasVersion.Version;
+					}
+					OnAnyVersionChanged.Raise();
+				}
+
+			}
+		}
 
 
-		int shader1Version;
-		int shader2Version;
+		VersionWatcher versionWatcher = new VersionWatcher();
 
 		void InitializePrepareLoop()
 		{
-			shader1Version = GenerateHeights.VersionInFile;
-			shader2Version = GenerateBiomes.VersionInFile;
+			versionWatcher.Watch(GenerateHeights);
+			versionWatcher.Watch(GenerateBiomes);
+			versionWatcher.Watch(config.biomesControlMap);
+
+			versionWatcher.OnAnyVersionChanged += () =>
+			{
+				foreach (var rootSegment in this.rootSegments)
+					Segment.MarkForRegeneration(rootSegment);
+			};
 		}
 
 		void ShadersReloadedCheck()
 		{
-			if (shader1Version != GenerateHeights.VersionInFile || shader2Version != GenerateBiomes.VersionInFile)
-			{
-				shader1Version = GenerateHeights.VersionInFile;
-				shader2Version = GenerateBiomes.VersionInFile;
-				foreach (var rootSegment in this.rootSegments)
-					Segment.MarkForRegeneration(rootSegment);
-			}
+			versionWatcher.Tick();
 		}
 
 

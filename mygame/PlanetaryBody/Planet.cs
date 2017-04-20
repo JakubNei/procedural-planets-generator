@@ -81,7 +81,7 @@ namespace MyGame.PlanetaryBody
 			// water sphere
 			{
 				var entity = this.Scene.AddEntity(this + " water sphere");
-				entity.Transform.Scale *= (float)config.radiusMin;
+				entity.Transform.Scale *= (float)(config.radiusMin + (config.baseHeightMapMultiplier) / 2 );
 				entity.Transform.Position = this.Transform.Position;
 
 				var renderer = entity.AddComponent<MeshRenderer>();

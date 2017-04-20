@@ -12,7 +12,7 @@ using System.Text;
 
 namespace MyEngine
 {
-	public partial class Mesh : IDisposable
+	public partial class Mesh : IDisposable, IHasVersion
 	{
 		public BufferObjectVector3 Vertices { get; private set; }
 		public BufferObjectVector3 Normals { get; private set; }
@@ -42,6 +42,10 @@ namespace MyEngine
 			}
 		}
 
+		public ulong Version { get { return VersionInFile; } }
+		public ulong VersionOnGpu { get; private set; } = 0;
+		public ulong VersionInFile { get; private set; } = 1;
+
 		public string Name { get; set; }
 
 		Bounds bounds;
@@ -69,7 +73,10 @@ namespace MyEngine
 			VertexArray.AddVertexBuffer("tangents", Tangents);
 			VertexArray.AddVertexBuffer("uvs", UVs);
 			VertexArray.AddVertexBuffer("triangleIndicies", TriangleIndicies);
-			VertexArray.OnChanged += () => { isOnGPU = false; };
+			VertexArray.OnChanged += () => {
+				isOnGPU = false;
+				VersionInFile++;
+			};
 		}
 
 		public void RecalculateBounds()
@@ -126,6 +133,8 @@ namespace MyEngine
 			//VertexArrayObj.Dispose(); // causes access violation if we try to reupload
 			if (VertexArray.VaoHandle == -1) VertexArray.CreateBuffer();
 			VertexArray.UploadDataToGpu();
+
+			VersionOnGpu = VersionInFile;
 
 			isOnGPU = true;
 		}
