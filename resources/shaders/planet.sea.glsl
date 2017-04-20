@@ -279,7 +279,7 @@ void main()
 
 
 	color = pow(color,vec3(engine.gammaCorrectionTextureRead));
-	vec4 color4 = vec4(color, 1);
+	vec4 color4 = vec4(color, 0.9);
 	out_color = color4;
 
 }

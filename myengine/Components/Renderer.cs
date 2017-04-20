@@ -41,7 +41,8 @@ namespace MyEngine.Components
 	public interface IRenderable
 	{
 		Material Material { get; }
-		bool ForcePassCulling { get; }
+		bool ForcePassFrustumCulling { get; }
+		bool ForcePassRasterizationCulling { get; }
 
 		bool ShouldRenderInContext(Camera camera, RenderContext renderContext);
 		void SetCameraRenderStatusFeedback(Camera camera, RenderStatus renderStatus);
@@ -92,19 +93,36 @@ namespace MyEngine.Components
 
 		Dictionary<Camera, RenderStatus> cameraToRenderStatus = new Dictionary<Camera, RenderStatus>();
 
-		bool forcePassCulling;
-		public virtual bool ForcePassCulling
+		bool forcePassFrustumCulling;
+		public virtual bool ForcePassFrustumCulling
 		{
 			get
             {
-                return forcePassCulling;
+                return forcePassFrustumCulling;
             }
 			set
 			{
-				if (value != forcePassCulling)
+				if (value != forcePassFrustumCulling)
 				{
 					DataToRender.IncreaseVersion();
-					forcePassCulling = value;
+					forcePassFrustumCulling = value;
+				}
+			}
+		}
+
+		bool forcePassRasterizationCulling;
+		public virtual bool ForcePassRasterizationCulling
+		{
+			get
+			{
+				return forcePassRasterizationCulling;
+			}
+			set
+			{
+				if (value != forcePassRasterizationCulling)
+				{
+					DataToRender.IncreaseVersion();
+					forcePassRasterizationCulling = value;
 				}
 			}
 		}

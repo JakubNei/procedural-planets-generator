@@ -7,10 +7,6 @@ uniform dvec3 param_offsetFromPlanetCenter;
 uniform vec3 param_remainderOffset;
 
 
-
-// #define USE_NON_OPTIMIZED_TRIPLNAR
-#define NORMAL_MAPPING_DISTANCE 1000.0
-
 [VertexShader]
 
 layout(location = 0) in vec3 in_position;
@@ -384,6 +380,14 @@ vec3 getBiomeNormal(sampler2D normalMap, vec3 offset)
 	return triPlanar(normalMap, pos, i.normal, 0.5);
 }
 
+
+
+// #define USE_NON_OPTIMIZED_TRIPLNAR
+#define NORMAL_MAPPING_DISTANCE 10000000.0
+// 1000
+
+
+
 void getColor(vec2 uv, out vec3 color, out vec3 normal) {
 
 
@@ -432,6 +436,7 @@ void getColor(vec2 uv, out vec3 color, out vec3 normal) {
 }
 
 
+
 void main()
 {
 
@@ -442,10 +447,11 @@ void main()
 	// BASE COLOR
 	//float pixelDepth = gl_FragCoord.z/gl_FragCoord.w; //distance(EyePosition, i.worldPos);
 
-
 	vec3 pos = vec3(i.modelPos + param_offsetFromPlanetCenter);
 
 	vec2 uv = calestialToSpherical(pos).xy;
+
+
 
 	//uv.x += perlinNoise(pos / 10000) / 200;
 	//uv.y += perlinNoise(pos.yxz / 10000) / 200;
@@ -462,15 +468,12 @@ void main()
 		vec3 T = i.tangent;
 		vec3 T2 = T - N * dot(N, T); // Gram-Schmidt orthogonalization of T
 		vec3 B = normalize(cross(N,T2));
-		//if (dot(B2, B) < 0) B2 *= -1;
 		mat3 normalMatrix = mat3(T,B,N); // column0, column1, column2		
-		vec3 normalFromTexture = normalize(normalColorFromTexture.xyz*2.0-1.0);
-		out_normal = 
-			normalize(mix(				
-				normalMatrix * normalFromTexture,
-				i.normal,
-				defaultNormalWeight
-			));
+		vec3 normal = normalize(normalColorFromTexture.xyz*2.0-1.0);
+
+		//normal = GetProceduralAndBaseHeightMapNormal(i.uv, 0.001);
+
+		out_normal = normalMatrix * normal;
 	} else {		
 		out_normal = i.normal;
 	}
@@ -494,6 +497,18 @@ void main()
 	//out_color = vec4(vec3(i.biomes1.r),1);
 	//out_color = vec4(vec3(i.biomes1.g),1);
 	//out_color = vec4(vec3(i.biomes2),1);
+
+	{
+		float eps = 0.00001;
+		float epc = 1;
+			vec3 normal;
+	    double z = GetProceduralAndBaseHeightMapHeight(uv); 
+	    normal.x = float(GetProceduralAndBaseHeightMapHeight(vec2(uv.x+eps,uv.y)) - z) * epc;
+	    normal.y = float(GetProceduralAndBaseHeightMapHeight(vec2(uv.x,uv.y+eps)) - z) * epc;
+	    normal.z = eps;
+	    normal = normalize(normal);
+		out_normal = normal;
+	}
 }
 
 	

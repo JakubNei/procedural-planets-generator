@@ -1,7 +1,6 @@
 #version 430
 [ComputeShader]
 [include shaders/include.planet.glsl]
-#line 5
 
 
 
@@ -100,109 +99,6 @@ uniform int param_verticesStartIndexOffset;
 
 
 
-// vec2 worley(vec3 P, float jitter, bool manhattanDistance)
-// float perlinNoise(vec3 p)
-
-float GetHeightAt(vec3 initialPos)
-{
-	float result = 0;
-	
-	{ // base noise
-		float freq = 10;
-		vec3 pos = initialPos * freq;
-		int octaves = 10;
-		float ampModifier = 0.15;
-		float freqModifier = 5;
-		float amp = 1;
-		for (int i = 0; i < octaves; i++)
-		{
-			result += perlinNoise(pos) * amp;
-			pos *= freqModifier;
-			amp *= ampModifier;
-		}
-	}
-	
-	/*
-	{ // hill tops
-		float p = perlinNoise(initialPos * 10);
-		if(p > 0) result -= p * 2;
-	}
-	*/
-
-	/*
-	{ // craters
-
-		vec2 w = worleyNoise(initialPos*10, 1, false);
-		result += smoothstep(0.0, 0.4, w.x) * 100;
-	}
-	*/
-
-	return result;
-
-}
-
-double GetHeight(dvec3 direction, vec3 uv)
-{
-	double height = 0;	
-
-	if(param_baseHeightMapMultiplier > 0) 
-		height += param_baseHeightMapMultiplier * texture2D(param_baseHeightMap, uv.xy).r; 
-	if(param_noiseMultiplier > 0)			
-		height += param_noiseMultiplier * GetHeightAt(vec3(direction * param_radiusMin / 1000000));
-
-	return height;
-}
-
-double GetHeight(vec3 uv)
-{
-	vec3 direction = sphericalToCalestial(uv) ;
-	return GetHeight(direction, uv);
-}
-
-double RealHeightTo01(double height)
-{
-	return height / param_baseHeightMapMultiplier;
-	//return height / (param_baseHeightMapMultiplier + param_noiseMultiplier);
-}
-double GetHeight01(vec3 uv)
-{
-	return RealHeightTo01(GetHeight(uv));
-}
-
-float GetHumidity(vec3 uvCenter)
-{
-	const float waterHeight = 0.5;
-
-	vec3 uv = uvCenter;
-	if(GetHeight01(uv) < waterHeight) return 1;
-
-	const float maxDistanceToWater = 0.05;
-	const float distanceToWaterIncrease = 0.001;
-	float distanceToWater = 0;	
-
-	float splits = 3;
-	while(distanceToWater < maxDistanceToWater) {
-
-		float angleDelta = 2*M_PI / splits;
-		for(float angle = 0; angle < 2*M_PI; angle += angleDelta)
-		{
-			uv = uvCenter + vec3(
-				cos(angle) * distanceToWater,
-				sin(angle) * distanceToWater,
-				0
-			);
-			if(GetHeight01(uv) < waterHeight) return 1 - distanceToWater / maxDistanceToWater;
-		}
-		
-		distanceToWater += distanceToWaterIncrease;
-		splits += 1;
-	}
-
-	return 0;
-
-}
-
-
 void main() {
 
 	int verticeIndex = int(gl_GlobalInvocationID.x) + param_verticesStartIndexOffset;
@@ -232,18 +128,18 @@ void main() {
 		param_cornerPositionA + 
 		(param_cornerPositionB - param_cornerPositionA) * y * (1-x) + 
 		(param_cornerPositionC - param_cornerPositionA) * y * x;
-	dvec3 directionFromPlanetCenter = normalize(positionInterpolated);
+	dvec3 dirFromPlanetCenter = normalize(positionInterpolated);
 
-	vec3 uv = calestialToSpherical(vec3(directionFromPlanetCenter));
-	double generatedHeight = GetHeight(directionFromPlanetCenter, uv);
+	vec2 uv = calestialToSpherical(vec3(dirFromPlanetCenter)).xy;
+	double generatedHeight = GetProceduralAndBaseHeightMapHeight(dirFromPlanetCenter, uv);
 
-	dvec3 positionAdjusted = directionFromPlanetCenter;
+	dvec3 positionAdjusted = dirFromPlanetCenter;
 	positionAdjusted *= param_radiusMin + generatedHeight;
 	positionAdjusted -= param_offsetFromPlanetCenter;
 
 
 	// passing data so we can easily generate biomes in other computer shader
-	biomes1.x = float(RealHeightTo01(generatedHeight));
+	biomes1.x = float(generatedHeight / param_baseHeightMapMultiplier);
 	biomes1.y = GetHumidity(uv);
 
 	// DEBUG

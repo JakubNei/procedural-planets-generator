@@ -155,13 +155,12 @@ namespace MyEngine
 				SetPolygonMode();
 				GL.Disable(EnableCap.CullFace); MyGL.Check();
 
-				GBuffer.BindForTransparentPass();
-
 				for (int i = 0; i < toRenderTransparentCount; i++)
 				{
 					var renderable = toRenderTransparent[i];
 					renderable.Material.BeforeBindCallback();
 					renderable.Material.Uniforms.SendAllUniformsTo(renderable.Material.RenderShader.Uniforms);
+					GBuffer.BindForTransparentPass(renderable.Material.RenderShader);
 					renderable.Material.RenderShader.Bind();
 					renderable.UploadUBOandDraw(camera, ubo);
 				}
@@ -484,7 +483,7 @@ namespace MyEngine
 						if (renderable.ShouldRenderInContext(camera, RenderContext))
 						{
 							Interlocked.Increment(ref wantToBeRendered);
-							if (renderable.ForcePassCulling)
+							if (renderable.ForcePassFrustumCulling)
 							{
 								var newIndex = Interlocked.Increment(ref passedFrustumCullingIndex) - 1;
 								passedFrustumCulling[newIndex] = renderable;
@@ -531,7 +530,7 @@ namespace MyEngine
 
 					Action<IRenderable> work = renderable =>
 					{
-						if (renderable.ForcePassCulling)
+						if (renderable.ForcePassRasterizationCulling)
 						{
 							renderable.SetCameraRenderStatusFeedback(camera, RenderStatus.RenderedAndVisible);
 							var newIndex = Interlocked.Increment(ref passedRasterizationCullingIndex) - 1;

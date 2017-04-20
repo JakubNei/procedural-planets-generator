@@ -95,6 +95,7 @@ namespace MyGame.PlanetaryBody
 			RendererSea.RenderingMode = MyRenderingMode.DontRender;
 			RendererSea.Mesh = seaMesh;
 			RendererSea.Mesh.Bounds = bounds;
+			RendererSea.ForcePassRasterizationCulling = true;
 			RendererSea.Offset += offsetCenter;
 			RendererSea.Material = planetInfo.seaMaterial.CloneTyped();
 		}
