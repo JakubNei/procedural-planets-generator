@@ -42,21 +42,24 @@ namespace MyGame.PlanetaryBody
 			jobTemplate.AddTask(WhereToRun.GPUThread, segment =>
 			{
 				segment.CreateRendererAndBasicMesh();
-			}, "vytvoření trojúhelníkové sítě a vykreslovací komponenty");
+			}, "vytvoření trojúhelníkových sítí a vykreslovací komponenty");
 
 			jobTemplate.AddTask(WhereToRun.GPUThread, segment =>
 			{
-				var mesh = segment.Renderer.Mesh;
-				mesh.EnsureIsOnGpu();
-			}, "přesun trojúhelníkové sítě na grafickou kartu");
-
+				segment.RendererSurface.Mesh.EnsureIsOnGpu();
+			}, "přesun trojúhelníkové sítě povrchu na grafickou kartu");
+			
+			jobTemplate.AddTask(WhereToRun.GPUThread, segment =>
+			{
+				segment.RendererSea.Mesh.EnsureIsOnGpu();
+			}, "přesun trojúhelníkové sítě moře na grafickou kartu");
 
 			jobTemplate.AddTask(WhereToRun.GPUThread, segment =>
 			{
-				var mesh = segment.Renderer.Mesh;
+				var surface = segment.RendererSurface.Mesh;
 
 				var verticesStartIndexOffset = 0;
-				var verticesCount = mesh.Vertices.Count;
+				var verticesCount = surface.Vertices.Count;
 
 				var range = segment.NoElevationRange;
 				if (useSkirts)
@@ -65,47 +68,48 @@ namespace MyGame.PlanetaryBody
 				var uniforms = GenerateHeights.Uniforms;
 
 				config.SetTo(uniforms);
-				uniforms.Set("param_offsetFromPlanetCenter", segment.Renderer.Offset.ToVector3d());
+				uniforms.Set("param_offsetFromPlanetCenter", segment.RendererSurface.Offset.ToVector3d());
 				uniforms.Set("param_numberOfVerticesOnEdge", ChunkNumberOfVerticesOnEdge);
 				uniforms.Set("param_cornerPositionA", range.a);
 				uniforms.Set("param_cornerPositionB", range.b);
 				uniforms.Set("param_cornerPositionC", range.c);
-				uniforms.Set("param_indiciesCount", mesh.TriangleIndicies.Count);
+				uniforms.Set("param_indiciesCount", surface.TriangleIndicies.Count);
 				uniforms.Set("param_verticesStartIndexOffset", verticesStartIndexOffset);
 
 				GenerateHeights.Bind();
 
-				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 0, mesh.Vertices.VboHandle); MyGL.Check();
-				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 1, mesh.Normals.VboHandle); MyGL.Check();
-				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 2, mesh.UVs.VboHandle); MyGL.Check();
-				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 3, mesh.TriangleIndicies.VboHandle); MyGL.Check();
-				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 4, mesh.VertexArray.GetVertexBuffer("biomes1").VboHandle); MyGL.Check();
-				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 5, mesh.VertexArray.GetVertexBuffer("biomes2").VboHandle); MyGL.Check();
+				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 0, surface.Vertices.VboHandle); MyGL.Check();
+				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 1, surface.Normals.VboHandle); MyGL.Check();
+				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 2, surface.UVs.VboHandle); MyGL.Check();
+				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 3, surface.TriangleIndicies.VboHandle); MyGL.Check();
+				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 4, surface.VertexArray.GetVertexBuffer("biomes1").VboHandle); MyGL.Check();
+				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 5, surface.VertexArray.GetVertexBuffer("biomes2").VboHandle); MyGL.Check();
 				GL.DispatchCompute(verticesCount, 1, 1); MyGL.Check();
 
 			}, "vygenerování výšek trojúhelníkové sítě na grafické kartě");
 
 			jobTemplate.AddTask(WhereToRun.GPUThread, segment =>
 			{
-				var mesh = segment.Renderer.Mesh;
-				mesh.Vertices.DownloadDataFromGPU();
+				segment.RendererSurface.Mesh.Vertices.DownloadDataFromGPU();
 			}, "stáhnutí trojúhelníkové sítě z grafické karty do hlavní paměti počítače");
 
 			jobTemplate.AddTask(segment =>
 			{
-				var mesh = segment.Renderer.Mesh;
-				mesh.RecalculateBounds();
+				segment.RendererSurface.Mesh.RecalculateBounds();
+				segment.RendererSea.Mesh.Bounds = segment.RendererSurface.Mesh.Bounds;
 				segment.CalculateRealVisibleRange();
 			}, "vypočet obalového kvádru trojúhelníkové sítě");
 
 			jobTemplate.AddTask(WhereToRun.GPUThread, segment =>
 			{
-				var mesh = segment.Renderer.Mesh;
-				if (calculateNormalsOnGPU)
-					CalculateNormalsOnGPU(mesh);
-				else
-					mesh.RecalculateNormals();
-			}, "výpočet normál trojúhelníkové sítě na grafické kartě");
+				CalculateNormalsAndRangentsOnGPU(segment.RendererSurface.Mesh);
+			}, "výpočet normál a tangent povrchu na grafické kartě");
+
+			jobTemplate.AddTask(WhereToRun.GPUThread, segment =>
+			{
+				CalculateNormalsAndRangentsOnGPU(segment.RendererSea.Mesh);
+			}, "výpočet normál a tangent moře na grafické kartě");
+
 
 			if (useSkirts)
 			{
@@ -121,7 +125,7 @@ namespace MyGame.PlanetaryBody
 
 					jobTemplate.AddTask(WhereToRun.GPUThread, segment =>
 					{
-						var mesh = segment.Renderer.Mesh;
+						var mesh = segment.RendererSurface.Mesh;
 						var moveAmount = -segment.NoElevationRange.CenterPos.Normalized().ToVector3() * (float)segment.NoElevationRange.ToBoundingSphere().radius / 10;
 
 
@@ -140,14 +144,14 @@ namespace MyGame.PlanetaryBody
 				{
 					jobTemplate.AddTask(segment =>
 					{
-						var mesh = segment.Renderer.Mesh;
+						var mesh = segment.RendererSurface.Mesh;
 						var moveAmount = -segment.NoElevationRange.CenterPos.Normalized().ToVector3() * (float)segment.NoElevationRange.ToBoundingSphere().radius / 10;
 						foreach (var i in GetEdgeVerticesIndexes()) mesh.Vertices[i] += moveAmount;
 					}, "pokud jsou sukně zapnuty: posunutí vrcholú pro vytvoření sukní na centrální procesorové jednotce");
 
 					jobTemplate.AddTask(WhereToRun.GPUThread, segment =>
 					{
-						var mesh = segment.Renderer.Mesh;
+						var mesh = segment.RendererSurface.Mesh;
 						mesh.Vertices.UploadDataToGPU();
 					}, "pokud jsou sukně zapnuty: přesun upravené trojúhelníkové sítě zpět na grafickou kartu");
 				}
@@ -155,7 +159,7 @@ namespace MyGame.PlanetaryBody
 			
 			jobTemplate.AddTask(WhereToRun.GPUThread, segment =>
 			{
-				var mesh = segment.Renderer.Mesh;
+				var mesh = segment.RendererSurface.Mesh;
 
 				var verticesStartIndexOffset = 0;
 				var verticesCount = mesh.Vertices.Count;
@@ -168,7 +172,7 @@ namespace MyGame.PlanetaryBody
 
 
 				config.SetTo(uniforms);
-				uniforms.Set("param_offsetFromPlanetCenter", segment.Renderer.Offset.ToVector3d());
+				uniforms.Set("param_offsetFromPlanetCenter", segment.RendererSurface.Offset.ToVector3d());
 				uniforms.Set("param_numberOfVerticesOnEdge", ChunkNumberOfVerticesOnEdge);
 				uniforms.Set("param_cornerPositionA", range.a);
 				uniforms.Set("param_cornerPositionB", range.b);
@@ -203,7 +207,7 @@ namespace MyGame.PlanetaryBody
 
 		}
 
-		public void CalculateNormalsOnGPU(Mesh mesh)
+		public void CalculateNormalsAndRangentsOnGPU(Mesh mesh)
 		{
 			Shader calculateNormalsShader = Factory.GetShader("internal/calculateNormalsAndTangents.compute.glsl");
 			if (calculateNormalsShader.Bind())

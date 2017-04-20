@@ -55,7 +55,8 @@ namespace MyGame.PlanetaryBody
 
 		public Segment parent;
 		public List<Segment> Children { get; } = new List<Segment>();
-		public CustomChunkMeshRenderer Renderer { get; private set; }
+		public CustomChunkMeshRenderer RendererSurface { get; private set; }
+		public MeshRenderer RendererSea { get; private set; }
 
 		public class CustomChunkMeshRenderer : MeshRenderer
 		{
@@ -150,7 +151,7 @@ namespace MyGame.PlanetaryBody
 		TriangleD[] GetMeshTriangles()
 		{
 			if (meshTriangles == null)
-				meshTriangles = Renderer?.Mesh?.GetMeshTrianglesD();
+				meshTriangles = RendererSurface?.Mesh?.GetMeshTrianglesD();
 			return meshTriangles;
 		}
 
@@ -206,12 +207,12 @@ namespace MyGame.PlanetaryBody
 			// 0 looking at it from side, 1 looking at it from top, -1 looking at it from behind
 			var dotToCamera = rangeToCalculateScreenSizeOn.NormalFast.Dot(dirToCamera);
 
-			if (Renderer != null && Renderer.Mesh != null)
+			if (RendererSurface != null && RendererSurface.Mesh != null)
 			{
 				//var localCamPos = planetaryBody.Transform.Position.Towards(cam.ViewPointPosition).ToVector3();
 				//distanceToCamera = renderer.Mesh.Vertices.FindClosest((v) => v.DistanceSqr(localCamPos)).Distance(localCamPos);
 				//isVisible = cam.GetFrustum().VsBounds(renderer.GetCameraSpaceBounds(cam.ViewPointPosition));
-				isVisible = Renderer.GetCameraRenderStatusFeedback(cam).HasFlag(RenderStatus.Rendered);
+				isVisible = RendererSurface.GetCameraRenderStatusFeedback(cam).HasFlag(RenderStatus.Rendered);
 			}
 
 			var weight = GetSizeOnScreen(cam);
@@ -226,11 +227,11 @@ namespace MyGame.PlanetaryBody
 		{
 			if (occluderTringles.Count != 0) return;
 
-			var a = Renderer.Mesh.Vertices[planetInfo.AIndexReal];
-			var b = Renderer.Mesh.Vertices[planetInfo.BIndexReal];
-			var c = Renderer.Mesh.Vertices[planetInfo.CIndexReal];
+			var a = RendererSurface.Mesh.Vertices[planetInfo.AIndexReal];
+			var b = RendererSurface.Mesh.Vertices[planetInfo.BIndexReal];
+			var c = RendererSurface.Mesh.Vertices[planetInfo.CIndexReal];
 
-			var o = Renderer.Offset.ToVector3d();
+			var o = RendererSurface.Offset.ToVector3d();
 			realVisibleRange.a = a.ToVector3d() + o;
 			realVisibleRange.b = b.ToVector3d() + o;
 			realVisibleRange.c = c.ToVector3d() + o;
@@ -292,7 +293,7 @@ namespace MyGame.PlanetaryBody
 		bool lastVisible = false;
 		public void SetVisible(bool visible) // TODO: DestroyRenderer if visible == false for over CVar 60 seconds ?
 		{
-			if (Renderer != null && this.GenerationBegan && this.IsGenerationDone)
+			if (RendererSurface != null && this.GenerationBegan && this.IsGenerationDone)
 			{
 				//if (visible == lastVisible) return;
 				lastVisible = visible;
@@ -302,16 +303,16 @@ namespace MyGame.PlanetaryBody
 			{
 				if (this.GenerationBegan == false) Log.Warn("trying to show segment " + this + " that did not begin generation");
 				else if (this.IsGenerationDone == false) Log.Warn("trying to show segment " + this + " that did not finish generation");
-				else if (Renderer == null) Log.Warn("trying to show segment " + this + " that does not have renderer");
-				else Renderer.RenderingMode = MyRenderingMode.RenderGeometryAndCastShadows;
+				else if (RendererSurface == null) Log.Warn("trying to show segment " + this + " that does not have renderer");
+				else RendererSurface.RenderingMode = MyRenderingMode.RenderGeometryAndCastShadows;
 
 				foreach (var child in Children)
 					child.SetVisible(false);
 			}
 			else
 			{
-				if (Renderer != null)
-					Renderer.RenderingMode = MyRenderingMode.DontRender;
+				if (RendererSurface != null)
+					RendererSurface.RenderingMode = MyRenderingMode.DontRender;
 			}
 		}
 
@@ -344,20 +345,7 @@ namespace MyGame.PlanetaryBody
 			}
 		}
 
-		public void DestroyRenderer()
-		{
-			lock (this)
-			{
-				GenerationBegan = false;
-				IsGenerationDone = false;
-			}
-			if (Renderer != null)
-			{
-				Renderer.RenderingMode = MyRenderingMode.DontRender;
-				planetInfo.Entity.DestroyComponent(Renderer);
-				Renderer = null;
-			}
-		}
+
 
 		static public void DestroyAll(Segment segment)
 		{

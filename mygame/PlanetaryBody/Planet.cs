@@ -60,6 +60,7 @@ namespace MyGame.PlanetaryBody
 
 		public long ID;
 
+		public Material seaMaterial;
 
 		//ProceduralMath proceduralMath;
 
@@ -80,16 +81,8 @@ namespace MyGame.PlanetaryBody
 			
 			// water sphere
 			{
-				var entity = this.Scene.AddEntity(this + " water sphere");
-				entity.Transform.Position = this.Transform.Position;
-
-				var renderer = entity.AddComponent<MeshRenderer>();
-				renderer.Mesh = Factory.GetMesh("sphere_smooth.obj");
-				renderer.RenderingMode = MyRenderingMode.RenderGeometry;
-				renderer.ForcePassCulling = true;
-
-				var mat = renderer.Material = Factory.NewMaterial();
-				config.SetTo(renderer.Material.Uniforms);
+				var mat = seaMaterial = Factory.NewMaterial();
+				config.SetTo(mat.Uniforms);
 				mat.RenderShader = Factory.GetShader("shaders/planet.waterPlane.glsl");
 				mat.RenderShader.IsTransparent = true;
 			}
