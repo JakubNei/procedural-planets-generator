@@ -29,6 +29,8 @@ namespace MyEngine
 		public State LoadState { get; private set; }
 		public UniformsData Uniforms { get; private set; }
 
+		public bool IsTransparent { get; set; }
+
 		/// <summary>
 		/// Increases by one every time the shader is (re)loaded.
 		/// </summary>

@@ -58,12 +58,7 @@ namespace MyGame.PlanetaryBody
 
 		public Config config;
 
-		public readonly long ID;
-		static long nextId;
-		public Planet()
-		{
-			ID = Interlocked.Increment(ref nextId);
-		}
+		public long ID;
 
 
 		//ProceduralMath proceduralMath;
@@ -81,6 +76,24 @@ namespace MyGame.PlanetaryBody
 			InitializeRootSegments();
 			InitializeJobTemplate();
 			InitializePrepareLoop();
+
+			
+			// water sphere
+			{
+				var entity = this.Scene.AddEntity(this + " water sphere");
+				entity.Transform.Scale *= (float)config.radiusMin;
+				entity.Transform.Position = this.Transform.Position;
+
+				var renderer = entity.AddComponent<MeshRenderer>();
+				renderer.Mesh = Factory.GetMesh("sphere_smooth.obj");
+				renderer.RenderingMode = MyRenderingMode.RenderGeometry;
+				renderer.ForcePassCulling = true;
+
+				var mat = renderer.Material = Factory.NewMaterial();
+				config.SetTo(renderer.Material.Uniforms);
+				mat.RenderShader = Factory.GetShader("shaders/planet.waterPlane.glsl");
+				mat.RenderShader.IsTransparent = true;
+			}
 		}
 
 		CVar GetSurfaceHeightDebug => Debug.GetCVar("planets / debug / get surface height");

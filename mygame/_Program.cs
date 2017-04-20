@@ -91,7 +91,7 @@ namespace MyGame
 					renderer.Mesh = factory.GetMesh("sphere_smooth.obj");
 
 					var mat = renderer.Material = factory.NewMaterial();
-					mat.GBufferShader = factory.GetShader("shaders/sun.glsl");
+					mat.RenderShader = factory.GetShader("shaders/sun.glsl");
 					mat.Uniforms.Set("param_turbulenceColorGradient", factory.GetTexture2D("textures/fire_gradient.png"));
 					mat.Uniforms.Set("param_turbulenceMap", factory.GetTexture2D("textures/turbulence_map.png"));
 					mat.Uniforms.Set("param_surfaceDiffuse", factory.GetTexture2D("textures/sun_surface_d.png"));

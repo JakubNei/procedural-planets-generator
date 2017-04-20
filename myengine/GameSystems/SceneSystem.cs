@@ -109,7 +109,7 @@ namespace MyEngine
 						r.Mesh = Factory.GetMesh("sphere.obj");
 						var m = new MaterialPBR();
 						r.Material = m;
-						m.GBufferShader = Factory.GetShader("internal/deferred.gBuffer.PBR.shader");
+						m.RenderShader = Factory.GetShader("internal/deferred.gBuffer.PBR.shader");
 						m.albedo = color;
 						debugEntitites.Add(e);
 					}

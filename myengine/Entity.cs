@@ -131,6 +131,11 @@ namespace MyEngine
 			Scene.Remove(this);
 		}
 		void IDisposable.Dispose() => Destroy();
+
+		public override string ToString()
+		{
+			return Name;
+		}
 	}
 
 	public enum ChangedFlags

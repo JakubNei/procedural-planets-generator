@@ -117,10 +117,15 @@ namespace MyEngine
 			shader.Uniforms.Set("gBufferUniform.depth", depthTexture);
 
 			for (int i = 0; i < textures.Length - 2; i++)
-			{
 				shader.Uniforms.Set("gBufferUniform." + ((GBufferTextures)i).ToString().ToLower(), textures[i]);
-			}
 		}
+
+		public void BindForTransparentPass()
+		{
+			GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, frameBufferObjectHandle); MyGL.Check();
+			GL.DrawBuffer(DrawBufferMode.ColorAttachment4); MyGL.Check();
+		}
+
 
 		public void Unbind()
 		{

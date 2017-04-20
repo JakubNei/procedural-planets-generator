@@ -17,18 +17,18 @@ namespace MyEngine
 
 	public class Material : SingletonsPropertyAccesor, ICloneable
 	{
-		Shader gBufferShader;
+		Shader renderShader;
 
-		public virtual Shader GBufferShader
+		public virtual Shader RenderShader
 		{
 			get
 			{
-				return gBufferShader ?? (gBufferShader = Factory.DefaultGBufferShader);
+				return renderShader ?? (renderShader = Factory.DefaultGBufferShader);
 			}
 			set
 			{
-				if (value == null) throw new NullReferenceException("can not set " + MemberName.For(() => GBufferShader) + " to null");
-				gBufferShader = value;
+				if (value == null) throw new NullReferenceException("can not set " + MemberName.For(() => RenderShader) + " to null");
+				renderShader = value;
 			}
 		}
 
@@ -69,7 +69,7 @@ namespace MyEngine
 		{
 			var m = new Material()
 			{
-				GBufferShader = GBufferShader,
+				RenderShader = RenderShader,
 				DepthGrabShader = DepthGrabShader,
 			};
 			Uniforms.SendAllUniformsTo(m.Uniforms);

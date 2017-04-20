@@ -121,7 +121,7 @@ namespace MyEngine
 							Log.Warn("invalid toggle key for cvar: " + toggleKey);
 					}
 
-					Log.Info("loaded cvar: '" + ToSaveString(cvar) + "' from line: '" + _line + "'");
+					Log.Info("loaded cvar: '" + ToSaveString(cvar) + "' from line: '" + dataPart + "'");
 				}
 
 				lines.Add(new LineHolder() { associatedCvar = cvar, commentPart = commentPart, dataPart = dataPart });

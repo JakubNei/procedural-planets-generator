@@ -59,7 +59,9 @@ namespace MyGame
 
 		public PlanetaryBody.Planet AddPlanet()
 		{
-			var planet = scene.AddEntity("procedural planet #" + planets.Count + 1).AddComponent<PlanetaryBody.Planet>();
+			var id = planets.Count + 1;
+			var planet = scene.AddEntity("procedural planet #" + id).AddComponent<PlanetaryBody.Planet>();
+			planet.ID = id;
 			planets.Add(planet);
 			return planet;
 		}
@@ -127,12 +129,12 @@ namespace MyGame
 				cfg.baseHeightMapMultiplier = 1000; // 20000m is highest earth point
 				cfg.noiseMultiplier = 300;
 				cfg.biomesControlMap = new Texture2D(FileSystem.FindExistingFile("planet/data/earth/biomes_control_map.*"))
-										{ FilterMode = FilterMode.Point, WrapMode = MyEngine.TextureWrapMode.Clamp, UseMipMaps = false };
+				{ FilterMode = FilterMode.Point, WrapMode = MyEngine.TextureWrapMode.Clamp, UseMipMaps = false };
 				cfg.AddBiomes(biomesAtlas);
 
 				var planetShader = Factory.GetShader("shaders/planet.shader");
 				var planetMaterial = new Material();
-				planetMaterial.GBufferShader = planetShader;
+				planetMaterial.RenderShader = planetShader;
 
 				var planet = AddPlanet();
 				planet.Transform.Position = new WorldPos(cfg.radiusMin * 3, 0, 0);
@@ -154,18 +156,20 @@ namespace MyGame
 				cfg.baseHeightMapMultiplier = 500;
 				cfg.noiseMultiplier = 50;
 				cfg.biomesControlMap = new Texture2D(FileSystem.FindExistingFile("planet/data/myplanet1/biomes_control_map.*"))
-										{ FilterMode = FilterMode.Point, WrapMode = MyEngine.TextureWrapMode.Clamp, UseMipMaps = false };
+				{ FilterMode = FilterMode.Point, WrapMode = MyEngine.TextureWrapMode.Clamp, UseMipMaps = false };
 				cfg.AddBiomes(biomesAtlas);
 
 				var planetShader = Factory.GetShader("shaders/planet.shader");
 				var planetMaterial = new Material();
-				planetMaterial.GBufferShader = planetShader;
+				planetMaterial.RenderShader = planetShader;
 
 				var planet = AddPlanet();
 				planet.Transform.Position = new WorldPos(100000 * 5, 0, 0);
 				planet.PlanetMaterial = planetMaterial;
 				planet.Initialize(cfg);
 			}
+
+
 
 		}
 

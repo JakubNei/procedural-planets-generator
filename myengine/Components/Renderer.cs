@@ -53,6 +53,7 @@ namespace MyEngine.Components
 		CameraSpaceBounds GetCameraSpaceBounds(CameraData camera);
 	}
 
+
 	public abstract class Renderer : ComponentWithShortcuts, IRenderable
 	{
 		MyRenderingMode renderingMode;
@@ -109,6 +110,8 @@ namespace MyEngine.Components
 		}
 
 		protected RenderableData DataToRender => Entity.Scene.DataToRender;
+
+
 
 		public override void OnAddedToEntity(Entity entity)
 		{

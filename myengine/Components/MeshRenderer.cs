@@ -100,7 +100,7 @@ namespace MyEngine.Components
 			ubo.model.modelViewProjectionMatrix = modelViewMatrix * camera.GetProjectionMatrix();
 			ubo.model.worldPosition = this.Entity.Transform.Position.ToVector3();
 			ubo.modelUBO.UploadToGPU();
-			Mesh.Draw(Material.GBufferShader.HasTesselation);
+			Mesh.Draw(Material.RenderShader.HasTesselation);
 		}
 
 		public override bool ShouldRenderInContext(Camera camera, RenderContext renderContext)
