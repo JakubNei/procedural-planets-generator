@@ -446,36 +446,39 @@ void main()
 
 	// BASE COLOR
 	//float pixelDepth = gl_FragCoord.z/gl_FragCoord.w; //distance(EyePosition, i.worldPos);
-
-	vec3 pos = vec3(i.modelPos + param_offsetFromPlanetCenter);
-
+	
+	float distToCamera = length(i.worldPos);	
+	vec3 pos = vec3(i.modelPos + param_offsetFromPlanetCenter);	
 	vec2 uv = calestialToSpherical(pos).xy;
 
 
 
 	//uv.x += perlinNoise(pos / 10000) / 200;
 	//uv.y += perlinNoise(pos.yxz / 10000) / 200;
+	vec3 normal;
+
+	float samplingTheta = clamp(distToCamera, 100, 100000) / 1000000;
+	normal = GetProceduralAndBaseHeightMapNormal(i.uv, 0.00001);
+
 
 	vec3 color;
 	vec3 normalColorFromTexture;
 	getColor(uv, color, normalColorFromTexture);
 
-	float distToCamera = length(i.worldPos);
 	float defaultNormalWeight = smoothstep(NORMAL_MAPPING_DISTANCE * 0.9, NORMAL_MAPPING_DISTANCE, distToCamera);
 
 	if(defaultNormalWeight < 1) {
+		normalColorFromTexture = normalize(normalColorFromTexture.xyz*2.0-1.0);
+		normal = normalize(mix(normalColorFromTexture, normal, 0.5));
+	}
+
+	{
 		vec3 N = i.normal;
 		vec3 T = i.tangent;
 		vec3 T2 = T - N * dot(N, T); // Gram-Schmidt orthogonalization of T
 		vec3 B = normalize(cross(N,T2));
-		mat3 normalMatrix = mat3(T,B,N); // column0, column1, column2		
-		vec3 normal = normalize(normalColorFromTexture.xyz*2.0-1.0);
-
-		//normal = GetProceduralAndBaseHeightMapNormal(i.uv, 0.001);
-
+		mat3 normalMatrix = mat3(T,B,N); // column0, column1, column2
 		out_normal = normalMatrix * normal;
-	} else {		
-		out_normal = i.normal;
 	}
 
 	out_color = vec4(pow(color,vec3(engine.gammaCorrectionTextureRead)),1);
@@ -498,17 +501,6 @@ void main()
 	//out_color = vec4(vec3(i.biomes1.g),1);
 	//out_color = vec4(vec3(i.biomes2),1);
 
-	{
-		float eps = 0.00001;
-		float epc = 1;
-			vec3 normal;
-	    double z = GetProceduralAndBaseHeightMapHeight(uv); 
-	    normal.x = float(GetProceduralAndBaseHeightMapHeight(vec2(uv.x+eps,uv.y)) - z) * epc;
-	    normal.y = float(GetProceduralAndBaseHeightMapHeight(vec2(uv.x,uv.y+eps)) - z) * epc;
-	    normal.z = eps;
-	    normal = normalize(normal);
-		out_normal = normal;
-	}
 }
 
 	

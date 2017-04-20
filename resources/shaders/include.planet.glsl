@@ -153,12 +153,32 @@ float GetProceduralHeight(vec3 dirFromPlanetCenter)
 
 }
 
+float HideTextureSamplingNoise(vec3 dirFromPlanetCenter)
+{	
+	float result = 0;
+	float freq = 100;
+	vec3 pos = dirFromPlanetCenter * freq;
+	int octaves = 2;
+	float ampModifier = 1/5;
+	float freqModifier = 5;
+	float amp = 1;
+	for (int i = 0; i < octaves; i++)
+	{
+		result += perlinNoise(pos) * amp;
+		pos *= freqModifier;
+		amp *= ampModifier;
+	}
+	return result;
+}
+
 double GetProceduralAndBaseHeightMapHeight(dvec3 direction, vec2 uv)
 {
 	double height = 0;	
 
-	if(param_baseHeightMapMultiplier > 0) 
-		height += param_baseHeightMapMultiplier * texture2D(param_baseHeightMap, uv).r; 
+	if(param_baseHeightMapMultiplier > 0) {
+		double h = texture2D(param_baseHeightMap, uv).r;
+		height += param_baseHeightMapMultiplier * h * (0.5 + 0.5 * HideTextureSamplingNoise(vec3(direction))); 
+	}
 	if(param_noiseMultiplier > 0)			
 		height += param_noiseMultiplier * GetProceduralHeight(vec3(direction * param_radiusMin / 1000000));
 
