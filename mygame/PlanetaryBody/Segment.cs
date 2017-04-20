@@ -304,17 +304,34 @@ namespace MyGame.PlanetaryBody
 				if (this.GenerationBegan == false) Log.Warn("trying to show segment " + this + " that did not begin generation");
 				else if (this.IsGenerationDone == false) Log.Warn("trying to show segment " + this + " that did not finish generation");
 				else if (RendererSurface == null) Log.Warn("trying to show segment " + this + " that does not have renderer");
-				else RendererSurface.RenderingMode = MyRenderingMode.RenderGeometryAndCastShadows;
-
+				else DoRender(true);
 				foreach (var child in Children)
 					child.SetVisible(false);
 			}
 			else
 			{
-				if (RendererSurface != null)
-					RendererSurface.RenderingMode = MyRenderingMode.DontRender;
+				DoRender(false);
 			}
 		}
+
+		void DoRender(bool yes)
+		{
+			if (yes)
+			{
+				if (RendererSurface != null)
+					RendererSurface.RenderingMode = MyRenderingMode.RenderGeometryAndCastShadows;
+				if (RendererSea != null)
+					RendererSea.RenderingMode = MyRenderingMode.RenderGeometryAndCastShadows;
+			}
+			else
+			{
+				if (RendererSurface != null)
+					RendererSurface.RenderingMode = MyRenderingMode.DontRender;
+				if (RendererSea != null)
+					RendererSea.RenderingMode = MyRenderingMode.DontRender;
+			}
+		}
+
 
 		public bool WantsToBeVisible { get; set; }
 

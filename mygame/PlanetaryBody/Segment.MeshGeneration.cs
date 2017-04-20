@@ -83,7 +83,7 @@ namespace MyGame.PlanetaryBody
 			RendererSurface.segment = this;
 			RendererSurface.Mesh = surfaceMesh;
 			RendererSurface.Offset += offsetCenter;
-			RendererSurface.Material = planetInfo.PlanetMaterial.CloneTyped();
+			RendererSurface.Material = planetInfo.SurfaceMaterial.CloneTyped();
 			RendererSurface.Material.Uniforms.Set("param_offsetFromPlanetCenter", RendererSurface.Offset.ToVector3d());
 			RendererSurface.Material.Uniforms.Set("param_remainderOffset", RendererSurface.Offset.Remainder());
 
@@ -92,10 +92,7 @@ namespace MyGame.PlanetaryBody
 			RendererSea.RenderingMode = MyRenderingMode.DontRender;
 			RendererSea.Mesh = seaMesh;
 			RendererSea.Offset += offsetCenter;
-			RendererSea.Material = planetInfo.seaMaterial;
-			RendererSea.ForcePassCulling = true;
-
-
+			RendererSea.Material = planetInfo.seaMaterial.CloneTyped();
 		}
 
 		public void DestroyRenderer()

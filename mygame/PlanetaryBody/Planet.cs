@@ -46,7 +46,7 @@ namespace MyGame.PlanetaryBody
 		}
 
 
-		public Material PlanetMaterial { get; set; }
+		public Material SurfaceMaterial { get; set; }
 
 
 		public WorldPos Center => Transform.Position;
@@ -73,7 +73,7 @@ namespace MyGame.PlanetaryBody
 			perlin = new PerlinD(5646);
 			worley = new WorleyD(894984, WorleyD.DistanceFunction.Euclidian);
 
-			config.SetTo(PlanetMaterial.Uniforms);
+			config.SetTo(SurfaceMaterial.Uniforms);
 			InitializeRootSegments();
 			InitializeJobTemplate();
 			InitializePrepareLoop();
@@ -83,7 +83,7 @@ namespace MyGame.PlanetaryBody
 			{
 				var mat = seaMaterial = Factory.NewMaterial();
 				config.SetTo(mat.Uniforms);
-				mat.RenderShader = Factory.GetShader("shaders/planet.waterPlane.glsl");
+				mat.RenderShader = Factory.GetShader("shaders/planet.sea.glsl");
 				mat.RenderShader.IsTransparent = true;
 			}
 		}

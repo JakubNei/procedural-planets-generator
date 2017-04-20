@@ -132,13 +132,13 @@ namespace MyGame
 				{ FilterMode = FilterMode.Point, WrapMode = MyEngine.TextureWrapMode.Clamp, UseMipMaps = false };
 				cfg.AddBiomes(biomesAtlas);
 
-				var planetShader = Factory.GetShader("shaders/planet.shader");
+				var planetShader = Factory.GetShader("shaders/planet.surface.glsl");
 				var planetMaterial = new Material();
 				planetMaterial.RenderShader = planetShader;
 
 				var planet = AddPlanet();
-				planet.Transform.Position = new WorldPos(cfg.radiusMin * 3, 0, 0);
-				planet.PlanetMaterial = planetMaterial;
+				planet.Transform.Position = new WorldPos(cfg.radiusMin * 2, 0, 0);
+				planet.SurfaceMaterial = planetMaterial;
 				planet.Initialize(cfg);
 			}
 
@@ -159,13 +159,13 @@ namespace MyGame
 				{ FilterMode = FilterMode.Point, WrapMode = MyEngine.TextureWrapMode.Clamp, UseMipMaps = false };
 				cfg.AddBiomes(biomesAtlas);
 
-				var planetShader = Factory.GetShader("shaders/planet.shader");
+				var planetShader = Factory.GetShader("shaders/planet.surface.glsl");
 				var planetMaterial = new Material();
 				planetMaterial.RenderShader = planetShader;
 
 				var planet = AddPlanet();
 				planet.Transform.Position = new WorldPos(100000 * 5, 0, 0);
-				planet.PlanetMaterial = planetMaterial;
+				planet.SurfaceMaterial = planetMaterial;
 				planet.Initialize(cfg);
 			}
 

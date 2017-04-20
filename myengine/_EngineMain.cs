@@ -23,6 +23,7 @@ namespace MyEngine
 		public static ILog Log { get; private set; }
 		public static FileSystem FileSystem { get; private set; } = new FileSystem("../Resources/");
 		public static Events.EventSystem EventSystem { get; private set; }
+		public static EngineMain Engine { get; private set; }
 
 		public static void Start(EngineMain engine)
 		{
@@ -35,6 +36,7 @@ namespace MyEngine
 				);
 			Log = log;
 
+			Engine = engine;
 			Input = new InputSystem(engine);
 			Debug = new MyDebug();
 			EventSystem = new Events.EventSystem();
@@ -51,6 +53,7 @@ namespace MyEngine
 		public ILog Log => Singletons.Log;
 		public FileSystem FileSystem => Singletons.FileSystem;
 		public Events.EventSystem EventSystem => Singletons.EventSystem;
+		public EngineMain Engine => Singletons.Engine;
 
 	}
 
@@ -115,7 +118,10 @@ namespace MyEngine
 		public void Exit()
 		{
 			ExitRequested = true;
+			OnExitRequested.Raise();
 		}
+
+		public Action OnExitRequested;
 
 		Stopwatch stopwatchSinceStart = new System.Diagnostics.Stopwatch();
 

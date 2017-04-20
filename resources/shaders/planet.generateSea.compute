@@ -1,0 +1,133 @@
+#version 430
+[ComputeShader]
+[include shaders/include.planet.glsl]
+#line 5
+
+
+
+
+ 
+struct vec2_struct
+{
+    float x;
+    float y;
+};
+vec2 fromStruct(vec2_struct p)
+{
+	return vec2(p.x, p.y);
+}
+vec2_struct toStruct(vec2 p)
+{
+	vec2_struct s;
+	s.x = p.x;
+	s.y = p.y;
+	return s;
+}
+
+
+struct vec3_struct
+{
+    float x;
+    float y;
+    float z;
+};
+vec3 fromStruct(vec3_struct p)
+{
+	return vec3(p.x, p.y, p.z);
+}
+vec3_struct toStruct(vec3 p)
+{
+	vec3_struct s;
+	s.x = p.x;
+	s.y = p.y;
+	s.z = p.z;
+	return s;
+}
+
+
+struct vec4_struct
+{
+    float x;
+    float y;
+    float z;
+    float w;
+};
+vec4 fromStruct(vec4_struct p)
+{
+	return vec4(p.x, p.y, p.z, p.w);
+}
+vec4_struct toStruct(vec4 p)
+{
+	vec4_struct s;
+	s.x = p.x;
+	s.y = p.y;
+	s.z = p.z;
+	s.w = p.w;
+	return s;
+}
+
+
+layout( binding=0 ) buffer buffer0 {
+    int indicies[];
+};
+layout( binding=1 ) buffer buffer1 {
+    vec3_struct positions[];
+};
+layout( binding=2 ) buffer buffer2 {
+    vec2_struct uvs[];
+};
+layout( local_size_x = 1, local_size_y = 1, local_size_z = 1 ) in;
+ 
+
+
+
+
+uniform dvec3 param_offsetFromPlanetCenter;
+uniform int param_numberOfVerticesOnEdge;
+uniform dvec3 param_cornerPositionA;
+uniform dvec3 param_cornerPositionB;
+uniform dvec3 param_cornerPositionC;
+uniform int param_indiciesCount;
+uniform int param_verticesStartIndexOffset;
+
+
+
+
+void main() {
+
+	int verticeIndex = int(gl_GlobalInvocationID.x) + param_verticesStartIndexOffset;	
+	
+	int tempVerticeIndex = verticeIndex;
+	int ix = 0;
+	int iy = 0;
+		
+	int param_numberOfVerticesOnLine = 1;
+	while(tempVerticeIndex >= param_numberOfVerticesOnLine && param_numberOfVerticesOnLine < param_numberOfVerticesOnEdge)
+	{
+		tempVerticeIndex -= param_numberOfVerticesOnLine;
+		param_numberOfVerticesOnLine++;
+		iy++;
+	}
+	ix = tempVerticeIndex;
+
+	double x = 0;
+	double y = 0;
+	if(param_numberOfVerticesOnLine > 1) x = double(ix) / (param_numberOfVerticesOnLine-1);
+	if(param_numberOfVerticesOnEdge > 1) y = double(iy) / (param_numberOfVerticesOnEdge-1);
+
+	dvec3 positionInterpolated = 
+		param_cornerPositionA + 
+		(param_cornerPositionB - param_cornerPositionA) * y * (1-x) + 
+		(param_cornerPositionC - param_cornerPositionA) * y * x;
+	dvec3 directionFromPlanetCenter = normalize(positionInterpolated);
+
+	vec3 uv = calestialToSpherical(vec3(directionFromPlanetCenter));
+
+	dvec3 positionFlat = directionFromPlanetCenter;
+	positionFlat *= param_radiusMin + param_baseHeightMapMultiplier/2;
+	positionFlat -= param_offsetFromPlanetCenter;
+
+	positions[verticeIndex] = toStruct(vec3(positionFlat));
+	uvs[verticeIndex] = toStruct(uv.xy);
+}
+

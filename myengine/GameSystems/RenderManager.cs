@@ -381,6 +381,7 @@ namespace MyEngine
 				gl.DepthTest(false);
 				gl.DepthWrite(false);
 				gl.Blend(false);
+				gl.DrawLinesOnly(true, false);
 
 				var camPos = camera.ViewPointPosition;
 				for (int i = 0; i < toRenderDefferredCount; i++)

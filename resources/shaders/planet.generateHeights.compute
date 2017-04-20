@@ -67,42 +67,23 @@ vec4_struct toStruct(vec4 p)
 }
 
 
-
 layout( binding=0 ) buffer buffer0 {
-    vec3_struct positions[];
+    int indicies[];
 };
 layout( binding=1 ) buffer buffer1 {
-    vec3_struct normals[];
+    vec3_struct positions[];
 };
 layout( binding=2 ) buffer buffer2 {
     vec2_struct uvs[];
 };
 layout( binding=3 ) buffer buffer3 {
-    int indicies[];
-};
-layout( binding=4 ) buffer buffer4 {
     vec4_struct out_biomes1[];
 };
-layout( binding=5 ) buffer buffer5 {
+layout( binding=4 ) buffer buffer4 {
     vec4_struct out_biomes2[];
 };
-
-
 layout( local_size_x = 1, local_size_y = 1, local_size_z = 1 ) in;
  
-
-
-vec3 GetNormal(int a, int b, int c)
-{
-	vec3 _a = fromStruct(positions[a]);
-	vec3 _b = fromStruct(positions[b]);
-	vec3 _c = fromStruct(positions[c]);
-	return normalize(cross(_b - _a, _c - _a));
-}
-
-
-
-
 
 
 
@@ -247,32 +228,33 @@ void main() {
 	if(param_numberOfVerticesOnLine > 1) x = double(ix) / (param_numberOfVerticesOnLine-1);
 	if(param_numberOfVerticesOnEdge > 1) y = double(iy) / (param_numberOfVerticesOnEdge-1);
 
-	dvec3 p = 
+	dvec3 positionInterpolated = 
 		param_cornerPositionA + 
 		(param_cornerPositionB - param_cornerPositionA) * y * (1-x) + 
 		(param_cornerPositionC - param_cornerPositionA) * y * x;
+	dvec3 directionFromPlanetCenter = normalize(positionInterpolated);
 
-	p = normalize(p);
+	vec3 uv = calestialToSpherical(vec3(directionFromPlanetCenter));
+	double generatedHeight = GetHeight(directionFromPlanetCenter, uv);
 
-	vec3 p_vec3 = vec3(p);
-	vec3 uv = calestialToSpherical(p_vec3);
-	double height = GetHeight(p, uv);
+	dvec3 positionAdjusted = directionFromPlanetCenter;
+	positionAdjusted *= param_radiusMin + generatedHeight;
+	positionAdjusted -= param_offsetFromPlanetCenter;
 
-	// passing data to generate biomes in computer shader
-	biomes1.x = float(RealHeightTo01(height));
+
+	// passing data so we can easily generate biomes in other computer shader
+	biomes1.x = float(RealHeightTo01(generatedHeight));
 	biomes1.y = GetHumidity(uv);
-
-	p *= param_radiusMin + height;
-	p -= param_offsetFromPlanetCenter;
 
 	// DEBUG
 	//vec3 p = fromStruct(positions[verticeIndex]);
 	//p.x += 0.01f;
 
-	positions[verticeIndex] = toStruct(vec3(p));
+	positions[verticeIndex] = toStruct(vec3(positionAdjusted));
 	uvs[verticeIndex] = toStruct(uv.xy);
+
+	// passing data so we can easily generate biomes in other computer shader
 	out_biomes1[verticeIndex] = toStruct(biomes1);
 	out_biomes2[verticeIndex] = toStruct(biomes2);
-
 }
 

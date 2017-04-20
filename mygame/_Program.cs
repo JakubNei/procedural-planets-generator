@@ -83,12 +83,12 @@ namespace MyGame
 
 				// SUN
 				{
-					var entity = sunEntity = scene.AddEntity();
+					var entity = sunEntity = scene.AddEntity("sun");
 					entity.Transform.Scale *= 1000;
-					entity.Transform.Position = new WorldPos(-2000, -2000, 100);
 
 					var renderer = entity.AddComponent<MeshRenderer>();
 					renderer.Mesh = factory.GetMesh("sphere_smooth.obj");
+					renderer.RenderingMode = MyRenderingMode.RenderGeometryAndCastShadows;
 
 					var mat = renderer.Material = factory.NewMaterial();
 					mat.RenderShader = factory.GetShader("shaders/sun.glsl");
@@ -99,7 +99,7 @@ namespace MyGame
 				}
 
 				{
-					var entity = scene.AddEntity();
+					var entity = scene.AddEntity("scene directional light");
 					var light = entity.AddComponent<Light>();
 					light.LighType = LightType.Directional;
 					light.Color = Vector3.One * 1f;

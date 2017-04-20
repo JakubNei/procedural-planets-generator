@@ -18,12 +18,10 @@ namespace MyGame.PlanetaryBody
 {
 	public partial class Planet
 	{
-
-		public Shader GenerateHeights => Factory.GetShader("shaders/planet.generateHeights.compute");
-		public Shader GenerateBiomes => Factory.GetShader("shaders/planet.generateBiomes.compute");
-
-		public Shader MoveSkirts => Factory.GetShader("planet.moveSkirts.compute");
-
+		// this is here so we can watch the shaders for changes and regenerate segments
+		Shader GenerateSurface => Factory.GetShader("shaders/planet.generateHeights.compute");
+		Shader GenerateBiomes => Factory.GetShader("shaders/planet.generateBiomes.compute");
+		Shader GenerateSea => Factory.GetShader("shaders/planet.generateSea.compute");
 
 		JobRunner jobRunner = new JobRunner();
 
@@ -65,7 +63,7 @@ namespace MyGame.PlanetaryBody
 				if (useSkirts)
 					range = segment.NoElevationRangeModifiedForSkirts;
 
-				var uniforms = GenerateHeights.Uniforms;
+				var uniforms = GenerateSurface.Uniforms;
 
 				config.SetTo(uniforms);
 				uniforms.Set("param_offsetFromPlanetCenter", segment.RendererSurface.Offset.ToVector3d());
@@ -76,17 +74,16 @@ namespace MyGame.PlanetaryBody
 				uniforms.Set("param_indiciesCount", surface.TriangleIndicies.Count);
 				uniforms.Set("param_verticesStartIndexOffset", verticesStartIndexOffset);
 
-				GenerateHeights.Bind();
-
-				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 0, surface.Vertices.VboHandle); MyGL.Check();
-				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 1, surface.Normals.VboHandle); MyGL.Check();
+				GenerateSurface.Bind();
+				
+				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 0, surface.TriangleIndicies.VboHandle); MyGL.Check();
+				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 1, surface.Vertices.VboHandle); MyGL.Check();
 				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 2, surface.UVs.VboHandle); MyGL.Check();
-				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 3, surface.TriangleIndicies.VboHandle); MyGL.Check();
-				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 4, surface.VertexArray.GetVertexBuffer("biomes1").VboHandle); MyGL.Check();
-				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 5, surface.VertexArray.GetVertexBuffer("biomes2").VboHandle); MyGL.Check();
+				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 3, surface.VertexArray.GetVertexBuffer("biomes1").VboHandle); MyGL.Check();
+				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 4, surface.VertexArray.GetVertexBuffer("biomes2").VboHandle); MyGL.Check();
 				GL.DispatchCompute(verticesCount, 1, 1); MyGL.Check();
 
-			}, "vygenerování výšek trojúhelníkové sítě na grafické kartě");
+			}, "vygenerování výšek trojúhelníkové sítě povrchu na grafické kartě");
 
 			jobTemplate.AddTask(WhereToRun.GPUThread, segment =>
 			{
@@ -105,17 +102,13 @@ namespace MyGame.PlanetaryBody
 				CalculateNormalsAndRangentsOnGPU(segment.RendererSurface.Mesh);
 			}, "výpočet normál a tangent povrchu na grafické kartě");
 
-			jobTemplate.AddTask(WhereToRun.GPUThread, segment =>
-			{
-				CalculateNormalsAndRangentsOnGPU(segment.RendererSea.Mesh);
-			}, "výpočet normál a tangent moře na grafické kartě");
-
-
 			if (useSkirts)
 			{
+				/*
 				if (false && moveSkirtsOnGPU) // TODO: move skirts on gpu
 				{
-					var uniforms = MoveSkirts.Uniforms;
+					var moveSkirts = Factory.GetShader("planet.moveSkirts.compute");
+					var uniforms = moveSkirts.Uniforms;
 
 					var ed = GetEdgeVerticesIndexes();
 					for (int i = 0; i < ed.Length; i++)
@@ -133,14 +126,14 @@ namespace MyGame.PlanetaryBody
 
 						uniforms.Set("param_moveAmount", moveAmount);
 
-						MoveSkirts.Bind();
+						moveSkirts.Bind();
 
 						GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 0, mesh.Vertices.VboHandle); MyGL.Check();
 						GL.DispatchCompute(ed.Length, 1, 1); MyGL.Check();
 
 					}, "pokud jsou sukně zapnuty: posunutí vrcholú pro vytvoření sukní na grafické kartě");
 				}
-				else
+				else*/
 				{
 					jobTemplate.AddTask(segment =>
 					{
@@ -170,7 +163,6 @@ namespace MyGame.PlanetaryBody
 
 				var uniforms = GenerateBiomes.Uniforms;
 
-
 				config.SetTo(uniforms);
 				uniforms.Set("param_offsetFromPlanetCenter", segment.RendererSurface.Offset.ToVector3d());
 				uniforms.Set("param_numberOfVerticesOnEdge", ChunkNumberOfVerticesOnEdge);
@@ -191,7 +183,43 @@ namespace MyGame.PlanetaryBody
 				GL.DispatchCompute(verticesCount, 1, 1); MyGL.Check();
 
 			}, "vygenerování biomů na grafické kartě");
-			
+
+
+			jobTemplate.AddTask(WhereToRun.GPUThread, segment =>
+			{
+				var surface = segment.RendererSurface.Mesh;
+				var sea = segment.RendererSea.Mesh;
+
+				var verticesStartIndexOffset = 0;
+				var verticesCount = surface.Vertices.Count;
+
+				var range = segment.NoElevationRange;
+
+				var uniforms = GenerateSea.Uniforms;
+
+				config.SetTo(uniforms);
+				uniforms.Set("param_offsetFromPlanetCenter", segment.RendererSurface.Offset.ToVector3d());
+				uniforms.Set("param_numberOfVerticesOnEdge", ChunkNumberOfVerticesOnEdge);
+				uniforms.Set("param_cornerPositionA", range.a);
+				uniforms.Set("param_cornerPositionB", range.b);
+				uniforms.Set("param_cornerPositionC", range.c);
+				uniforms.Set("param_indiciesCount", surface.TriangleIndicies.Count);
+				uniforms.Set("param_verticesStartIndexOffset", verticesStartIndexOffset);
+
+				GenerateSea.Bind();
+
+				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 0, sea.TriangleIndicies.VboHandle); MyGL.Check();
+				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 1, sea.Vertices.VboHandle); MyGL.Check();
+				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 2, sea.UVs.VboHandle); MyGL.Check();
+				GL.DispatchCompute(verticesCount, 1, 1); MyGL.Check();
+
+			}, "vygenerování výšek trojúhelníkové sítě moře na grafické kartě");
+
+			jobTemplate.AddTask(WhereToRun.GPUThread, segment =>
+			{
+				CalculateNormalsAndRangentsOnGPU(segment.RendererSea.Mesh);
+			}, "výpočet normál a tangent moře na grafické kartě");
+
 			ulong chunksGenerated = 0;
 			jobTemplate.AddTask(segment =>
 			{

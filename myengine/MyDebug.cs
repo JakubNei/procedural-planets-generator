@@ -39,6 +39,12 @@ namespace MyEngine
 			CommonCVars = new CommonCVars(this);
 			AddCommonCvars();
 
+			Engine.OnExitRequested += () =>
+			{
+				debugForm?.Close();
+				debugForm = null;
+			};
+
 			System.Diagnostics.Debug.Listeners.Add(new TraceListener() { log = Log });
 		}
 
