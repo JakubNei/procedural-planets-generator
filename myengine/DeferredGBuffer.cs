@@ -67,7 +67,7 @@ namespace MyEngine
 
 			depthTexture = new Texture2D(GL.GenTexture());
 			GL.BindTexture(TextureTarget.Texture2D, depthTexture.GetNativeTextureID()); MyGL.Check();
-			GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.DepthComponent32f, width, height, 0, PixelFormat.DepthComponent, PixelType.Float, new IntPtr(0)); MyGL.Check();
+			GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.DepthComponent32Sgix, width, height, 0, PixelFormat.DepthComponent, PixelType.Float, new IntPtr(0)); MyGL.Check();
 			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear); MyGL.Check();
 			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear); MyGL.Check();
 			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Clamp); MyGL.Check();
