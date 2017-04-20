@@ -31,6 +31,7 @@ namespace MyGame.PlanetaryBody
 
 			{
 				surfaceMesh.Name = this.ToString() + " surface";
+				surfaceMesh.BoundsNeedRecalculation = false;
 
 				var vertices = planetInfo.GetVerticesList();
 				var indicies = planetInfo.GetIndiciesList();
@@ -49,6 +50,7 @@ namespace MyGame.PlanetaryBody
 			var seaMesh = new Mesh();
 			{
 				seaMesh.Name = this.ToString() + " sea";
+				seaMesh.BoundsNeedRecalculation = false;
 
 				var vertices = planetInfo.GetVerticesList();
 				var indicies = planetInfo.GetIndiciesList();
@@ -57,13 +59,13 @@ namespace MyGame.PlanetaryBody
 			}
 
 
-
+			Bounds bounds;
 			{
 				var o = offsetCenter.ToVector3();
 				var c = 0;
 				var n = NoElevationRange.Normal.ToVector3();
 
-				var bounds = new Bounds(NoElevationRange.CenterPos.ToVector3() - o);
+				bounds = new Bounds(NoElevationRange.CenterPos.ToVector3() - o);
 
 				bounds.Encapsulate(NoElevationRange.a.ToVector3() + n * c - o);
 				bounds.Encapsulate(NoElevationRange.b.ToVector3() + n * c - o);
@@ -82,6 +84,7 @@ namespace MyGame.PlanetaryBody
 			RendererSurface.RenderingMode = MyRenderingMode.DontRender;
 			RendererSurface.segment = this;
 			RendererSurface.Mesh = surfaceMesh;
+			RendererSurface.Mesh.Bounds = bounds;
 			RendererSurface.Offset += offsetCenter;
 			RendererSurface.Material = planetInfo.SurfaceMaterial.CloneTyped();
 			RendererSurface.Material.Uniforms.Set("param_offsetFromPlanetCenter", RendererSurface.Offset.ToVector3d());
@@ -91,6 +94,7 @@ namespace MyGame.PlanetaryBody
 			RendererSea = planetInfo.Entity.AddComponent<MeshRenderer>();
 			RendererSea.RenderingMode = MyRenderingMode.DontRender;
 			RendererSea.Mesh = seaMesh;
+			RendererSea.Mesh.Bounds = bounds;
 			RendererSea.Offset += offsetCenter;
 			RendererSea.Material = planetInfo.seaMaterial.CloneTyped();
 		}

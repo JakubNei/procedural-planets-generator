@@ -22,7 +22,7 @@ namespace MyEngine
 
 		public FileExisting file;
 
-		public bool BoundsNeedRecalculation { get; set; }
+		public bool BoundsNeedRecalculation { get; set; } = true;
 
 		/// <summary>
 		/// Mesh space bounds of the mesh.

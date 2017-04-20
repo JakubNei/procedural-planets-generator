@@ -41,7 +41,7 @@ namespace MyGame
 						PlanetLogicUpdate();
 					}
 				});
-				t.Name = "Planet logic";
+				t.Name = "planet logic";
 				t.Priority = ThreadPriority.Lowest;
 				t.IsBackground = true;
 				t.Start();
@@ -137,7 +137,7 @@ namespace MyGame
 				planetMaterial.RenderShader = planetShader;
 
 				var planet = AddPlanet();
-				planet.Transform.Position = new WorldPos(cfg.radiusMin * 2, 0, 0);
+				planet.Transform.Position = new WorldPos(Program.sunRadius * 2 + cfg.radiusMin * 2, 0, 0);
 				planet.SurfaceMaterial = planetMaterial;
 				planet.Initialize(cfg);
 			}

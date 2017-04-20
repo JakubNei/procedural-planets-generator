@@ -15,6 +15,7 @@ namespace MyGame
 		public static Entity sunTarget = null;
 		public static FirstPersonCamera fpc;
 
+		public static float sunRadius = 100000;
 
 		[STAThread]
 		public static void Main()
@@ -27,12 +28,14 @@ namespace MyGame
 
 				new DebugKeys(scene, engine.Debug);
 
+
 				var proceduralPlanets = new ProceduralPlanets(scene);
 
 				{
 					var entity = scene.AddEntity();
 					fpc = entity.AddComponent<FirstPersonCamera>();
 					fpc.planets = proceduralPlanets;
+
 					//var flashLight = entity.AddComponent<Light>();
 					//flashLight.LighType = LightType.Point;				
 
@@ -84,7 +87,7 @@ namespace MyGame
 				// SUN
 				{
 					var entity = sunEntity = scene.AddEntity("sun");
-					entity.Transform.Scale *= 1000;
+					entity.Transform.Scale *= sunRadius;
 
 					var renderer = entity.AddComponent<MeshRenderer>();
 					renderer.Mesh = factory.GetMesh("sphere_smooth.obj");
@@ -96,6 +99,8 @@ namespace MyGame
 					mat.Uniforms.Set("param_turbulenceMap", factory.GetTexture2D("textures/turbulence_map.png"));
 					mat.Uniforms.Set("param_surfaceDiffuse", factory.GetTexture2D("textures/sun_surface_d.png"));
 					mat.Uniforms.Set("param_perlinNoise", factory.GetTexture2D("textures/perlin_noise.png"));
+					mat.Uniforms.Set("param_radius", sunRadius);
+					
 				}
 
 				{
@@ -105,16 +110,9 @@ namespace MyGame
 					light.Color = Vector3.One * 1f;
 					light.Shadows = LightShadows.None;
 
-					// make directional sun light look at the closest planet
-					//scene.EventSystem.Register((MyEngine.Events.EventThreadUpdate e) =>
-					//{
-					//	entity.Transform.Position = sunEntity.Transform.Position;
-					//	var p = proceduralPlanets.planets.FirstOrDefault();
-					//	if (p != null)
-					//	{
-					//		entity.Transform.LookAt(p.Transform.Position);
-					//	}
-					//});
+					var p = proceduralPlanets?.GetClosestPlanet(sunEntity.Transform.Position);
+					if (p != null)
+						entity.Transform.LookAt(p.Transform.Position);
 				}
 
 

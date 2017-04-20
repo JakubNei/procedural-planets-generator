@@ -5,7 +5,7 @@
 uniform sampler2D param_turbulenceColorGradient;
 uniform sampler2D param_turbulenceMap;
 uniform sampler2D param_surfaceDiffuse;
-
+uniform float param_radius;
 
 
 
@@ -113,7 +113,7 @@ vec3 triPlanar(sampler2D tex, vec3 position, vec3 normal, float scale) {
 void main()
 {
 		
-	vec3 pos = engine.cameraPosition + i.worldPos;
+	vec3 pos = (engine.cameraPosition + i.worldPos) * (1000 / param_radius);
 
 	//vec4 c = texture2D(param_surfaceDiffuse, i.uv + engine.totalElapsedSecondsSinceEngineStart*0.003);
 	vec3 c = triPlanar(param_surfaceDiffuse, pos + engine.totalElapsedSecondsSinceEngineStart * 1, i.normal, 0.001);

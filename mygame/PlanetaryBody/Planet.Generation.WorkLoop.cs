@@ -88,14 +88,13 @@ namespace MyGame.PlanetaryBody
 			jobTemplate.AddTask(WhereToRun.GPUThread, segment =>
 			{
 				segment.RendererSurface.Mesh.Vertices.DownloadDataFromGPU();
-			}, "stáhnutí trojúhelníkové sítě z grafické karty do hlavní paměti počítače");
+			}, "stáhnutí trojúhelníkové sítě povrchu z grafické karty do hlavní paměti počítače");
 
 			jobTemplate.AddTask(segment =>
 			{
 				segment.RendererSurface.Mesh.RecalculateBounds();
-				segment.RendererSea.Mesh.Bounds = segment.RendererSurface.Mesh.Bounds;
 				segment.CalculateRealVisibleRange();
-			}, "vypočet obalového kvádru trojúhelníkové sítě");
+			}, "vypočet obalového kvádru trojúhelníkových sítě povrchu a moře");
 
 			jobTemplate.AddTask(WhereToRun.GPUThread, segment =>
 			{

@@ -152,7 +152,7 @@ namespace MyEngine.Components
 
 		public override string ToString()
 		{
-			return Entity.Name;
+			return Entity?.Name;
 		}
 
 		public abstract IEnumerable<Vector3> GetCameraSpaceOccluderTriangles(CameraData camera);

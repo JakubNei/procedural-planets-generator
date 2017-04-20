@@ -165,5 +165,10 @@ namespace MyEngine.Components
 
 			return b;
 		}
+
+		public override string ToString()
+		{
+			return Entity?.Name + " -> " + Mesh?.Name;
+		}
 	}
 }

@@ -153,6 +153,7 @@ namespace MyEngine
 				GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha); MyGL.Check();
 
 				SetPolygonMode();
+				GL.Disable(EnableCap.CullFace); MyGL.Check();
 
 				GBuffer.BindForTransparentPass();
 
