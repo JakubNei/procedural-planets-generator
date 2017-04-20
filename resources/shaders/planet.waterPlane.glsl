@@ -56,7 +56,7 @@ void main()
 
 	vec3 color = vec3(0,0,1);	
 
-	out_color = vec4(pow(color,vec3(engine.gammaCorrectionTextureRead)),1);
+	out_color = vec4(pow(color,vec3(engine.gammaCorrectionTextureRead)),0.3);
 
 }
 

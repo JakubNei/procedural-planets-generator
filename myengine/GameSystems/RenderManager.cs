@@ -74,6 +74,7 @@ namespace MyEngine
 
 				GL.FrontFace(FrontFaceDirection.Ccw); MyGL.Check();
 				GL.CullFace(CullFaceMode.Back); MyGL.Check();
+				GL.PolygonMode(MaterialFace.Front, PolygonMode.Fill); MyGL.Check();
 			}
 
 			public void DepthWrite(bool enabled)
@@ -91,13 +92,36 @@ namespace MyEngine
 					GL.Disable(EnableCap.DepthTest); MyGL.Check();
 				}
 			}
-			public void CullFace(bool enabled)
+			public void Blend(bool enabled)
 			{
-
+				if (enabled)
+				{
+					GL.Enable(EnableCap.Blend); MyGL.Check();
+				} else
+				{
+					GL.Disable(EnableCap.Blend); MyGL.Check();
+				}
 			}
-			public void DrawLinesOnly(bool linesOnly)
+			public void DrawLinesOnly(bool linesOnly, bool drawFrontOnly = true)
 			{
-
+				if (linesOnly)
+				{
+					GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line); MyGL.Check();
+					GL.Disable(EnableCap.CullFace); MyGL.Check();
+				}
+				else
+				{
+					if (drawFrontOnly)
+					{
+						GL.PolygonMode(MaterialFace.Front, PolygonMode.Fill); MyGL.Check();
+						GL.Enable(EnableCap.CullFace); MyGL.Check();
+					}
+					else
+					{
+						GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill); MyGL.Check();
+						GL.Disable(EnableCap.CullFace); MyGL.Check();
+					}
+				}
 			}
 		}
 
@@ -119,13 +143,14 @@ namespace MyEngine
 			RenderLights(ubo, camera, allLights);
 
 
-			// forward rendering path, transparent objects
+			// FORWARD RENDERING, TRANSPARENT OBJECTS
 			{
+				gl.DepthWrite(false);
+				gl.DepthTest(true);
+				gl.Blend(true);
 
-				GL.DepthMask(false); MyGL.Check();
-				GL.Enable(EnableCap.DepthTest); MyGL.Check();
-
-				//GL.Clear(ClearBufferMask.DepthBufferBit); MyGL.Check();
+				GL.BlendEquation(BlendEquationMode.FuncAdd); MyGL.Check();
+				GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha); MyGL.Check();
 
 				SetPolygonMode();
 
@@ -147,14 +172,10 @@ namespace MyEngine
 
 			// FINAL DRAW TO SCREEN
 			{
-				GL.DepthMask(false); MyGL.Check();
-				GL.Disable(EnableCap.DepthTest); MyGL.Check();
-
-				//DebugDrawTexture(gBuffer.finalTextureToRead);
-				GL.Disable(EnableCap.CullFace); MyGL.Check();
-				GL.Disable(EnableCap.Blend); MyGL.Check();
-
-				GL.PolygonMode(MaterialFace.Front, PolygonMode.Fill); MyGL.Check();
+				gl.DepthWrite(false);
+				gl.DepthTest(false);
+				gl.Blend(false);
+				gl.DrawLinesOnly(false);
 
 				GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, 0); MyGL.Check();
 				GL.Viewport(0, 0, camera.PixelWidth, camera.PixelHeight); MyGL.Check();
@@ -181,24 +202,7 @@ namespace MyEngine
 
 		private void SetPolygonMode()
 		{
-			if (DrawLines)
-			{
-				GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line); MyGL.Check();
-				GL.Disable(EnableCap.CullFace); MyGL.Check();
-			}
-			else
-			{
-				if (RenderOnlyFront)
-				{
-					GL.PolygonMode(MaterialFace.Front, PolygonMode.Fill); MyGL.Check();
-					GL.Enable(EnableCap.CullFace); MyGL.Check();
-				}
-				else
-				{
-					GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill); MyGL.Check();
-					GL.Disable(EnableCap.CullFace); MyGL.Check();
-				}
-			}
+			gl.DrawLinesOnly(DrawLines, RenderOnlyFront);
 		}
 
 		private void RenderGBuffer(UniformBlock ubo, CameraData camera)
@@ -238,9 +242,10 @@ namespace MyEngine
 
 				// RENDER ALL OBJECTS
 				{
-					GL.DepthMask(true); MyGL.Check();
-					GL.Enable(EnableCap.DepthTest); MyGL.Check();
-					GL.Disable(EnableCap.Blend); MyGL.Check();
+					gl.DepthWrite(true);
+					gl.DepthTest(true);
+					gl.Blend(false);
+									
 					for (int i = 0; i < toRenderDefferredCount; i++)
 					{
 						var renderable = toRenderDefferred[i];
@@ -258,7 +263,6 @@ namespace MyEngine
 
 		private void RenderLights(UniformBlock ubo, CameraData camera, IList<ILight> allLights)
 		{
-			GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill); MyGL.Check();
 
 			lock (allLights)
 			{
@@ -308,9 +312,9 @@ namespace MyEngine
 					// G BUFFER LIGHT PASS
 
 					{
-						GL.DepthMask(false); MyGL.Check();
-						GL.Disable(EnableCap.CullFace); MyGL.Check();
-						GL.Disable(EnableCap.DepthTest); MyGL.Check();
+						gl.DepthWrite(false);
+						gl.DepthTest(false);
+						gl.DrawLinesOnly(false);
 
 						light.UploadUBOdata(camera, ubo, lightIndex);
 
@@ -352,13 +356,10 @@ namespace MyEngine
 			// POST PROCESS EFFECTs
 			if (EnablePostProcessEffects)
 			{
-				GL.DepthMask(false); MyGL.Check();
-				GL.Disable(EnableCap.DepthTest); MyGL.Check();
-
-				GL.Disable(EnableCap.CullFace); MyGL.Check();
-				GL.Disable(EnableCap.Blend); MyGL.Check();
-
-				GL.PolygonMode(MaterialFace.Front, PolygonMode.Fill); MyGL.Check();
+				gl.DepthTest(false);
+				gl.DepthWrite(false);
+				gl.Blend(false);
+				gl.DrawLinesOnly(false);
 
 				foreach (var pe in postProcessEffects)
 				{
@@ -368,8 +369,8 @@ namespace MyEngine
 					pe.Shader.Bind();
 					Factory.QuadMesh.Draw();
 				}
-				GBuffer.Unbind();
 
+				GBuffer.Unbind();
 			}
 		}
 
@@ -377,11 +378,10 @@ namespace MyEngine
 		{
 			if (Factory.GetShader("internal/debugDrawBounds.shader").Bind())
 			{
-				GL.DepthMask(false); MyGL.Check();
-				GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line); MyGL.Check();
-				GL.Disable(EnableCap.DepthTest); MyGL.Check();
-				GL.Disable(EnableCap.CullFace); MyGL.Check();
-				GL.Disable(EnableCap.Blend); MyGL.Check();
+				gl.DepthTest(false);
+				gl.DepthWrite(false);
+				gl.Blend(false);
+
 				var camPos = camera.ViewPointPosition;
 				for (int i = 0; i < toRenderDefferredCount; i++)
 				{
