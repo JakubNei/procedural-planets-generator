@@ -15,6 +15,8 @@ namespace MyGame.PlanetaryBody
 {
 	public partial class Segment
 	{
+		public Texture2D segmentNormalMap;
+
 		public bool GenerationBegan { get; private set; } = false;
 		public bool IsGenerationDone { get; private set; } = false;
 
@@ -58,7 +60,7 @@ namespace MyGame.PlanetaryBody
 				seaMesh.TriangleIndicies.SetData(indicies);
 			}
 
-
+			/*
 			Bounds bounds;
 			{
 				var o = offsetCenter;
@@ -77,24 +79,28 @@ namespace MyGame.PlanetaryBody
 				bounds.Encapsulate((NoElevationRange.c - n * c - o).ToVector3());
 				bounds.Encapsulate((NoElevationRange.CenterPos - n * c - o).ToVector3());
 			}
-
+			*/
+			segmentNormalMap = new Texture2D(1024, 1024);
+			segmentNormalMap.UseMipMaps = false;
 
 			//if (Renderer != null) throw new Exception("something went terribly wrong, renderer should be null"); // or we marked segment for regeneration
 			RendererSurface = planetInfo.Entity.AddComponent<CustomChunkMeshRenderer>();
 			RendererSurface.RenderingMode = MyRenderingMode.DontRender;
 			RendererSurface.segment = this;
 			RendererSurface.Mesh = surfaceMesh;
-			RendererSurface.Mesh.Bounds = bounds;
+			//RendererSurface.Mesh.Bounds = bounds;
 			RendererSurface.Offset += offsetCenter;
 			RendererSurface.Material = planetInfo.SurfaceMaterial.CloneTyped();
 			RendererSurface.Material.Uniforms.Set("param_offsetFromPlanetCenter", RendererSurface.Offset.ToVector3d());
 			RendererSurface.Material.Uniforms.Set("param_remainderOffset", RendererSurface.Offset.Remainder());
+			RendererSurface.Material.Uniforms.Set("param_segmentNormalMap", segmentNormalMap);
+
 
 
 			RendererSea = planetInfo.Entity.AddComponent<MeshRenderer>();
 			RendererSea.RenderingMode = MyRenderingMode.DontRender;
 			RendererSea.Mesh = seaMesh;
-			RendererSea.Mesh.Bounds = bounds;
+			//RendererSea.Mesh.Bounds = bounds;
 			RendererSea.ForcePassRasterizationCulling = true;
 			RendererSea.Offset += offsetCenter;
 			RendererSea.Material = planetInfo.seaMaterial.CloneTyped();

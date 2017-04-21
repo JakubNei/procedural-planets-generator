@@ -20,8 +20,10 @@ namespace MyGame.PlanetaryBody
 	{
 		// this is here so we can watch the shaders for changes and regenerate segments
 		Shader GenerateSurface => Factory.GetShader("shaders/planet.generateHeights.compute");
+		Shader GenerateSurfaceNormalMap => Factory.GetShader("shaders/planet.generateSurfaceNormalMap.compute");		
 		Shader GenerateBiomes => Factory.GetShader("shaders/planet.generateBiomes.compute");
 		Shader GenerateSea => Factory.GetShader("shaders/planet.generateSea.compute");
+
 
 		JobRunner jobRunner = new JobRunner();
 
@@ -212,7 +214,7 @@ namespace MyGame.PlanetaryBody
 				GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 2, sea.UVs.VboHandle); MyGL.Check();
 				GL.DispatchCompute(verticesCount, 1, 1); MyGL.Check();
 
-			}, "vygenerování výšek trojúhelníkové sítě moře na grafické kartě");
+			}, "upravení trojúhelníkové sítě moře na grafické kartě");
 
 			jobTemplate.AddTask(WhereToRun.GPUThread, segment =>
 			{
@@ -230,7 +232,42 @@ namespace MyGame.PlanetaryBody
 				segment.RendererSea.Mesh.RecalculateBounds();
 			}, "vypočet obalového kvádru trojúhelníkových sítě moře");
 
+			jobTemplate.AddTask(WhereToRun.GPUThread, segment =>
+			{
+				var mesh = segment.RendererSurface.Mesh;
 
+				var verticesStartIndexOffset = 0;
+				var verticesCount = mesh.Vertices.Count;
+
+				var range = segment.NoElevationRange;
+				if (useSkirts)
+					range = segment.NoElevationRangeModifiedForSkirts;
+
+				var uniforms = GenerateSurfaceNormalMap.Uniforms;
+
+				config.SetTo(uniforms);
+				uniforms.Set("param_offsetFromPlanetCenter", segment.RendererSurface.Offset.ToVector3d());
+				uniforms.Set("param_numberOfVerticesOnEdge", ChunkNumberOfVerticesOnEdge);
+				uniforms.Set("param_cornerPositionA", range.a);
+				uniforms.Set("param_cornerPositionB", range.b);
+				uniforms.Set("param_cornerPositionC", range.c);
+				uniforms.Set("param_indiciesCount", mesh.TriangleIndicies.Count);
+				uniforms.Set("param_verticesStartIndexOffset", verticesStartIndexOffset);
+
+				int texturingUnit = 0;
+
+				var texture = segment.segmentNormalMap;
+
+				uniforms.Set("param_segmentNormalMap", texturingUnit);
+				GL.BindImageTexture(texturingUnit, texture.GetNativeTextureID(), 0, false, 0, TextureAccess.WriteOnly, SizedInternalFormat.Rgba8);
+				texturingUnit++;
+
+				GenerateSurfaceNormalMap.Bind();
+
+				GL.DispatchCompute(texture.Width / 16, texture.Height / 16, 1); MyGL.Check();
+
+			}, "vygenerování normálové povrchu mapy na grafické kartě");
+			 
 			ulong chunksGenerated = 0;
 			jobTemplate.AddTask(segment =>
 			{

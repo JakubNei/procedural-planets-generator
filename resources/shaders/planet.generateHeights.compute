@@ -81,7 +81,7 @@ layout( binding=3 ) buffer buffer3 {
 layout( binding=4 ) buffer buffer4 {
     vec4_struct out_biomes2[];
 };
-layout( local_size_x = 1, local_size_y = 1, local_size_z = 1 ) in;
+layout( local_size_x = 1 ) in;
  
 
 
@@ -130,8 +130,8 @@ void main() {
 		(param_cornerPositionC - param_cornerPositionA) * y * x;
 	dvec3 dirFromPlanetCenter = normalize(positionInterpolated);
 
-	vec2 uv = calestialToSpherical(vec3(dirFromPlanetCenter)).xy;
-	double generatedHeight = GetProceduralAndBaseHeightMapHeight(dirFromPlanetCenter, uv);
+	vec2 spherical = calestialToSpherical(vec3(dirFromPlanetCenter)).xy;
+	double generatedHeight = GetProceduralAndBaseHeightMapHeight(dirFromPlanetCenter, spherical);
 
 	dvec3 positionAdjusted = dirFromPlanetCenter;
 	positionAdjusted *= param_radiusMin + generatedHeight;
@@ -140,14 +140,17 @@ void main() {
 
 	// passing data so we can easily generate biomes in other computer shader
 	biomes1.x = float(generatedHeight / (param_baseHeightMapMultiplier + param_noiseMultiplier));
-	biomes1.y = GetHumidity(uv);
+	biomes1.y = GetHumidity(spherical);
+	biomes2.x = float(x);
+	biomes2.y = float(y);
+
 
 	// DEBUG
 	//vec3 p = fromStruct(positions[verticeIndex]);
 	//p.x += 0.01f;
 
 	positions[verticeIndex] = toStruct(vec3(positionAdjusted));
-	uvs[verticeIndex] = toStruct(uv.xy);
+	uvs[verticeIndex] = toStruct(spherical.xy); // we use spherical coords for better normal & tanget calculation
 
 	// passing data so we can easily generate biomes in other computer shader
 	out_biomes1[verticeIndex] = toStruct(biomes1);

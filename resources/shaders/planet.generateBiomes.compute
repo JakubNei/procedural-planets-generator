@@ -86,7 +86,7 @@ layout( binding=5 ) buffer buffer5 {
 };
 
 
-layout( local_size_x = 1, local_size_y = 1, local_size_z = 1 ) in;
+layout( local_size_x = 1 ) in;
 
 
 uniform dvec3 param_offsetFromPlanetCenter;
@@ -108,7 +108,7 @@ void main() {
 
 	vec3 position = fromStruct(positions[verticeIndex]);
 	vec3 normal = fromStruct(normals[verticeIndex]);
-	vec2 uv = fromStruct(uvs[verticeIndex]);
+	vec2 spherical = fromStruct(uvs[verticeIndex]);
 	vec4 biomes1 = fromStruct(out_biomes1[verticeIndex]);
 	vec4 biomes2 = fromStruct(out_biomes2[verticeIndex]);
 
@@ -118,6 +118,8 @@ void main() {
 	// passed from generate heights shader
 	float altFromBottomOfSea = biomes1.x;
 	float humidity = biomes1.y;
+	float x = biomes2.x;
+	float y = biomes2.y;
 
 	biomes1 = vec4(0);
 	biomes2 = vec4(0);
@@ -127,7 +129,7 @@ void main() {
 	float altFromSea = altFromBottomOfSea-0.5;
 
 	// 1 at meridian.. 0 at poles
-	float distanceFromPoles = 1 - abs(uv.y - 0.5) * 2;
+	float distanceFromPoles = 1 - abs(spherical.y - 0.5) * 2;
 	float temperature = (1 - abs(altFromSea)) * distanceFromPoles;
 
 	vec3 biome = texture2D(param_biomesControlMap, vec2(temperature, humidity)).rgb;
@@ -161,6 +163,7 @@ void main() {
 	biomes1 /= sum;
 	biomes2 /= sum;
 
+	uvs[verticeIndex] = toStruct(vec2(x,y));
 	out_biomes1[verticeIndex] = toStruct(biomes1);
 	out_biomes2[verticeIndex] = toStruct(biomes2);
 

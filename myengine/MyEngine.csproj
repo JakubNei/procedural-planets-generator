@@ -137,6 +137,7 @@
     <Compile Include="Neitri\Logging\ILogger.cs" />
     <Compile Include="Neitri\Logging\LogAggregator.cs" />
     <Compile Include="Neitri\Logging\LogConsole.cs" />
+    <Compile Include="Neitri\Logging\LogNothing.cs" />
     <Compile Include="Neitri\Logging\LogFile.cs" />
     <Compile Include="Neitri\NeitriExtensions.cs" />
     <Compile Include="Neitri\NotNullAttribute.cs" />

@@ -238,7 +238,13 @@ namespace MyGame.PlanetaryBody
 
 			rangeToCalculateScreenSizeOn = realVisibleRange;
 
-			var z = a.Distance(b) / 5000.0f * -realVisibleRange.Normal.ToVector3();
+			var z = a.Distance(b) / 10.0f * -realVisibleRange.Normal.ToVector3();
+
+			var sinkDir = a.Distance(b) / 20.0f * -realVisibleRange.Normal.ToVector3();
+
+			a += sinkDir;
+			b += sinkDir;
+			c += sinkDir;
 
 			occluderTringles.Add(a);
 			occluderTringles.Add(z);
@@ -301,9 +307,18 @@ namespace MyGame.PlanetaryBody
 
 			if (visible)
 			{
-				if (this.GenerationBegan == false) Log.Warn("trying to show segment " + this + " that did not begin generation");
-				else if (this.IsGenerationDone == false) Log.Warn("trying to show segment " + this + " that did not finish generation");
-				else if (RendererSurface == null) Log.Warn("trying to show segment " + this + " that does not have renderer");
+				if (this.GenerationBegan == false)
+				{
+					//Log.Warn("trying to show segment " + this + " that did not begin generation");
+				}
+				else if (this.IsGenerationDone == false)
+				{
+					//Log.Warn("trying to show segment " + this + " that did not finish generation");
+				}
+				else if (RendererSurface == null)
+				{
+					//Log.Warn("trying to show segment " + this + " that does not have renderer");
+				}
 				else DoRender(true);
 				foreach (var child in Children)
 					child.SetVisible(false);

@@ -142,8 +142,8 @@ namespace MyEngine
 
 			stopwatchSinceStart.Restart();
 
-			renderManagerFront = new RenderManager();
-			renderManagerBack = new RenderManager();
+			renderManagerFront = new RenderManager(gameWindow.Width, gameWindow.Height);
+			renderManagerBack = new RenderManager(gameWindow.Width, gameWindow.Height);
 
 
 			/*Debug.CommonCVars.VSync().ToogledByKey(OpenTK.Input.Key.V).OnChanged += (cvar) =>

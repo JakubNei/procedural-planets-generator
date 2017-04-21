@@ -34,13 +34,13 @@ namespace MyEngine
 			Final2 = 5,
 		}
 
-		readonly int width;
-		readonly int height;
+		public readonly int Width;
+		public readonly int Height;
 
 		public DeferredGBuffer(int width, int height)
 		{
-			this.width = width;
-			this.height = height;
+			this.Width = width;
+			this.Height = height;
 
 			var texturesNum = System.Enum.GetValues(typeof(GBufferTextures)).Length + 2;
 			int[] textureHandles = new int[texturesNum];
@@ -184,8 +184,8 @@ namespace MyEngine
 		{
 			GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, frameBufferObjectHandle); MyGL.Check();
 
-			int qh = height / 4;
-			int qw = width / 4;
+			int qh = Height / 4;
+			int qw = Width / 4;
 
 			if (readFirstFinalTexture) DrawBufferToQuarterOfScreen(ReadBufferMode.ColorAttachment4, qw * 1, qh * 0);
 			else DrawBufferToQuarterOfScreen(ReadBufferMode.ColorAttachment5, qw * 1, qh * 0);
@@ -202,15 +202,15 @@ namespace MyEngine
 		{
 			GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, frameBufferObjectHandle); MyGL.Check();
 			GL.ReadBuffer(ReadBufferMode.ColorAttachment2); MyGL.Check();
-			GL.BlitFramebuffer(0, 0, width, height, 0, 0, width, height, ClearBufferMask.ColorBufferBit, BlitFramebufferFilter.Linear); MyGL.Check();
+			GL.BlitFramebuffer(0, 0, Width, Height, 0, 0, Width, Height, ClearBufferMask.ColorBufferBit, BlitFramebufferFilter.Linear); MyGL.Check();
 		}
 
 		void DrawBufferToQuarterOfScreen(ReadBufferMode buffer, int x, int y)
 		{
-			int qh = height / 4;
-			int qw = width / 4;
+			int qh = Height / 4;
+			int qw = Width / 4;
 			GL.ReadBuffer(buffer); MyGL.Check();
-			GL.BlitFramebuffer(0, 0, width, height, x, y, x + qw, y + qh, ClearBufferMask.ColorBufferBit, BlitFramebufferFilter.Linear); MyGL.Check();
+			GL.BlitFramebuffer(0, 0, Width, Height, x, y, x + qw, y + qh, ClearBufferMask.ColorBufferBit, BlitFramebufferFilter.Linear); MyGL.Check();
 		}
 
 		void DebugDrawTexture(Texture2D texture, float valueScale = 1, float valueOffset = 0)
@@ -227,7 +227,7 @@ namespace MyEngine
 			GL.Disable(EnableCap.Blend); MyGL.Check();
 
 			GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, 0); MyGL.Check();
-			GL.Viewport(0, 0, width, height); MyGL.Check();
+			GL.Viewport(0, 0, Width, Height); MyGL.Check();
 			//GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit);
 
 			debugDrawTextureShader.Uniforms.Set("debugDrawTexture", texture);

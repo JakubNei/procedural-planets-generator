@@ -3,8 +3,11 @@
 [include shaders/include.planet.glsl]
 
 uniform sampler2D param_perlinNoise;
+
+uniform sampler2D param_segmentNormalMap;
 uniform dvec3 param_offsetFromPlanetCenter;
 uniform vec3 param_remainderOffset;
+
 
 
 [VertexShader]
@@ -401,6 +404,11 @@ void getColor(vec2 uv, out vec3 color, out vec3 normal) {
 
 
 
+vec3 unpackTextureNormal(vec3 normal)
+{
+	return normalize(normal*2.0-1.0);
+}
+
 void main()
 {
 
@@ -421,8 +429,8 @@ void main()
 	//spherical.y += perlinNoise(pos.yxz / 10000) / 200;
 	vec3 normal = vec3(0,0,1);
 
-	normal = GetProceduralAndBaseHeightMapNormal(spherical, 0.000001);
-
+	normal = unpackTextureNormal(texture2D(param_segmentNormalMap, i.uv).rgb);
+	//normal = GetProceduralAndBaseHeightMapNormal(spherical, 0.0000001);
 
 	vec3 color;
 	vec3 normalColorFromTexture;
@@ -431,7 +439,7 @@ void main()
 	float defaultNormalWeight = smoothstep(NORMAL_MAPPING_DISTANCE * 0.9, NORMAL_MAPPING_DISTANCE, distToCamera);
 
 	if(defaultNormalWeight < 1) {
-		normalColorFromTexture = normalize(normalColorFromTexture.xyz*2.0-1.0);
+		normalColorFromTexture = unpackTextureNormal(normalColorFromTexture.rgb);
 		normal = normalize(mix(normalColorFromTexture, normal, 0.5));
 	}
 
@@ -467,6 +475,7 @@ void main()
 	//out_color = vec4(vec3(i.biomes1.r),1);
 	//out_color = vec4(vec3(i.biomes1.g),1);
 	//out_color = vec4(vec3(i.biomes2),1);
+	//out_color = vec4(texture2D(param_segmentNormalMap, i.uv).rgb,1);
 
 
 	// FOG		

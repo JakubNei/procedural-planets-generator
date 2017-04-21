@@ -1,4 +1,5 @@
 ﻿using Neitri;
+using Neitri.Logging;
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -115,89 +116,111 @@ namespace Neitri
 
 }
 
-public static class ILoggerExtensions
+public static class ILogExtensions
 {
-	public static void Trace<T>(this ILog Log, T value, [CallerMemberName] string caller = null)
+#if DEBUG
+	const bool debug = true;
+#else
+	const bool debug = false;
+#endif
+
+	static ILog logNothing = new LogNothing();
+
+	public static ILog IfDebug(this ILog log)
 	{
-		Log.Log(new LogEntry(
+		if (debug) return log;
+		return logNothing;
+	}
+
+
+	public static ILog IfNotDebug(this ILog log)
+	{
+		if (debug) return logNothing;
+		return log;
+	}
+
+
+	public static void Trace<T>(this ILog log, T value, [CallerMemberName] string caller = null)
+	{
+		log.Log(new LogEntry(
 			LogEntry.LogType.Trace,
 			value,
 			caller
 		));
 	}
 
-	public static void Debug<T>(this ILog Log, T value, [CallerMemberName] string caller = null)
+	public static void Debug<T>(this ILog log, T value, [CallerMemberName] string caller = null)
 	{
-		Log.Log(new LogEntry(
+		log.Log(new LogEntry(
 			LogEntry.LogType.Debug,
 			value,
 			caller
 		));
 	}
 
-	public static void Info<T>(this ILog Log, T value, [CallerMemberName] string caller = null)
+	public static void Info<T>(this ILog log, T value, [CallerMemberName] string caller = null)
 	{
-		Log.Log(new LogEntry(
+		log.Log(new LogEntry(
 			LogEntry.LogType.Info,
 			value,
 			caller
 		));
 	}
 
-	public static void Warn<T>(this ILog Log, T value, [CallerMemberName] string caller = null)
+	public static void Warn<T>(this ILog log, T value, [CallerMemberName] string caller = null)
 	{
-		Log.Log(new LogEntry(
+		log.Log(new LogEntry(
 			LogEntry.LogType.Warn,
 			value,
 			caller
 		));
 	}
 
-	public static void Error<T>(this ILog Log, T value, [CallerMemberName] string caller = null)
+	public static void Error<T>(this ILog log, T value, [CallerMemberName] string caller = null)
 	{
-		Log.Log(new LogEntry(
+		log.Log(new LogEntry(
 			LogEntry.LogType.Error,
 			value,
 			caller
 		));
 	}
 
-	public static void Fatal<T>(this ILog Log, T value, [CallerMemberName] string caller = null)
+	public static void Fatal<T>(this ILog log, T value, [CallerMemberName] string caller = null)
 	{
-		Log.Log(new LogEntry(
+		log.Log(new LogEntry(
 			LogEntry.LogType.Fatal,
 			value,
 			caller
 		));
 	}
 
-	public static void Exception(this ILog Log, Exception e)
+	public static void Exception(this ILog log, Exception e)
 	{
-		Log.Fatal(e);
+		log.Fatal(e);
 		var ae = e as AggregateException;
-		if (ae != null) foreach (var _e in ae.InnerExceptions) Log.Exception(_e);
+		if (ae != null) foreach (var _e in ae.InnerExceptions) log.Exception(_e);
 	}
 
-	public static LogScope Scope<T>(this ILog Log, T value)
+	public static LogScope Scope<T>(this ILog log, T value)
 	{
-		return new LogScope(Log, value.ToString());
+		return new LogScope(log, value.ToString());
 	}
 
-	public static LogScope ScopeStart<T>(this ILog Log, T value)
+	public static LogScope ScopeStart<T>(this ILog log, T value)
 	{
-		var scope = Scope<T>(Log, value);
+		var scope = Scope<T>(log, value);
 		scope.Start();
 		return scope;
 	}
 
-	public static LogScope Profile<T>(this ILog Log, T value)
+	public static LogScope Profile<T>(this ILog log, T value)
 	{
-		return new LogProfile(Log, value.ToString());
+		return new LogProfile(log, value.ToString());
 	}
 
-	public static LogScope ProfileStart<T>(this ILog Log, T value)
+	public static LogScope ProfileStart<T>(this ILog log, T value)
 	{
-		var scope = Profile<T>(Log, value);
+		var scope = Profile<T>(log, value);
 		scope.Start();
 		return scope;
 	}

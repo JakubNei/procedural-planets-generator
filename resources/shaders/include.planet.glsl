@@ -306,16 +306,16 @@ vec3 GetProceduralAndBaseHeightMapNormal(vec2 uv, float eps) {
 }
 */
 
-vec3 GetProceduralAndBaseHeightMapNormal(vec2 uv, float eps) {
+vec3 GetProceduralAndBaseHeightMapNormal(vec2 spherical, float eps) {
     vec3 normal;
-    double z = GetProceduralAndBaseHeightMapHeight(uv); 
+    double z = GetProceduralAndBaseHeightMapHeight(spherical); 
     normal.x = float(
-    	(GetProceduralAndBaseHeightMapHeight(vec2(uv.x+eps,uv.y)) - z)
-    	-(GetProceduralAndBaseHeightMapHeight(vec2(uv.x-eps,uv.y)) - z)
+    	(GetProceduralAndBaseHeightMapHeight(vec2(spherical.x+eps,spherical.y)) - z)
+    	-(GetProceduralAndBaseHeightMapHeight(vec2(spherical.x-eps,spherical.y)) - z)
     ) / 2;
     normal.y = float(
-    	(GetProceduralAndBaseHeightMapHeight(vec2(uv.x,uv.y+eps)) - z)
-    	-(GetProceduralAndBaseHeightMapHeight(vec2(uv.x,uv.y-eps)) - z)
+    	(GetProceduralAndBaseHeightMapHeight(vec2(spherical.x,spherical.y+eps)) - z)
+    	-(GetProceduralAndBaseHeightMapHeight(vec2(spherical.x,spherical.y-eps)) - z)
     ) / 2;
     normal.z = eps;
     return normalize(normal);

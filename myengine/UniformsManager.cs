@@ -32,25 +32,36 @@ namespace MyEngine
 		/// <param name="shader"></param>
 		public void UploadChangedUniforms(Shader shader)
 		{
-			if (uniformStructsChanged.Count > 0)
+			if (shader.Uniforms == this)
 			{
-				foreach (var name in uniformStructsChanged)
-				{
-					TryUploadStructType(shader, name, uniformStructsData[name]);
-				}
-				uniformStructsChanged.Clear();
-			}
 
-			int texturingUnit = 0;
-			foreach (var kvp in uniformTexturesData)
-			{
-				if (TryUploadStructType(shader, kvp.Key, texturingUnit))
+				if (uniformStructsChanged.Count > 0)
 				{
-					TryUploadTextureType(shader, kvp.Key, kvp.Value, texturingUnit);
-					texturingUnit++;
+					foreach (var name in uniformStructsChanged)
+					{
+						TryUploadStructType(shader, name, uniformStructsData[name]);
+					}
+					uniformStructsChanged.Clear();
 				}
+
+				int texturingUnit = 0;
+				foreach (var kvp in uniformTexturesData)
+				{
+					if (TryUploadStructType(shader, kvp.Key, texturingUnit))
+					{
+						TryUploadTextureType(shader, kvp.Key, kvp.Value, texturingUnit);
+						texturingUnit++;
+					}
+				}
+				if (uniformTexturesChanged.Count > 0) uniformTexturesChanged.Clear();
+
 			}
-			if (uniformTexturesChanged.Count > 0) uniformTexturesChanged.Clear();
+			else
+			{
+
+				this.SendAllUniformsTo(shader.Uniforms);
+
+			}
 		}
 
 

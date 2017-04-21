@@ -76,7 +76,7 @@ layout( binding=1 ) buffer buffer1 {
 layout( binding=2 ) buffer buffer2 {
     vec2_struct uvs[];
 };
-layout( local_size_x = 1, local_size_y = 1, local_size_z = 1 ) in;
+layout( local_size_x = 1 ) in;
  
 
 

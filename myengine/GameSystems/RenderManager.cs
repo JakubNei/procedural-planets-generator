@@ -20,7 +20,7 @@ namespace MyEngine
 
 		public RenderContext RenderContext { get; set; } = RenderContext.Geometry;
 
-		public DeferredGBuffer GBuffer { get; private set; }
+		DeferredGBuffer gBuffer;
 
 		public Cubemap SkyboxCubeMap { get; set; }
 		Shader FinalDrawShader => Factory.GetShader("internal/finalDraw.glsl");
@@ -41,12 +41,17 @@ namespace MyEngine
 
 		ParallerRunner paraller;
 
-		public RenderManager()
+		public RenderManager(int width, int height)
 		{
+			gBuffer = new DeferredGBuffer(width, height);
+
 			EventSystem.On<Events.WindowResized>(evt =>
 			{
-				if (GBuffer != null) GBuffer.Dispose();
-				GBuffer = new DeferredGBuffer(evt.NewPixelWidth, evt.NewPixelHeight);
+				if (gBuffer == null || evt.NewPixelWidth != gBuffer.Width || evt.NewPixelHeight != gBuffer.Height)
+				{
+					if (gBuffer != null) gBuffer.Dispose();
+					gBuffer = new DeferredGBuffer(evt.NewPixelWidth, evt.NewPixelHeight);
+				}
 			});
 
 			EnableRasterizerRasterization.OnChangedAndNow(c =>
@@ -160,7 +165,7 @@ namespace MyEngine
 					var renderable = toRenderTransparent[i];
 					renderable.Material.BeforeBindCallback();
 					renderable.Material.Uniforms.SendAllUniformsTo(renderable.Material.RenderShader.Uniforms);
-					GBuffer.BindForTransparentPass(renderable.Material.RenderShader);
+					gBuffer.BindForTransparentPass(renderable.Material.RenderShader);
 					renderable.Material.RenderShader.Bind();
 					renderable.UploadUBOandDraw(camera, ubo);
 				}
@@ -180,7 +185,7 @@ namespace MyEngine
 				GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, 0); MyGL.Check();
 				GL.Viewport(0, 0, camera.PixelWidth, camera.PixelHeight); MyGL.Check();
 
-				FinalDrawShader.Uniforms.Set("finalDrawTexture", GBuffer.FinalTextureToRead);
+				FinalDrawShader.Uniforms.Set("finalDrawTexture", gBuffer.FinalTextureToRead);
 				if (FinalDrawShader.Bind())
 				{
 					Factory.QuadMesh.Draw();
@@ -190,8 +195,8 @@ namespace MyEngine
 
 			if (DebugBounds) RenderDebugBounds(ubo, camera);
 
-			if (Debug.GetCVar("rendering / debug / draw normal buffer contents")) GBuffer.DebugDrawNormal();
-			if (Debug.GetCVar("rendering / debug / draw gbuffer contents")) GBuffer.DebugDrawContents();
+			if (Debug.GetCVar("rendering / debug / draw normal buffer contents")) gBuffer.DebugDrawNormal();
+			if (Debug.GetCVar("rendering / debug / draw gbuffer contents")) gBuffer.DebugDrawContents();
 			//if (drawShadowMapContents) DebugDrawTexture(shadowMap.depthMap, new Vector4(0.5f, 0.5f, 1, 1), new Vector4(0.5f,0.5f,0,1), 1, 0);
 
 			ErrorCode glError;
@@ -209,7 +214,7 @@ namespace MyEngine
 		{
 			// G BUFFER GRAB PASS
 			{
-				GBuffer.BindAllFrameBuffersForDrawing();
+				gBuffer.BindAllFrameBuffersForDrawing();
 
 				// SKYBOX PASS
 				if (Debug.GetCVar("rendering / debug / render white background"))
@@ -257,7 +262,7 @@ namespace MyEngine
 					// GL.MultiDrawElementsIndirect
 				}
 
-				GBuffer.Unbind();
+				gBuffer.Unbind();
 			}
 		}
 
@@ -319,7 +324,7 @@ namespace MyEngine
 						light.UploadUBOdata(camera, ubo, lightIndex);
 
 						var shader = Factory.GetShader("internal/deferred.oneLight.shader");
-						GBuffer.BindForLightPass(shader);
+						gBuffer.BindForLightPass(shader);
 
 						if (lightIndex == 0)
 						{
@@ -344,7 +349,7 @@ namespace MyEngine
 
 						}
 
-						GBuffer.Unbind();
+						gBuffer.Unbind();
 					}
 				}
 			}
@@ -365,12 +370,12 @@ namespace MyEngine
 				{
 					if (pe.IsEnabled == false) continue;
 					pe.BeforeBindCallBack();
-					GBuffer.BindForPostProcessEffects(pe);
+					gBuffer.BindForPostProcessEffects(pe);
 					pe.Shader.Bind();
 					Factory.QuadMesh.Draw();
 				}
 
-				GBuffer.Unbind();
+				gBuffer.Unbind();
 			}
 		}
 
@@ -618,7 +623,7 @@ namespace MyEngine
 					work(toRender[i]);
 				});
 
-				if (SortRenderables) 
+				if (SortRenderables)
 				{
 					// sort renderables so closest to camera are first
 					// could use paraller sort:  e.g.: https://gist.github.com/wieslawsoltes/6592526

@@ -28,10 +28,7 @@ namespace MyEngine
 		public TextureWrapMode WrapMode { get; set; } = TextureWrapMode.Repeat;
 
 
-		public virtual int GetNativeTextureID()
-		{
-			return 0;
-		}
+		public abstract int GetNativeTextureID();
 
 
 		protected TextureMinFilter GetTextureMinFilter()

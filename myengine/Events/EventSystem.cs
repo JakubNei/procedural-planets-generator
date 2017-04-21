@@ -49,6 +49,9 @@ namespace MyEngine.Events
 			catch(Exception e)
 			{
 				Log.Exception(e);
+				Log.Error("exception occured, press any key to continue ...");
+				System.Console.ReadKey();
+				//throw;
 			}
 		}
 

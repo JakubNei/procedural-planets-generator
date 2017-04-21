@@ -221,6 +221,7 @@ namespace MyGame.PlanetaryBody
 		void InitializePrepareLoop()
 		{
 			versionWatcher.Watch(GenerateSurface);
+			versionWatcher.Watch(GenerateSurfaceNormalMap);			
 			versionWatcher.Watch(GenerateBiomes);
 			versionWatcher.Watch(GenerateSea);
 			versionWatcher.Watch(config.biomesControlMap);

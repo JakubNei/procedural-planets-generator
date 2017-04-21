@@ -144,7 +144,7 @@ namespace MyEngine
 			using (var time = addTriangleStats.Start())
 			{
 				float maxz = max(v1.Z, v2.Z, v3.Z);
-				if (maxz < -1) return;
+				if (maxz < 0) return;
 
 				float minz = min(v1.Z, v2.Z, v3.Z);
 				if (minz > 1) return;
@@ -184,7 +184,7 @@ namespace MyEngine
 				if (minx < 0 && maxx < 0) return;
 				if (minx > width && maxx > width) return;
 				if (minx < 0) minx = 0;
-				if (maxx >= widthMinusOne) maxx = widthMinusOne;
+				if (maxx > widthMinusOne) maxx = widthMinusOne;
 
 				int miny = (min(Y1, Y2, Y3) + 0xF) >> 4;
 				int maxy = (max(Y1, Y2, Y3) + 0xF) >> 4;
@@ -192,7 +192,7 @@ namespace MyEngine
 				if (miny < 0 && maxy < 0) return;
 				if (miny > height && maxy > height) return;
 				if (miny < 0) miny = 0;
-				if (maxy >= heightMinusOne) maxy = heightMinusOne;
+				if (maxy > heightMinusOne) maxy = heightMinusOne;
 
 
 				int depthIndex = miny * width;
