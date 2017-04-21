@@ -70,7 +70,7 @@ namespace MyEngine
 
 			foreach (var r in builder.buildResults)
 			{
-				success &= AttachShader(r.shaderContents, r.shaderType, r.filePath);
+				success &= AttachShader(builder, r.shaderContents, r.shaderType, r.filePath);
 			}
 
 			FinalizeInit();
@@ -141,7 +141,7 @@ namespace MyEngine
 			return true;
 		}
 
-		bool AttachShader(string source, ShaderType type, string resource)
+		bool AttachShader(ShaderBuilder builder, string source, ShaderType type, string resource)
 		{
 			if (type == ShaderType.TessControlShader) HasTesselation = true;
 			//source = source.Replace(maxNumberOfLights_name, maxNumberOfLights.ToString());
@@ -157,6 +157,24 @@ namespace MyEngine
 			GL.GetShaderInfoLog(handle, out logInfo); MyGL.Check();
 			if (logInfo.Length > 0)
 			{
+				var lines = logInfo.Split('\n');
+				for (int i = 0; i < lines.Length; i++)
+				{
+					var line = lines[i];
+					if (line.Contains("(") && line.Contains(")"))
+					{
+						var fileIdAndLineNumber = line.TakeStringBefore(")");
+						var fileId = fileIdAndLineNumber.TakeStringBefore("(");
+						var lineNumber = fileIdAndLineNumber.TakeStringAfter("(");
+						var fileName = builder.includedFiles[int.Parse(fileId)];
+
+						line = line.Replace(fileIdAndLineNumber, fileName + "(" + lineNumber);
+
+						lines[i] = line;
+					}
+				}
+				logInfo = lines.Join('\n');
+
 				Log.Error($"Error occured during compilation of {type} from '{resource}'\n{logInfo}");
 				return false;
 			}

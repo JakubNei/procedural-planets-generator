@@ -4,11 +4,8 @@
 
 
 [include include.uniformBufferObjects.glsl]
-
 [include include.gBuffer.glsl]
-
 [include include.lightingModels.glsl]
-
 [include include.snoise.glsl]
 
 

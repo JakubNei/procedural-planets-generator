@@ -4,6 +4,7 @@ using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 
@@ -32,6 +33,7 @@ namespace MyEngine
 		{
 			string source = file.ReadAllText();
 
+			source = AddLineMarkers(source, file);
 			source = ReplaceIncludeDirectiveWithFileContents(source, file.Folder);
 
 			// the contents above first shader part (program) [VertexShader] are shared amongs all parts (prepended to all parts)
@@ -46,7 +48,6 @@ namespace MyEngine
 				}
 			}
 
-			int currentStartingLine = prependContents.Count('\n');
 
 			foreach (ShaderType type in Enum.GetValues(typeof(ShaderType)))
 			{
@@ -67,9 +68,7 @@ namespace MyEngine
 						endOfShaderPart - startOfShaderPart
 					);
 
-					AttachShader(prependContents + "\n#line " + currentStartingLine + "\n" + shaderPart, shaderType, file.VirtualPath);
-
-					currentStartingLine += shaderPart.Count('\n');
+					AttachShader(prependContents + shaderPart, shaderType, file.VirtualPath);
 
 					source = source.Substring(endOfShaderPart);
 				}
@@ -78,11 +77,53 @@ namespace MyEngine
 
 		HashSet<string> f = new HashSet<string>();
 
+		string AddLineMarkers(string text, FileExisting file)
+		{
+			if (!includedFiles.Contains(file))
+				includedFiles.Add(file);
+
+
+			var fileId = includedFiles.IndexOf(file);
+
+
+			var lines = text.Split('\n').ToList();
+
+			int macrosInserted = 0;
+
+			lines.Insert(1, "#line " + 2 + " " + fileId);
+			macrosInserted++;
+			
+			for (int i = 0; i < lines.Count; i++)
+			{
+				var line = lines[i];
+				if (ShouldMarkLine(line))
+				{
+					lines.Insert(i + 1, "#line " + (i + 2 - macrosInserted) + " " + fileId);
+					macrosInserted++;
+				}
+			}
+
+			return lines.Join("\n");
+		}
+
+		bool ShouldMarkLine(string line)
+		{
+			if (line.Contains("[include")) return true;
+
+			foreach (ShaderType type in System.Enum.GetValues(typeof(ShaderType)))
+			{
+				string tag = "[" + type.ToString() + "]";
+				if (line.Contains(tag)) return true;
+			}
+
+			return false;
+		}
+
 		string GetIncludeFileContents(string virtualPath, FolderExisting folder)
 		{
 			var file = FileSystem.FindFile(virtualPath, folder);
-			includedFiles.Add(file);
-			string source = file.ReadAllText();
+			var source = file.ReadAllText();
+			source = AddLineMarkers(source, file);
 			source = ReplaceIncludeDirectiveWithFileContents(source, FileSystem.GetFolder(file));
 			return source;
 		}
