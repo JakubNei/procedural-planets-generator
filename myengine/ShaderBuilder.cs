@@ -13,12 +13,13 @@ namespace MyEngine
 	{
 		string prependSource;
 
-		
+		public List<FileExisting> includedFiles = new List<FileExisting>();
+
 		readonly FileSystem FileSystem;
 
 		public ShaderBuilder(FileSystem fileSystem)
 		{
-            FileSystem = fileSystem;
+			FileSystem = fileSystem;
 		}
 
 		void Prepend(FileExisting name)
@@ -38,11 +39,11 @@ namespace MyEngine
 			{
 				ShaderType shaderType = ShaderType.VertexShader;
 				int startOfTag = GetClosestShaderTypeTagPosition(source, 0, ref shaderType);
-                if (startOfTag > 0)
-                {
-                    prependContents += source.Substring(0, startOfTag - 1);
-                    source = source.Substring(startOfTag);
-                }
+				if (startOfTag > 0)
+				{
+					prependContents += source.Substring(0, startOfTag - 1);
+					source = source.Substring(startOfTag);
+				}
 			}
 
 			int currentStartingLine = prependContents.Count('\n');
@@ -80,11 +81,9 @@ namespace MyEngine
 		string GetIncludeFileContents(string virtualPath, FolderExisting folder)
 		{
 			var file = FileSystem.FindFile(virtualPath, folder);
-
+			includedFiles.Add(file);
 			string source = file.ReadAllText();
-
 			source = ReplaceIncludeDirectiveWithFileContents(source, FileSystem.GetFolder(file));
-
 			return source;
 		}
 

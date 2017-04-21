@@ -12,6 +12,7 @@ vec3 worleyNoise_dist(vec3 x, vec3 y, vec3 z,  bool manhattanDistance) {
   return manhattanDistance ?  abs(x) + abs(y) + abs(z) :  (x * x + y * y + z * z);
 }
 
+
 vec2 worleyNoise(vec3 P, float jitter, bool manhattanDistance) {
 	float K = 0.142857142857; // 1/7
 	float Ko = 0.428571428571; // 1/2-K/2
@@ -155,6 +156,10 @@ vec2 worleyNoise(vec3 P, float jitter, bool manhattanDistance) {
 	d11.y = min(d11.y,d11.z); // Done! (Phew!)
 	return sqrt(d11.xy); // F1, F2
 
+}
+
+vec2 worleyNoise(vec3 p) {
+	return worleyNoise(p, 1.0, false);
 }
 
 // WORLEY NOISE

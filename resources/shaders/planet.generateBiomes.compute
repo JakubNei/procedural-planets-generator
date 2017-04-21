@@ -124,14 +124,11 @@ void main() {
 
 	//altFromSea /= (param_baseHeightMapMultiplier + param_noiseMultiplier);
 	//if(altFromBottomOfSea < 0.5) { color=vec3(0,0,1); return; }
-	float altFromSea = altFromBottomOfSea - 0.5;
+	float altFromSea = altFromBottomOfSea-0.5;
 
 	// 1 at meridian.. 0 at poles
 	float distanceFromPoles = 1 - abs(uv.y - 0.5) * 2;
-	float temperature = (1 - altFromSea) * distanceFromPoles;
-
-	// 1 = supet steep, 0 = flat
-	float steepness = 1 - clamp(dot(normal, dirFromPlanet), 0, 1); 
+	float temperature = (1 - abs(altFromSea)) * distanceFromPoles;
 
 	vec3 biome = texture2D(param_biomesControlMap, vec2(temperature, humidity)).rgb;
 
@@ -149,9 +146,13 @@ void main() {
     TRY_BIOME(2,b)
     TRY_BIOME(2,a)
 
+	// 1 = super steep, 0 = flat
+	float steepness = 1-clamp(dot(normal, dirFromPlanet), 0, 1); 	
+	biomes1.y += smoothstep(0.29, 0.3, steepness) * 10;
 
-    biomes1 = clamp(biomes1, 0, 1);
-    biomes2 = clamp(biomes2, 0, 1);
+
+    //biomes1 = clamp(biomes1, 0, 1);
+    //biomes2 = clamp(biomes2, 0, 1);
 
 	float sum = 
 		biomes1.x + biomes1.y + biomes1.z + biomes1.w +

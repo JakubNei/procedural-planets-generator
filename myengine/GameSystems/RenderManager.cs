@@ -619,7 +619,7 @@ namespace MyEngine
 					work(toRender[i]);
 				});
 
-				if (SortRenderables)
+				if (SortRenderables) 
 				{
 					// sort renderables so closest to camera are first
 					// could use paraller sort:  e.g.: https://gist.github.com/wieslawsoltes/6592526

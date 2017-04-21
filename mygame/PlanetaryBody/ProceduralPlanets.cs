@@ -74,6 +74,7 @@ namespace MyGame
 			var biomesAtlas = new BiomesAtlas();
 
 			biomesAtlas.AddBiome(Color.FromArgb(0, 0, 255), "planet/biomes/water"); // blue, 0,0,1
+			biomesAtlas.AddBiome(Color.FromArgb(200, 200, 200), "planet/biomes/rock");
 			biomesAtlas.AddBiome(Color.FromArgb(128, 128, 128), "planet/biomes/tundra"); // grey,  0.5,0.5,0.5
 			biomesAtlas.AddBiome(Color.FromArgb(255, 255, 255), "planet/biomes/snow"); // white, 1,1,1
 			biomesAtlas.AddBiome(Color.FromArgb(64, 128, 64), "planet/biomes/tundra2"); // green-vomit,  0.25,0.5,0.25
@@ -123,11 +124,10 @@ namespace MyGame
 				cfg.chunkNumberOfVerticesOnEdge = Debug.GetCVar("generation / segment number of vertices on edge", 50);
 				cfg.weightNeededToSubdivide = Debug.GetCVar("generation / segment subdivide if weight is bigger than", 0.2f);
 				cfg.stopSegmentRecursionAtWorldSize = Debug.GetCVar("generation / segment stop recursion at world size", 100);
-
-				cfg.radiusMin = 100000;//100000; // 6371000m is earth radius
+				cfg.radiusMin = 637100;//100000; // 6371000 m is earth radius
 				cfg.baseHeightMap = Factory.GetTexture2D("planet/data/earth/height_map.*");
-				cfg.baseHeightMapMultiplier = 1000; // 20000m is highest earth point
-				cfg.noiseMultiplier = 1000;
+				cfg.baseHeightMapMultiplier = 0; // -10000 m to + 20000 m is earth altidute
+				cfg.noiseMultiplier = 9000;
 				cfg.biomesControlMap = new Texture2D(FileSystem.FindExistingFile("planet/data/earth/biomes_control_map.*"))
 				{ FilterMode = FilterMode.Point, WrapMode = MyEngine.TextureWrapMode.Clamp, UseMipMaps = false };
 				cfg.AddBiomes(biomesAtlas);

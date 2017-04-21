@@ -22,10 +22,10 @@ namespace MyEngine.Components
 		public float FarClipPlane { get { return currentData.FarClipPlane; } set {currentData.FarClipPlane = value; } }
 		public bool IsOrthographic { get { return currentData.IsOrthographic; } set {currentData.IsOrthographic = value; } }
 		public float OrthographicSize { get { return currentData.OrthographicSize; } set {currentData.OrthographicSize = value; } }
+		public Vector3 AmbientColor { get { return currentData.AmbientColor; } set { currentData.AmbientColor = value; } }
 		public int PixelWidth { get { return currentData.PixelWidth; } private set { currentData.PixelWidth = value; } }
 		public int PixelHeight { get { return currentData.PixelHeight; } private set { currentData.PixelHeight = value; } }
 		public Vector2 ScreenSize { get { return currentData.ScreenSize; } private set { currentData.ScreenSize = value; } }
-		public Vector3 AmbientColor { get { return currentData.AmbientColor; } private set { currentData.AmbientColor = value; } }
 
 
 		public WorldPos ViewPointPosition => this.Entity.Transform.Position;

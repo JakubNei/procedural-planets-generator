@@ -43,6 +43,7 @@ namespace MyGame
 					var cam = scene.MainCamera = entity.AddComponent<Camera>();
 					cam.NearClipPlane = 0.5f;
 					cam.FarClipPlane = 5000000;
+					cam.AmbientColor = Vector3.One * 0.01f;
 
 					// post process effects
 					{
@@ -106,7 +107,7 @@ namespace MyGame
 				{
 					var entity = scene.AddEntity("scene directional light");
 					var light = entity.AddComponent<Light>();
-					light.LighType = LightType.Point;
+					light.LighType = LightType.Directional;
 					light.Color = Vector3.One * 1f;
 					light.Shadows = LightShadows.None;
 

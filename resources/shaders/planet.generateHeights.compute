@@ -139,7 +139,7 @@ void main() {
 
 
 	// passing data so we can easily generate biomes in other computer shader
-	biomes1.x = float(generatedHeight / param_baseHeightMapMultiplier);
+	biomes1.x = float(generatedHeight / (param_baseHeightMapMultiplier + param_noiseMultiplier));
 	biomes1.y = GetHumidity(uv);
 
 	// DEBUG

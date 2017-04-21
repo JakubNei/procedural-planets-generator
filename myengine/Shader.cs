@@ -47,8 +47,6 @@ namespace MyEngine
 
 		FileExisting file;
 
-		FileChangedWatcher fileWatcher = new FileChangedWatcher();
-
 		static int lastBindedShaderHandle;
 
 		public Shader(FileExisting file)
@@ -93,16 +91,18 @@ namespace MyEngine
 				return;
 			}
 
-			fileWatcher.WatchFile(file.RealPath, (string newFilePath) =>
-			{
-				VersionInFile++;
-				fileWatcher.StopAllWatchers();
-				ShouldReload = true;
-			});
+			file.OnFileChanged(NotifyFileChanged);
+			builder.includedFiles.ForEach(f => f.OnFileChanged(NotifyFileChanged));
 
 			Uniforms.MarkAllUniformsAsChanged();
 			cachedUniformLocations.Clear();
 
+		}
+
+		private void NotifyFileChanged()
+		{
+			VersionInFile++;
+			ShouldReload = true;
 		}
 
 		public void EnsureIsOnGpu()

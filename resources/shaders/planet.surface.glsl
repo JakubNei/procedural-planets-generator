@@ -457,8 +457,7 @@ void main()
 	//uv.y += perlinNoise(pos.yxz / 10000) / 200;
 	vec3 normal = vec3(0,0,1);
 
-	float samplingTheta = clamp(distToCamera, 100, 100000) / 1000000;
-	//normal = GetProceduralAndBaseHeightMapNormal(i.uv, 0.00001);
+	normal = GetProceduralAndBaseHeightMapNormal(i.uv, 0.00001);
 
 
 	vec3 color;
@@ -504,6 +503,12 @@ void main()
 	//out_color = vec4(vec3(i.biomes1.r),1);
 	//out_color = vec4(vec3(i.biomes1.g),1);
 	//out_color = vec4(vec3(i.biomes2),1);
+
+
+	// FOG		
+	//float z=distance(i.worldPos.xz, EyePosition.xz)/fogDistance;
+	//float fogFactor = smoothstep(1.0-fogPower,1.0,z);
+	//color = mix(color, vec4(color.rgb,0), fogFactor);
 
 }
 

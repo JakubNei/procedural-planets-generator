@@ -219,7 +219,7 @@ namespace MyGame.PlanetaryBody
 
 			//weight *= (1 + MyMath.Clamp01(dotToCamera));
 
-			//if (isVisible == false) weight *= 0.3f;
+			if (isVisible == false) weight *= 0.3f;
 			return weight;
 		}
 

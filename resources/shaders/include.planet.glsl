@@ -18,6 +18,7 @@ uniform sampler2D 	param_biome1r_diffuseMap;
 uniform sampler2D 	param_biome1r_normalMap;
 uniform vec3 		param_biome1r_color;
 
+// rock
 uniform sampler2D 	param_biome1g_diffuseMap;
 uniform sampler2D 	param_biome1g_normalMap;
 uniform vec3 		param_biome1g_color;
@@ -107,36 +108,102 @@ vec3 sphericalToCalestial(vec2 c /*spherical*/)
 
 
 
+// https://gamedev.stackexchange.com/questions/116205/terracing-mountain-features
+float terrace(float h, float bandHeight) {
+    float W = bandHeight; // width of terracing bands
+    float k = floor(h / W);
+    float f = (h - k*W) / W;
+    float s = min(2 * f, 1.0);
+    return (k+s) * W;
+}
 
 
-
+float perlinNoise(vec3 pos, int octaves, float modifier)
+{
+	float result = 0;
+	float amp = 1;
+	for (int i = 0; i < octaves; i++)
+	{
+		result += perlinNoise(pos) * amp;
+		pos *= modifier;
+		amp /= modifier;
+	}
+	return result;
+}
 
 
 // vec2 worley(vec3 P, float jitter, bool manhattanDistance)
 // float perlinNoise(vec3 p)
 
-float GetProceduralHeight(vec3 dirFromPlanetCenter)
+float GetProceduralHeight(vec3 dir)
 {
 	float result = 0;
-	
-	{ // base noise
-		float freq = 10;
-		vec3 pos = dirFromPlanetCenter * freq;
-		int octaves = 10;
-		float ampModifier = 0.15;
-		float freqModifier = 5;
+
+	vec2 w;
+	float x;
+
+	/*
+	{ // terraces
+		vec3 pos = dir * 10;
+		int octaves = 2;
+		float freqModifier = 3;
+		float ampModifier = 1/freqModifier;
 		float amp = 1;
 		for (int i = 0; i < octaves; i++)
 		{
-			result += perlinNoise(pos) * amp;
+			float p = perlinNoise(pos, 4, 10);
+			result += terrace(p, 0.5) * amp;
 			pos *= freqModifier;
 			amp *= ampModifier;
 		}
 	}
+	*/
+	// small noise
+
 	
+
+	{ //big detail
+		//continents
+		result += abs(perlinNoise(dir*0.5, 5, 4));
+		w = worleyNoise(dir*2);
+		result += (w.x - w.y) * 2;
+		//oceans
+		result -= abs(perlinNoise(dir*2.2, 4, 4));
+		//big rivers
+		x = perlinNoise(dir * 3, 3, 2);
+ 		result += -exp(-pow(x*55,2)) * 0.2;
+ 		//craters
+		w = worleyNoise(dir);
+		result += smoothstep(0.0, 0.1, w.x);
+	}
+	
+
+	{ //small detail
+		float p = perlinNoise(dir*10, 5, 10) * 100;
+		result += terrace(p, 0.1)*0.01;
+		result += p*0.001;
+		//small rivers
+		float x = perlinNoise(dir * 3);
+ 		//result += -exp(-pow(x*55,2)); 
+	}
+
+
+	{
+		float p = perlinNoise(dir*10, 5, 10);
+		//result += terrace(p, 0.15)*10;
+		//result += p * 0.1;
+	}
+
+	{
+		//float p = perlinNoise(dir*10, 5, 10);
+		//result += terrace(p, 0.1)/1;
+	}
+
+
+
 	/*
 	{ // hill tops
-		float p = perlinNoise(dirFromPlanetCenter * 10);
+		float p = perlinNoise(dir * 10);
 		if(p > 0) result -= p * 2;
 	}
 	*/
@@ -144,7 +211,7 @@ float GetProceduralHeight(vec3 dirFromPlanetCenter)
 	/*
 	{ // craters
 
-		vec2 w = worleyNoise(dirFromPlanetCenter*10, 1, false);
+		vec2 w = worleyNoise(dir*10, 1, false);
 		result += smoothstep(0.0, 0.4, w.x) * 100;
 	}
 	*/
@@ -177,7 +244,7 @@ double GetProceduralAndBaseHeightMapHeight(dvec3 direction, vec2 uv)
 
 	if(param_baseHeightMapMultiplier > 0) {
 		double h = texture2D(param_baseHeightMap, uv).r;
-		height += param_baseHeightMapMultiplier * h * (0.5 + 0.5 * HideTextureSamplingNoise(vec3(direction))); 
+		height += param_baseHeightMapMultiplier * h;// * (0.7 + 0.3 * HideTextureSamplingNoise(vec3(direction))); 
 	}
 	if(param_noiseMultiplier > 0)			
 		height += param_noiseMultiplier * GetProceduralHeight(vec3(direction * param_radiusMin / 1000000));
@@ -193,7 +260,7 @@ double GetProceduralAndBaseHeightMapHeight(vec2 uv)
 }
 double GetProceduralAndBaseHeightMapHeight01(vec2 uv)
 {
-	return GetProceduralAndBaseHeightMapHeight(uv) / param_baseHeightMapMultiplier;
+	return GetProceduralAndBaseHeightMapHeight(uv) / (param_baseHeightMapMultiplier + param_noiseMultiplier);
 }
 
 float GetHumidity(vec2 uvCenter)

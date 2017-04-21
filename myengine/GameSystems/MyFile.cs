@@ -80,6 +80,7 @@ namespace MyEngine
 			}
 			throw new NotSupportedException();
 		}
+		HashSet<Action> alredyWatching = new HashSet<Action>();
 
 		public void OnFileChanged(Action action)
 		{
@@ -88,7 +89,11 @@ namespace MyEngine
 				fileWatcher = new FileChangedWatcher();
 				fileWatcher.WatchFile(RealPath, (newFileName) => onFileChanged.Raise());
 			}
-			onFileChanged += action;
+			if (alredyWatching.Contains(action) == false)
+			{
+				alredyWatching.Add(action);
+				onFileChanged += action;
+			}
 		}
 
 		public override string ToString()
