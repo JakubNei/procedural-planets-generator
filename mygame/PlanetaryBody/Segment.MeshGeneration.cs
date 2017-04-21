@@ -61,21 +61,21 @@ namespace MyGame.PlanetaryBody
 
 			Bounds bounds;
 			{
-				var o = offsetCenter.ToVector3();
+				var o = offsetCenter;
 				var c = 0;
-				var n = NoElevationRange.Normal.ToVector3();
+				var n = NoElevationRange.Normal;
 
-				bounds = new Bounds(NoElevationRange.CenterPos.ToVector3() - o);
+				bounds = new Bounds((NoElevationRange.CenterPos - o).ToVector3());
 
-				bounds.Encapsulate(NoElevationRange.a.ToVector3() + n * c - o);
-				bounds.Encapsulate(NoElevationRange.b.ToVector3() + n * c - o);
-				bounds.Encapsulate(NoElevationRange.c.ToVector3() + n * c - o);
-				bounds.Encapsulate(NoElevationRange.CenterPos.ToVector3() + n * c - o);
+				bounds.Encapsulate((NoElevationRange.a + n * c - o).ToVector3());
+				bounds.Encapsulate((NoElevationRange.b + n * c - o).ToVector3());
+				bounds.Encapsulate((NoElevationRange.c + n * c - o).ToVector3());
+				bounds.Encapsulate((NoElevationRange.CenterPos + n * c - o).ToVector3());
 
-				bounds.Encapsulate(NoElevationRange.a.ToVector3() - n * c - o);
-				bounds.Encapsulate(NoElevationRange.b.ToVector3() - n * c - o);
-				bounds.Encapsulate(NoElevationRange.c.ToVector3() - n * c - o);
-				bounds.Encapsulate(NoElevationRange.CenterPos.ToVector3() - n * c - o);
+				bounds.Encapsulate((NoElevationRange.a - n * c - o).ToVector3());
+				bounds.Encapsulate((NoElevationRange.b - n * c - o).ToVector3());
+				bounds.Encapsulate((NoElevationRange.c - n * c - o).ToVector3());
+				bounds.Encapsulate((NoElevationRange.CenterPos - n * c - o).ToVector3());
 			}
 
 

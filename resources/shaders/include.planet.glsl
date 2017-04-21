@@ -228,12 +228,28 @@ float GetHumidity(vec2 uvCenter)
 
 }
 
-
+/*
 vec3 GetProceduralAndBaseHeightMapNormal(vec2 uv, float eps) {
     vec3 normal;
     double z = GetProceduralAndBaseHeightMapHeight(uv); 
     normal.x = float(GetProceduralAndBaseHeightMapHeight(vec2(uv.x+eps,uv.y)) - z);
     normal.y = float(GetProceduralAndBaseHeightMapHeight(vec2(uv.x,uv.y+eps)) - z);
+    normal.z = eps;
+    return normalize(normal);
+}
+*/
+
+vec3 GetProceduralAndBaseHeightMapNormal(vec2 uv, float eps) {
+    vec3 normal;
+    double z = GetProceduralAndBaseHeightMapHeight(uv); 
+    normal.x = float(
+    	(GetProceduralAndBaseHeightMapHeight(vec2(uv.x+eps,uv.y)) - z)
+    	-(GetProceduralAndBaseHeightMapHeight(vec2(uv.x-eps,uv.y)) - z)
+    ) / 2;
+    normal.y = float(
+    	(GetProceduralAndBaseHeightMapHeight(vec2(uv.x,uv.y+eps)) - z)
+    	-(GetProceduralAndBaseHeightMapHeight(vec2(uv.x,uv.y-eps)) - z)
+    ) / 2;
     normal.z = eps;
     return normalize(normal);
 }

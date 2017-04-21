@@ -108,11 +108,20 @@ namespace MyEngine.Components
 			return Mesh != null && Material != null && Material.DepthGrabShader != null && base.ShouldRenderInContext(camera, renderContext);
 		}
 
+		Matrix4 cachedGetModelViewProjectionMatrix;
+		CameraData cachedInputGetModelViewProjectionMatrix;
+
 		public Matrix4 GetModelViewProjectionMatrix(CameraData camera)
 		{
+			if (camera == cachedInputGetModelViewProjectionMatrix) return cachedGetModelViewProjectionMatrix;
+
 			var modelMatrix = this.Entity.Transform.GetLocalToWorldMatrix(camera.ViewPointPosition - Offset);
 			var modelViewMatrix = modelMatrix * camera.GetRotationMatrix();
 			var modelViewProjectionMatrix = modelViewMatrix * camera.GetProjectionMatrix();
+
+			cachedInputGetModelViewProjectionMatrix = camera;
+			cachedGetModelViewProjectionMatrix = modelViewProjectionMatrix;
+
 			return modelViewProjectionMatrix;
 		}
 
@@ -169,6 +178,29 @@ namespace MyEngine.Components
 		public override string ToString()
 		{
 			return Entity?.Name + " -> " + Mesh?.Name;
+		}
+
+		public override float GetCameraSortDistance(CameraData camera)
+		{
+			if (Mesh != null)
+			{
+				float depthFurthest = float.MinValue;
+				float depthClosest = float.MaxValue;
+
+				var mvp = GetModelViewProjectionMatrix(camera);
+
+				for (int i = 0; i < 8; i++)
+				{
+					var meshSpaceBoundsVertex = Mesh.Bounds.Center + Mesh.Bounds.Extents.CompomentWiseMult(extentsTransformsToEdges[i]);
+					var cameraSpaceBoundVertex = meshSpaceBoundsVertex.Multiply(ref mvp);
+
+					depthFurthest = Math.Max(depthFurthest, cameraSpaceBoundVertex.Z);
+					depthClosest = Math.Min(depthClosest, cameraSpaceBoundVertex.Z);
+				}
+
+				return (depthFurthest + depthClosest) / 2;
+			}
+			return 0;
 		}
 	}
 }

@@ -40,7 +40,7 @@ namespace MyEngine
 		{
 			foreach (var s in allShaders)
 			{
-				s.Value.shouldReload = true;
+				s.Value.ShouldReload = true;
 			}
 		}
 

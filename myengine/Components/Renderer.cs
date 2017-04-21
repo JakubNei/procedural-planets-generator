@@ -46,6 +46,7 @@ namespace MyEngine.Components
 
 		bool ShouldRenderInContext(Camera camera, RenderContext renderContext);
 		void SetCameraRenderStatusFeedback(Camera camera, RenderStatus renderStatus);
+		float GetCameraSortDistance(CameraData camera);
 
 		void UploadUBOandDraw(CameraData camera, UniformBlock ubo);
 
@@ -176,5 +177,6 @@ namespace MyEngine.Components
 		public abstract IEnumerable<Vector3> GetCameraSpaceOccluderTriangles(CameraData camera);
 		public abstract CameraSpaceBounds GetCameraSpaceBounds(CameraData camera);
 
+		public abstract float GetCameraSortDistance(CameraData camera);
 	}
 }

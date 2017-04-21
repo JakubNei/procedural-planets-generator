@@ -94,7 +94,7 @@ namespace MyGame.PlanetaryBody
 			{
 				segment.RendererSurface.Mesh.RecalculateBounds();
 				segment.CalculateRealVisibleRange();
-			}, "vypočet obalového kvádru trojúhelníkových sítě povrchu a moře");
+			}, "vypočet obalového kvádru trojúhelníkových sítě povrchu");
 
 			jobTemplate.AddTask(WhereToRun.GPUThread, segment =>
 			{
@@ -218,6 +218,18 @@ namespace MyGame.PlanetaryBody
 			{
 				CalculateNormalsAndRangentsOnGPU(segment.RendererSea.Mesh);
 			}, "výpočet normál a tangent moře na grafické kartě");
+
+
+			jobTemplate.AddTask(WhereToRun.GPUThread, segment =>
+			{
+				segment.RendererSea.Mesh.Vertices.DownloadDataFromGPU();
+			}, "stáhnutí trojúhelníkové sítě moře z grafické karty do hlavní paměti počítače");
+
+			jobTemplate.AddTask(segment =>
+			{
+				segment.RendererSea.Mesh.RecalculateBounds();
+			}, "vypočet obalového kvádru trojúhelníkových sítě moře");
+
 
 			ulong chunksGenerated = 0;
 			jobTemplate.AddTask(segment =>

@@ -190,10 +190,13 @@ namespace MyGame
 
 			var camPos = Cam.Transform.Position;
 
+			if (Debug.GetCVar("generation / debug / regenerate all planets").EatBoolIfTrue())
+				foreach (var p in planets)
+					p.MarkForRegeneration();
+
+
 			foreach (var p in planets)
-			{
 				p.TrySubdivideOver(camPos);
-			}
 
 			if (runPlanetLogicInOwnThread) canRunNextLogicUpdate.Reset();
 		}

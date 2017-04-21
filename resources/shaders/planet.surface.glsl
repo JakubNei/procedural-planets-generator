@@ -455,10 +455,10 @@ void main()
 
 	//uv.x += perlinNoise(pos / 10000) / 200;
 	//uv.y += perlinNoise(pos.yxz / 10000) / 200;
-	vec3 normal;
+	vec3 normal = vec3(0,0,1);
 
 	float samplingTheta = clamp(distToCamera, 100, 100000) / 1000000;
-	normal = GetProceduralAndBaseHeightMapNormal(i.uv, 0.00001);
+	//normal = GetProceduralAndBaseHeightMapNormal(i.uv, 0.00001);
 
 
 	vec3 color;
@@ -473,11 +473,15 @@ void main()
 	}
 
 	{
+		//normal.xy *= 10;
+		normal = normalize(normal);
+
 		vec3 N = i.normal;
 		vec3 T = i.tangent;
 		vec3 T2 = T - N * dot(N, T); // Gram-Schmidt orthogonalization of T
 		vec3 B = normalize(cross(N,T2));
 		mat3 normalMatrix = mat3(T,B,N); // column0, column1, column2
+
 		out_normal = normalMatrix * normal;
 	}
 

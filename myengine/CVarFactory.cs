@@ -103,13 +103,13 @@ namespace MyEngine
 					{
 						cvar.ValueType = CvarValueType.NotSet;
 					}
-					else if (bool.TryParse(value, out typedBoolValue))
-					{
-						cvar.Bool = typedBoolValue;
-					}
 					else if (float.TryParse(value, out typedFloatValue))
 					{
 						cvar.Number = typedFloatValue;
+					}
+					else if (bool.TryParse(value, out typedBoolValue))
+					{
+						cvar.Bool = typedBoolValue;
 					}
 
 					if (dataParts.Length > 2)

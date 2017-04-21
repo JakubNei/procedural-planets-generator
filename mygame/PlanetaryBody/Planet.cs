@@ -238,6 +238,15 @@ namespace MyGame.PlanetaryBody
 		}
 
 
+		public void MarkForRegeneration()
+		{
+			GenerateBiomes.ShouldReload = true;
+			GenerateSea.ShouldReload = true;
+			GenerateSurface.ShouldReload = true;
+
+			foreach (var s in rootSegments)
+				s.MarkForRegeneration();
+		}
 
 	}
 }

@@ -227,8 +227,8 @@ namespace MyGame.PlanetaryBody
 
 			versionWatcher.OnAnyVersionChanged += () =>
 			{
-				foreach (var rootSegment in this.rootSegments)
-					Segment.MarkForRegeneration(rootSegment);
+				foreach (var s in this.rootSegments)
+					s.MarkForRegeneration();
 			};
 		}
 

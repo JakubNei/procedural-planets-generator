@@ -210,7 +210,7 @@ layout(location = 0) out vec4 out_color;
 
 vec3 getSeaColor(float height, vec3 normal, vec3 dirToLight, vec3 dirToCamera) {  
     
-	normal = normal.xzy;
+	//normal = normal.xzy;
 
     vec3 color = vec3(0);
     
@@ -247,11 +247,15 @@ vec3 normalMap(vec3 normal) {
 void main()
 {
 
-	const float startAtCameraDist = 5000;
+	const float startAtCameraDist = 10000;
 
-	const vec3 defaultColor = vec3(0.18,0.56,0.8);
+	const vec3 defaultColor = vec3(28,50,57)/255; //vec3(0.18,0.56,0.8);
 
-	vec3 color = defaultColor;	
+
+    vec3 dirToCamera = normalize(vec3(0) - i.worldPos);
+    vec3 dirToLight = normalize(vec3(0,1,0) -  i.worldPos);
+    vec3 color = getSeaColor(0, i.normal, dirToLight, dirToCamera);
+
 
 	float dist = length(i.worldPos);
 
@@ -259,28 +263,40 @@ void main()
 
 		vec2 uv = getSeaUv(i.uv);
 		float height = map(uv);
-		vec3 normal = getNormal(uv, 100 * EPSILON_NRM);
+		vec3 normalTangentSpace = getNormal(uv, 100 * EPSILON_NRM);
 
 		//DEBUG
 		//normal = vec3(0,0,1);
 
-		normal = normalMap(normal);
+		vec3 normalWorldSpace = normalMap(normalTangentSpace);
 
-		vec3 dirToCamera = normalize(vec3(0) - i.worldPos);
-		vec3 dirToLight = normalize(vec3(0,1,0) -  i.worldPos);
-		color = getSeaColor(height, normal, dirToLight, dirToCamera);
+		vec3 realColor = getSeaColor(height, normalWorldSpace, dirToLight, dirToCamera);
 
-		color = mix(defaultColor, color, smoothstep(startAtCameraDist, startAtCameraDist/2, dist));
+		color = mix(color, realColor, smoothstep(startAtCameraDist, startAtCameraDist/2, dist));
 
 		//DEBUG
 		//color = vec3(height);
 		//color = normal;
 	}
 
+    // dustance to surface sea bed from water surface
+    float distanceToSurface = GBufferDistanceOfCurrentFragmentToDepthBuffer();;
+
+    float alpha = 0.2 + 0.8 * smoothstep(distanceToSurface, 0, 10);
+
+    //d = float(linearDepth(gl_FragCoord.z) > 10000);
+    //d = float(linearDepth(GBufferGetDepth(GBufferGetScreenCoord())) > 10000);
+
 
 	color = pow(color,vec3(engine.gammaCorrectionTextureRead));
-	vec4 color4 = vec4(color, 1);
+	vec4 color4 = vec4(color, alpha);
 	out_color = color4;
+
+    //DEBUG
+    //out_color = vec4(vec3(GBufferGetDepth(gl_FragCoord.yx/engine.screenSize)),1);
+    //out_color = vec4(vec3(gl_FragCoord.yx/engine.screenSize,1),1);
+    //out_color = vec4(vec3(alpha),1);
+    //out_color = vec4(hsv2rgb(vec3(d,1,1)),1);
 
 }
 

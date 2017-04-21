@@ -19,12 +19,45 @@ struct GBufferPerPixel {
 	float smoothness;
 };
 
+// from http://stackoverflow.com/questions/6652253/getting-the-true-z-value-from-the-depth-buffer
+// 0..1 to zNear..zFar
+float linearDepth(float depthSample)
+{
+    depthSample = 2.0 * depthSample - 1.0;
+    float zLinear = 2.0 * engine.nearClipPlane * engine.farClipPlane / (engine.farClipPlane + engine.nearClipPlane - depthSample * (engine.farClipPlane - engine.nearClipPlane));
+    return zLinear;
+}
+
+// result suitable for assigning to gl_FragDepth
+// zNear..zFar to 0..1
+float depthSample(float linearDepth)
+{
+    float nonLinearDepth = (engine.farClipPlane + engine.nearClipPlane - 2.0 * engine.nearClipPlane * engine.farClipPlane / linearDepth) / (engine.farClipPlane - engine.nearClipPlane);
+    nonLinearDepth = (nonLinearDepth + 1.0) / 2.0;
+    return nonLinearDepth;
+}
+
+
+vec2 GBufferGetScreenCoord()
+{
+	return gl_FragCoord.xy/engine.screenSize;	
+}
 vec3 GBufferGetFinal(vec2 screenCoord) {
 	return textureLod(gBufferUniform.final, screenCoord, 0).xyz;
 }
+/*float GBufferGetDepth() {
+	return GBufferGetDepth(gl_FragCoord.xy/engine.screenSize);
+}*/
 
+// 0..1
 float GBufferGetDepth(vec2 screenCoord) {
 	return textureLod(gBufferUniform.depth, screenCoord, 0).x;
+}
+
+// zNear..zFar
+float GBufferDistanceOfCurrentFragmentToDepthBuffer()
+{
+	return linearDepth(GBufferGetDepth(GBufferGetScreenCoord())) - linearDepth(gl_FragCoord.z);
 }
 
 void GBufferPackData_Emission(out vec4 data, float emission) {

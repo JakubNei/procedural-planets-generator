@@ -14,6 +14,7 @@ generation / segment number of vertices on edge = 50
 generation / segment stop recursion at world size = 50 
 generation / segment subdivide if weight is bigger than = 1 
 generation / use skirts = true 
+generation / debug / regenerate all planets = false = r 
 planets / debug / get surface height = false 
 rendering / debug / draw gbuffer contents = false = f10 
 rendering / debug / draw lines = false = f11 

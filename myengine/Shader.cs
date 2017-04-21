@@ -35,7 +35,7 @@ namespace MyEngine
 		public ulong VersionOnGpu { get; private set; } = 0;
 		public ulong VersionInFile { get; private set; } = 1;
 
-		public bool shouldReload;
+		public bool ShouldReload { get; set; }
 
 		public bool HasTesselation { get; private set; }
 
@@ -97,7 +97,7 @@ namespace MyEngine
 			{
 				VersionInFile++;
 				fileWatcher.StopAllWatchers();
-				shouldReload = true;
+				ShouldReload = true;
 			});
 
 			Uniforms.MarkAllUniformsAsChanged();
@@ -122,12 +122,12 @@ namespace MyEngine
 			{
 				Load();
 			}
-			else if (shouldReload)
+			else if (ShouldReload)
 			{
 				Log.Info("Reloading " + file.VirtualPath);
 				Dispose();
 				Load();
-				shouldReload = false;
+				ShouldReload = false;
 			}
 
 			if (LoadState == State.LoadedError) return false;

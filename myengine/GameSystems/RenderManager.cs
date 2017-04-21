@@ -97,7 +97,8 @@ namespace MyEngine
 				if (enabled)
 				{
 					GL.Enable(EnableCap.Blend); MyGL.Check();
-				} else
+				}
+				else
 				{
 					GL.Disable(EnableCap.Blend); MyGL.Check();
 				}
@@ -245,7 +246,7 @@ namespace MyEngine
 					gl.DepthWrite(true);
 					gl.DepthTest(true);
 					gl.Blend(false);
-									
+
 					for (int i = 0; i < toRenderDefferredCount; i++)
 					{
 						var renderable = toRenderDefferred[i];
@@ -436,7 +437,9 @@ namespace MyEngine
 			}
 		}
 
-		float[] distancesToCamera = new float[maxToRenderAtOnce];
+		float[] distancesToCameraDeferred = new float[maxToRenderAtOnce];
+		float[] distancesToCameraTransparent = new float[maxToRenderAtOnce];
+
 		int lastTotalPossible = 0;
 		public void PrepareRender(RenderableData data, Camera camera)
 		{
@@ -532,20 +535,16 @@ namespace MyEngine
 					{
 						if (renderable.ForcePassRasterizationCulling)
 						{
-							renderable.SetCameraRenderStatusFeedback(camera, RenderStatus.RenderedAndVisible);
 							var newIndex = Interlocked.Increment(ref passedRasterizationCullingIndex) - 1;
 							passedRasterizationCulling[newIndex] = renderable;
-							distancesToCamera[newIndex] = 0;
 						}
 						else
 						{
 							var bounds = renderable.GetCameraSpaceBounds(cameraData);
 							if (rasterizer.AreBoundsVisible(bounds))
 							{
-								renderable.SetCameraRenderStatusFeedback(camera, RenderStatus.RenderedAndVisible);
 								var newIndex = Interlocked.Increment(ref passedRasterizationCullingIndex) - 1;
-								passedRasterizationCulling[newIndex] = renderable;
-								distancesToCamera[newIndex] = bounds.depthClosest;
+								passedRasterizationCulling[newIndex] = renderable; ;
 							}
 							else
 							{
@@ -574,12 +573,6 @@ namespace MyEngine
 
 					Debug.AddValue("rendering / meshes / passed rasterization culling", passedRasterizationCullingIndex);
 
-					if (SortRenderables)
-					{
-						// sort renderables so closest to camera are first
-						Array.Sort(distancesToCamera, passedRasterizationCulling, 0, passedRasterizationCullingIndex, Comparer<float>.Default);
-					}
-
 					toRender = passedRasterizationCulling;
 					toRenderCount = passedRasterizationCullingIndex;
 				}
@@ -607,13 +600,17 @@ namespace MyEngine
 				{
 					if (renderable.Material.RenderShader.IsTransparent)
 					{
+						renderable.SetCameraRenderStatusFeedback(camera, RenderStatus.RenderedAndVisible);
 						var newIndex = Interlocked.Increment(ref toRenderTransparentCount) - 1;
 						toRenderTransparent[newIndex] = renderable;
+						distancesToCameraTransparent[newIndex] = -renderable.GetCameraSortDistance(cameraData);
 					}
 					else
 					{
+						renderable.SetCameraRenderStatusFeedback(camera, RenderStatus.RenderedAndVisible);
 						var newIndex = Interlocked.Increment(ref toRenderDefferredCount) - 1;
 						toRenderDefferred[newIndex] = renderable;
+						distancesToCameraDeferred[newIndex] = renderable.GetCameraSortDistance(cameraData);
 					}
 				};
 
@@ -621,6 +618,14 @@ namespace MyEngine
 				{
 					work(toRender[i]);
 				});
+
+				if (SortRenderables)
+				{
+					// sort renderables so closest to camera are first
+					// could use paraller sort:  e.g.: https://gist.github.com/wieslawsoltes/6592526
+					Array.Sort(distancesToCameraDeferred, toRenderDefferred, 0, toRenderDefferredCount, Comparer<float>.Default);
+					Array.Sort(distancesToCameraTransparent, toRenderTransparent, 0, toRenderTransparentCount, Comparer<float>.Default);
+				}
 			}
 
 

@@ -364,21 +364,21 @@ namespace MyGame.PlanetaryBody
 
 
 
-		static public void DestroyAll(Segment segment)
+		public void DestroyAll()
 		{
-			segment.DestroyRenderer();
-			foreach (var c in segment.Children)
-				DestroyAll(c);
-			segment.Children.Clear();
+			DestroyRenderer();
+			foreach (var c in Children)
+				c.DestroyAll();
+			Children.Clear();
 		}
 
 
-		static public void MarkForRegeneration(Segment segment)
+		public void MarkForRegeneration()
 		{
-			segment.DestroyRenderer();
-			foreach (var c in segment.Children)
-				MarkForRegeneration(c);
-			segment.Children.Clear();
+			DestroyRenderer();
+			foreach (var c in Children)
+				c.MarkForRegeneration();
+			Children.Clear();
 		}
 
 		public override string ToString()
