@@ -153,8 +153,7 @@ namespace MyEngine
 				GL.BlendEquation(BlendEquationMode.FuncAdd); MyGL.Check();
 				GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha); MyGL.Check();
 
-				SetPolygonMode();
-				GL.Disable(EnableCap.CullFace); MyGL.Check();
+				gl.DrawLinesOnly(DrawLines, false);
 
 				for (int i = 0; i < toRenderTransparentCount; i++)
 				{

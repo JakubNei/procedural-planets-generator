@@ -81,7 +81,7 @@ out data {
 
 int closestPowerOf2(float a) {
 	//return pow(2, ceil(log(a)/log(2)));
-	//return 1;
+	return 1;
 	if(a>64) return 64;
 	if(a>32) return 32;
 	if(a>16) return 16;
@@ -213,49 +213,13 @@ void main()
 	o.biomes2	= interpolate4D(	i[0].biomes2,	i[1].biomes2,	i[2].biomes2	); 
 
 	vec3 pos = vec3(o.modelPos + param_offsetFromPlanetCenter);
-
-	/*{
-		// add some random variaton to biomes boundaries
-		vec3 pp = o.modelPos;
-		const float cw = 0.5;
-		const float pw = 1;
-
-	    o.biomes1.x *= cw + perlinNoise(pp / 200) * pw;
-	    o.biomes1.y *= cw + perlinNoise(pp / 225) * pw;
-	    o.biomes1.z *= cw + perlinNoise(pp / 250) * pw;
-	    o.biomes1.w *= cw + perlinNoise(pp / 275) * pw;
-
-	    o.biomes2.x *= cw + perlinNoise(pp / 300) * pw;
-	    o.biomes2.y *= cw + perlinNoise(pp / 325) * pw;
-	    o.biomes2.z *= cw + perlinNoise(pp / 350) * pw;
-	    o.biomes2.w *= cw + perlinNoise(pp / 375) * pw;
-
-	    o.biomes1 = clamp(o.biomes1, 0, 1);
-	    o.biomes2 = clamp(o.biomes2, 0, 1);
-
-		float sum = 
-			o.biomes1.x + o.biomes1.y + o.biomes1.z + o.biomes1.w +
-			o.biomes2.x + o.biomes2.y + o.biomes2.z + o.biomes2.w;
-
-		o.biomes1 /= sum;
-		o.biomes2 /= sum;
-	}*/
-
-
-	//o.uv = calestialToSpherical(o.modelPos + param_offsetFromPlanetCenter).xy;
-
+	
 	// APPLY TERRAIN MODIFIER
 	
 	// make it uniform across different planet sizes
 	//pos *= float(param_radiusMin) / 20000;
 	float amount = AdjustTerrainAt(pos) * 0.1;
 	o.worldPos += o.normal * amount;
-
-	//o.normal *= 1 + amount;
-	//o.normal = normalize(o.normal);
-
-	//o.tangent *= 1 + amount;
-	//o.tangent = normalize(o.tangent);
 
 	gl_Position = engine.projectionMatrix * engine.viewMatrix * vec4(o.worldPos,1);
 
@@ -449,20 +413,20 @@ void main()
 	
 	float distToCamera = length(i.worldPos);	
 	vec3 pos = vec3(i.modelPos + param_offsetFromPlanetCenter);	
-	vec2 uv = calestialToSpherical(pos).xy;
+	vec2 spherical = calestialToSpherical(pos).xy;
 
 
 
-	//uv.x += perlinNoise(pos / 10000) / 200;
-	//uv.y += perlinNoise(pos.yxz / 10000) / 200;
+	//spherical.x += perlinNoise(pos / 10000) / 200;
+	//spherical.y += perlinNoise(pos.yxz / 10000) / 200;
 	vec3 normal = vec3(0,0,1);
 
-	normal = GetProceduralAndBaseHeightMapNormal(i.uv, 0.00001);
+	normal = GetProceduralAndBaseHeightMapNormal(spherical, 0.000001);
 
 
 	vec3 color;
 	vec3 normalColorFromTexture;
-	getColor(uv, color, normalColorFromTexture);
+	getColor(spherical, color, normalColorFromTexture);
 
 	float defaultNormalWeight = smoothstep(NORMAL_MAPPING_DISTANCE * 0.9, NORMAL_MAPPING_DISTANCE, distToCamera);
 

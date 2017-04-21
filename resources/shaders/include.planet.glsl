@@ -180,7 +180,7 @@ float GetProceduralHeight(vec3 dir)
 
 	{ //small detail
 		float p = perlinNoise(dir*10, 5, 10) * 100;
-		result += terrace(p, 0.1)*0.01;
+		result += terrace(p, 0.3)*0.005;
 		result += p*0.001;
 		//small rivers
 		float x = perlinNoise(dir * 3);
