@@ -3,9 +3,9 @@
 #line 4
 
 uniform double param_radiusMin;
-uniform sampler2D param_baseHeightMap;
-uniform double param_baseHeightMapMultiplier;
-uniform double param_noiseMultiplier;
+uniform double param_noiseHeightMultiplier;
+uniform double param_noisePositionMultiplier;
+uniform double param_seaLevel01;
 
 
 
@@ -240,23 +240,23 @@ float HideTextureSamplingNoise(vec3 dirFromPlanetCenter)
 
 double GetProceduralHeight(dvec3 direction)
 {
-	return param_noiseMultiplier * GetProceduralHeight01(vec3(direction * param_radiusMin / 1000000));
+	return param_noiseHeightMultiplier * GetProceduralHeight01(vec3(direction * param_noisePositionMultiplier));
 }
-
-
+double GetProceduralHeight01(vec2 uv)
+{
+	vec3 direction = sphericalToCalestial(uv);
+	return GetProceduralHeight01(vec3(direction * param_noisePositionMultiplier));
+}
 double GetProceduralHeight(vec2 uv)
 {
 	vec3 direction = sphericalToCalestial(uv);
 	return GetProceduralHeight(direction);
 }
-double GetProceduralHeight01(vec2 uv)
-{
-	return GetProceduralHeight(uv) / (param_baseHeightMapMultiplier + param_noiseMultiplier);
-}
+
 
 float GetHumidity(vec2 uvCenter)
 {
-	const float waterHeight = 0.5;
+	double waterHeight = param_seaLevel01;
 
 	vec2 uv = uvCenter;
 	if(GetProceduralHeight01(uv) < waterHeight) return 1;

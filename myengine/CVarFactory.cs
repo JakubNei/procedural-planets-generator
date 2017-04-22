@@ -25,7 +25,7 @@ namespace MyEngine
 			public string commentPart;
 			public CVar associatedCvar;
 		}
-		List<LineHolder> lines = new List<LineHolder>();
+		List<LineHolder> saveData = new List<LineHolder>();
 
 
 		FileExisting file;
@@ -36,14 +36,22 @@ namespace MyEngine
 			this.Log = log;
 			this.file = file;
 			TryReadConfig();
-			doSaveNewCvars = true;
 
-			file.OnFileChanged(() =>
+			//file.OnFileChanged(() =>
+			//{
+			//	// make sure our save does not trigger file changed event and reload
+			//	if (fileLastSaved.IsOver(seconds: 10).InPastComparedTo(DateTime.Now))
+			//	{
+			//		TryReadConfig();
+			//	}
+			//});
+
+			GetCVar("debug / save cvars to file", false).OnChanged(cvar =>
 			{
-				// make sure our save does not trigger file changed event and reload
-				if (fileLastSaved.IsOver(seconds: 2).InPastComparedTo(DateTime.Now))
+				if (cvar.EatBoolIfTrue())
 				{
-					TryReadConfig();
+					GetCVar("debug / show debug form").Bool = false;
+					SaveData();
 				}
 			});
 
@@ -51,6 +59,9 @@ namespace MyEngine
 
 		void TryReadConfig()
 		{
+
+			doSaveNewCvars = false;
+
 			var configFile = file.OpenReadWrite();
 			if (!configFile.CanRead)
 			{
@@ -64,7 +75,7 @@ namespace MyEngine
 			reader.Close();
 
 			var textLines = allText.Split(new char[] { '\r' });
-			lines.Clear();
+			saveData.Clear();
 
 			int lineNumber = 0;
 			foreach (var _line in textLines)
@@ -87,7 +98,7 @@ namespace MyEngine
 					var dataParts = dataPart.Split(new char[] { '=' });
 					if (dataParts.Length < 2)
 					{
-						Log.Warn("found badly formatted data on line " + lineNumber + " '" + dataPart + "'");
+						Log.Error("found badly formatted data on line " + lineNumber + " '" + dataPart + "'");
 						continue;
 					}
 
@@ -124,10 +135,10 @@ namespace MyEngine
 					Log.Info("loaded cvar: '" + ToSaveString(cvar) + "' from line: '" + dataPart + "'");
 				}
 
-				lines.Add(new LineHolder() { associatedCvar = cvar, commentPart = commentPart, dataPart = dataPart });
+				saveData.Add(new LineHolder() { associatedCvar = cvar, commentPart = commentPart, dataPart = dataPart });
 			}
 
-			SaveData();
+			doSaveNewCvars = true;
 		}
 		private string ToSaveString(CVar cvar)
 		{
@@ -163,7 +174,7 @@ namespace MyEngine
 			var w = new StreamWriter(configFile, Encoding.UTF8);
 
 			var isFirst = true;
-			foreach (var line in lines)
+			foreach (var line in saveData)
 			{
 				if (isFirst == false) w.WriteLine();
 
@@ -189,13 +200,12 @@ namespace MyEngine
 
 		private void SaveNewCvar(CVar cvar)
 		{
-			lines.Add(new LineHolder()
+			saveData.Add(new LineHolder()
 			{
 				dataPart = ToSaveString(cvar),
 				associatedCvar = cvar,
 				commentPart = "",
 			});
-			SaveData();
 		}
 
 		public CVar GetCVar(string name)

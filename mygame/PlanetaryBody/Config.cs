@@ -18,10 +18,9 @@ namespace MyGame.PlanetaryBody
 		public int stopSegmentRecursionAtWorldSize = 100;
 
 		public double radiusMin;
-		public double noiseMultiplier;
-
-		public Texture2D baseHeightMap;
-		public double baseHeightMapMultiplier;
+		public double noiseHeightMultiplier;
+		public double noisePositionMultiplier;
+		public double seaLevel01 = 0.5;
 
 		public Texture2D biomesControlMap;
 
@@ -42,10 +41,10 @@ namespace MyGame.PlanetaryBody
 		public void SetTo(UniformsData uniforms)
 		{
 			uniforms.Set("param_radiusMin", (double)radiusMin);
-			uniforms.Set("param_noiseMultiplier", (double)noiseMultiplier);
-
-			uniforms.Set("param_baseHeightMap", baseHeightMap);
-			uniforms.Set("param_baseHeightMapMultiplier", (double)baseHeightMapMultiplier);
+			uniforms.Set("param_noiseHeightMultiplier", (double)noiseHeightMultiplier);
+			uniforms.Set("param_noisePositionMultiplier", (double)noisePositionMultiplier);
+			uniforms.Set("param_seaLevel01", (double)seaLevel01);
+			
 
 			uniforms.Set("param_biomesControlMap", biomesControlMap);
 

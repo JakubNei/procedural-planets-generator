@@ -95,7 +95,6 @@ uniform dvec3 param_cornerPositionA;
 uniform dvec3 param_cornerPositionB;
 uniform dvec3 param_cornerPositionC;
 uniform int param_indiciesCount;
-uniform int param_verticesStartIndexOffset;
 
 
 
@@ -104,7 +103,7 @@ uniform int param_verticesStartIndexOffset;
 
 void main() {
 
-	int verticeIndex = int(gl_GlobalInvocationID.x) + param_verticesStartIndexOffset;
+	int verticeIndex = int(gl_GlobalInvocationID.x);
 
 	vec3 position = fromStruct(positions[verticeIndex]);
 	vec3 normal = fromStruct(normals[verticeIndex]);

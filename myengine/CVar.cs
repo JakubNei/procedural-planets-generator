@@ -41,7 +41,7 @@ namespace MyEngine
 				{
 					_bool = value;
 					factory.Log.Equals(Name + " changed to: " + value);
-					OnChanged?.Invoke(this);
+					onChanged?.Invoke(this);
 				}
 			}
 		}
@@ -61,7 +61,7 @@ namespace MyEngine
 				{
 					_number = value;
 					factory.Log.Equals(Name + " changed to: " + value);
-					OnChanged?.Invoke(this);
+					onChanged?.Invoke(this);
 				}
 			}
 		}
@@ -82,7 +82,7 @@ namespace MyEngine
 
 		public OpenTK.Input.Key ToogleKey { get; set; } = OpenTK.Input.Key.Unknown;
 
-		private event Action<CVar> OnChanged;
+		private event Action<CVar> onChanged;
 
 		public CVar(string name, CVarFactory factory)
 		{
@@ -94,12 +94,19 @@ namespace MyEngine
 		{
 			if (action != null)
 			{
-				OnChanged += action;
+				onChanged += action;
 				action.Invoke(this);
 			}
 			return this;
 		}
-
+		public CVar OnChanged(Action<CVar> action)
+		{
+			if (action != null)
+			{
+				onChanged += action;
+			}
+			return this;
+		}
 
 		public bool EatBoolIfTrue()
 		{

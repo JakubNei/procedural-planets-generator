@@ -107,13 +107,9 @@ namespace MyGame
 				{
 					var entity = scene.AddEntity("scene directional light");
 					var light = entity.AddComponent<Light>();
-					light.LighType = LightType.Directional;
+					light.LighType = LightType.Point;
 					light.Color = Vector3.One * 1f;
 					light.Shadows = LightShadows.None;
-
-					var p = proceduralPlanets?.GetClosestPlanet(sunEntity.Transform.Position);
-					if (p != null)
-						entity.Transform.LookAt(p.Transform.Position);
 				}
 
 

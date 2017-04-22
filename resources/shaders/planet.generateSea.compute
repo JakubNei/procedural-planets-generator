@@ -124,7 +124,7 @@ void main() {
 	vec3 uv = calestialToSpherical(vec3(directionFromPlanetCenter));
 
 	dvec3 positionFlat = directionFromPlanetCenter;
-	positionFlat *= param_radiusMin + param_baseHeightMapMultiplier/2;
+	positionFlat *= param_radiusMin + param_noiseHeightMultiplier * param_seaLevel01;
 	positionFlat -= param_offsetFromPlanetCenter;
 
 	positions[verticeIndex] = toStruct(vec3(positionFlat));

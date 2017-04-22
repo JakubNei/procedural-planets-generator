@@ -63,7 +63,8 @@ namespace MyGame
 			// Transform.Rotation = QuaternionUtility.LookRotation(Constants.Vector3Forward, Constants.Vector3Up);
 
 
-			var planet = planets?.GetClosestPlanet(Transform.Position);
+			//var planet = planets?.GetClosestPlanet(Transform.Position);
+			var planet = planets?.planets.FirstOrDefault();
 			if (planet != null)
 			{
 				Transform.LookAt(planet.Transform.Position);
