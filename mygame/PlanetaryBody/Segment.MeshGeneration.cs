@@ -80,7 +80,7 @@ namespace MyGame.PlanetaryBody
 				bounds.Encapsulate((NoElevationRange.CenterPos - n * c - o).ToVector3());
 			}
 			*/
-			segmentNormalMap = new Texture2D(1024, 1024);
+			segmentNormalMap = new Texture2D(512, 512);
 			segmentNormalMap.UseMipMaps = false;
 
 			//if (Renderer != null) throw new Exception("something went terribly wrong, renderer should be null"); // or we marked segment for regeneration

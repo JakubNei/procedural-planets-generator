@@ -100,7 +100,7 @@ namespace MyGame.PlanetaryBody
 
 			jobTemplate.AddTask(WhereToRun.GPUThread, segment =>
 			{
-				CalculateNormalsAndRangentsOnGPU(segment.RendererSurface.Mesh);
+				CalculateNormalsAndTangentsOnGPU(segment.RendererSurface.Mesh);
 			}, "výpočet normál a tangent povrchu na grafické kartě");
 
 			if (useSkirts)
@@ -218,7 +218,7 @@ namespace MyGame.PlanetaryBody
 
 			jobTemplate.AddTask(WhereToRun.GPUThread, segment =>
 			{
-				CalculateNormalsAndRangentsOnGPU(segment.RendererSea.Mesh);
+				CalculateNormalsAndTangentsOnGPU(segment.RendererSea.Mesh);
 			}, "výpočet normál a tangent moře na grafické kartě");
 
 
@@ -234,11 +234,6 @@ namespace MyGame.PlanetaryBody
 
 			jobTemplate.AddTask(WhereToRun.GPUThread, segment =>
 			{
-				var mesh = segment.RendererSurface.Mesh;
-
-				var verticesStartIndexOffset = 0;
-				var verticesCount = mesh.Vertices.Count;
-
 				var range = segment.NoElevationRange;
 				if (useSkirts)
 					range = segment.NoElevationRangeModifiedForSkirts;
@@ -251,8 +246,6 @@ namespace MyGame.PlanetaryBody
 				uniforms.Set("param_cornerPositionA", range.a);
 				uniforms.Set("param_cornerPositionB", range.b);
 				uniforms.Set("param_cornerPositionC", range.c);
-				uniforms.Set("param_indiciesCount", mesh.TriangleIndicies.Count);
-				uniforms.Set("param_verticesStartIndexOffset", verticesStartIndexOffset);
 
 				int texturingUnit = 0;
 
@@ -267,7 +260,12 @@ namespace MyGame.PlanetaryBody
 				GL.DispatchCompute(texture.Width / 16, texture.Height / 16, 1); MyGL.Check();
 
 			}, "vygenerování normálové povrchu mapy na grafické kartě");
-			 
+
+			jobTemplate.AddTask(WhereToRun.GPUThread, segment =>
+			{
+				segment.segmentNormalMap.GenerateMipMaps();
+			}, "vytvoření mipmap normálové povrchu mapy");
+
 			ulong chunksGenerated = 0;
 			jobTemplate.AddTask(segment =>
 			{
@@ -283,7 +281,7 @@ namespace MyGame.PlanetaryBody
 
 		}
 
-		public void CalculateNormalsAndRangentsOnGPU(Mesh mesh)
+		public void CalculateNormalsAndTangentsOnGPU(Mesh mesh)
 		{
 			Shader calculateNormalsShader = Factory.GetShader("internal/calculateNormalsAndTangents.compute.glsl");
 			if (calculateNormalsShader.Bind())

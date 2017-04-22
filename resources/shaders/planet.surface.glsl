@@ -431,6 +431,7 @@ void main()
 
 	normal = unpackTextureNormal(texture2D(param_segmentNormalMap, i.uv).rgb);
 	//normal = GetProceduralAndBaseHeightMapNormal(spherical, 0.0000001);
+	//normal = GetProceduralAndBaseHeightMapNormal(normalize(pos), i.normal, i.tangent, 0.0000001);
 
 	vec3 color;
 	vec3 normalColorFromTexture;
@@ -444,9 +445,6 @@ void main()
 	}
 
 	{
-		//normal.xy *= 10;
-		normal = normalize(normal);
-
 		vec3 N = i.normal;
 		vec3 T = i.tangent;
 		vec3 T2 = T - N * dot(N, T); // Gram-Schmidt orthogonalization of T

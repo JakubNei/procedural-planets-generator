@@ -67,8 +67,6 @@ vec4_struct toStruct(vec4 p)
 
 layout(rgba8, binding = 0) uniform writeonly image2D param_segmentNormalMap;
 
-
-
 layout( local_size_x = 16, local_size_y = 16 ) in;
  
 
@@ -81,32 +79,89 @@ uniform int param_indiciesCount;
 uniform int param_verticesStartIndexOffset;
 
 
+double GetHeight(dvec3 surfacePosition)
+{
+	return GetProceduralHeight(vec3(normalize(surfacePosition)));
+}
 
 void main() {
 
-  
-  	ivec2 pixel_coords = ivec2(gl_GlobalInvocationID.xy);
+  	ivec2 pixelCoords = ivec2(gl_GlobalInvocationID.xy);
 
 	vec4 pixel = vec4(0);
 
- 	double x = double(gl_GlobalInvocationID.x)/1024.0;
-	double y = double(gl_GlobalInvocationID.y)/1024.0;
+	vec2 baricentric = vec2(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y) / imageSize(param_segmentNormalMap);
 
 	dvec3 positionInterpolated = 
 		param_cornerPositionA + 
-		(param_cornerPositionB - param_cornerPositionA) * y * (1-x) + 
-		(param_cornerPositionC - param_cornerPositionA) * y * x;
+		(param_cornerPositionB - param_cornerPositionA) * baricentric.y * (1-baricentric.x) + 
+		(param_cornerPositionC - param_cornerPositionA) * baricentric.y * baricentric.x;
 
-	dvec3 dirFromPlanetCenter = normalize(positionInterpolated);
+	dvec3 positionInterpolatedNormalized = normalize(positionInterpolated);
+	vec3 dirFromPlanetCenter = vec3(positionInterpolatedNormalized);
 
 	vec2 spherical = calestialToSpherical(vec3(dirFromPlanetCenter)).xy;
 
-	vec3 normal = (1 + GetProceduralAndBaseHeightMapNormal(spherical, 0.000001)) / 2;
 
+	//vec3 N = vec3(dirFromPlanetCenter);
+	//vec3 T = 
+
+	dvec3 surfacePosition = positionInterpolatedNormalized * param_radiusMin;
+
+	vec3 normal = vec3(0);
+
+	vec3 N;
+	vec3 T;
+
+	{
+		float eps = 0.001;
+		vec2 uvA = spherical + vec2(0,eps);
+		vec2 uvB = spherical + vec2(-eps,0);
+		vec2 uvC = spherical + vec2(eps,0);
+
+		vec3 posA = sphericalToCalestial(uvA);
+		vec3 posB = sphericalToCalestial(uvB);
+		vec3 posC = sphericalToCalestial(uvC);
+
+		vec3 posAToB = posB - posA;
+		vec3 posAToC = posC - posA;
+		N = normalize(cross(normalize(posAToB), normalize(posAToC)));
+
+		vec2 uvAToB = uvB - uvA;
+		vec2 uvAToC = uvC - uvA;
+		float r = 1.0f / (uvAToB.x * uvAToC.y - uvAToB.y * uvAToC.x);
+		T = (posAToB * uvAToC.y - posAToC * uvAToB.y) * r;
+	}
+	vec3 T2 = T - N * dot(N, T); // Gram-Schmidt orthogonalization of T
+	vec3 B = normalize(cross(N,T2));
+
+
+	{
+		float eps = 0.1;
+	    double z = GetHeight(surfacePosition); 
+	    normal.x = float(
+	    	(GetHeight(surfacePosition-T*eps) - z)
+	    	-(GetHeight(surfacePosition+T*eps) - z)
+	    ) / 2;
+	    normal.y = float(
+	    	(GetHeight(surfacePosition-B*eps) - z)
+	    	-(GetHeight(surfacePosition+B*eps) - z)
+	    ) / 2;
+	    normal.z = eps * 4;
+	}
+
+	//normal = GetProceduralAndBaseHeightMapNormal(spherical, 0.00005);
+	//normal += GetGeneratedNormal(dirFromPlanetCenter, T, B, 0.00000005);
+	//normal += GetGeneratedNormal(dirFromPlanetCenter, T, B, 0.0000001);
+
+
+
+	normal = normalize(normal);
+	normal = (1 + normal) / 2; // pack into texture
 	pixel = vec4(normal, 1);
 
 	//DEBUG
 	//pixel=vec4(float(gl_GlobalInvocationID.x)/1024.0, float(gl_GlobalInvocationID.y)/1024.0, 1.0, 1.0);
-	imageStore(param_segmentNormalMap, pixel_coords, pixel);
+	imageStore(param_segmentNormalMap, pixelCoords, pixel);
 }
 

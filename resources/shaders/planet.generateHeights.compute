@@ -3,6 +3,8 @@
 [include shaders/include.planet.glsl]
 
 
+
+
  
 struct vec2_struct
 {
@@ -95,6 +97,8 @@ uniform int param_verticesStartIndexOffset;
 
 
 
+
+
 void main() {
 
 	int verticeIndex = int(gl_GlobalInvocationID.x) + param_verticesStartIndexOffset;
@@ -126,8 +130,8 @@ void main() {
 		(param_cornerPositionC - param_cornerPositionA) * y * x;
 	dvec3 dirFromPlanetCenter = normalize(positionInterpolated);
 
-	dvec2 spherical = calestialToSpherical(dirFromPlanetCenter).xy;
-	double generatedHeight = GetProceduralAndBaseHeightMapHeight(dirFromPlanetCenter, spherical);
+	vec2 spherical = calestialToSpherical(vec3(dirFromPlanetCenter)).xy;
+	double generatedHeight = GetProceduralHeight(dirFromPlanetCenter);
 
 	dvec3 positionAdjusted = dirFromPlanetCenter;
 	positionAdjusted *= param_radiusMin + generatedHeight;
@@ -146,7 +150,7 @@ void main() {
 	//p.x += 0.01f;
 
 	positions[verticeIndex] = toStruct(vec3(positionAdjusted));
-	uvs[verticeIndex] = toStruct(vec2(spherical.xy)); // we use spherical coords for better normal & tanget calculation
+	uvs[verticeIndex] = toStruct(spherical.xy); // we use spherical coords for better normal & tanget calculation
 
 	// passing data so we can easily generate biomes in other computer shader
 	out_biomes1[verticeIndex] = toStruct(biomes1);
