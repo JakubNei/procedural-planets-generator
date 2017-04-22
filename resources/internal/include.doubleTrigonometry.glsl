@@ -5,8 +5,10 @@
 // atan2 approximation for doubles for GLSL
 // using http://lolengine.net/wiki/doc/maths/remez
 
-double atan(double y, double x)
+double atan_d(double y, double x)
 {
+    return atan(float(y), float(x));
+
     const double atan_tbl[] = {
     -3.333333333333333333333333333303396520128e-1LF,
      1.999999117496509842004185053319506031014e-1LF,
@@ -58,39 +60,77 @@ double atan(double y, double x)
 
 
 
-// FROM: http://stackoverflow.com/a/28988233/782022
 
-double asin___helper(double x)
+
+
+
+/* compute arcsin (a) for a in [-9/16, 9/16] */
+double acos___helper (double a)
 {
-    double sum, tempExp;
-    tempExp = x;
-    double factor = 1.0;
-    double divisor = 1.0;
-    sum = x;
-    for(int i = 0; i < 40; i++)
-    {
-        tempExp *= x*x;
-        divisor += 2.0;
-        factor *= (2.0*double(i) + 1.0)/((double(i)+1.0)*2.0);
-        sum += factor*tempExp/divisor;
+    double q, r, s, t;
+
+    s = a * a;
+    q = s * s;
+    r =             5.5579749017470502e-2;
+    t =            -6.2027913464120114e-2;
+    r = fma (r, q,  5.4224464349245036e-2);
+    t = fma (t, q, -1.1326992890324464e-2);
+    r = fma (r, q,  1.5268872539397656e-2);
+    t = fma (t, q,  1.0493798473372081e-2);
+    r = fma (r, q,  1.4106045900607047e-2);
+    t = fma (t, q,  1.7339776384962050e-2);
+    r = fma (r, q,  2.2372961589651054e-2);
+    t = fma (t, q,  3.0381912707941005e-2);
+    r = fma (r, q,  4.4642857881094775e-2);
+    t = fma (t, q,  7.4999999991367292e-2);
+    r = fma (r, s, t);
+    r = fma (r, s,  1.6666666666670193e-1);
+    t = a * s;
+    r = fma (r, t, a);
+
+    return r;
+}
+
+/* Compute arccosine (a), maximum error observed: 1.4316 ulp
+   Double-precision factorization of π courtesy of Tor Myklebust
+*/
+double acos_d(double a)
+{
+    return acos(float(a));
+
+    double r;
+
+    r = (a > 0.0) ? -a : a; // avoid modifying the "sign" of NaNs
+    if (r > -0.5625) {
+        /* arccos(x) = pi/2 - arcsin(x) */
+        r = fma (9.3282184640716537e-1, 1.6839188885261840e+0, acos___helper (r));
+    } else {
+        /* arccos(x) = 2 * arcsin (sqrt ((1-x) / 2)) */
+        r = 2.0 * acos___helper (sqrt (fma (0.5, r, 0.5)));
     }
-    return sum;
+    if (!(a > 0.0) && (a >= -1.0)) { // avoid modifying the "sign" of NaNs
+        /* arccos (-x) = pi - arccos(x) */
+        r = fma (1.8656436928143307e+0, 1.6839188885261840e+0, -r);
+    }
+    return r;
 }
 
-double asin(double x)
+
+double asin_d(double x)
 {
-    if(abs(x) <= 0.71)
-        return asin___helper(x);
-    else if( x > 0)
-        return (PI/2.0-asin___helper(sqrt(1.0-(x*x))));
-    else //x < 0 or x is NaN
-        return (asin___helper(sqrt(1.0-(x*x)))-PI/2.0);
+    const float pi = 3.1415926535897932384626433832795;
+    return (pi/2.0 - acos_d(x));
 
 }
 
-double acos(double x)
+
+
+double sin_d(double x)
 {
-    return (PI/2.0 - asin(x));
+    return sin(float(x));
 }
 
-
+double cos_d(double x)
+{
+    return cos(float(x));
+}

@@ -91,8 +91,8 @@ dvec3 calestialToSpherical(dvec3 c /*calestial*/)
 
 	// calculate
 	dvec3 p = dvec3(
-		atan(c.z, c.x),  // longitude = x
-		asin(c.y / r), // latitude = y
+		atan_d(c.z, c.x),  // longitude = x
+		asin_d(c.y / r), // latitude = y
 		r // altitude = z
 	);
 	
@@ -131,9 +131,9 @@ dvec3 sphericalToCalestial(dvec3 c /*spherical*/)
 
 	// calculate
 	dvec3 p = dvec3(	
-		cos(c.y) * cos(c.x) * c.z,
-		sin(c.y) * c.z,
-		cos(c.y) * sin(c.x) * c.z
+		cos_d(c.y) * cos_d(c.x) * c.z,
+		sin_d(c.y) * c.z,
+		cos_d(c.y) * sin_d(c.x) * c.z
 	);
 
 	return p;
@@ -166,9 +166,9 @@ dvec3 sphericalToCalestial(dvec2 c /*spherical*/)
 
 	// calculate
 	dvec3 p = dvec3(	
-		cos(c.y) * cos(c.x),
-		sin(c.y),
-		cos(c.y) * sin(c.x)
+		cos_d(c.y) * cos_d(c.x),
+		sin_d(c.y),
+		cos_d(c.y) * sin_d(c.x)
 	);
 
 	return p;
@@ -206,6 +206,7 @@ double perlinNoise(dvec3 pos, int octaves, double modifier)
 
 // vec2 worley(vec3 P, float jitter, bool manhattanDistance)
 // float perlinNoise(vec3 p)
+
 
 double GetProceduralHeight(dvec3 dir)
 {
@@ -298,9 +299,7 @@ double GetProceduralHeight(dvec3 dir)
 double GetProceduralAndBaseHeightMapHeight(dvec3 direction, dvec2 uv)
 {
 	double height = 0;	
-	
 	height += param_noiseMultiplier * GetProceduralHeight(direction * param_radiusMin / 1000000);
-
 	return height;
 }
 
