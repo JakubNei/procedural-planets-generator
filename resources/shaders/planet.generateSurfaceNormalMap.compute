@@ -114,7 +114,7 @@ void main() {
 	vec3 T;
 
 	{
-		float eps = 0.001;
+		float eps = 0.0001;
 		vec2 uvA = spherical + vec2(0,eps);
 		vec2 uvB = spherical + vec2(-eps,0);
 		vec2 uvC = spherical + vec2(eps,0);
@@ -153,8 +153,6 @@ void main() {
 	//normal = GetProceduralAndBaseHeightMapNormal(spherical, 0.00005);
 	//normal += GetGeneratedNormal(dirFromPlanetCenter, T, B, 0.00000005);
 	//normal += GetGeneratedNormal(dirFromPlanetCenter, T, B, 0.0000001);
-
-
 
 	normal = normalize(normal);
 	normal = (1 + normal) / 2; // pack into texture

@@ -253,7 +253,7 @@ void main()
 
 
     vec3 dirToCamera = normalize(vec3(0) - i.worldPos);
-    vec3 dirToLight = normalize(vec3(0,1,0) -  i.worldPos);
+    vec3 dirToLight = normalize(light.position - i.worldPos);
     vec3 color = getSeaColor(0, i.normal, dirToLight, dirToCamera);
 
 
@@ -297,6 +297,7 @@ void main()
     //out_color = vec4(vec3(gl_FragCoord.yx/engine.screenSize,1),1);
     //out_color = vec4(vec3(alpha),1);
     //out_color = vec4(hsv2rgb(vec3(d,1,1)),1);
+    //out_color = vec4(dirToLight, 1);
 
 }
 

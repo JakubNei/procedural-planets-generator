@@ -145,7 +145,7 @@ void main() {
 	biomes2.y = float(y);
 
 
-	// DEBUG
+	//DEBUG
 	//vec3 p = fromStruct(positions[verticeIndex]);
 	//p.x += 0.01f;
 
