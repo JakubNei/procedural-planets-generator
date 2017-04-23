@@ -84,8 +84,7 @@ out data {
 
 int closestPowerOf2(float a) {
 	//return pow(2, ceil(log(a)/log(2)));
-	return 1;
-	if(a>64) return 64;
+	//if(a>64) return 64;
 	if(a>32) return 32;
 	if(a>16) return 16;
 	if(a>8) return 8;
@@ -428,7 +427,7 @@ void main()
 	//spherical.x += perlinNoise(pos / 10000) / 200;
 	//spherical.y += perlinNoise(pos.yxz / 10000) / 200;
 	vec3 normal = vec3(0,0,1);
-
+	
 	normal = unpackTextureNormal(texture2D(param_segmentNormalMap, i.uv).rgb);
 	//normal = GetProceduralAndBaseHeightMapNormal(spherical, 0.0000001);
 	//normal = GetProceduralAndBaseHeightMapNormal(normalize(pos), i.normal, i.tangent, 0.0000001);

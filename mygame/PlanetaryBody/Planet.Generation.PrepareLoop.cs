@@ -32,58 +32,35 @@ namespace MyGame.PlanetaryBody
 			{
 				if (weight > WeightNeededToSubdivide)
 				{
-					segment.SetWantsToBeVisible(false);
-
 					segment.EnsureChildrenAreCreated();
 
 					foreach (var child in segment.Children)
 					{
 						GatherWeights(toGenerate, child, recursionDepth + 1);
 					}
+
+					if(segment.Children.All(c=>c.IsGenerationDone))
+					{
+						segment.SetVisible(false);
+					}
+					else
+					{
+						segment.SetVisible(true);
+						segment.HideAllChildren();
+					}
+
 					return;
 				}
 			}
 
-			segment.SetWantsToBeVisible(true);
-		}
-
-
-		static bool AnyDescendantWantsToBeVisible(Segment segment)
-		{
-			if (segment.WantsToBeVisible) return true;
-			if (segment.Children.Count > 0 && segment.Children.Any(c => AnyDescendantWantsToBeVisible(c))) return true;
-			return false;
-		}
-
-		// return true if all childs are visible
-		// we can hide parent only once all 4 childs are generated
-		// we have to show all 4 childs at once
-		void UpdateVisibility(Segment segment, WeightedSegmentsList toGenerate, int recursionDepth)
-		{
-			if (recursionDepth < SubdivisionMaxRecurisonDepth)
+			if (segment.IsGenerationDone)
 			{
-				var canAllChildrenBeVisible = segment.Children.Count > 0 && segment.Children.All(c => c.IsGenerationDone);
-				// hide only if all our childs are visible, they might still be generating or they might want to be hidden
-				if (canAllChildrenBeVisible)
-				{
-					var anyDescendantWantsToBeVisible = AnyDescendantWantsToBeVisible(segment);
-					if (anyDescendantWantsToBeVisible)
-					{
-						foreach (var child in segment.Children)
-						{
-							UpdateVisibility(child, toGenerate, recursionDepth + 1);
-						}
-
-						segment.SetVisible(false);
-						return;
-					}
-				}
+				segment.SetVisible(true);
+				segment.HideAllChildren();
 			}
-
-			segment.SetVisible(true);
 		}
 
-
+		
 		// new SortedList<double, Chunk>(ReverseComparer<double>.Default)
 		class WeightedSegmentsList : Dictionary<Segment, double>
 		{
@@ -165,11 +142,6 @@ namespace MyGame.PlanetaryBody
 					// then their children
 					GatherWeights(toGenerate, rootSegment, 0);
 				}
-			}
-
-			foreach (var rootSegment in this.rootSegments)
-			{
-				UpdateVisibility(rootSegment, toGenerate, 0);
 			}
 
 

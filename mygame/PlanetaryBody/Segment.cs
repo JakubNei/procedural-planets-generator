@@ -299,9 +299,9 @@ namespace MyGame.PlanetaryBody
 		bool lastVisible = false;
 		public void SetVisible(bool visible) // TODO: DestroyRenderer if visible == false for over CVar 60 seconds ?
 		{
-			if (RendererSurface != null && this.GenerationBegan && this.IsGenerationDone)
+			if (this.GenerationBegan && this.IsGenerationDone)
 			{
-				//if (visible == lastVisible) return;
+				if (visible == lastVisible) return;
 				lastVisible = visible;
 			}
 
@@ -315,17 +315,20 @@ namespace MyGame.PlanetaryBody
 				{
 					//Log.Warn("trying to show segment " + this + " that did not finish generation");
 				}
-				else if (RendererSurface == null)
-				{
-					//Log.Warn("trying to show segment " + this + " that does not have renderer");
-				}
 				else DoRender(true);
-				foreach (var child in Children)
-					child.SetVisible(false);
 			}
 			else
 			{
 				DoRender(false);
+			}
+		}
+
+		public void HideAllChildren()
+		{
+			foreach (var child in Children)
+			{
+				child.SetVisible(false);
+				child.HideAllChildren();
 			}
 		}
 
@@ -335,8 +338,12 @@ namespace MyGame.PlanetaryBody
 			{
 				if (RendererSurface != null)
 					RendererSurface.RenderingMode = MyRenderingMode.RenderGeometryAndCastShadows;
+				else
+					Log.Warn("trying to show segment " + this + " that does not have surface renderer");
 				if (RendererSea != null)
 					RendererSea.RenderingMode = MyRenderingMode.RenderGeometryAndCastShadows;
+				else
+					Log.Warn("trying to show segment " + this + " that does not have sea renderer");
 			}
 			else
 			{
@@ -345,27 +352,6 @@ namespace MyGame.PlanetaryBody
 				if (RendererSea != null)
 					RendererSea.RenderingMode = MyRenderingMode.DontRender;
 			}
-		}
-
-
-		public bool WantsToBeVisible { get; set; }
-
-		public void SetWantsToBeVisible(bool visible)
-		{
-			WantsToBeVisible = visible;
-
-			if (visible)
-			{
-				foreach (var c in Children)
-					c.ShouldNotBeVisible();
-			}
-		}
-
-		void ShouldNotBeVisible()
-		{
-			this.WantsToBeVisible = false;
-			foreach (var c in Children)
-				c.ShouldNotBeVisible();
 		}
 
 
