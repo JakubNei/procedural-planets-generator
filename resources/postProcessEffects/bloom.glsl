@@ -1,6 +1,6 @@
-// help from http://prideout.net/archive/bloom/
-
 [include internal/include.all.shader]
+
+// help from http://prideout.net/archive/bloom/
 
 [VertexShader] // pass thru vertex shader
 

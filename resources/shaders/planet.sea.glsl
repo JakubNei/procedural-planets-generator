@@ -282,11 +282,21 @@ void main()
     // dustance to surface sea bed from water surface
     float distanceToSurface = GBufferDistanceOfCurrentFragmentToDepthBuffer();;
 
-    float alpha = 0.2 + 0.8 * smoothstep(distanceToSurface, 0, 10);
+    float alpha = 0.05 + 0.95 * smoothstep(distanceToSurface, 0, 10);
 
     //d = float(linearDepth(gl_FragCoord.z) > 10000);
     //d = float(linearDepth(GBufferGetDepth(GBufferGetScreenCoord())) > 10000);
 
+
+    {
+        float e1 = -0.3;
+        float e2 = -e1;
+        float li = dot(dirToLight, i.normal);
+        li = clamp(li, e1, e2);
+        li = smoothstep(e1, e2, li);
+        //li = 0.1 + 0.9 * li;
+        color *= li;
+    }
 
 	color = pow(color,vec3(engine.gammaCorrectionTextureRead));
 	vec4 color4 = vec4(color, alpha);

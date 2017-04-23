@@ -453,6 +453,20 @@ void main()
 		out_normal = normalMatrix * normal;
 	}
 
+
+    {
+		vec3 dirToLight = normalize(light.position - i.worldPos);
+
+        float e1 = -0.3;
+        float e2 = -e1;
+        float li = dot(dirToLight, i.normal);
+        li = clamp(li, e1, e2);
+        li = smoothstep(e1, e2, li);
+        li = 0.5 + 0.5 * li;
+        color *= li;
+    }
+
+
 	out_color = vec4(pow(color,vec3(engine.gammaCorrectionTextureRead)),1);
 	//out_color = vec4(color,1);
 

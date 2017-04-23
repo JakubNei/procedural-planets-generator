@@ -77,7 +77,7 @@ namespace MyEngine.Components
 			else ubo.light.position = camera.ViewPointPosition.Towards(this.Entity.Transform.Position).ToVector3();
 
 			if (LighType == LightType.Point) ubo.light.direction = Vector3.Zero;
-			else ubo.light.direction = this.Entity.Transform.Forward;
+			else ubo.light.direction = this.Entity.Transform.Forward.Normalized();
 
 			ubo.light.spotExponent = this.SpotExponent;
 			ubo.light.spotCutOff = this.SpotCutOff;

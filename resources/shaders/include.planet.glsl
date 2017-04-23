@@ -6,7 +6,7 @@ uniform double param_radiusMin;
 uniform double param_noiseHeightMultiplier;
 uniform double param_noisePositionMultiplier;
 uniform double param_seaLevel01;
-
+uniform int param_generation;
 
 
 uniform sampler2D param_biomesControlMap;
@@ -335,3 +335,5 @@ vec3 GetProceduralAndBaseHeightMapNormal(vec3 direction, vec3 normal, vec3 tange
     result.z = eps;
     return normalize(result);
 }
+
+

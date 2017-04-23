@@ -91,9 +91,8 @@ namespace MyGame.PlanetaryBody
 			//RendererSurface.Mesh.Bounds = bounds;
 			RendererSurface.Offset += offsetCenter;
 			RendererSurface.Material = planetInfo.SurfaceMaterial.CloneTyped();
-			RendererSurface.Material.Uniforms.Set("param_offsetFromPlanetCenter", RendererSurface.Offset.ToVector3d());
-			RendererSurface.Material.Uniforms.Set("param_remainderOffset", RendererSurface.Offset.Remainder());
-			RendererSurface.Material.Uniforms.Set("param_segmentNormalMap", segmentNormalMap);
+			SetCommonUniforms(RendererSurface.Material.Uniforms);
+			
 
 
 
@@ -104,6 +103,16 @@ namespace MyGame.PlanetaryBody
 			RendererSea.ForcePassRasterizationCulling = true;
 			RendererSea.Offset += offsetCenter;
 			RendererSea.Material = planetInfo.seaMaterial.CloneTyped();
+			SetCommonUniforms(RendererSea.Material.Uniforms);
+		}
+
+
+		void SetCommonUniforms(UniformsData uniforms)
+		{
+			uniforms.Set("param_offsetFromPlanetCenter", RendererSurface.Offset.ToVector3d());
+			uniforms.Set("param_remainderOffset", RendererSurface.Offset.Remainder());
+			uniforms.Set("param_generation", subdivisionDepth);
+			uniforms.Set("param_segmentNormalMap", segmentNormalMap);
 		}
 
 		public void DestroyRenderer()

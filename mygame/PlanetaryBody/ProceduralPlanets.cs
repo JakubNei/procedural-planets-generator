@@ -140,7 +140,7 @@ namespace MyGame
 				planetMaterial.RenderShader = planetShader;
 
 				var planet = planet1 = AddPlanet();
-				planet.Transform.Position = new WorldPos(Program.sunRadius * 2 + cfg.radiusMin * 2, 0, 0);
+				planet.Transform.Position = new WorldPos(Program.sunRadius * 5 + cfg.radiusMin * 5, 0, 0);
 				planet.SurfaceMaterial = planetMaterial;
 				planet.Initialize(cfg);
 			}
@@ -164,7 +164,7 @@ namespace MyGame
 				planetMaterial.RenderShader = planetShader;
 
 				var planet = planet2 = AddPlanet();
-				planet.Transform.Position = new WorldPos(0, 0, Program.sunRadius * 2 + cfg.radiusMin * 2);
+				planet.Transform.Position = new WorldPos(0, 0, Program.sunRadius * 5 + cfg.radiusMin * 5);
 				planet.SurfaceMaterial = planetMaterial;
 				planet.Initialize(cfg);
 			}
