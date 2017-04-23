@@ -11,9 +11,7 @@ namespace MyEngine
 	public struct WorldPos : IEquatable<WorldPos>
 	{
 		Vector3d insideSectorPosition;
-		long sectorX;
-		long sectorY;
-		long sectorZ;
+		long sectorX, sectorY, sectorZ;
 
 		const double sectorCubeSideLength = 100;
 		//const double offset = 0.5;
