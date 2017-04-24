@@ -22,6 +22,8 @@ namespace MyGame.PlanetaryBody
 		public double noisePositionMultiplier;
 		public double seaLevel01 = 0.5;
 
+		public int normalMapDimensions = 128;
+
 		public Texture2D biomesControlMap;
 
 

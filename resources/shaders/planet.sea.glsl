@@ -77,10 +77,14 @@ float specular(vec3 normal,vec3 dirToLight,vec3 dirToCamera,float s) {
 }
 
 // sky
-vec3 getSkyColor(vec3 dirToCamera) {
-    dirToCamera.y = max(dirToCamera.y,0.0);
-    return vec3(1,1,1);
-    return vec3(pow(1.0-dirToCamera.y,2.0), 1.0-dirToCamera.y, 0.6+(1.0-dirToCamera.y)*0.4);
+vec3 getSkyColor(vec3 dirToCamera, vec3 normal) {
+    //return vec3(0.6,0.7,1);
+    float a = dot(dirToCamera, normal);
+    //1 .. 0
+    //0 .. -1
+    a = a + 0.4;
+    a = max(a, 0);
+    return vec3(pow(1.0-a,2.0), 1.0-a, 0.6+(1.0-a)*0.4);
 }
 
 // sea
@@ -216,19 +220,18 @@ vec3 getSeaColor(float height, vec3 normal, vec3 dirToLight, vec3 dirToCamera) {
     
     float fresnel = clamp(1.0 - dot(normal,-dirToCamera), 0.0, 1.0);
     fresnel = pow(fresnel,3.0) * 0.65;        
-    vec3 reflected = getSkyColor(reflect(dirToCamera,normal));    
+    vec3 reflected = getSkyColor(reflect(dirToCamera,normal), normal);    
     vec3 refracted = SEA_BASE + diffuse(normal,dirToLight,80.0) * SEA_WATER_COLOR * 0.12; 
 	color += mix(refracted,reflected,fresnel);    
     
     //DEBUG
-	//color += getSkyColor(reflect(dirToCamera,normal));
+	//color = getSkyColor(reflect(dirToCamera,normal));
 
     float dist = length(i.worldPos);
-    //dist = 100;
     float atten = max(1.0 - dist * 0.001, 0.0); 
-    //color += SEA_WATER_COLOR * (-height) * 0.18 * atten;
+    color += SEA_WATER_COLOR * (-height) * 0.18 * atten;
     
-    //color += vec3(specular(normal,dirToLight,dirToCamera,60.0));
+    color += vec3(specular(normal,dirToLight,dirToCamera,60.0));
     
     return color;
 }

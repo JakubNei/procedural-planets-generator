@@ -92,6 +92,8 @@ void main() {
 
 	vec2 baricentric = vec2(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y) / imageSize(param_segmentNormalMap);
 
+	//if(baricentric.x + baricentric.y > 1) return;
+
 	dvec3 positionInterpolated = 
 		param_cornerPositionA + 
 		(param_cornerPositionB - param_cornerPositionA) * baricentric.y * (1-baricentric.x) + 

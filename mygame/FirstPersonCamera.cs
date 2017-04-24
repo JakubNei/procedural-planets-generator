@@ -35,7 +35,6 @@ namespace MyGame
 
 		Camera cam => Scene.MainCamera;
 		CVar WalkOnPlanet => Debug.GetCVar("game / walk on planet");
-		CVar MoveCameraToSurfaceOnStart => Debug.GetCVar("game / move camera to planet surface on start");
 
 		public ProceduralPlanets planets;
 
@@ -68,8 +67,7 @@ namespace MyGame
 			if (planet != null)
 			{
 				Transform.LookAt(planet.Transform.Position);
-				if (MoveCameraToSurfaceOnStart)
-					Transform.Position = new WorldPos((float)-planet.RadiusMin, 0, 0) + planet.Transform.Position;
+				Transform.Position = new WorldPos(-planet.RadiusMin * 2, 0, 0) + planet.Transform.Position;
 			}
 
 			Update(0.1f); // spool up
@@ -218,7 +216,7 @@ namespace MyGame
 
 				if (planet != null && Input.GetKeyDown(Key.C))
 				{
-					rotation = position.Towards(planet.Transform.Position).ToVector3().LookRot();
+					rotation = position.Towards(planet.Transform.Position).ToVector3d().Normalized().ToVector3().LookRot();
 				}
 
 				if (planet != null && WalkOnPlanet.Bool)
@@ -293,7 +291,7 @@ namespace MyGame
 
 				Transform.Rotation = rotation;
 
-				targetVelocity = targetVelocity.RotateBy(Transform.Rotation);
+				targetVelocity = targetVelocity.RotateBy(rotation);
 				currentVelocity = Vector3.Lerp(currentVelocity, targetVelocity, velocityChangeSpeed * (float)deltaTime);
 
 				position += currentVelocity * (float)deltaTime;

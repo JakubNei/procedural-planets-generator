@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Neitri;
+using System.Globalization;
 
 namespace MyEngine
 {
@@ -114,7 +115,7 @@ namespace MyEngine
 					{
 						cvar.ValueType = CvarValueType.NotSet;
 					}
-					else if (float.TryParse(value, out typedFloatValue))
+					else if (float.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out typedFloatValue))
 					{
 						cvar.Number = typedFloatValue;
 					}
@@ -145,8 +146,8 @@ namespace MyEngine
 			var s = cvar.Name + " = ";
 
 			if (cvar.ValueType == CvarValueType.NotSet) s += "not set";
-			else if (cvar.ValueType == CvarValueType.Bool) s += cvar.Bool.ToString().ToLower();
-			else if (cvar.ValueType == CvarValueType.Number) s += cvar.Number.ToString().ToLower();
+			else if (cvar.ValueType == CvarValueType.Bool) s += cvar.Bool.ToString(CultureInfo.InvariantCulture).ToLower();
+			else if (cvar.ValueType == CvarValueType.Number) s += cvar.Number.ToString(CultureInfo.InvariantCulture).ToLower();
 
 			if (cvar.ToogleKey != OpenTK.Input.Key.Unknown) s += " = " + cvar.ToogleKey.ToString().ToLower();
 

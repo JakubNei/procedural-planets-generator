@@ -31,7 +31,6 @@ namespace MyEngine
 		CVar ShadowsEnabled => Debug.GetCVar("rendering / shadows enabled");
 
 		CVar EnableCulling => Debug.GetCVar("rendering / occlusion culling / enabled", true);
-		CVar EnableRasterizerRasterization => Debug.GetCVar("rendering / occlusion culling / enable rasterizer rasterization", true);
 		CVar EnableRasterizerCulling => Debug.GetCVar("rendering / occlusion culling / enable rasterizer culling", true);
 		CVar ShowRasterizerContents => Debug.GetCVar("rendering / debug / show rasterizer contents");
 		CVar SortRenderables => Debug.GetCVar("rendering / sort renderables", true);
@@ -54,7 +53,7 @@ namespace MyEngine
 				}
 			});
 
-			EnableRasterizerRasterization.OnChangedAndNow(c =>
+			EnableRasterizerCulling.OnChangedAndNow(c =>
 			{
 				if (c.Bool) rasterizer = new SoftwareDepthRasterizer(200, 100);
 				else rasterizer = null;
@@ -635,7 +634,7 @@ namespace MyEngine
 
 			if (dataVersion != data.Version)
 			{
-				Log.Warn("started render prepare with different data to render version");
+				//Log.Warn("started render prepare with different data to render version");
 			}
 
 		}

@@ -80,7 +80,14 @@ namespace MyGame.PlanetaryBody
 				bounds.Encapsulate((NoElevationRange.CenterPos - n * c - o).ToVector3());
 			}
 			*/
-			segmentNormalMap = new Texture2D(512, 512);
+
+
+			var d = planetInfo.config.normalMapDimensions;
+
+			d = ((int)(d / 16)) * 16;
+
+
+			segmentNormalMap = new Texture2D(d, d);
 			segmentNormalMap.UseMipMaps = false;
 
 			//if (Renderer != null) throw new Exception("something went terribly wrong, renderer should be null"); // or we marked segment for regeneration
@@ -92,7 +99,7 @@ namespace MyGame.PlanetaryBody
 			RendererSurface.Offset += offsetCenter;
 			RendererSurface.Material = planetInfo.SurfaceMaterial.CloneTyped();
 			SetCommonUniforms(RendererSurface.Material.Uniforms);
-			
+
 
 
 

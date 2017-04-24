@@ -131,6 +131,7 @@ namespace MyGame
 				cfg.noiseHeightMultiplier = Debug.GetCVar("generation / planet 1 / noise height multiplier", 9000);
 				cfg.noisePositionMultiplier = Debug.GetCVar("generation / planet 1 / noise position multiplier", 0.6371f);
 				cfg.seaLevel01 = Debug.GetCVar("generation / planet 1 / sea level 0..1", 0.5f);
+				cfg.normalMapDimensions = Debug.GetCVar("generation / normal map dimensions", 128);
 				cfg.biomesControlMap = new Texture2D(FileSystem.FindExistingFile("biomes/biomes_control_map.*"))
 				{ FilterMode = FilterMode.Point, WrapMode = MyEngine.TextureWrapMode.Clamp, UseMipMaps = false };
 				cfg.AddBiomes(biomesAtlas);
@@ -155,6 +156,7 @@ namespace MyGame
 				cfg.noiseHeightMultiplier = Debug.GetCVar("generation / planet 2 / noise height multiplier", 2000);
 				cfg.noisePositionMultiplier = Debug.GetCVar("generation / planet 2 / noise position multiplier", 2);
 				cfg.seaLevel01 = Debug.GetCVar("generation / planet 2 / sea level 0..1", 0.5f);
+				cfg.normalMapDimensions = Debug.GetCVar("generation / normal map dimensions", 128);
 				cfg.biomesControlMap = new Texture2D(FileSystem.FindExistingFile("biomes/biomes_control_map.*"))
 				{ FilterMode = FilterMode.Point, WrapMode = MyEngine.TextureWrapMode.Clamp, UseMipMaps = false };
 				cfg.AddBiomes(biomesAtlas);
