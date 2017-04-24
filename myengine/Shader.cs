@@ -9,6 +9,7 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using Neitri.Base;
+using System.Globalization;
 
 namespace MyEngine
 {
@@ -157,25 +158,34 @@ namespace MyEngine
 			GL.GetShaderInfoLog(handle, out logInfo); MyGL.Check();
 			if (logInfo.Length > 0)
 			{
-				var lines = logInfo.Split('\n');
-				for (int i = 0; i < lines.Length; i++)
+				Log.Error($"Error occured during compilation of {type} from '{resource}'");
+				Log.Error(logInfo);
+				try
 				{
-					var line = lines[i];
-					if (line.Contains("(") && line.Contains(")"))
+					var lines = logInfo.Split('\n');
+					for (int i = 0; i < lines.Length; i++)
 					{
-						var fileIdAndLineNumber = line.TakeStringBefore(")");
-						var fileId = fileIdAndLineNumber.TakeStringBefore("(");
-						var lineNumber = fileIdAndLineNumber.TakeStringAfter("(");
-						var fileName = builder.includedFiles[int.Parse(fileId)];
+						var line = lines[i];
+						if (line.Contains("(") && line.Contains(")"))
+						{
+							var fileIdAndLineNumber = line.TakeStringBefore(")");
+							var fileId = fileIdAndLineNumber.TakeStringBefore("(");
+							var lineNumber = fileIdAndLineNumber.TakeStringAfter("(");
+							var fileName = builder.includedFiles[int.Parse(fileId, CultureInfo.InvariantCulture)];
 
-						line = line.Replace(fileIdAndLineNumber, fileName + "(" + lineNumber);
+							line = line.Replace(fileIdAndLineNumber, fileName + "(" + lineNumber);
 
-						lines[i] = line;
+							lines[i] = line;
+						}
 					}
+					logInfo = lines.Join('\n');
+					Log.Error("niceifed:");
+					Log.Error(logInfo);
 				}
-				logInfo = lines.Join('\n');
-
-				Log.Error($"Error occured during compilation of {type} from '{resource}'\n{logInfo}");
+				catch (Exception e)
+				{
+					Log.Error("failed to niceify error:" + e);
+				}
 				return false;
 			}
 

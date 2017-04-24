@@ -41,6 +41,7 @@ const vec3 SEA_BASE = vec3(0.1,0.19,0.22);
 const vec3 SEA_WATER_COLOR = vec3(0.8,0.9,0.6);
 #define SEA_TIME (1.0 + iGlobalTime * SEA_SPEED)
 const mat2 octave_m = mat2(1.6,1.2,-1.2,1.6);
+const vec3 DEFAULT_COLOR = vec3(28,50,57)/255; //vec3(0.18,0.56,0.8);
 
 // math
 mat3 fromEuler(vec3 ang) {
@@ -78,13 +79,12 @@ float specular(vec3 normal,vec3 dirToLight,vec3 dirToCamera,float s) {
 
 // sky
 vec3 getSkyColor(vec3 dirToCamera, vec3 normal) {
+    return vec3(28,50,57)/64;
     //return vec3(0.6,0.7,1);
-    float a = dot(dirToCamera, normal);
-    //1 .. 0
-    //0 .. -1
-    a = a + 0.4;
-    a = max(a, 0);
-    return vec3(pow(1.0-a,2.0), 1.0-a, 0.6+(1.0-a)*0.4);
+    //float a = dot(dirToCamera, normal);
+    //a = a + 0.4;
+    //a = max(a, 0);
+    //return vec3(pow(1.0-a,2.0), 1.0-a, 0.6+(1.0-a)*0.4);
 }
 
 // sea
@@ -175,7 +175,7 @@ void main()
 	vec2 uv = getSeaUv(in_uv);
 	float height = map(uv);
 
-	vec3 modelPos = in_position + o.normal * height;
+	vec3 modelPos = in_position + o.normal * height * 2;
 	vec4 worldPos4 = model.modelMatrix * vec4(modelPos, 1);	
 	vec3 worldPos3 = worldPos4.xyz / worldPos4.w;
 
@@ -251,9 +251,6 @@ void main()
 {
 
 	const float startAtCameraDist = 10000;
-
-	const vec3 defaultColor = vec3(28,50,57)/255; //vec3(0.18,0.56,0.8);
-
 
     vec3 dirToCamera = normalize(vec3(0) - i.worldPos);
     vec3 dirToLight = normalize(light.position - i.worldPos);
