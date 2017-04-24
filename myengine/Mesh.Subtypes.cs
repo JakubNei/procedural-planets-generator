@@ -285,7 +285,7 @@ namespace MyEngine
 				GL.BindBuffer(GL_BufferTarget, VboHandle); MyGL.Check();
 				var arr = this.ToArray();
 				var size = NumberOfElements * DataSizeOfOneElementInBytes;
-				GL.BufferData(GL_BufferTarget, size, arr, BufferUsageHint.DynamicDraw); MyGL.Check(); // BufferUsageHint explained: http://www.informit.com/articles/article.aspx?p=1377833&seqNum=7
+				GL.BufferData(GL_BufferTarget, size, arr, BufferUsageHint.DynamicRead); MyGL.Check(); // BufferUsageHint explained: http://www.informit.com/articles/article.aspx?p=1377833&seqNum=7
 				GL.GetBufferParameter(GL_BufferTarget, BufferParameterName.BufferSize, out sizeFromGpu); MyGL.Check();
 				// if (size != sizeFromGpu) Log.Error(myName + " size mismatch size=" + GL_BufferTarget + " sizeFromGpu=" + sizeFromGpu);
 				GL.BindBuffer(GL_BufferTarget, 0); MyGL.Check();

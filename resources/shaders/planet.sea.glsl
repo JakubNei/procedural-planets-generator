@@ -79,7 +79,7 @@ float specular(vec3 normal,vec3 dirToLight,vec3 dirToCamera,float s) {
 
 // sky
 vec3 getSkyColor(vec3 dirToCamera, vec3 normal) {
-    return vec3(28,50,57)/64;
+    return vec3(28,50,53)/64;
     //return vec3(0.6,0.7,1);
     //float a = dot(dirToCamera, normal);
     //a = a + 0.4;

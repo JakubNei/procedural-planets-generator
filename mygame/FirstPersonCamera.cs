@@ -81,6 +81,8 @@ namespace MyGame
 
 		void Update(float deltaTime)
 		{
+			if (deltaTime > 1 / 30f) deltaTime = 1 / 30f;
+
 			var rotation = Transform.Rotation;
 			var position = Transform.Position;
 

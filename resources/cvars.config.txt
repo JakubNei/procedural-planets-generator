@@ -9,7 +9,7 @@ generation / calculate normals on GPU = true
 generation / debug / regenerate all planets = false = r 
 generation / limit generation by fps = true 
 generation / move skirts on GPU = false 
-generation / normal map dimensions = 256 
+generation / normal map dimensions = 512 
 generation / planet 1 / noise height multiplier = 9000 
 generation / planet 1 / noise position multiplier = 0.6371 
 generation / planet 1 / radius = 637100 
@@ -20,9 +20,9 @@ generation / planet 2 / radius = 50000
 generation / planet 2 / sea level 0..1 = 0.3 
 generation / planet segments pause subdivision and visibility updates = false 
 generation / print statistics report = false 
-generation / segment number of vertices on edge = 40 
+generation / segment number of vertices on edge = 60 
 generation / segment stop recursion at world size = 50 
-generation / segment subdivide if weight is bigger than = 0.4
+generation / segment subdivide if weight is bigger than = 0.6 
 generation / use skirts = true 
 planets / debug / get surface height = false 
 rendering / debug / draw gbuffer contents = false = f10 
