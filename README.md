@@ -1,6 +1,10 @@
 # procedural-planets-generator
 My take on procedural planet generation.
 
+![](http://i.imgur.com/u4oUq7J.jpg)
+![](http://i.imgur.com/PXYALlO.jpg)
+![](http://i.imgur.com/ndK0nZM.jpg)
+
 
 # Good papers
 
