@@ -32,7 +32,7 @@ rendering / debug / draw normal buffer contents = false = f9
 rendering / debug / pause render prepare = false = p 
 rendering / debug / reload all shaders = false 
 rendering / debug / render white background = false 
-rendering / debug / render black background = true 
+rendering / debug / render black background = false 
 rendering / debug / show rasterizer contents = false = f8 
 rendering / enable post process effects = false 
 rendering / fps / automatically adjust target fps = false 
