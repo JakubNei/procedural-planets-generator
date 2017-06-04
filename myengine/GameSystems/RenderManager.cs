@@ -134,12 +134,17 @@ namespace MyEngine
 
 		CameraData prepardWithCameraData;
 
-		public void RenderAll(UniformBlock ubo, IList<ILight> allLights, IEnumerable<IPostProcessEffect> postProcessEffect)
+		CVar PauseRenderPrepare => Debug.GetCVar("rendering / debug / pause render prepare");
+
+		public void RenderAll(Camera renderCamera, UniformBlock ubo, IList<ILight> allLights, IEnumerable<IPostProcessEffect> postProcessEffect)
 		{
 			gl.SetDefaults();
 
 
+
 			var camera = prepardWithCameraData;
+
+			if (PauseRenderPrepare) camera = renderCamera.GetDataCopy();
 
 			camera.UploadCameraDataToUBO(ubo); // bind camera view params and matrices only once
 

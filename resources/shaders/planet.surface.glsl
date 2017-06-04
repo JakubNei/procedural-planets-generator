@@ -468,7 +468,7 @@ void main()
 
 	color = pow(color,vec3(engine.gammaCorrectionTextureRead));
 
-    color = hsv2rgb(vec3(param_segmentId/13.0, 1, 1));
+    //color = hsv2rgb(vec3(param_segmentId/13.0, 1, 1)); // SHOWCASE
 
 	out_color = vec4(color,1);
 	//out_color = vec4(color,1);

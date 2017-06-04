@@ -298,7 +298,7 @@ void main()
         color *= li;
     }
 
-    alpha = 0;
+    //alpha = 0; //SHOWCASE
 
 	//color = pow(color,vec3(engine.gammaCorrectionTextureRead));
 	vec4 color4 = vec4(color, alpha);
