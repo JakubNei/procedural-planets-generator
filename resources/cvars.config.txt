@@ -20,7 +20,7 @@ generation / planet 2 / radius = 50000
 generation / planet 2 / sea level 0..1 = 0.3 
 generation / planet segments pause subdivision and visibility updates = false 
 generation / print statistics report = false 
-generation / segment number of vertices on edge = 60 
+generation / segment number of vertices on edge = 20 
 generation / segment stop recursion at world size = 50 
 generation / segment subdivide if weight is bigger than = 0.6 
 generation / use skirts = true 
@@ -32,6 +32,7 @@ rendering / debug / draw normal buffer contents = false = f9
 rendering / debug / pause render prepare = false = p 
 rendering / debug / reload all shaders = false 
 rendering / debug / render white background = false 
+rendering / debug / render black background = true 
 rendering / debug / show rasterizer contents = false = f8 
 rendering / enable post process effects = false 
 rendering / fps / automatically adjust target fps = false 

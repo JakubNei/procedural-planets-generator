@@ -78,7 +78,7 @@ namespace MyEngine
 
 				GL.FrontFace(FrontFaceDirection.Ccw); MyGL.Check();
 				GL.CullFace(CullFaceMode.Back); MyGL.Check();
-				GL.PolygonMode(MaterialFace.Front, PolygonMode.Fill); MyGL.Check();
+				GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill); MyGL.Check();
 			}
 
 			public void DepthWrite(bool enabled)
@@ -118,7 +118,7 @@ namespace MyEngine
 				{
 					if (drawFrontOnly)
 					{
-						GL.PolygonMode(MaterialFace.Front, PolygonMode.Fill); MyGL.Check();
+						GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill); MyGL.Check();
 						GL.Enable(EnableCap.CullFace); MyGL.Check();
 					}
 					else
@@ -222,6 +222,12 @@ namespace MyEngine
 					GL.DepthMask(true); MyGL.Check();
 					GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit); MyGL.Check();
 				}
+				else if (Debug.GetCVar("rendering / debug / render black background"))
+				{
+					GL.ClearColor(System.Drawing.Color.Black); MyGL.Check();
+					GL.DepthMask(true); MyGL.Check();
+					GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit); MyGL.Check();
+				}
 				else
 				{
 					GL.ClearColor(System.Drawing.Color.Black); MyGL.Check();
@@ -232,7 +238,7 @@ namespace MyEngine
 					{
 						GL.Disable(EnableCap.DepthTest); MyGL.Check();
 						GL.DepthMask(false); MyGL.Check();
-						GL.PolygonMode(MaterialFace.Front, PolygonMode.Fill); MyGL.Check();
+						GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill); MyGL.Check();
 
 						var shader = Factory.GetShader("internal/deferred.skybox.shader");
 						shader.Uniforms.Set("skyboxCubeMap", SkyboxCubeMap);

@@ -98,7 +98,7 @@ namespace MyEngine
 				DisplayDevice.Default,
 				4,
 				3,
-				GraphicsContextFlags.ForwardCompatible/*| GraphicsContextFlags.Debug*/
+				GraphicsContextFlags.Default/*| GraphicsContextFlags.Debug*/
 			);
 
 			Singletons.Start(this);

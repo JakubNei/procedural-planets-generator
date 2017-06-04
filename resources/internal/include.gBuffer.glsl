@@ -38,9 +38,9 @@ float depthSample(float linearDepth)
 }
 
 
-vec2 GBufferGetScreenCoord()
+vec2 GBufferGetScreenCoord(vec2 fragCoord)
 {
-	return gl_FragCoord.xy/engine.screenSize;	
+	return fragCoord/engine.screenSize;	
 }
 vec3 GBufferGetFinal(vec2 screenCoord) {
 	return textureLod(gBufferUniform.final, screenCoord, 0).xyz;
@@ -55,9 +55,9 @@ float GBufferGetDepth(vec2 screenCoord) {
 }
 
 // zNear..zFar
-float GBufferDistanceOfCurrentFragmentToDepthBuffer()
+float GBufferDistanceOfCurrentFragmentToDepthBuffer(vec3 fragCoord)
 {
-	return linearDepth(GBufferGetDepth(GBufferGetScreenCoord())) - linearDepth(gl_FragCoord.z);
+	return linearDepth(GBufferGetDepth(GBufferGetScreenCoord(fragCoord.xy))) - linearDepth(fragCoord.z);
 }
 
 void GBufferPackData_Emission(out vec4 data, float emission) {

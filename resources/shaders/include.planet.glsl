@@ -7,6 +7,7 @@ uniform double param_noiseHeightMultiplier;
 uniform double param_noisePositionMultiplier;
 uniform double param_seaLevel01;
 uniform int param_generation;
+uniform int param_segmentId;
 
 
 uniform sampler2D param_biomesControlMap;

@@ -119,6 +119,7 @@ namespace MyGame.PlanetaryBody
 			uniforms.Set("param_offsetFromPlanetCenter", RendererSurface.Offset.ToVector3d());
 			uniforms.Set("param_remainderOffset", RendererSurface.Offset.Remainder());
 			uniforms.Set("param_generation", subdivisionDepth);
+			uniforms.Set("param_segmentId", (int)this.ID);
 			uniforms.Set("param_segmentNormalMap", segmentNormalMap);
 		}
 

@@ -133,10 +133,11 @@ void main() {
 	vec2 spherical = calestialToSpherical(vec3(dirFromPlanetCenter)).xy;
 	double generatedHeight = GetProceduralHeight(dirFromPlanetCenter);
 
+	//generatedHeight = 1; // SHOWCASE
+
 	dvec3 positionAdjusted = dirFromPlanetCenter;
 	positionAdjusted *= param_radiusMin + generatedHeight;
 	positionAdjusted -= param_offsetFromPlanetCenter;
-
 
 	// passing data so we can easily generate biomes in other computer shader
 	biomes1.x = float(generatedHeight / param_noiseHeightMultiplier); // 0..1 height

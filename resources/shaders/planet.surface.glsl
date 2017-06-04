@@ -466,8 +466,11 @@ void main()
         color *= li;
     }
 
+	color = pow(color,vec3(engine.gammaCorrectionTextureRead));
 
-	out_color = vec4(pow(color,vec3(engine.gammaCorrectionTextureRead)),1);
+    color = hsv2rgb(vec3(param_segmentId/13.0, 1, 1));
+
+	out_color = vec4(color,1);
 	//out_color = vec4(color,1);
 
 	//out_normal = i.normal;
