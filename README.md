@@ -6,19 +6,27 @@ My take on procedural planet generation.
 ![](http://i.imgur.com/ndK0nZM.jpg)
 
 
-# Good papers
+# How does it work ?
+
+
+
+# Links
+
+Good papers
 
 http://www.terrain.dk/terrain.pdf
 http://web.mit.edu/cesium/Public/terrain.pdf
 http://vertexasylum.com/2010/07/11/oh-no-another-terrain-rendering-paper/
 http://hhoppe.com/gpugcm.pdf
 
-# Nice tutorials
+Nice tutorials
+
 http://www.neilblevins.com/cg_education/procedural_noise/procedural_noise.html
 http://www-cs-students.stanford.edu/~amitp/game-programming/polygon-map-generation/
 http://www.decarpentier.nl/scape-procedural-basics
 
-# Nice examples & other
+Nice examples & other
+
 http://squall-digital.com/ProceduralGeneration.html
 http://orbit.medphys.ucl.ac.uk/news.html
 https://smcameron.github.io/space-nerds-in-space/
