@@ -6,10 +6,6 @@ My take on procedural planet generation.
 ![](http://i.imgur.com/ndK0nZM.jpg)
 
 
-# How does it work ?
-
-
-
 # Links
 
 Good papers
