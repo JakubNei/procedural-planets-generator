@@ -1,5 +1,8 @@
-# procedural-planets-generator
-My take on procedural planet generation.
+# Procedural planets generator
+
+My silly and butchered take on procedural planet generation.
+
+Engine code is based on my [Lego game](https://github.com/aeroson/lego-game-and-Unity-like-engine)
 
 ![](http://i.imgur.com/u4oUq7J.jpg)
 ![](http://i.imgur.com/PXYALlO.jpg)
