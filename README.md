@@ -1,8 +1,24 @@
 # Procedural planets generator
 
-My silly and butchered take on procedural planet generation.
+My somehow butchered take on procedural planets generation.
 
 Engine code is based on my [Lego game](https://github.com/aeroson/lego-game-and-Unity-like-engine)
+
+## Key points
+* height of any point on planet is proceduraly calculated from single function, float getPlanetHeight(float3 directionFromPlanetCenter)
+* getPlanetHeight is combination of alot of Perlin and Worley noises
+* planet is seperated into chunk LOD tree
+* each chunk can be seperated into another 4 chunks thus increasing detail at that position
+* chunks have shape of triangle
+* root chunks are created from icosahedron
+* to improve transitions and hide seams, every chunk has a skirt
+* sea plane is at fixed height 0.5
+* biome is a surface texture and normal
+* contains 6 biomes
+* biome is selected based on temperature (distance to poles) and humidity (distance from sea), 2d control map is used for this
+* each chunk has: mesh, height map, diffuse map, normal map, all is generated on GPU using compute shaders
+
+## Screenshots
 
 ![](http://i.imgur.com/u4oUq7J.jpg)
 ![](http://i.imgur.com/PXYALlO.jpg)
