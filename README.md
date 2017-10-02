@@ -15,7 +15,7 @@ Engine code is based on my [Lego game](https://github.com/aeroson/lego-game-and-
 * sea sphere is at fixed height
 * biome is a surface texture and normal (contains 6 biomes)
 * biome is selected based on temperature (distance to poles and altitude) and humidity (distance from sea), 2d control map is used for this
-* each chunk has mesh, height map, diffuse map and normal map, all is generated on GPU using compute shaders
+* each chunk has mesh, splat map and normal map, all is generated on GPU using compute shaders
 * is capable of generating and displaying planets with the size of Earth and more
 * uses Floating Camera Origin to improve rendering precision
 * uses View Frustum Culling and Software Z Buffer for occlusion culling
