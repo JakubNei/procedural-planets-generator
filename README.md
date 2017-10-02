@@ -5,20 +5,20 @@ My somehow butchered take on procedural planets generation.
 Engine code is based on my [Lego game](https://github.com/aeroson/lego-game-and-Unity-like-engine)
 
 ## Key notes
-* height of any point on planet is proceduraly calculated from single function, float getPlanetHeight(float3 directionFromPlanetCenter)
-* getPlanetHeight is combination of alot of Perlin and Worley noises
-* planet is seperated into chunk LOD tree
-* each chunk can be seperated into another 4 chunks thus increasing detail at that position
-* chunks have shape of triangle (this turned out to be burden while generating and using textures)
-* root chunks are created from icosahedron
-* to hide cracks on the boundary of chunks in differend LODs, every chunk has a skirt
-* sea sphere is at fixed height
-* biome is a surface texture and normal (contains 6 biomes)
-* biome is selected based on temperature (distance to poles and altitude) and humidity (distance from sea), 2d control map is used for this
-* each chunk has mesh, splat map and normal map, all is generated on GPU using compute shaders
-* is capable of generating and displaying planets with the size of Earth and more
-* uses Floating Camera Origin to improve rendering precision
-* uses View Frustum Culling and Software Z Buffer for occlusion culling
+* Height of any point on planet is proceduraly calculated from single function, float getPlanetHeight(float3 directionFromPlanetCenter)
+* getPlanetHeight is combination of alot of Perlin and Worley noises.
+* Planet is seperated into chunk LOD tree.
+* Each chunk can be seperated into another 4 chunks thus increasing detail at that position.
+* Chunks have shape of triangle (this turned out to be burden while generating and using textures).
+* Root chunks are created from icosahedron.
+* To hide cracks on the boundary of chunks in differend LODs, every chunk has a skirt.
+* Sea sphere is at fixed height.
+* Biome is a surface texture and normal (contains 6 biomes).
+* Biome is selected based on temperature (distance to poles and altitude) and humidity (distance from sea), 2d control map is used for this.
+* Each chunk has mesh, normal map and biomes splat maps. All of which is generated on GPU using compute shaders.
+* Is capable of generating and displaying planets with the size of Earth and more.
+* Uses Floating Camera Origin to improve rendering precision close to camera.
+* Uses View Frustum Culling and Software Z Buffer for occlusion culling (Software Z Buffer is disabled by default because it didn't work 100%).
 
 ## Screenshots
 
