@@ -1,6 +1,9 @@
 # Procedural planets generator
 
-My somehow butchered take on procedural planets generation.
+My butchered take on procedural planets generator.
+Iam somehow ashamed to say that this is my diploma thesis.
+After I turned the thesis in, there was driver update thanks to which some of the GLSL shaders failed to compile or worked incorrectly (uninitialized variables were no longer zeroed).
+Crunching on this was the most fun I ever had.
 
 Engine code is based on my [Lego game](https://github.com/aeroson/lego-game-and-Unity-like-engine)
 
